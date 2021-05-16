@@ -1,7 +1,7 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
+import { getBalance } from '../../api/extension';
 import { Messaging } from '../../api/messaging';
-import { METHOD } from '../../config/config';
 
 const Start = () => {
   const history = useHistory();
@@ -10,7 +10,6 @@ const Start = () => {
 
   React.useEffect(() => {
     controller.requestData().then((response) => {
-      console.log(response);
       setWebsite(response.currentWebpage);
     });
   }, []);
@@ -18,12 +17,12 @@ const Start = () => {
     <div>
       Start
       <div>
-        <img src={website.favIconUrl} />
+        <img src={website.favicon} />
         <div>{website.url}</div>
       </div>
       <button
         onClick={() => {
-          controller.returnData({ error: 'closed!' });
+          controller.returnData('CANCEL');
           window.close();
         }}
       >

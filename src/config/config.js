@@ -4,6 +4,7 @@ export const METHOD = {
   isWhitelisted: 'isWhitelisted',
   enable: 'enable',
   isEnabled: 'isEnabled',
+  currentWebpage: 'currentWebpage',
   balance: 'balance',
   signTx: 'signTx',
   submitTx: 'submitTx',

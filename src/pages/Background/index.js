@@ -1,11 +1,12 @@
 import {
+  createPopup,
   getBalance,
+  getCurrentWebpage,
   getWhitelisted,
   isWhitelisted,
   setWhitelisted,
-} from '../../api/background';
+} from '../../api/extension';
 import { Messaging } from '../../api/messaging';
-import { createPopup, getCurrentWebpage } from '../../api/popup';
 import { ERROR, METHOD, POPUP, SENDER, TARGET } from '../../config/config';
 
 const app = Messaging.createBackgroundController();
@@ -15,7 +16,7 @@ const app = Messaging.createBackgroundController();
  * app.extension listens to requests from the actual extension, like the popup
  */
 
-app.webpage(METHOD.balance, async (request, sendResponse) => {
+app.add(METHOD.balance, async (request, sendResponse) => {
   const value = await getBalance();
   sendResponse({
     id: request.id,
@@ -25,8 +26,9 @@ app.webpage(METHOD.balance, async (request, sendResponse) => {
   });
 });
 
-app.webpage(METHOD.enable, async (request, sendResponse) => {
-  const whitelisted = await isWhitelisted(request.data);
+app.add(METHOD.enable, async (request, sendResponse) => {
+  const currentWebpage = await getCurrentWebpage();
+  const whitelisted = await isWhitelisted(currentWebpage.url);
   if (whitelisted) {
     sendResponse({
       id: request.id,
@@ -35,14 +37,13 @@ app.webpage(METHOD.enable, async (request, sendResponse) => {
       sender: SENDER.extension,
     });
   } else {
-    const currentWebpage = await getCurrentWebpage();
     const response = await createPopup(POPUP.secondary)
       .then((tab) =>
-        Messaging.sendToPopupInternal(tab, { request, currentWebpage })
+        Messaging.sendToPopupInternal(tab, { ...request, currentWebpage })
       )
       .then((response) => response);
     if (response.data === true) {
-      await setWhitelisted(request.data);
+      await setWhitelisted(currentWebpage.url);
       sendResponse({
         id: request.id,
         data: true,
@@ -60,8 +61,9 @@ app.webpage(METHOD.enable, async (request, sendResponse) => {
   }
 });
 
-app.webpage(METHOD.isEnabled, async (request, sendResponse) => {
-  const whitelisted = await isWhitelisted(request.data);
+app.add(METHOD.isEnabled, async (request, sendResponse) => {
+  const currentWebpage = await getCurrentWebpage();
+  const whitelisted = await isWhitelisted(currentWebpage.url);
   sendResponse({
     id: request.id,
     data: whitelisted,
@@ -70,8 +72,9 @@ app.webpage(METHOD.isEnabled, async (request, sendResponse) => {
   });
 });
 
-app.extension(METHOD.isWhitelisted, async (request, sendResponse) => {
-  const whitelisted = await isWhitelisted(request.data);
+app.add(METHOD.isWhitelisted, async (request, sendResponse) => {
+  const currentWebpage = await getCurrentWebpage();
+  const whitelisted = await isWhitelisted(currentWebpage.url);
   if (whitelisted) {
     sendResponse({
       data: whitelisted,
@@ -86,16 +89,5 @@ app.extension(METHOD.isWhitelisted, async (request, sendResponse) => {
     });
   }
 });
-
-// createPopup(POPUP.secondary)
-//   .then((tab) => Messaging.sendToPopupInternal(tab, request))
-//   .then((response) =>
-//     sendResponse({
-//       id: request.id,
-//       data: response.data,
-//       target: TARGET,
-//       sender: SENDER.extension,
-//     })
-//   );
 
 app.listen();

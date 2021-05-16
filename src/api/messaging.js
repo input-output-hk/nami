@@ -51,11 +51,7 @@ class BackgroundController {
     /**
      * @private
      */
-    this._webpageMethods = {};
-    /**
-     * @private
-     */
-    this._extensionMethods = {};
+    this._methodList = {};
   }
 
   /**
@@ -64,27 +60,19 @@ class BackgroundController {
    * @param {function} sendResponse
    */
   /**
-   * @param {string} method
-   * @param {methodCallback} func
-   */
-  extension = (method, func) => {
-    this._extensionMethods[method] = func;
-  };
 
   /**
    * @param {string} method
    * @param {methodCallback} func
    */
-  webpage = (method, func) => {
-    this._webpageMethods[method] = func;
+  add = (method, func) => {
+    this._methodList[method] = func;
   };
 
   listen = () => {
     chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
-      if (request.sender === SENDER.extension) {
-        this._extensionMethods[request.method](request, sendResponse);
-      } else if (request.sender === SENDER.webpage) {
-        this._webpageMethods[request.method](request, sendResponse);
+      if (request.sender === SENDER.webpage) {
+        this._methodList[request.method](request, sendResponse);
       }
       return true;
     });
@@ -94,8 +82,9 @@ class BackgroundController {
 export const Messaging = {
   sendToBackground: async function (request) {
     return new Promise((res, rej) =>
-      chrome.runtime.sendMessage({ ...request, target: TARGET }, (response) =>
-        res(response)
+      chrome.runtime.sendMessage(
+        { ...request, target: TARGET, sender: SENDER.webpage },
+        (response) => res(response)
       )
     );
   },
@@ -136,7 +125,6 @@ export const Messaging = {
       chrome.runtime.onConnect.addListener(function connetionHandler(port) {
         console.log('Connected .....');
         port.onMessage.addListener(function messageHandler(response) {
-          console.log(response);
           if (response.tabId !== tab.id) return;
           if (response.method === METHOD.requestData) {
             port.postMessage(request);
@@ -183,15 +171,12 @@ export const Messaging = {
       ) {
         Messaging.sendToBackground({
           ...request,
-          data: window.origin,
         }).then((response) => window.postMessage(response));
         return;
       }
 
       const whitelisted = await Messaging.sendToBackground({
         method: METHOD.isWhitelisted,
-        sender: SENDER.extension,
-        data: window.origin,
       });
 
       // protect background by not allowing not whitelisted

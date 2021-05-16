@@ -1,14 +1,15 @@
 import { STORAGE } from '../../config/config';
 import provider from '../../config/provider';
+import { POPUP_WINDOW } from '../../config/config';
 
-const getStorage = async (key) =>
+const getStorage = (key) =>
   new Promise((res, rej) =>
     chrome.storage.local.get(key, (result) => {
       if (chrome.runtime.lastError) rej(undefined);
       res(result);
     })
   );
-const setStorage = async (item) =>
+const setStorage = (item) =>
   new Promise((res, rej) =>
     chrome.storage.local.set(item, () => {
       if (chrome.runtime.lastError) rej(chrome.runtime.lastError);
@@ -47,3 +48,41 @@ export const getBalance = async () => {
 };
 
 export const getCurrentAccount = async () => {};
+
+export const createPopup = (popup) =>
+  new Promise((res, rej) =>
+    chrome.tabs.create(
+      {
+        url: chrome.runtime.getURL(popup),
+        active: false,
+      },
+      function (tab) {
+        chrome.windows.create(
+          {
+            tabId: tab.id,
+            type: 'popup',
+            focused: true,
+            ...POPUP_WINDOW,
+          },
+          function () {
+            res(tab);
+          }
+        );
+      }
+    )
+  );
+
+export const getCurrentWebpage = () =>
+  new Promise((res, rej) => {
+    chrome.tabs.query(
+      {
+        active: true,
+        lastFocusedWindow: true,
+        status: 'complete',
+        windowType: 'normal',
+      },
+      function (tabs) {
+        res({ url: new URL(tabs[0].url).origin, favicon: tabs[0].favIconUrl });
+      }
+    );
+  });
