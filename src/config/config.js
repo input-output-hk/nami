@@ -29,3 +29,7 @@ export const POPUP_WINDOW = {
   width: 400,
   height: 700,
 };
+
+export const ERROR = {
+  accessDenied: 'access denied',
+};

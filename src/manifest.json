@@ -23,5 +23,11 @@
       "matches": ["http://*/*", "https://*/*", "<all_urls>"]
     }
   ],
-  "permissions": ["activeTab", "tabs", "storage", "webRequest"]
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "webRequest",
+    "chrome://favicon/"
+  ]
 }

@@ -13,28 +13,35 @@ import { METHOD, SENDER, TARGET } from '../config/config';
  */
 
 class InternalController {
-  requestData = async () =>
-    await new Promise(async (res, rej) => {
-      this.port = chrome.runtime.connect({
-        name: 'internal-background-popup-communication',
-      });
-
-      this.tabId = await new Promise((res, rej) =>
-        chrome.tabs.getCurrent((tab) => res(tab.id))
+  constructor() {
+    this.port = chrome.runtime.connect({
+      name: 'internal-background-popup-communication',
+    });
+    this.tabId = new Promise((_res, _rej) =>
+      chrome.tabs.getCurrent((tab) => _res(tab.id))
+    );
+  }
+  requestData = () =>
+    new Promise(async (res, rej) => {
+      this.tabId = await new Promise((_res, _rej) =>
+        chrome.tabs.getCurrent((tab) => _res(tab.id))
       );
       const self = this;
       this.port.onMessage.addListener(function messageHandler(response) {
         self.port.onMessage.removeListener(messageHandler);
         res(response);
       });
-      this.port.postMessage({ tabId: this.tabId, method: METHOD.requestData });
+      this.port.postMessage({
+        tabId: await this.tabId,
+        method: METHOD.requestData,
+      });
     });
 
-  returnData = (data) => {
+  returnData = async (data) => {
     this.port.postMessage({
       data,
       method: METHOD.returnData,
-      tabId: this.tabId,
+      tabId: await this.tabId,
     });
   };
 }
@@ -85,9 +92,9 @@ class BackgroundController {
 }
 
 export const Messaging = {
-  sendToBackground: async function (content) {
+  sendToBackground: async function (request) {
     return new Promise((res, rej) =>
-      chrome.runtime.sendMessage({ ...content, target: TARGET }, (response) =>
+      chrome.runtime.sendMessage({ ...request, target: TARGET }, (response) =>
         res(response)
       )
     );
@@ -124,20 +131,20 @@ export const Messaging = {
       );
     });
   },
-  sendToPopupInternal: function (tab, content) {
+  sendToPopupInternal: function (tab, request) {
     return new Promise((res, rej) => {
       chrome.runtime.onConnect.addListener(function connetionHandler(port) {
         console.log('Connected .....');
         port.onMessage.addListener(function messageHandler(response) {
+          console.log(response);
           if (response.tabId !== tab.id) return;
           if (response.method === METHOD.requestData) {
-            port.postMessage({ method: content.method, data: content.data });
+            port.postMessage(request);
           }
           if (response.method === METHOD.returnData) {
             res({
               target: TARGET,
               sender: SENDER.extension,
-              id: response.id,
               data: response.data,
             });
           }
@@ -146,7 +153,6 @@ export const Messaging = {
             res({
               target: TARGET,
               sender: SENDER.extension,
-              id: response.id,
               error: 'window unexpectedly closed',
             });
             chrome.runtime.onConnect.removeListener(connetionHandler);
