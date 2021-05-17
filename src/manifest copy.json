@@ -1,9 +1,9 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "dapp-wallet",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
-  "browser_action": {
+  "action": {
     "default_popup": "mainPopup.html",
     "default_icon": "icon-34.png"
   },
@@ -18,11 +18,15 @@
   ],
   "devtools_page": "devtools.html",
   "web_accessible_resources": [
-    "icon-128.png",
-    "icon-34.png",
-    "injected.bundle.js",
-    "internalPopup.html"
+    {
+      "resources": [
+        "icon-128.png",
+        "icon-34.png",
+        "injected.bundle.js",
+        "internalPopup.html"
+      ],
+      "matches": ["http://*/*", "https://*/*", "<all_urls>"]
+    }
   ],
-  "permissions": ["activeTab", "tabs", "storage", "webRequest"],
-  "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self'"
+  "permissions": ["activeTab", "tabs", "storage", "webRequest"]
 }

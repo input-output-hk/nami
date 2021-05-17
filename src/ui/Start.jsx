@@ -1,7 +1,7 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { getBalance } from '../../api/extension';
-import { Messaging } from '../../api/messaging';
+import { getBalance } from '../api/extension';
+import { Messaging } from '../api/messaging';
 
 const Start = () => {
   const history = useHistory();

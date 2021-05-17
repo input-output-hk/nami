@@ -37,7 +37,7 @@ app.add(METHOD.enable, async (request, sendResponse) => {
       sender: SENDER.extension,
     });
   } else {
-    const response = await createPopup(POPUP.secondary)
+    const response = await createPopup(POPUP.internal)
       .then((tab) =>
         Messaging.sendToPopupInternal(tab, { ...request, currentWebpage })
       )

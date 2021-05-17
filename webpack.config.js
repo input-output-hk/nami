@@ -5,7 +5,8 @@ var webpack = require('webpack'),
   { CleanWebpackPlugin } = require('clean-webpack-plugin'),
   CopyWebpackPlugin = require('copy-webpack-plugin'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
-  TerserPlugin = require('terser-webpack-plugin');
+  TerserPlugin = require('terser-webpack-plugin'),
+  NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -34,11 +35,16 @@ if (fileSystem.existsSync(secretsPath)) {
 }
 
 var options = {
+  experiments: {
+    syncWebAssembly: true,
+    topLevelAwait: true,
+  },
   mode: process.env.NODE_ENV || 'development',
   entry: {
     newtab: path.join(__dirname, 'src', 'pages', 'Newtab', 'index.jsx'),
     options: path.join(__dirname, 'src', 'pages', 'Options', 'index.jsx'),
-    popup: path.join(__dirname, 'src', 'pages', 'Popup', 'index.jsx'),
+    mainPopup: path.join(__dirname, 'src', 'ui', 'indexMain.jsx'),
+    internalPopup: path.join(__dirname, 'src', 'ui', 'indexInternal.jsx'),
     background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
     contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
     injected: path.join(__dirname, 'src', 'pages', 'Content', 'injected.js'),
@@ -109,6 +115,7 @@ var options = {
       .concat(['.js', '.jsx', '.ts', '.tsx', '.css']),
   },
   plugins: [
+    new NodePolyfillPlugin(),
     new webpack.ProgressPlugin(),
     // clean the build folder
     new CleanWebpackPlugin({
@@ -167,9 +174,21 @@ var options = {
       cache: false,
     }),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src', 'pages', 'Popup', 'index.html'),
-      filename: 'popup.html',
-      chunks: ['popup'],
+      template: path.join(
+        __dirname,
+        'src',
+        'pages',
+        'Popup',
+        'internalPopup.html'
+      ),
+      filename: 'internalPopup.html',
+      chunks: ['internalPopup'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Popup', 'mainPopup.html'),
+      filename: 'mainPopup.html',
+      chunks: ['mainPopup'],
       cache: false,
     }),
     new HtmlWebpackPlugin({

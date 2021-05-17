@@ -20,17 +20,18 @@ export const STORAGE = {
 };
 
 export const POPUP = {
-  main: 'popup.html',
-  secondary: 'popup.html',
+  main: 'mainPopup',
+  internal: 'internalPopup',
 };
 
 export const POPUP_WINDOW = {
   top: 50,
   left: 100,
   width: 400,
-  height: 700,
+  height: 600,
 };
 
 export const ERROR = {
   accessDenied: 'access denied',
+  wrongPassword: 'wrong password',
 };
