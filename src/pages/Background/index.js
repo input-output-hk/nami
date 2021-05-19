@@ -2,9 +2,7 @@ import {
   createPopup,
   getBalance,
   getCurrentWebpage,
-  getWhitelisted,
   isWhitelisted,
-  setWhitelisted,
 } from '../../api/extension';
 import { Messaging } from '../../api/messaging';
 import { ERROR, METHOD, POPUP, SENDER, TARGET } from '../../config/config';
@@ -43,7 +41,6 @@ app.add(METHOD.enable, async (request, sendResponse) => {
       )
       .then((response) => response);
     if (response.data === true) {
-      await setWhitelisted(currentWebpage.url);
       sendResponse({
         id: request.id,
         data: true,
@@ -84,6 +81,32 @@ app.add(METHOD.isWhitelisted, async (request, sendResponse) => {
   } else {
     sendResponse({
       error: ERROR.accessDenied,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  }
+});
+
+app.add(METHOD.signData, async (request, sendResponse) => {
+  const currentWebpage = await getCurrentWebpage();
+
+  const response = await createPopup(POPUP.internal)
+    .then((tab) =>
+      Messaging.sendToPopupInternal(tab, { ...request, currentWebpage })
+    )
+    .then((response) => response);
+
+  if (response.data) {
+    sendResponse({
+      id: request.id,
+      data: response.data,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  } else {
+    sendResponse({
+      id: request.id,
+      error: ERROR.signatureDenied,
       target: TARGET,
       sender: SENDER.extension,
     });

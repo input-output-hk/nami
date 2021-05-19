@@ -25,6 +25,7 @@
     "crypto-random-string": "^4.0.0",
     "framer-motion": "^4.1.16",
     "node-polyfill-webpack-plugin": "^1.1.2",
+    "randomcolor": "^0.6.2",
     "react": "^17.0.1",
     "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^17.0.1",

@@ -37,7 +37,6 @@ if (fileSystem.existsSync(secretsPath)) {
 var options = {
   experiments: {
     syncWebAssembly: true,
-    topLevelAwait: true,
   },
   mode: process.env.NODE_ENV || 'development',
   entry: {

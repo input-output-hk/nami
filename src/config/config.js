@@ -6,6 +6,7 @@ export const METHOD = {
   isEnabled: 'isEnabled',
   currentWebpage: 'currentWebpage',
   balance: 'balance',
+  signData: 'signData',
   signTx: 'signTx',
   submitTx: 'submitTx',
   requestData: 'requestData',
@@ -32,6 +33,15 @@ export const POPUP_WINDOW = {
 };
 
 export const ERROR = {
-  accessDenied: 'access denied',
-  wrongPassword: 'wrong password',
+  accessDenied: 'Access denied',
+  wrongPassword: 'Wrong password',
+  signatureDenied: 'Signature denied',
+  storeNotEmpty: 'Storage key is already set',
+};
+
+export const ROUTE = {
+  wallet: '/wallet',
+  welcome: '/welcome',
+  signData: '/signData',
+  enable: '/enable',
 };

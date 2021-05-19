@@ -15,3 +15,11 @@ export const isEnabled = async () => {
   const result = await Messaging.sendToContent({ method: METHOD.isEnabled });
   return result.data;
 };
+
+export const signData = async (address, message) => {
+  const result = await Messaging.sendToContent({
+    method: METHOD.signData,
+    data: { address, message },
+  });
+  return result.data;
+};
