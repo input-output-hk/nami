@@ -3,12 +3,13 @@ import { render } from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 
-import { POPUP } from '../config/config';
+import { POPUP, ROUTE } from '../config/config';
 import Theme from './theme';
 import { Spinner } from '@chakra-ui/spinner';
 import Welcome from './app/pages/welcome';
 import Wallet from './app/pages/wallet';
 import { getAccounts } from '../api/extension';
+import CreateWallet from './app/pages/createWallet';
 
 const App = () => {
   const history = useHistory();
@@ -38,11 +39,14 @@ const App = () => {
   ) : (
     <div>
       <Switch>
-        <Route exact path="/wallet">
+        <Route exact path={ROUTE.wallet}>
           <Wallet />
         </Route>
-        <Route exact path="/welcome">
+        <Route exact path={ROUTE.welcome}>
           <Welcome />
+        </Route>
+        <Route path={ROUTE.createWallet}>
+          <CreateWallet />
         </Route>
       </Switch>
     </div>

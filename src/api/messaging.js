@@ -8,7 +8,8 @@ import { METHOD, SENDER, TARGET } from '../config/config';
  *  ?error: ERROR,
  *  sender: SENDER (extension || webpage),
  *  target: TARGET,
- *  ?id: requestId
+ *  ?id: requestId,
+ *  ?event: EVENT
  * }
  */
 
@@ -123,7 +124,6 @@ export const Messaging = {
   sendToPopupInternal: function (tab, request) {
     return new Promise((res, rej) => {
       chrome.runtime.onConnect.addListener(function connetionHandler(port) {
-        console.log('Connected .....');
         port.onMessage.addListener(function messageHandler(response) {
           if (response.tabId !== tab.id) return;
           if (response.method === METHOD.requestData) {
@@ -152,7 +152,30 @@ export const Messaging = {
     });
   },
   createInternalController: () => new InternalController(),
-  createProxyController: () =>
+  createProxyController: () => {
+    //listen to events from background
+    chrome.runtime.onMessage.addListener(async (response) => {
+      if (
+        typeof response !== 'object' ||
+        response === null ||
+        !response.target ||
+        response.target !== TARGET ||
+        !response.sender ||
+        response.sender !== SENDER.extension ||
+        !response.event
+      )
+        return;
+
+      const whitelisted = await Messaging.sendToBackground({
+        method: METHOD.isWhitelisted,
+      });
+
+      // protect background by not allowing not whitelisted
+      if (!whitelisted || whitelisted.error) return;
+
+      window.postMessage(response);
+    });
+    //listen to function calls from webpage
     window.addEventListener('message', async function (e) {
       const request = e.data;
       if (
@@ -188,6 +211,7 @@ export const Messaging = {
       await Messaging.sendToBackground(request).then((response) =>
         window.postMessage(response)
       );
-    }),
+    });
+  },
   createBackgroundController: () => new BackgroundController(),
 };

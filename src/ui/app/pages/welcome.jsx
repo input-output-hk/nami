@@ -3,6 +3,7 @@ import { createWallet } from '../../../api/extension';
 import { Button } from '@chakra-ui/button';
 import { Backpack } from 'react-kawaii';
 import { useHistory } from 'react-router-dom';
+import { ROUTE } from '../../../config/config';
 
 const TEST_PHRASE =
   'grab level comic recipe speak paddle lift air try concert include asset exhibit refuse index sense noble erupt water trial require frame pistol account';
@@ -24,8 +25,9 @@ const Welcome = ({ data }) => {
       <div style={{ height: 40 }} />
       <Button
         onClick={async () => {
-          const result = await createWallet('My wallet', TEST_PHRASE, 'cool');
-          if (result === true) history.push('/wallet');
+          history.push('/createWallet/generate');
+          // const result = await createWallet('My wallet', TEST_PHRASE, 'cool');
+          // if (result === true) history.push('/wallet');
         }}
         colorScheme="teal"
         size="md"

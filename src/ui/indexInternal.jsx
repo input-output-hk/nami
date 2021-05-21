@@ -8,6 +8,7 @@ import { Messaging } from '../api/messaging';
 import { METHOD, POPUP, ROUTE } from '../config/config';
 import Enable from './app/pages/enable';
 import SignData from './app/pages/signData';
+import SignTx from './app/pages/signTx';
 import Theme from './theme';
 
 const App = () => {
@@ -20,6 +21,7 @@ const App = () => {
     setResponse(resp);
     if (resp.method === METHOD.enable) history.push(ROUTE.enable);
     else if (resp.method === METHOD.signData) history.push(ROUTE.signData);
+    else if (resp.method === METHOD.signTx) history.push(ROUTE.signTx);
   };
 
   React.useEffect(() => {
@@ -43,6 +45,9 @@ const App = () => {
       <Switch>
         <Route exact path={ROUTE.signData}>
           <SignData request={response} controller={controller} />
+        </Route>
+        <Route exact path={ROUTE.signTx}>
+          <SignTx request={response} controller={controller} />
         </Route>
         <Route exact path={ROUTE.enable}>
           <Enable request={response} controller={controller} />

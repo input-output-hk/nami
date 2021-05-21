@@ -1,4 +1,4 @@
-import { ERROR, STORAGE } from '../../config/config';
+import { ERROR, EVENT, SENDER, STORAGE, TARGET } from '../../config/config';
 import provider from '../../config/provider';
 import { POPUP_WINDOW } from '../../config/config';
 import { mnemonicToEntropy } from 'bip39';
@@ -69,15 +69,54 @@ export const setWhitelisted = async (_location) => {
   return await setStorage({ [STORAGE.whitelisted]: whitelisted });
 };
 
-export const getBalance = async () => {
+export const getDelegation = async () => {
+  const currentAccount = await getCurrentAccount();
   const result = await fetch(
-    provider.api.base +
-      `/addresses/${'addr1qx8n3d5f2q07gsx8eqvqwl8vsl0qs2h9jj0cm96vdea03ke5zt4ppwdaw7p2ymx9umc7p0nh09yznh0n59x548a5f8ls2l0lx3'}`,
+    provider.api.base + `/accounts/${currentAccount.rewardAddr}`,
     { headers: provider.api.key }
   ).then((res) => res.json());
-  const value = {};
-  result.amount.forEach((asset) => (value[asset.unit] = asset.quantity));
-  return value;
+  if (!result || result.error) return {};
+  return {
+    active: result.active,
+    poolId: result.poolId,
+    activeEpoch: result.active_epoch,
+    availableRewards: result.withdrawable_amount,
+    withdrawnRewards: result.withdrawal_sum,
+  };
+};
+
+export const getBalance = async () => {
+  const currentAccount = await getCurrentAccount();
+  const result = await fetch(
+    provider.api.base + `/addresses/${currentAccount.paymentAddr}`,
+    { headers: provider.api.key }
+  ).then((res) => res.json());
+  if (!result || result.error) return [];
+  return result.amount;
+};
+
+export const getUtxos = async (paginate = undefined) => {
+  const currentAccount = await getCurrentAccount();
+  paginate = paginate || paginate == 0 ? '?page=' + paginate : '';
+  const result = await fetch(
+    provider.api.base +
+      `/addresses/${currentAccount.paymentAddr}/utxos${paginate}`,
+    { headers: provider.api.key }
+  ).then((res) => res.json());
+  if (!result || result.error) return [];
+  return result.map((utxo) => ({
+    txHash: utxo.tx_hash,
+    txId: utxo.tx_index,
+    amount: utxo.amount,
+  }));
+};
+
+export const getAddresses = async () => {
+  const currentAccount = await getCurrentAccount();
+  return {
+    paymentAddr: [currentAccount.paymentAddr],
+    rewardAddr: currentAccount.rewardAddr,
+  };
 };
 
 export const getCurrentAccountIndex = async () => {
@@ -131,7 +170,11 @@ export const getCurrentWebpage = () =>
         windowType: 'normal',
       },
       function (tabs) {
-        res({ url: new URL(tabs[0].url).origin, favicon: tabs[0].favIconUrl });
+        res({
+          url: new URL(tabs[0].url).origin,
+          favicon: tabs[0].favIconUrl,
+          tabId: tabs[0].id,
+        });
       }
     );
   });
@@ -143,10 +186,18 @@ const harden = (num) => {
 const extractKeyHash = async (address) => {
   await Loader.load();
   //TODO: implement for various address types
-  const baseAddress = Loader.Cardano.BaseAddress.from_address(
-    Loader.Cardano.Address.from_bech32(address)
-  );
-  return baseAddress.payment_cred().to_keyhash().to_bech32('hashp_');
+  if (address.startsWith('addr')) {
+    const baseAddr = Loader.Cardano.BaseAddress.from_address(
+      Loader.Cardano.Address.from_bech32(address)
+    );
+    return baseAddr.payment_cred().to_keyhash().to_bech32('hbas_');
+  } else if (address.startsWith('stake')) {
+    const rewardAddr = Loader.Cardano.RewardAddress.from_address(
+      Loader.Cardano.Address.from_bech32(address)
+    );
+    return rewardAddr.payment_cred().to_keyhash().to_bech32('hrew_');
+  }
+  throw new Error(ERROR.noKeyHash);
 };
 
 /**
@@ -157,19 +208,116 @@ const extractKeyHash = async (address) => {
  */
 export const signData = async (address, data, password) => {
   const currentAccountIndex = await getCurrentAccountIndex();
-  const addressKeyHash = await extractKeyHash(address);
-  let { paymentKey } = await requestAccountKey(password, currentAccountIndex);
-  const publicKey = paymentKey.to_public().to_raw_key();
-  if (addressKeyHash !== publicKey.hash().to_bech32('hashp_'))
+  const keyHash = await extractKeyHash(address);
+  const prefix = keyHash.slice(0, 5);
+  let { paymentKey, stakeKey } = await requestAccountKey(
+    password,
+    currentAccountIndex
+  );
+  const accountKey = prefix === 'hbas_' ? paymentKey : stakeKey;
+
+  const publicKey = accountKey.to_public();
+  if (keyHash !== publicKey.hash().to_bech32(prefix))
     throw new Error('Key hashes do not match');
   const bytesData = new Uint8Array(Buffer.from(data));
-  const signature = paymentKey.to_raw_key().sign(bytesData);
+  const signature = accountKey.sign(bytesData);
+
+  stakeKey.free();
+  stakeKey = null;
   paymentKey.free();
   paymentKey = null;
+
   return {
     signature: signature.to_hex(),
     publicKey: publicKey.to_bech32(),
   };
+};
+
+/**
+ *
+ * @param {string} txBody - hex string
+ * @param {Array<string>} keyHashes
+ * @param {string} password
+ * @returns {string} witness set as hex string
+ */
+export const signTx = async (txBody, keyHashes, password) => {
+  await Loader.load();
+  const currentAccountIndex = await getCurrentAccountIndex();
+  let { paymentKey, stakeKey } = await requestAccountKey(
+    password,
+    currentAccountIndex
+  );
+  const paymentKeyHash = Buffer.from(
+    paymentKey.to_public().hash().to_bytes(),
+    'hex'
+  ).toString('hex');
+  const stakeKeyHash = Buffer.from(
+    stakeKey.to_public().hash().to_bytes(),
+    'hex'
+  ).toString('hex');
+
+  const txWitnessSet = Loader.Cardano.TransactionWitnessSet.new();
+  const vkeyWitnesses = Loader.Cardano.Vkeywitnesses.new();
+  const txHash = Loader.Cardano.hash_transaction(
+    Loader.Cardano.TransactionBody.from_bytes(Buffer.from(txBody, 'hex'))
+  );
+  keyHashes.forEach((keyHash) => {
+    let signingKey;
+    if (keyHash === paymentKeyHash) signingKey = paymentKey;
+    else if (keyHash === stakeKeyHash) signingKey = stakeKey;
+    else throw new Error(ERROR.noKeyHash);
+    const vkey = Loader.Cardano.make_vkey_witness(txHash, signingKey);
+    vkeyWitnesses.add(vkey);
+  });
+  txWitnessSet.set_vkeys(vkeyWitnesses);
+  return Buffer.from(txWitnessSet.to_bytes(), 'hex').toString('hex');
+};
+
+/**
+ *
+ * @param {string} tx - cbor hex string
+ * @returns
+ */
+
+export const submitTx = async (tx) => {
+  const txHash = await fetch(provider.api.base + `/tx/submit`, {
+    headers: { ...provider.api.key, 'Content-Type': 'application/cbor' },
+    method: 'POST',
+    body: Buffer.from(tx, 'hex'),
+  }).then((res) => res.json());
+  if (!txHash || txHash.error) return txHash;
+  await emitTxConfirmation(txHash);
+  return txHash;
+};
+
+export const getTransaction = async (txHash) => {};
+
+const emitTxConfirmation = async (txHash) => {
+  const result = await fetch(provider.api.base + `/txs/${txHash}`, {
+    headers: provider.api.key,
+  }).then((res) => res.json());
+
+  if (!result || result.error)
+    return setTimeout(() => emitTxConfirmation(txHash), 5000);
+  const currentWebpage = await getCurrentWebpage();
+  chrome.tabs.sendMessage(currentWebpage.tabId, {
+    data: { ...result, txHash },
+    target: TARGET,
+    sender: SENDER.extension,
+    event: EVENT.txConfirmation,
+  });
+  return;
+};
+
+const emitAccountChange = async (addresses) => {
+  const currentWebpage = await getCurrentWebpage();
+  console.log(currentWebpage);
+  chrome.tabs.sendMessage(currentWebpage.tabId, {
+    data: addresses,
+    target: TARGET,
+    sender: SENDER.extension,
+    event: EVENT.accountChange,
+  });
 };
 
 const requestAccountKey = async (password, accountIndex) => {
@@ -185,8 +333,8 @@ const requestAccountKey = async (password, accountIndex) => {
     .derive(harden(accountIndex));
 
   return {
-    paymentKey: accountKey.derive(0).derive(0),
-    stakeKey: accountKey.derive(2).derive(0),
+    paymentKey: accountKey.derive(0).derive(0).to_raw_key(),
+    stakeKey: accountKey.derive(2).derive(0).to_raw_key(),
   };
 };
 
@@ -214,17 +362,15 @@ export const createAccount = async (name, password) => {
 
   const paymentAddr = Loader.Cardano.BaseAddress.new(
     Loader.Cardano.NetworkInfo.mainnet().network_id(),
-    Loader.Cardano.StakeCredential.from_keyhash(
-      paymentKeyPub.to_raw_key().hash()
-    ),
-    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.to_raw_key().hash())
+    Loader.Cardano.StakeCredential.from_keyhash(paymentKeyPub.hash()),
+    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.hash())
   )
     .to_address()
     .to_bech32();
 
   const rewardAddr = Loader.Cardano.RewardAddress.new(
     Loader.Cardano.NetworkInfo.mainnet().network_id(),
-    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.to_raw_key().hash())
+    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.hash())
   )
     .to_address()
     .to_bech32();
@@ -243,7 +389,10 @@ export const createAccount = async (name, password) => {
     },
   };
 
-  return await setStorage({ [STORAGE.accounts]: newAccount });
+  await setStorage({ [STORAGE.accounts]: newAccount });
+  await setStorage({ [STORAGE.currentAccount]: accountIndex });
+  emitAccountChange({ paymentAddr: [paymentAddr], rewardAddr });
+  return true;
 };
 
 export const createWallet = async (name, seedPhrase, password) => {
@@ -264,15 +413,27 @@ export const createWallet = async (name, seedPhrase, password) => {
   rootKey.free();
   rootKey = null;
 
-  // const checkStore = await getStorage(STORAGE.encryptedKey).then(
-  //   (store) => store[STORAGE.encryptedKey]
-  // );
-  // if (checkStore) throw new Error(ERROR.storeNotEmpty);
+  const checkStore = await getStorage(STORAGE.encryptedKey).then(
+    (store) => store[STORAGE.encryptedKey]
+  );
+  if (checkStore) throw new Error(ERROR.storeNotEmpty);
   await setStorage({ [STORAGE.encryptedKey]: encryptedRootKey });
-  await setStorage({ [STORAGE.currentAccount]: 0 });
 
   await createAccount(name, password);
   password = null;
 
   return true;
+};
+
+export const mnemonicToObject = (mnemonic) => {
+  const mnemonicMap = {};
+  mnemonic.split(' ').forEach((word, index) => (mnemonicMap[index + 1] = word));
+  return mnemonicMap;
+};
+
+export const mnemonicFromObject = (mnemonicMap) => {
+  return Object.keys(mnemonicMap).reduce(
+    (acc, key) => (acc ? acc + ' ' + mnemonicMap[key] : acc + mnemonicMap[key]),
+    ''
+  );
 };
