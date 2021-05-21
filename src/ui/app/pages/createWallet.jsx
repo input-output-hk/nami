@@ -6,7 +6,6 @@ import {
 } from '../../../api/extension';
 import { Button } from '@chakra-ui/button';
 import { Route, Switch, useHistory } from 'react-router-dom';
-import { ROUTE } from '../../../config/config';
 import {
   Input,
   InputGroup,
@@ -15,7 +14,6 @@ import {
   InputRightElement,
 } from '@chakra-ui/input';
 import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
-import { BeatLoader } from '@chakra-ui/react';
 import { generateMnemonic } from 'bip39';
 import { CloseButton } from '@chakra-ui/close-button';
 import { Checkbox } from '@chakra-ui/checkbox';
@@ -43,6 +41,7 @@ const CreateWallet = ({ data }) => {
         <Route exact path="/createWallet/generate" component={GenerateSeed} />
         <Route exact path="/createWallet/verify" component={VerifySeed} />
         <Route exact path="/createWallet/account" component={MakeAccount} />
+        <Route exact path="/createWallet/import" component={ImportSeed} />
       </Switch>
     </Box>
   );
@@ -184,7 +183,7 @@ const VerifySeed = () => {
                         next.focus();
                       } else if (!next && e.target.value === mnemonic[index])
                         refs.current[index].blur();
-                      verifyAll;
+                      verifyAll();
                     }}
                     textAlign="center"
                     fontWeight="bold"
@@ -220,6 +219,80 @@ const VerifySeed = () => {
     </Box>
   );
 };
+
+const ImportSeed = () => {
+  const history = useHistory();
+  const seedLength = history.location.seedLength;
+  const [input, setInput] = React.useState({});
+  const [allValid, setAllValid] = React.useState(false);
+  const refs = React.useRef([]);
+
+  return (
+    <Box marginTop="10">
+      <Text textAlign="center" fontWeight="bold" fontSize="xl">
+        Import Seed Phrase
+      </Text>
+      <Spacer height="2" />
+      <Text textAlign="center">Enter a {seedLength}-word seed phrase.</Text>
+      <Spacer height="4" />
+      <Stack spacing={4} direction="row">
+        {[0, 1].map((colIndex) => (
+          <Box key={colIndex} width={120}>
+            {[...Array(12)].map((_, rowIndex) => {
+              const index = colIndex * 12 + rowIndex + 1;
+              if (index > seedLength) return;
+              return (
+                <InputGroup key={index} size="xs" marginBottom={2}>
+                  {!colIndex && (
+                    <InputLeftAddon
+                      fontWeight="bold"
+                      rounded="full"
+                      children={`${index}`}
+                    />
+                  )}
+                  <Input
+                    ref={(el) => (refs.current[index] = el)}
+                    onChange={(e) => {
+                      setInput((i) => ({
+                        ...i,
+                        [index]: e.target.value,
+                      }));
+                    }}
+                    textAlign="center"
+                    fontWeight="bold"
+                    rounded="full"
+                    placeholder={`Word ${index}`}
+                  ></Input>
+                  {colIndex && (
+                    <InputRightAddon
+                      fontWeight="bold"
+                      rounded="full"
+                      children={`${index}`}
+                    />
+                  )}
+                </InputGroup>
+              );
+            })}
+          </Box>
+        ))}
+      </Stack>
+      <Spacer height="6" />
+      <Stack alignItems="center" direction="column">
+        <Button
+          // isDisabled={!allValid}
+
+          rightIcon={<ChevronRightIcon />}
+          onClick={() =>
+            history.push({ pathname: '/createWallet/account', mnemonic: input })
+          }
+        >
+          Next
+        </Button>
+      </Stack>
+    </Box>
+  );
+};
+
 const MakeAccount = (props) => {
   const [state, setState] = React.useState({});
   const [loading, setLoading] = React.useState(false);
