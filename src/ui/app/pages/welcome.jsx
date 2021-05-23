@@ -13,8 +13,9 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/modal';
-import { Box } from '@chakra-ui/layout';
+import { Box, Spacer, Text } from '@chakra-ui/layout';
 import { useDisclosure } from '@chakra-ui/hooks';
+import { Select } from '@chakra-ui/select';
 
 const TEST_PHRASE =
   'grab level comic recipe speak paddle lift air try concert include asset exhibit refuse index sense noble erupt water trial require frame pistol account';
@@ -79,17 +80,18 @@ const WalletModal = React.forwardRef((props, ref) => {
         <ModalHeader>Create a wallet</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          Make sure no one is watching the screen, while the seed phrase is
-          visible.
+          <Text fontSize="sm">
+            Make sure no one is watching the screen, while the seed phrase is
+            visible.
+          </Text>
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="ghost" onClick={onClose}>
+          <Button mr={3} variant="ghost" onClick={onClose}>
             Close
           </Button>
           <Button
             colorScheme="teal"
-            mr={3}
             onClick={() => history.push('/createWallet/generate')}
           >
             Continue
@@ -103,6 +105,7 @@ const WalletModal = React.forwardRef((props, ref) => {
 const ImportModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const history = useHistory();
+  const [select, setSelect] = React.useState(null);
 
   React.useImperativeHandle(ref, () => ({
     openModal() {
@@ -116,21 +119,31 @@ const ImportModal = React.forwardRef((props, ref) => {
         <ModalHeader>Import a wallet</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          Make sure no one is watching the screen, while the seed phrase is
-          visible.
+          <Text fontSize="sm">
+            Make sure no one is watching the screen, while the seed phrase is
+            visible.
+          </Text>
+          <Spacer height="6" />
+          <Select
+            onChange={(e) => setSelect(e.target.value)}
+            placeholder="Choose seed phrase length"
+          >
+            <option value="15">15-word seed phrase</option>
+            <option value="24">24-word seed phrase</option>
+          </Select>
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="ghost" onClick={onClose}>
+          <Button mr={3} variant="ghost" onClick={onClose}>
             Close
           </Button>
           <Button
+            isDisabled={!select}
             colorScheme="teal"
-            mr={3}
             onClick={() =>
               history.push({
                 pathname: '/createWallet/import',
-                seedLength: 24,
+                seedLength: parseInt(select),
               })
             }
           >

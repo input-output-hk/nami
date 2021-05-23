@@ -15,6 +15,8 @@
   "dependencies": {
     "@chakra-ui/icons": "^1.0.13",
     "@chakra-ui/react": "^1.6.1",
+    "@dicebear/avatars": "^4.6.4",
+    "@dicebear/avatars-bottts-sprites": "^4.6.4",
     "@emotion/react": "^11.4.0",
     "@emotion/styled": "^11.3.0",
     "@emurgo/cardano-serialization-lib-browser": "^7.0.0",
@@ -31,7 +33,9 @@
     "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^17.0.1",
     "react-hot-loader": "^4.13.0",
+    "react-icons": "^4.2.0",
     "react-kawaii": "^0.17.0",
+    "react-qr-code": "^1.1.1",
     "react-router-dom": "^5.2.0",
     "react-tiger-transition": "^4.1.2",
     "react-transition-group": "^4.4.1"

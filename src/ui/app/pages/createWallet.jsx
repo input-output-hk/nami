@@ -14,7 +14,7 @@ import {
   InputRightElement,
 } from '@chakra-ui/input';
 import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
-import { generateMnemonic } from 'bip39';
+import { generateMnemonic, getDefaultWordlist, wordlists } from 'bip39';
 import { CloseButton } from '@chakra-ui/close-button';
 import { Checkbox } from '@chakra-ui/checkbox';
 import { ChevronRightIcon } from '@chakra-ui/icons';
@@ -143,10 +143,17 @@ const VerifySeed = () => {
 
   const verifyAll = () => {
     for (let index = 1; index <= 24; index++) {
-      if (mnemonic[index] !== input[index]) return false;
+      if (mnemonic[index] !== input[index]) {
+        if (allValid === true) setAllValid(false);
+        return false;
+      }
     }
     setAllValid(true);
   };
+
+  React.useEffect(() => {
+    verifyAll();
+  }, [input]);
 
   return (
     <Box marginTop="10">
@@ -183,7 +190,6 @@ const VerifySeed = () => {
                         next.focus();
                       } else if (!next && e.target.value === mnemonic[index])
                         refs.current[index].blur();
-                      verifyAll();
                     }}
                     textAlign="center"
                     fontWeight="bold"
@@ -226,6 +232,21 @@ const ImportSeed = () => {
   const [input, setInput] = React.useState({});
   const [allValid, setAllValid] = React.useState(false);
   const refs = React.useRef([]);
+  const words = wordlists[getDefaultWordlist()];
+
+  const verifyAll = () => {
+    for (let index = 1; index <= seedLength; index++) {
+      if (!words.includes(input[index])) {
+        if (allValid === true) setAllValid(false);
+        return false;
+      }
+    }
+    setAllValid(true);
+  };
+
+  React.useEffect(() => {
+    verifyAll();
+  }, [input]);
 
   return (
     <Box marginTop="10">
@@ -251,6 +272,7 @@ const ImportSeed = () => {
                     />
                   )}
                   <Input
+                    isInvalid={input[index] && !words.includes(input[index])}
                     ref={(el) => (refs.current[index] = el)}
                     onChange={(e) => {
                       setInput((i) => ({
@@ -279,8 +301,7 @@ const ImportSeed = () => {
       <Spacer height="6" />
       <Stack alignItems="center" direction="column">
         <Button
-          // isDisabled={!allValid}
-
+          isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
           onClick={() =>
             history.push({ pathname: '/createWallet/account', mnemonic: input })
@@ -306,7 +327,6 @@ const MakeAccount = (props) => {
       </Text>
       <Spacer height="10" />
       <Input
-        isInvalid={state.submitted && !state.name}
         onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
         placeholder="Enter account name"
       ></Input>
@@ -314,10 +334,7 @@ const MakeAccount = (props) => {
 
       <InputGroup size="md">
         <Input
-          isInvalid={
-            state.regularPassword === false ||
-            (state.submitted && !state.password)
-          }
+          isInvalid={state.regularPassword === false}
           pr="4.5rem"
           type={state.show ? 'text' : 'password'}
           onChange={(e) =>
@@ -348,10 +365,7 @@ const MakeAccount = (props) => {
 
       <InputGroup size="md">
         <Input
-          isInvalid={
-            state.matchingPassword === false ||
-            (state.submitted && !state.passwordConfirm)
-          }
+          isInvalid={state.matchingPassword === false}
           pr="4.5rem"
           onChange={(e) =>
             setState((s) => ({ ...s, passwordConfirm: e.target.value }))
@@ -380,20 +394,17 @@ const MakeAccount = (props) => {
       )}
       <Spacer height="8" />
       <Button
+        isDisabled={
+          !state.password ||
+          !state.password.length >= 8 ||
+          state.password !== state.passwordConfirm ||
+          !state.name
+        }
         isLoading={loading}
         colorScheme="teal"
         loadingText="Creating"
         rightIcon={<ChevronRightIcon />}
         onClick={async () => {
-          if (
-            !state.password ||
-            !state.password.length >= 8 ||
-            state.password !== state.passwordConfirm ||
-            !state.name
-          ) {
-            setState((s) => ({ ...s, submitted: true }));
-            return;
-          }
           setLoading(true);
           await createWallet(
             state.name,

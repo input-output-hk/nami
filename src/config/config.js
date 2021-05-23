@@ -43,6 +43,7 @@ export const ERROR = {
   storeNotEmpty: 'Storage key is already set',
   noKeyHash: 'No key hash could be generated',
   txFailed: 'Tx failed',
+  onlyOneAccount: 'Only one account exist in the wallet',
 };
 
 export const ROUTE = {

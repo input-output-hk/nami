@@ -5,6 +5,8 @@ import { mnemonicToEntropy } from 'bip39';
 import cryptoRandomString from 'crypto-random-string';
 import randomColor from 'randomcolor';
 import Loader from '../loader';
+import { createAvatar } from '@dicebear/avatars';
+import * as style from '@dicebear/avatars-bottts-sprites';
 
 const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -320,6 +322,16 @@ const emitAccountChange = async (addresses) => {
   });
 };
 
+export const switchAccount = async (accountIndex) => {
+  await setStorage({ [STORAGE.currentAccount]: accountIndex });
+  const currentAccount = await getCurrentAccount();
+  emitAccountChange({
+    paymentAddr: [currentAccount.paymentAddr],
+    rewardAddr: currentAccount.paymentAddr,
+  });
+  return true;
+};
+
 const requestAccountKey = async (password, accountIndex) => {
   await Loader.load();
   const encryptedRootKey = await getStorage(STORAGE.encryptedKey).then(
@@ -375,9 +387,9 @@ export const createAccount = async (name, password) => {
     .to_address()
     .to_bech32();
 
-  const mood = ['shocked', 'happy', 'blissful', 'excited'][
-    Math.floor(Math.random() * 4)
-  ];
+  // const mood = ['shocked', 'happy', 'blissful', 'excited'][
+  //   Math.floor(Math.random() * 4)
+  // ];
 
   const newAccount = {
     [accountIndex]: {
@@ -385,13 +397,24 @@ export const createAccount = async (name, password) => {
       paymentAddr,
       rewardAddr,
       name,
-      avatar: { mood, color: randomColor() },
+      amount: [{ unit: 'lovelace', quantity: 0 }],
+      // avatar: { mood, color: randomColor() },
+      avatar: Math.random().toString(),
     },
   };
 
-  await setStorage({ [STORAGE.accounts]: newAccount });
-  await setStorage({ [STORAGE.currentAccount]: accountIndex });
-  emitAccountChange({ paymentAddr: [paymentAddr], rewardAddr });
+  await setStorage({
+    [STORAGE.accounts]: { ...existingAccounts, ...newAccount },
+  });
+  await switchAccount(accountIndex);
+  return true;
+};
+
+export const deleteAccount = async () => {
+  const accounts = await getAccounts();
+  if (Object.keys(accounts).length <= 1) throw new Error(ERROR.onlyOneAccount);
+  delete accounts[Object.keys(accounts).length - 1];
+  await setStorage({ [STORAGE.accounts]: accounts });
   return true;
 };
 
@@ -437,3 +460,33 @@ export const mnemonicFromObject = (mnemonicMap) => {
     ''
   );
 };
+
+export const avatarToImage = (avatar) => {
+  const blob = new Blob(
+    [
+      createAvatar(style, {
+        seed: avatar,
+      }),
+    ],
+    { type: 'image/svg+xml' }
+  );
+  return URL.createObjectURL(blob);
+};
+
+export const updateAccount = async () => {
+  const currentAccount = await getCurrentAccount();
+  const accounts = await getAccounts();
+  const amount = await getBalance();
+  console.log(amount);
+  if (amount.length > 0) currentAccount.amount = amount;
+  await setStorage({
+    [STORAGE.accounts]: {
+      ...accounts,
+      ...{ [currentAccount.index]: currentAccount },
+    },
+  });
+  return true;
+};
+
+export const displayUnit = (quantity, decimals = 6) =>
+  parseInt(BigInt(quantity) / BigInt(1 * 10 ** decimals));
