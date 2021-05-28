@@ -13,7 +13,8 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*", "<all_urls>"],
-      "js": ["contentScript.bundle.js"]
+      "js": ["contentScript.bundle.js"],
+      "run_at": "document_start"
     }
   ],
   "devtools_page": "devtools.html",
@@ -23,6 +24,12 @@
     "injected.bundle.js",
     "internalPopup.html"
   ],
-  "permissions": ["activeTab", "tabs", "storage", "webRequest"],
-  "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self'"
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "webRequest",
+    "chrome://favicon/"
+  ],
+  "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self';"
 }

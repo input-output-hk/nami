@@ -9,6 +9,7 @@ import { METHOD, SENDER, TARGET } from '../config/config';
  *  sender: SENDER (extension || webpage),
  *  target: TARGET,
  *  ?id: requestId,
+ *  origin: window.origin
  *  ?event: EVENT
  * }
  */
@@ -168,6 +169,7 @@ export const Messaging = {
 
       const whitelisted = await Messaging.sendToBackground({
         method: METHOD.isWhitelisted,
+        data: window.origin,
       });
 
       // protect background by not allowing not whitelisted
@@ -187,6 +189,7 @@ export const Messaging = {
         request.sender !== SENDER.webpage
       )
         return;
+      request.origin = window.origin;
       //only allow enable function, before checking for whitelisted
       if (
         request.method === METHOD.enable ||
@@ -200,6 +203,7 @@ export const Messaging = {
 
       const whitelisted = await Messaging.sendToBackground({
         method: METHOD.isWhitelisted,
+        data: window.origin,
       });
 
       // protect background by not allowing not whitelisted

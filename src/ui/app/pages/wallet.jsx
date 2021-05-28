@@ -7,8 +7,8 @@ import {
   deleteAccount,
   displayUnit,
   getAccounts,
-  getBalance,
   getCurrentAccount,
+  getTransactions,
   switchAccount,
   updateAccount,
 } from '../../../api/extension';
@@ -48,17 +48,30 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-  PopoverHeader,
   PopoverBody,
-  PopoverFooter,
   PopoverArrow,
   PopoverCloseButton,
   Tooltip,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from '@chakra-ui/react';
-import { SettingsIcon, AddIcon, StarIcon, DeleteIcon } from '@chakra-ui/icons';
+import {
+  SettingsIcon,
+  AddIcon,
+  StarIcon,
+  DeleteIcon,
+  CopyIcon,
+} from '@chakra-ui/icons';
 import Scrollbars from 'react-custom-scrollbars';
 import QRCode from 'react-qr-code';
 import provider from '../../../config/provider';
+import UnitDisplay from '../components/unitDisplay';
+import { onAccountChange } from '../../../api/extension/wallet';
+import AssetsViewer from '../components/assetsViewer';
+import HistoryViewer from '../components/historyViewer';
 
 const Wallet = ({ data }) => {
   const history = useHistory();
@@ -67,13 +80,28 @@ const Wallet = ({ data }) => {
     accounts: null,
     fiatPrice: 0,
   });
-  const [loading, setLoading] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
   const newAccountRef = React.useRef();
   const deletAccountRef = React.useRef();
 
+  const checkTransactions = async () => {
+    const currentAccount = await getCurrentAccount();
+    const transactions = await getTransactions();
+    console.log(transactions);
+    console.log(currentAccount.history.confirmed);
+    if (
+      !transactions.every((tx) =>
+        currentAccount.history.confirmed.slice(0, 10).includes(tx)
+      )
+    ) {
+      await getData();
+      return setTimeout(() => checkTransactions(), 5000);
+    }
+    return setTimeout(() => checkTransactions(), 5000);
+  };
+
   const getData = async () => {
-    setLoading(true);
+    setState((s) => ({ ...s, account: null, accounts: null }));
     let currentAccount = await getCurrentAccount();
     let allAccounts = await getAccounts();
     const fiatPrice = await provider.api.price();
@@ -91,12 +119,14 @@ const Wallet = ({ data }) => {
 
   React.useEffect(() => {
     getData();
+    checkTransactions();
+    onAccountChange(() => getData());
   }, []);
 
   return (
     <>
       <Box
-        height="100vh"
+        minHeight="100vh"
         display="flex"
         alignItems="center"
         flexDirection="column"
@@ -144,7 +174,6 @@ const Wallet = ({ data }) => {
                             onClick={async () => {
                               if (state.account.index === account.index) return;
                               await switchAccount(accountIndex);
-                              getData();
                             }}
                           >
                             <Stack direction="row" alignItems="center">
@@ -160,13 +189,11 @@ const Wallet = ({ data }) => {
                                   {account.name}
                                 </Text>
                                 <Text>
-                                  {displayUnit(
-                                    account.amount.find(
-                                      (am) => am.unit === 'lovelace'
-                                    ).quantity,
-                                    6
-                                  ).toLocaleString()}{' '}
-                                  ₳
+                                  <UnitDisplay
+                                    quantity={account.lovelace}
+                                    decimals={6}
+                                    symbol="₳"
+                                  />
                                 </Text>
                               </Box>
                               {state.account.index === account.index && (
@@ -232,13 +259,15 @@ const Wallet = ({ data }) => {
             justifyContent="center"
           >
             <Text color="white" fontSize="2xl" fontWeight="bold">
-              {state.account
-                ? displayUnit(
-                    state.account.amount.find((am) => am.unit === 'lovelace')
-                      .quantity
-                  ).toLocaleString()
-                : '...'}{' '}
-              ₳
+              {state.account ? (
+                <UnitDisplay
+                  quantity={state.account.lovelace}
+                  decimals={6}
+                  symbol="₳"
+                />
+              ) : (
+                '... ₳'
+              )}
             </Text>
           </Box>
           <Box
@@ -250,16 +279,20 @@ const Wallet = ({ data }) => {
             justifyContent="center"
           >
             <Text color="white" fontSize="md">
-              (
-              {state.account
-                ? (
-                    displayUnit(
-                      state.account.amount.find((am) => am.unit === 'lovelace')
-                        .quantity
-                    ) * state.fiatPrice
-                  ).toFixed(2)
-                : '...'}{' '}
-              $)
+              {state.account ? (
+                <UnitDisplay
+                  fontSize="sm"
+                  quantity={
+                    displayUnit(state.account.lovelace, 6) *
+                    state.fiatPrice *
+                    10 ** 2
+                  }
+                  symbol="$"
+                  decimals={2}
+                />
+              ) : (
+                '...'
+              )}
             </Text>
           </Box>
 
@@ -310,9 +343,10 @@ const Wallet = ({ data }) => {
                           cursor="pointer"
                           wordBreak="break-all"
                         >
-                          {state.account.paymentAddr}
+                          {state.account.paymentAddr} <CopyIcon />
                         </Text>
                       </Tooltip>
+                      <Box height="2" />
                     </>
                   )}
                 </PopoverBody>
@@ -337,11 +371,32 @@ const Wallet = ({ data }) => {
             </Button>
           </Box>
         </Box>
+        <Box height="8" />
+        <Tabs
+          width="full"
+          alignItems="center"
+          display="flex"
+          flexDirection="column"
+          variant="soft-rounded"
+          colorScheme="teal"
+        >
+          <TabList>
+            <Tab>Assets</Tab>
+            <Tab>History</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <AssetsViewer assets={state.account && state.account.assets} />
+            </TabPanel>
+            <TabPanel>
+              <HistoryViewer account={state.account} />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Box>
-      <NewAccountModal onCreate={() => getData()} ref={newAccountRef} />
+      <NewAccountModal ref={newAccountRef} />
       <DeleteAccountModal
         name={state.account && state.account.name}
-        onDelete={() => getData()}
         ref={deletAccountRef}
       />
     </>
@@ -371,7 +426,7 @@ const NewAccountModal = React.forwardRef((props, ref) => {
   }, [isOpen]);
 
   return (
-    <Modal size="sm" isOpen={isOpen} onClose={onClose} isCentered>
+    <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader fontSize="md">Create new account</ModalHeader>
@@ -388,6 +443,7 @@ const NewAccountModal = React.forwardRef((props, ref) => {
           <Spacer height="4" />
           <InputGroup size="md">
             <Input
+              variant="filled"
               isInvalid={state.wrongPassword === true}
               pr="4.5rem"
               type={state.show ? 'text' : 'password'}
@@ -421,7 +477,6 @@ const NewAccountModal = React.forwardRef((props, ref) => {
             onClick={async () => {
               try {
                 await createAccount(state.name, state.password);
-                props.onCreate();
                 onClose();
               } catch (e) {
                 setState((s) => ({ ...s, wrongPassword: true }));
@@ -448,7 +503,7 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
 
   return (
     <AlertDialog
-      size="sm"
+      size="xs"
       isOpen={isOpen}
       leastDestructiveRef={cancelRef}
       onClose={onClose}
@@ -475,7 +530,6 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
               onClick={async () => {
                 await deleteAccount();
                 await switchAccount(0);
-                props.onDelete();
                 onClose();
               }}
             >

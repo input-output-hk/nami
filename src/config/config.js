@@ -9,6 +9,7 @@ export const METHOD = {
   getDelegation: 'getDelegation',
   getUtxos: 'getUtxos',
   getAddresses: 'getAddresses',
+  getChangeAddress: 'getChangeAddress',
   signData: 'signData',
   signTx: 'signTx',
   submitTx: 'submitTx',
@@ -56,6 +57,7 @@ export const ROUTE = {
 };
 
 export const EVENT = {
+  txSubmit: 'txSubmit',
   txConfirmation: 'txConfirmation',
   accountChange: 'accountChange',
 };

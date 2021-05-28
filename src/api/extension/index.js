@@ -97,18 +97,36 @@ export const getBalance = async () => {
   return result.amount;
 };
 
-export const getUtxos = async (paginate = undefined) => {
+export const getTransactions = async (paginate = 1) => {
   const currentAccount = await getCurrentAccount();
-  paginate = paginate || paginate == 0 ? '?page=' + paginate : '';
   const result = await fetch(
     provider.api.base +
-      `/addresses/${currentAccount.paymentAddr}/utxos${paginate}`,
+      `/addresses/${currentAccount.paymentAddr}/txs?page=${paginate}&order=desc&count=10`,
     { headers: provider.api.key }
   ).then((res) => res.json());
   if (!result || result.error) return [];
+  return result;
+};
+
+export const getUtxos = async (paginate = undefined) => {
+  const currentAccount = await getCurrentAccount();
+  let result = [];
+  let page = paginate || 1;
+  while (true) {
+    let pageResult = await fetch(
+      provider.api.base +
+        `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}`,
+      { headers: provider.api.key }
+    ).then((res) => res.json());
+    if (!result || result.error) pageResult = [];
+    result = result.concat(pageResult);
+    if (pageResult.length <= 0 || paginate) break;
+    page++;
+  }
+
   return result.map((utxo) => ({
     txHash: utxo.tx_hash,
-    txId: utxo.tx_index,
+    txId: utxo.output_index,
     amount: utxo.amount,
   }));
 };
@@ -208,13 +226,12 @@ const extractKeyHash = async (address) => {
  * @param {string} password
  * @returns
  */
-export const signData = async (address, data, password) => {
-  const currentAccountIndex = await getCurrentAccountIndex();
+export const signData = async (address, data, password, accountIndex) => {
   const keyHash = await extractKeyHash(address);
   const prefix = keyHash.slice(0, 5);
   let { paymentKey, stakeKey } = await requestAccountKey(
     password,
-    currentAccountIndex
+    accountIndex
   );
   const accountKey = prefix === 'hbas_' ? paymentKey : stakeKey;
 
@@ -242,12 +259,11 @@ export const signData = async (address, data, password) => {
  * @param {string} password
  * @returns {string} witness set as hex string
  */
-export const signTx = async (txBody, keyHashes, password) => {
+export const signTx = async (tx, keyHashes, password, accountIndex) => {
   await Loader.load();
-  const currentAccountIndex = await getCurrentAccountIndex();
   let { paymentKey, stakeKey } = await requestAccountKey(
     password,
-    currentAccountIndex
+    accountIndex
   );
   const paymentKeyHash = Buffer.from(
     paymentKey.to_public().hash().to_bytes(),
@@ -258,11 +274,11 @@ export const signTx = async (txBody, keyHashes, password) => {
     'hex'
   ).toString('hex');
 
+  const rawTx = Loader.Cardano.Transaction.from_bytes(Buffer.from(tx, 'hex'));
+
   const txWitnessSet = Loader.Cardano.TransactionWitnessSet.new();
   const vkeyWitnesses = Loader.Cardano.Vkeywitnesses.new();
-  const txHash = Loader.Cardano.hash_transaction(
-    Loader.Cardano.TransactionBody.from_bytes(Buffer.from(txBody, 'hex'))
-  );
+  const txHash = Loader.Cardano.hash_transaction(rawTx.body());
   keyHashes.forEach((keyHash) => {
     let signingKey;
     if (keyHash === paymentKeyHash) signingKey = paymentKey;
@@ -272,7 +288,12 @@ export const signTx = async (txBody, keyHashes, password) => {
     vkeyWitnesses.add(vkey);
   });
   txWitnessSet.set_vkeys(vkeyWitnesses);
-  return Buffer.from(txWitnessSet.to_bytes(), 'hex').toString('hex');
+  const signedTx = Loader.Cardano.Transaction.new(
+    rawTx.body(),
+    txWitnessSet,
+    rawTx.metadata()
+  );
+  return Buffer.from(signedTx.to_bytes(), 'hex').toString('hex');
 };
 
 /**
@@ -288,11 +309,9 @@ export const submitTx = async (tx) => {
     body: Buffer.from(tx, 'hex'),
   }).then((res) => res.json());
   if (!txHash || txHash.error) return txHash;
-  await emitTxConfirmation(txHash);
+  emitTxConfirmation(txHash);
   return txHash;
 };
-
-export const getTransaction = async (txHash) => {};
 
 const emitTxConfirmation = async (txHash) => {
   const result = await fetch(provider.api.base + `/txs/${txHash}`, {
@@ -301,24 +320,40 @@ const emitTxConfirmation = async (txHash) => {
 
   if (!result || result.error)
     return setTimeout(() => emitTxConfirmation(txHash), 5000);
-  const currentWebpage = await getCurrentWebpage();
-  chrome.tabs.sendMessage(currentWebpage.tabId, {
-    data: { ...result, txHash },
-    target: TARGET,
-    sender: SENDER.extension,
-    event: EVENT.txConfirmation,
+  //to webpage
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach((tab) =>
+      chrome.tabs.sendMessage(tab.id, {
+        data: { ...result, txHash },
+        target: TARGET,
+        sender: SENDER.extension,
+        event: EVENT.txConfirmation,
+      })
+    );
   });
   return;
 };
 
 const emitAccountChange = async (addresses) => {
-  const currentWebpage = await getCurrentWebpage();
-  console.log(currentWebpage);
-  chrome.tabs.sendMessage(currentWebpage.tabId, {
-    data: addresses,
-    target: TARGET,
-    sender: SENDER.extension,
-    event: EVENT.accountChange,
+  //to extenstion itself
+  if (typeof window !== 'undefined') {
+    window.postMessage({
+      data: addresses,
+      target: TARGET,
+      sender: SENDER.extension,
+      event: EVENT.accountChange,
+    });
+  }
+  //to webpage
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach((tab) =>
+      chrome.tabs.sendMessage(tab.id, {
+        data: addresses,
+        target: TARGET,
+        sender: SENDER.extension,
+        event: EVENT.accountChange,
+      })
+    );
   });
 };
 
@@ -342,7 +377,7 @@ const requestAccountKey = async (password, accountIndex) => {
   )
     .derive(harden(1852)) // purpose
     .derive(harden(1815)) // coin type;
-    .derive(harden(accountIndex));
+    .derive(harden(parseInt(accountIndex)));
 
   return {
     paymentKey: accountKey.derive(0).derive(0).to_raw_key(),
@@ -387,18 +422,15 @@ export const createAccount = async (name, password) => {
     .to_address()
     .to_bech32();
 
-  // const mood = ['shocked', 'happy', 'blissful', 'excited'][
-  //   Math.floor(Math.random() * 4)
-  // ];
-
   const newAccount = {
     [accountIndex]: {
       index: accountIndex,
       paymentAddr,
       rewardAddr,
       name,
-      amount: [{ unit: 'lovelace', quantity: 0 }],
-      // avatar: { mood, color: randomColor() },
+      lovelace: 0,
+      assets: [],
+      history: { confirmed: [], details: {} },
       avatar: Math.random().toString(),
     },
   };
@@ -473,12 +505,44 @@ export const avatarToImage = (avatar) => {
   return URL.createObjectURL(blob);
 };
 
+const updateBalance = async (currentAccount) => {
+  const amount = await getBalance();
+  if (amount.length > 0) {
+    currentAccount.lovelace = amount.find(
+      (am) => am.unit === 'lovelace'
+    ).quantity;
+    currentAccount.assets = amount.filter((am) => am.unit !== 'lovelace');
+  } else {
+    currentAccount.lovelace = 0;
+    currentAccount.assets = [];
+  }
+};
+
+const updateTransactions = async (currentAccount) => {
+  const transactions = await getTransactions();
+  transactions.concat(currentAccount.history.confirmed);
+  const txSet = new Set(transactions);
+  currentAccount.history.confirmed = Array.from(txSet);
+};
+
+export const setTransactions = async (txs) => {
+  const currentAccount = await getCurrentAccount();
+  const accounts = await getAccounts();
+  currentAccount.history.confirmed = txs;
+  await setStorage({
+    [STORAGE.accounts]: {
+      ...accounts,
+      ...{ [currentAccount.index]: currentAccount },
+    },
+  });
+  return true;
+};
+
 export const updateAccount = async () => {
   const currentAccount = await getCurrentAccount();
   const accounts = await getAccounts();
-  const amount = await getBalance();
-  console.log(amount);
-  if (amount.length > 0) currentAccount.amount = amount;
+  await updateBalance(currentAccount);
+  await updateTransactions(currentAccount);
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
@@ -489,4 +553,4 @@ export const updateAccount = async () => {
 };
 
 export const displayUnit = (quantity, decimals = 6) =>
-  parseInt(BigInt(quantity) / BigInt(1 * 10 ** decimals));
+  parseInt(quantity) / (1 * 10 ** decimals);

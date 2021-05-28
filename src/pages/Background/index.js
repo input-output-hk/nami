@@ -2,7 +2,6 @@ import {
   createPopup,
   getAddresses,
   getBalance,
-  getCurrentWebpage,
   getDelegation,
   getUtxos,
   isWhitelisted,
@@ -38,8 +37,7 @@ app.add(METHOD.getDelegation, async (request, sendResponse) => {
 });
 
 app.add(METHOD.enable, async (request, sendResponse) => {
-  const currentWebpage = await getCurrentWebpage();
-  const whitelisted = await isWhitelisted(currentWebpage.url);
+  const whitelisted = await isWhitelisted(request.origin);
   if (whitelisted) {
     sendResponse({
       id: request.id,
@@ -49,9 +47,7 @@ app.add(METHOD.enable, async (request, sendResponse) => {
     });
   } else {
     const response = await createPopup(POPUP.internal)
-      .then((tab) =>
-        Messaging.sendToPopupInternal(tab, { ...request, currentWebpage })
-      )
+      .then((tab) => Messaging.sendToPopupInternal(tab, request))
       .then((response) => response);
     if (response.data === true) {
       sendResponse({
@@ -72,8 +68,7 @@ app.add(METHOD.enable, async (request, sendResponse) => {
 });
 
 app.add(METHOD.isEnabled, async (request, sendResponse) => {
-  const currentWebpage = await getCurrentWebpage();
-  const whitelisted = await isWhitelisted(currentWebpage.url);
+  const whitelisted = await isWhitelisted(request.origin);
   sendResponse({
     id: request.id,
     data: whitelisted,
@@ -87,6 +82,16 @@ app.add(METHOD.getAddresses, async (request, sendResponse) => {
   sendResponse({
     id: request.id,
     data: addresses,
+    target: TARGET,
+    sender: SENDER.extension,
+  });
+});
+
+app.add(METHOD.getChangeAddress, async (request, sendResponse) => {
+  const addresses = await getAddresses();
+  sendResponse({
+    id: request.id,
+    data: addresses.paymentAddr[0],
     target: TARGET,
     sender: SENDER.extension,
   });
@@ -121,8 +126,7 @@ app.add(METHOD.submitTx, async (request, sendResponse) => {
 });
 
 app.add(METHOD.isWhitelisted, async (request, sendResponse) => {
-  const currentWebpage = await getCurrentWebpage();
-  const whitelisted = await isWhitelisted(currentWebpage.url);
+  const whitelisted = await isWhitelisted(request.data);
   if (whitelisted) {
     sendResponse({
       data: whitelisted,
@@ -139,12 +143,8 @@ app.add(METHOD.isWhitelisted, async (request, sendResponse) => {
 });
 
 app.add(METHOD.signData, async (request, sendResponse) => {
-  const currentWebpage = await getCurrentWebpage();
-
   const response = await createPopup(POPUP.internal)
-    .then((tab) =>
-      Messaging.sendToPopupInternal(tab, { ...request, currentWebpage })
-    )
+    .then((tab) => Messaging.sendToPopupInternal(tab, request))
     .then((response) => response);
 
   if (response.data) {
@@ -165,12 +165,8 @@ app.add(METHOD.signData, async (request, sendResponse) => {
 });
 
 app.add(METHOD.signTx, async (request, sendResponse) => {
-  const currentWebpage = await getCurrentWebpage();
-
   const response = await createPopup(POPUP.internal)
-    .then((tab) =>
-      Messaging.sendToPopupInternal(tab, { ...request, currentWebpage })
-    )
+    .then((tab) => Messaging.sendToPopupInternal(tab, request))
     .then((response) => response);
 
   if (response.data) {

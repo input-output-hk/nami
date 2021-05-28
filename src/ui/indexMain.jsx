@@ -34,7 +34,7 @@ const App = () => {
         justifyContent: 'center',
       }}
     >
-      <Spinner color="teal" size="lg" speed="0.5s" />
+      <Spinner color="teal" speed="0.5s" />
     </div>
   ) : (
     <div>

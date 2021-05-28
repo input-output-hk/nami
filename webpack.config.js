@@ -61,6 +61,10 @@ var options = {
   module: {
     rules: [
       {
+        resourceQuery: /raw/,
+        type: 'asset/source',
+      },
+      {
         // look for .css or .scss files
         test: /\.(css|scss)$/,
         // in the `src` directory

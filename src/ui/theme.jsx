@@ -10,6 +10,7 @@ const theme = extendTheme({
       body: {
         width: POPUP_WINDOW.width + 'px',
         height: POPUP_WINDOW.height + 'px',
+        overflowX: 'hidden',
       },
     },
   },
@@ -20,6 +21,7 @@ const Theme = (props) => {
     <ChakraProvider theme={theme}>
       <Scrollbars
         style={{ width: POPUP_WINDOW.width, height: POPUP_WINDOW.height }}
+        autoHide
       >
         {props.children}
       </Scrollbars>

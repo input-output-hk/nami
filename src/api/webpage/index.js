@@ -31,10 +31,10 @@ export const signData = async (address, message) => {
   return result.data;
 };
 
-export const signTx = async (txBody, keyHashes) => {
+export const signTx = async (tx) => {
   const result = await Messaging.sendToContent({
     method: METHOD.signTx,
-    data: { txBody, keyHashes },
+    data: { tx },
   });
   return result.data;
 };
@@ -42,6 +42,13 @@ export const signTx = async (txBody, keyHashes) => {
 export const getAddresses = async () => {
   const result = await Messaging.sendToContent({
     method: METHOD.getAddresses,
+  });
+  return result.data;
+};
+
+export const getChangeAddress = async () => {
+  const result = await Messaging.sendToContent({
+    method: METHOD.getChangeAddress,
   });
   return result.data;
 };
