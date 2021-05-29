@@ -212,8 +212,7 @@ const VerifySeed = () => {
       <Spacer height="6" />
       <Stack alignItems="center" direction="column">
         <Button
-          // isDisabled={!allValid}
-
+          isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
           onClick={() =>
             history.push({ pathname: '/createWallet/account', mnemonic })

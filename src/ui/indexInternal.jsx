@@ -1,3 +1,4 @@
+import { Box } from '@chakra-ui/layout';
 import { Spinner } from '@chakra-ui/spinner';
 import React from 'react';
 import { render } from 'react-dom';
@@ -29,17 +30,15 @@ const App = () => {
   }, []);
 
   return !response ? (
-    <div
-      style={{
-        height: '100vh',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+    <Box
+      height="full"
+      width="full"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
     >
       <Spinner color="teal" speed="0.5s" />
-    </div>
+    </Box>
   ) : (
     <div>
       <Switch>

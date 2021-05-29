@@ -26,8 +26,80 @@ const SignTx = ({ request, controller }) => {
     setFee(fee);
   };
 
-  const getValue = (tx) => {
-    return;
+  const getValue = (tx, utxos, account) => {
+    const inputValue = {};
+    const inputs = tx.body().inputs();
+    for (let i = 0; i < inputs.len(); i++) {
+      const txHash = Buffer.from(
+        inputs.get(i).transaction_id().to_bytes(),
+        'hex'
+      ).toString('hex');
+      const utxo = utxos.find((utxo) => utxo.txHash === txHash);
+      if (utxo) {
+        utxo.amount.forEach((amount) => {
+          if (!inputValue[amount.unit])
+            inputValue[amount.unit] = amount.quantity;
+          else {
+            const valueBigNum = Loader.Cardano.BigNum.from_str(
+              inputValue[amount.unit]
+            );
+            const addedBigNum = Loader.Cardano.BigNum.from_str(amount.quantity);
+            inputValue[amount.unit] = valueBigNum
+              .checked_add(addedBigNum)
+              .to_str();
+          }
+        });
+      }
+    }
+    const outputs = tx.body().outputs();
+    const ownOutputValue = { lovelace: '0' };
+    if (!outputs) return;
+    for (let i = 0; i < outputs.len(); i++) {
+      const output = outputs.get(i);
+      if (output.address().to_bech32() === account.paymentAddr) {
+        ownOutputValue.lovelace = Loader.Cardano.BigNum.from_str(
+          ownOutputValue.lovelace
+        )
+          .checked_add(output.amount().coin())
+          .to_str();
+        if (!output.amount().multiasset()) continue;
+        for (let j = 0; j < output.amount().multiasset().keys().len(); j++) {
+          const policy = output.amount().multiasset().keys().get(j);
+          const policyAssets = output.amount().multiasset().get(policy);
+          for (let k = 0; k < policyAssets.keys().len(); k++) {
+            const policyAsset = policyAssets.keys().get(k);
+            const quantity = policyAssets.get(policyAsset);
+            const asset =
+              Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
+              Buffer.from(policyAsset.to_bytes(), 'hex').toString('hex');
+            if (!ownOutputValue[asset])
+              ownOutputValue[asset] = quantity.to_str();
+            else
+              ownOutputValue[asset] = Loader.Cardano.BigNum.from_str(
+                ownOutputValue[asset]
+              )
+                .checked_add(quantity)
+                .to_str();
+          }
+        }
+      }
+    }
+
+    ownOutputValue.lovelace = Loader.Cardano.BigNum.from_str(
+      ownOutputValue.lovelace
+    )
+      .checked_add(tx.body().fee())
+      .to_str();
+
+    console.log(inputValue);
+    console.log(ownOutputValue);
+    setValue(
+      displayUnit(
+        Loader.Cardano.BigNum.from_str(inputValue.lovelace)
+          .checked_sub(Loader.Cardano.BigNum.from_str(ownOutputValue.lovelace))
+          .to_str()
+      )
+    );
   };
 
   const getKeyHashes = async (tx, utxos, account) => {
@@ -181,7 +253,7 @@ const SignTx = ({ request, controller }) => {
       Buffer.from(request.data.tx, 'hex')
     );
     getFee(tx);
-    getValue(tx);
+    getValue(tx, utxos, currentAccount);
     getKeyHashes(tx, utxos, currentAccount);
   };
 
@@ -230,9 +302,9 @@ const SignTx = ({ request, controller }) => {
             {keyHashes.kind.map((keyHash, index) =>
               keyHashes.kind.length > 1 &&
               index >= keyHashes.kind.length - 1 ? (
-                <span>, {keyHash}</span>
+                <span key={index}>, {keyHash}</span>
               ) : (
-                <span>{keyHash}</span>
+                <span key={index}>{keyHash}</span>
               )
             )}
           </Text>

@@ -17,6 +17,12 @@ const theme = extendTheme({
 });
 
 const Theme = (props) => {
+  React.useEffect(() => {
+    const width = POPUP_WINDOW.width + (window.outerWidth - window.innerWidth);
+    const height =
+      POPUP_WINDOW.height + (window.outerHeight - window.innerHeight);
+    window.resizeTo(width, height);
+  }, []);
   return (
     <ChakraProvider theme={theme}>
       <Scrollbars

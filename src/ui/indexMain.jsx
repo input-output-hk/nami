@@ -10,6 +10,7 @@ import Welcome from './app/pages/welcome';
 import Wallet from './app/pages/wallet';
 import { getAccounts } from '../api/extension';
 import CreateWallet from './app/pages/createWallet';
+import { Box } from '@chakra-ui/layout';
 
 const App = () => {
   const history = useHistory();
@@ -25,17 +26,15 @@ const App = () => {
   }, []);
 
   return loading ? (
-    <div
-      style={{
-        height: '100vh',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+    <Box
+      height="full"
+      width="full"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
     >
       <Spinner color="teal" speed="0.5s" />
-    </div>
+    </Box>
   ) : (
     <div>
       <Switch>

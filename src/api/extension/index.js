@@ -254,7 +254,7 @@ export const signData = async (address, data, password, accountIndex) => {
 
 /**
  *
- * @param {string} txBody - hex string
+ * @param {string} tx - cbor hex string
  * @param {Array<string>} keyHashes
  * @param {string} password
  * @returns {string} witness set as hex string

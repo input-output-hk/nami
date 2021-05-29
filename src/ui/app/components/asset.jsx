@@ -37,6 +37,7 @@ const Asset = ({ asset }) => {
     const result = await fetch(provider.api.base + `/assets/${asset.unit}`, {
       headers: provider.api.key,
     }).then((res) => res.json());
+    console.log(result);
     const name =
       (result.onchain_metadata && result.onchain_metadata.name) ||
       (result.metadata && result.metadata.name) ||
