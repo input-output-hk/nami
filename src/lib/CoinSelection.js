@@ -217,6 +217,12 @@
  */
 
 /**
+ * @typedef {Object} ImproveRange - ImproveRange
+ * @property {int} x2 - Requested amount * 2
+ * @property {int} x3 - Requested amount * 3
+ */
+
+/**
  * CoinSelection Module.
  * @module src/lib/CoinSelection
  */
@@ -242,23 +248,7 @@ module.exports = {
     compiledOutputList = sortAmountList(compiledOutputList, 'DESC');
 
     compiledOutputList.forEach((compiledOutput) => {
-      // Narrow down remaining UTxO set in case of native token, use full set for lovelace
-      if (compiledOutput.unit !== 'lovelace') {
-        utxoSelection.remaining.forEach((utxo, index) => {
-          if (
-            utxo.amount.some((amount) => amount.unit === compiledOutput.unit)
-          ) {
-            utxoSelection.subset.push(
-              utxoSelection.remaining.splice(index, 1).pop()
-            );
-          }
-        });
-      } else {
-        utxoSelection.subset = utxoSelection.remaining.splice(
-          0,
-          utxoSelection.remaining.length
-        );
-      }
+      createSubSet(utxoSelection, compiledOutput); // Narrow down for NatToken UTxO
 
       try {
         utxoSelection = randomSelect(
@@ -267,8 +257,8 @@ module.exports = {
           limit - utxoSelection.selection.length
         );
       } catch (e) {
-        // Limit reached : Fallback on DescOrdAlgo
         if (e.message === 'INPUT_LIMIT_EXCEEDED') {
+          // Limit reached : Fallback on DescOrdAlgo
           utxoSelection = descSelect(
             utxoSelection,
             compiledOutput,
@@ -280,7 +270,18 @@ module.exports = {
       }
     });
 
-    // improve(utxoSelection);
+    compiledOutputList = sortAmountList(compiledOutputList);
+
+    compiledOutputList.forEach((compiledOutput) => {
+      createSubSet(utxoSelection, compiledOutput); // Narrow down for NatToken UTxO
+
+      improve(
+        utxoSelection,
+        compiledOutput,
+        limit - utxoSelection.selection.length,
+        { x2: compiledOutput.quantity * 2, x3: compiledOutput.quantity * 3 }
+      );
+    });
 
     return utxoSelection;
   },
@@ -386,7 +387,51 @@ function descSelect(utxoSelection, compiledOutput, limit) {
   return utxoSelection;
 }
 
-function improve(utxoSelection) {}
+/**
+ * Try to improve selection by increasing input amount in [2x,3x[ range.
+ * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
+ * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
+ * @param {int} limit - A limit on the number of inputs that can be selected.
+ * @param {ImproveRange} range - Improvement range target values
+ */
+function improve(utxoSelection, compiledOutput, limit, range) {
+  if (limit <= 0) {
+    return;
+  }
+
+  let nbFreeUTxO = utxoSelection.subset.length;
+
+  if (nbFreeUTxO <= 0) {
+    return;
+  }
+
+  /** @type {UTxO} utxo */
+  let utxo = utxoSelection.subset
+    .splice(Math.floor(Math.random() * nbFreeUTxO), 1)
+    .pop();
+
+  let compiledAmount = utxoSelection.amount.find(
+    (amount) => amount.unit === compiledOutput.unit
+  );
+
+  let newAmount =
+    utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity +
+    compiledAmount.quantity;
+
+  if (
+    Math.abs(newAmount - range.x2) <
+      Math.abs(compiledAmount.quantity - range.x2) &&
+    newAmount < range.x3
+  ) {
+    utxoSelection.selection.push(utxo);
+    addAmounts(utxo.amount, utxoSelection.amount);
+    limit--;
+  } else {
+    utxoSelection.remaining.push(utxo);
+  }
+
+  return randomSelect(utxoSelection, compiledOutput, limit);
+}
 
 /**
  * Compile all required output to a flat amount list
@@ -429,4 +474,26 @@ function sortAmountList(amountList, sortOrder = 'ASC') {
   return amountList.sort(
     (a, b) => (a.quantity - b.quantity) * (sortOrder === 'DESC' ? -1 : 1)
   );
+}
+
+/**
+ * Narrow down remaining UTxO set in case of native token, use full set for lovelace
+ * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
+ * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
+ */
+function createSubSet(utxoSelection, compiledOutput) {
+  if (compiledOutput.unit !== 'lovelace') {
+    utxoSelection.remaining.forEach((utxo, index) => {
+      if (utxo.amount.some((amount) => amount.unit === compiledOutput.unit)) {
+        utxoSelection.subset.push(
+          utxoSelection.remaining.splice(index, 1).pop()
+        );
+      }
+    });
+  } else {
+    utxoSelection.subset = utxoSelection.remaining.splice(
+      0,
+      utxoSelection.remaining.length
+    );
+  }
 }
