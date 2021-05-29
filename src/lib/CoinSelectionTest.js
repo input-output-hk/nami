@@ -29,7 +29,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '1000000' },
-      { unit: '09809090.SpaceBudz_00001', quantity: 1 },
+      { unit: '09809090.SpaceBudz_00004', quantity: 1 },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
