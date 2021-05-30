@@ -4,10 +4,12 @@ import React from 'react';
 import { render } from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
+import { getAccounts } from '../api/extension';
 import { Messaging } from '../api/messaging';
 
 import { METHOD, POPUP, ROUTE } from '../config/config';
 import Enable from './app/pages/enable';
+import NoWallet from './app/pages/noWallet';
 import SignData from './app/pages/signData';
 import SignTx from './app/pages/signTx';
 import Theme from './theme';
@@ -19,10 +21,12 @@ const App = () => {
 
   const init = async () => {
     const resp = await controller.requestData();
+    const hasWallet = await getAccounts();
     setResponse(resp);
-    if (resp.method === METHOD.enable) history.push(ROUTE.enable);
-    else if (resp.method === METHOD.signData) history.push(ROUTE.signData);
-    else if (resp.method === METHOD.signTx) history.push(ROUTE.signTx);
+    if (!hasWallet) history.push('/noWallet');
+    else if (resp.method === METHOD.enable) history.push('/enable');
+    else if (resp.method === METHOD.signData) history.push('/signData');
+    else if (resp.method === METHOD.signTx) history.push('/signTx');
   };
 
   React.useEffect(() => {
@@ -42,14 +46,17 @@ const App = () => {
   ) : (
     <div>
       <Switch>
-        <Route exact path={ROUTE.signData}>
+        <Route exact path="/signData">
           <SignData request={response} controller={controller} />
         </Route>
-        <Route exact path={ROUTE.signTx}>
+        <Route exact path="/signTx">
           <SignTx request={response} controller={controller} />
         </Route>
-        <Route exact path={ROUTE.enable}>
+        <Route exact path="/enable">
           <Enable request={response} controller={controller} />
+        </Route>
+        <Route exact path="/noWallet">
+          <NoWallet />
         </Route>
       </Switch>
     </div>

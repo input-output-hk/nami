@@ -3,10 +3,12 @@ import React from 'react';
 import { displayUnit } from '../../../api/extension';
 
 const UnitDisplay = ({ quantity, decimals, symbol, ...props }) => {
-  const num = displayUnit(quantity, decimals).toLocaleString().split('.')[0];
+  const num = displayUnit(quantity, decimals)
+    .toLocaleString('en-EN')
+    .split('.')[0];
   const subNum = displayUnit(quantity, decimals)
     .toFixed(decimals)
-    .toLocaleString()
+    .toLocaleString('en-EN')
     .split('.')[1];
   return (
     <Box {...props}>

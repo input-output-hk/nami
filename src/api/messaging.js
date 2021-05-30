@@ -1,4 +1,5 @@
-import { METHOD, SENDER, TARGET } from '../config/config';
+import { EVENT, METHOD, SENDER, TARGET } from '../config/config';
+import provider from '../config/provider';
 
 /**
  * Message Object
@@ -171,7 +172,6 @@ export const Messaging = {
         method: METHOD.isWhitelisted,
         data: window.origin,
       });
-
       // protect background by not allowing not whitelisted
       if (!whitelisted || whitelisted.error) return;
 
@@ -211,10 +211,44 @@ export const Messaging = {
         window.postMessage({ ...whitelisted, id: request.id });
         return;
       }
-
-      await Messaging.sendToBackground(request).then((response) =>
-        window.postMessage(response)
-      );
+      await Messaging.sendToBackground(request).then((response) => {
+        window.postMessage(response);
+        if (request.method === METHOD.submitTx && !response.error) {
+          const interval = setInterval(async () => {
+            const result = await fetch(
+              provider.api.base + `/txs/${response.data}`,
+              {
+                headers: provider.api.key,
+              }
+            ).then((res) => res.json());
+            if (result && !result.error) {
+              window.postMessage({
+                data: {
+                  block: result.block,
+                  blockHeight: result.block_height,
+                  index: result.index,
+                  slot: result.slot,
+                  outputAmount: result.output_amount,
+                  fees: result.fees,
+                  deposit: result.deposit,
+                  withdrawalCount: result.withdrawal_count,
+                  delegationCount: result.delegation_count,
+                  stakeCertCount: result.stake_cert_count,
+                  pooolUpdateCount: result.pool_update_count,
+                  poolRetireCount: result.pool_retire_count,
+                  utxoCount: result.utxo_count,
+                  txHash: response.data,
+                },
+                target: TARGET,
+                sender: SENDER.extension,
+                event: EVENT.txConfirmation,
+              });
+              clearInterval(interval);
+              return;
+            }
+          }, 3000);
+        }
+      });
     });
   },
   createBackgroundController: () => new BackgroundController(),

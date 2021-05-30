@@ -60,12 +60,16 @@ const AssetsViewer = ({ assets }) => {
         </Box>
       ) : (
         <>
-          <Slider ref={(el) => (ref.current = el)} {...settings}>
+          <Slider
+            style={{ overflowX: 'hidden' }}
+            ref={(el) => (ref.current = el)}
+            {...settings}
+          >
             {assetsArray.map((_asset, index) => (
               <AssetsGrid key={index} assets={_asset} />
             ))}
           </Slider>
-          {assetsArray.length > 8 && (
+          {assetsArray.length >= 2 && (
             <>
               <ChevronLeftIcon
                 onClick={() => ref.current.slickGoTo(slideIndex - 1)}
@@ -92,7 +96,7 @@ const AssetsViewer = ({ assets }) => {
                 color="GrayText"
               >
                 <Text width="full" textAlign="center">
-                  {assets.length} total
+                  {assets && assets.length} total
                 </Text>
               </Box>
             </>

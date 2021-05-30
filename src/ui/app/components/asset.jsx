@@ -52,7 +52,7 @@ const Asset = ({ asset }) => {
 
   React.useEffect(() => {
     fetchMetadata();
-  }, []);
+  }, [asset]);
   return (
     <Box
       display="flex"

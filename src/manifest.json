@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "dapp-wallet",
   "options_page": "options.html",
-  "background": { "service_worker": "background.bundle.js" },
+  "background": { "scripts": ["background.bundle.js"], "persistent": false },
   "browser_action": {
     "default_popup": "mainPopup.html",
     "default_icon": "icon-34.png"
@@ -24,12 +24,6 @@
     "injected.bundle.js",
     "internalPopup.html"
   ],
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "storage",
-    "webRequest",
-    "chrome://favicon/"
-  ],
+  "permissions": ["activeTab", "tabs", "storage", "chrome://favicon/"],
   "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self';"
 }

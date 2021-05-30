@@ -91,12 +91,10 @@ const SignTx = ({ request, controller }) => {
       .checked_add(tx.body().fee())
       .to_str();
 
-    console.log(inputValue);
-    console.log(ownOutputValue);
     setValue(
       displayUnit(
         Loader.Cardano.BigNum.from_str(inputValue.lovelace)
-          .checked_sub(Loader.Cardano.BigNum.from_str(ownOutputValue.lovelace))
+          .clamped_sub(Loader.Cardano.BigNum.from_str(ownOutputValue.lovelace))
           .to_str()
       )
     );
@@ -210,7 +208,6 @@ const SignTx = ({ request, controller }) => {
         }
       }
     };
-    console.log(txBody);
     if (txBody.certs()) keyHashFromCert(txBody);
 
     //get key hashes from scripts
@@ -295,7 +292,7 @@ const SignTx = ({ request, controller }) => {
             <b>Fee:</b> {fee || '...'} ₳
           </Text>
           <Text fontSize="sm">
-            <b>ADA spent:</b> {value || '...'} ₳
+            <b>ADA spent:</b> {value || value === 0 ? value : '...'} ₳
           </Text>
           <Text fontSize="sm">
             <b>Required keys:</b>{' '}

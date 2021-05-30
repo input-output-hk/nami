@@ -276,7 +276,7 @@ export const signTx = async (tx, keyHashes, password, accountIndex) => {
 
   const rawTx = Loader.Cardano.Transaction.from_bytes(Buffer.from(tx, 'hex'));
 
-  const txWitnessSet = Loader.Cardano.TransactionWitnessSet.new();
+  const txWitnessSet = rawTx.witness_set();
   const vkeyWitnesses = Loader.Cardano.Vkeywitnesses.new();
   const txHash = Loader.Cardano.hash_transaction(rawTx.body());
   keyHashes.forEach((keyHash) => {
@@ -308,30 +308,7 @@ export const submitTx = async (tx) => {
     method: 'POST',
     body: Buffer.from(tx, 'hex'),
   }).then((res) => res.json());
-  if (!txHash || txHash.error) return txHash;
-  emitTxConfirmation(txHash);
   return txHash;
-};
-
-const emitTxConfirmation = async (txHash) => {
-  const result = await fetch(provider.api.base + `/txs/${txHash}`, {
-    headers: provider.api.key,
-  }).then((res) => res.json());
-
-  if (!result || result.error)
-    return setTimeout(() => emitTxConfirmation(txHash), 5000);
-  //to webpage
-  chrome.tabs.query({}, (tabs) => {
-    tabs.forEach((tab) =>
-      chrome.tabs.sendMessage(tab.id, {
-        data: { ...result, txHash },
-        target: TARGET,
-        sender: SENDER.extension,
-        event: EVENT.txConfirmation,
-      })
-    );
-  });
-  return;
 };
 
 const emitAccountChange = async (addresses) => {
