@@ -306,6 +306,8 @@ module.exports = {
       );
     });
 
+    addChangeExtra(utxoSelection, compiledOutputList);
+
     return {
       input: utxoSelection.selection,
       output: outputsRequested,
@@ -529,4 +531,21 @@ function createSubSet(utxoSelection, compiledOutput) {
       utxoSelection.remaining.length
     );
   }
+}
+
+/**
+ * Push extra UTxO assets in change
+ * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
+ * @param {AmountList} compiledOutputList - Compiled output list requested for payment.
+ */
+function addChangeExtra(utxoSelection, compiledOutputList) {
+  utxoSelection.amount.forEach((amount) => {
+    if (
+      !compiledOutputList.some(
+        (compiledAmount) => compiledAmount.unit === amount.unit
+      )
+    ) {
+      utxoSelection.change.push(amount);
+    }
+  });
 }
