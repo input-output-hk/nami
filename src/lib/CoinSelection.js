@@ -459,7 +459,7 @@ function improve(utxoSelection, compiledOutput, limit, range) {
   let newAmount =
     parseInt(
       utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity
-    ) + parseInt(compiledAmount.quantity);
+    ) + compiledAmount.quantity;
 
   if (
     Math.abs(range.ideal - newAmount) <
@@ -500,9 +500,12 @@ function addAmounts(amountList, compiledAmountList) {
       (compiledAmount) => compiledAmount.unit === amount.unit
     );
 
+    // Normalize amount value
+    amount.quantity = parseInt(amount.quantity);
+
     // 'Add to' or 'insert' in compiledOutputList
     entry
-      ? (entry.quantity = parseInt(entry.quantity) + parseInt(amount.quantity))
+      ? (entry.quantity = entry.quantity + amount.quantity)
       : compiledAmountList.push(amount);
   });
 }
