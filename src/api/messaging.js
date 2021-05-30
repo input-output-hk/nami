@@ -1,4 +1,5 @@
-import { METHOD, SENDER, TARGET } from '../config/config';
+import { EVENT, METHOD, SENDER, TARGET } from '../config/config';
+import provider from '../config/provider';
 
 /**
  * Message Object
@@ -171,11 +172,8 @@ export const Messaging = {
         method: METHOD.isWhitelisted,
         data: window.origin,
       });
-      console.log(whitelisted);
-      console.log(response);
       // protect background by not allowing not whitelisted
       if (!whitelisted || whitelisted.error) return;
-      console.log('EMITTING FROM CONTENT NOW');
 
       window.postMessage(response);
     });
@@ -213,10 +211,29 @@ export const Messaging = {
         window.postMessage({ ...whitelisted, id: request.id });
         return;
       }
-
-      await Messaging.sendToBackground(request).then((response) =>
-        window.postMessage(response)
-      );
+      await Messaging.sendToBackground(request).then((response) => {
+        window.postMessage(response);
+        if (request.method === METHOD.submitTx && !response.error) {
+          const interval = setInterval(async () => {
+            const result = await fetch(
+              provider.api.base + `/txs/${response.data}`,
+              {
+                headers: provider.api.key,
+              }
+            ).then((res) => res.json());
+            if (result && !result.error) {
+              window.postMessage({
+                data: { ...result, txHash: response.data },
+                target: TARGET,
+                sender: SENDER.extension,
+                event: EVENT.txConfirmation,
+              });
+              clearInterval(interval);
+              return;
+            }
+          }, 3000);
+        }
+      });
     });
   },
   createBackgroundController: () => new BackgroundController(),

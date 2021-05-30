@@ -410,8 +410,8 @@ const MakeAccount = (props) => {
             mnemonicFromObject(mnemonic),
             state.password
           );
-          history.push('/wallet');
           setLoading(false);
+          history.push('/wallet');
         }}
       >
         Create

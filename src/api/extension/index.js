@@ -308,31 +308,7 @@ export const submitTx = async (tx) => {
     method: 'POST',
     body: Buffer.from(tx, 'hex'),
   }).then((res) => res.json());
-  if (!txHash || txHash.error) return txHash;
-  emitTxConfirmation(txHash);
   return txHash;
-};
-
-const emitTxConfirmation = async (txHash) => {
-  const interval = setInterval(async () => {
-    const result = await fetch(provider.api.base + `/txs/${txHash}`, {
-      headers: provider.api.key,
-    }).then((res) => res.json());
-    if (result && !result.error) {
-      chrome.tabs.query({}, (tabs) => {
-        tabs.forEach((tab) =>
-          chrome.tabs.sendMessage(tab.id, {
-            data: { ...result, txHash },
-            target: TARGET,
-            sender: SENDER.extension,
-            event: EVENT.txConfirmation,
-          })
-        );
-      });
-      clearInterval(interval);
-      return;
-    }
-  }, 3000);
 };
 
 const emitAccountChange = async (addresses) => {
