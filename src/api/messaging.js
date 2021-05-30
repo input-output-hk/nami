@@ -223,7 +223,22 @@ export const Messaging = {
             ).then((res) => res.json());
             if (result && !result.error) {
               window.postMessage({
-                data: { ...result, txHash: response.data },
+                data: {
+                  block: result.block,
+                  blockHeight: result.block_height,
+                  index: result.index,
+                  slot: result.slot,
+                  outputAmount: result.output_amount,
+                  fees: result.fees,
+                  deposit: result.deposit,
+                  withdrawalCount: result.withdrawal_count,
+                  delegationCount: result.delegation_count,
+                  stakeCertCount: result.stake_cert_count,
+                  pooolUpdateCount: result.pool_update_count,
+                  poolRetireCount: result.pool_retire_count,
+                  utxoCount: result.utxo_count,
+                  txHash: response.data,
+                },
                 target: TARGET,
                 sender: SENDER.extension,
                 event: EVENT.txConfirmation,
