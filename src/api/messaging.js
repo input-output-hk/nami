@@ -171,9 +171,11 @@ export const Messaging = {
         method: METHOD.isWhitelisted,
         data: window.origin,
       });
-
+      console.log(whitelisted);
+      console.log(response);
       // protect background by not allowing not whitelisted
       if (!whitelisted || whitelisted.error) return;
+      console.log('EMITTING FROM CONTENT NOW');
 
       window.postMessage(response);
     });

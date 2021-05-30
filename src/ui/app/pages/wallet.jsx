@@ -102,8 +102,8 @@ const Wallet = ({ data }) => {
 
   const getData = async () => {
     setState((s) => ({ ...s, account: null, accounts: null }));
-    let currentAccount = await getCurrentAccount();
-    let allAccounts = await getAccounts();
+    const currentAccount = await getCurrentAccount();
+    const allAccounts = await getAccounts();
     const fiatPrice = await provider.api.price();
     setState((s) => ({
       ...s,
@@ -112,9 +112,17 @@ const Wallet = ({ data }) => {
       fiatPrice,
     }));
     await updateAccount();
-    currentAccount = await getCurrentAccount();
-    allAccounts = await getAccounts();
-    setState((s) => ({ ...s, account: currentAccount, accounts: allAccounts }));
+    const updatedCurrentAccount = await getCurrentAccount();
+    const updatedAllAccounts = await getAccounts();
+    if (
+      JSON.stringify(currentAccount) !== JSON.stringify(updatedCurrentAccount)
+    )
+      setState((s) => ({ ...s, account: null, accounts: null }));
+    setState((s) => ({
+      ...s,
+      account: updatedCurrentAccount,
+      accounts: updatedAllAccounts,
+    }));
   };
 
   React.useEffect(() => {
