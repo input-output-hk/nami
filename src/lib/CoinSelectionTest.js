@@ -1,7 +1,7 @@
 let reqOutputs = [
   {
     address: 'addr_test1qpndlx95xlnn8t(...)9n7d2qlvgrpngvvsggsysr',
-    amount: [{ unit: 'lovelace', quantity: 500000000 }],
+    amount: [{ unit: 'lovelace', quantity: 1000000000 }],
   },
   {
     address: 'addr_test1qpndlx95xlnn8t(...)9n7d2qlvgrpngvvsggsysr',
@@ -15,7 +15,7 @@ let reqOutputs = [
     address: 'addr_test1qpndlx95xlnn8t(...)9n7d2qlvgrpngvvsggsysr',
     amount: [
       { unit: 'lovelace', quantity: 3440000 },
-      { unit: '82828271.berrycoin', quantity: 75000000000 },
+      { unit: '82828271.berrycoin', quantity: 5000000000 },
       { unit: '09809090.SpaceBudz_00002', quantity: 1 },
     ],
   },
@@ -46,7 +46,10 @@ let utxoList = [
       '(2)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
-    amount: [{ unit: 'lovelace', quantity: '5000000000' }],
+    amount: [
+      { unit: 'lovelace', quantity: '5000000000' },
+      { unit: '82828271.berrycoin', quantity: 115000432 },
+    ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
@@ -111,6 +114,7 @@ let utxoList = [
     amount: [
       { unit: 'lovelace', quantity: '1000000' },
       { unit: '09809090.SpaceBudz_00003', quantity: 1 },
+      { unit: '82828271.berrycoin', quantity: 500000000 },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -122,6 +126,17 @@ let utxoList = [
     amount: [
       { unit: 'lovelace', quantity: '5043032' },
       { unit: '09809090.SpaceBudz_00001', quantity: 1 },
+    ],
+    block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
+  },
+  {
+    tx_hash:
+      '(11)af84e14238ee97dbef7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_index: 0,
+    output_index: 0,
+    amount: [
+      { unit: 'lovelace', quantity: '10000000' },
+      { unit: '82828271.berrycoin', quantity: 15987987654 },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },

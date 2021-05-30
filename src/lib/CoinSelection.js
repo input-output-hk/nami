@@ -19,6 +19,11 @@
  *   *  maintains a /remaining UTxO set/, initially equal to the given
  *      /UTxO set/ parameter.
  *
+ *   *  based on every output nature, generate a /native token UTxO subset/
+ *      to narrow down to useful UTxO
+ *
+ *   *  maintains an /accumulated coin selection/, which is initially /empty/.
+ *
  * For each output of value __/v/__, the algorithm /randomly/ selects entries
  * from the /remaining UTxO set/, until the total value of selected entries is
  * greater than or equal to __/v/__. The selected entries are then associated
@@ -43,7 +48,7 @@
  *   *  continues to maintain the /remaining UTxO set/ produced by the previous
  *      phase.
  *
- *   *  maintains an /accumulated coin selection/, which is initially /empty/.
+ *   *  maintains an /accumulated coin selection/, initiated from previous phase.
  *
  * For each output of value __/v/__, the algorithm:
  *
@@ -199,27 +204,39 @@
  */
 
 /**
- * @typedef {UTxO[]} UTxOList - List of UTxO
+ * @typedef {Output[]} OutputList - List of Output
  */
 
 /**
- * @typedef {Object[]} Outputs - Outputs Format
+ * @typedef {Object} Output - Outputs Format
  * @property {string} address - Address Output
  * @property {AmountList} amount - Amount (lovelace & Native Token)
  */
 
 /**
- * @typedef {Object} UTxOSelection - Coin Selection algorithm return
+ * @typedef {UTxO[]} UTxOList - List of UTxO
+ */
+
+/**
+ * @typedef {Object} UTxOSelection - Coin Selection algorithm core object
  * @property {UTxOList} selection - Accumulated UTxO set.
  * @property {UTxOList} remaining - Remaining UTxO set.
  * @property {UTxOList} subset - Remaining UTxO set.
  * @property {AmountList} amount - UTxO amount of each requested token
+ * @property {AmountList} change - Accumulated change amount.
  */
 
 /**
  * @typedef {Object} ImproveRange - ImproveRange
- * @property {int} x2 - Requested amount * 2
- * @property {int} x3 - Requested amount * 3
+ * @property {int} ideal - Requested amount * 2
+ * @property {int} maximum - Requested amount * 3
+ */
+
+/**
+ * @typedef {Object} SelectionResult - Coin Selection algorithm return
+ * @property {UTxOList} input - Accumulated UTxO set.
+ * @property {OutputList} output - Requested outputs.
+ * @property {AmountList} change - Accumulated change amount.
  */
 
 /**
@@ -230,9 +247,9 @@ module.exports = {
   /**
    * Random-Improve coin selection algorithm
    * @param {UTxOList} inputsAvailable - The set of inputs available for selection.
-   * @param {Outputs} outputsRequested - The set of outputs requested for payment.
+   * @param {OutputList} outputsRequested - The set of outputs requested for payment.
    * @param {int} limit - A limit on the number of inputs that can be selected.
-   * @return {UTxOSelection} - Coin Selection algorithm return
+   * @return {SelectionResult} - Coin Selection algorithm return
    */
   randomImprove: (inputsAvailable, outputsRequested, limit) => {
     /** @type {UTxOSelection} */
@@ -241,10 +258,12 @@ module.exports = {
       remaining: [...inputsAvailable], // Shallow copy
       subset: [],
       amount: [],
+      change: [],
     };
 
     let compiledOutputList = compileOutputs(outputsRequested);
 
+    // Phase 1: RandomSelect
     compiledOutputList = sortAmountList(compiledOutputList, 'DESC');
 
     compiledOutputList.forEach((compiledOutput) => {
@@ -270,6 +289,7 @@ module.exports = {
       }
     });
 
+    // Phase 2: Improve
     compiledOutputList = sortAmountList(compiledOutputList);
 
     compiledOutputList.forEach((compiledOutput) => {
@@ -279,11 +299,18 @@ module.exports = {
         utxoSelection,
         compiledOutput,
         limit - utxoSelection.selection.length,
-        { x2: compiledOutput.quantity * 2, x3: compiledOutput.quantity * 3 }
+        {
+          ideal: compiledOutput.quantity * 2,
+          maximum: compiledOutput.quantity * 3,
+        }
       );
     });
 
-    return utxoSelection;
+    return {
+      input: utxoSelection.selection,
+      output: outputsRequested,
+      change: utxoSelection.change,
+    };
   },
 };
 
@@ -388,20 +415,30 @@ function descSelect(utxoSelection, compiledOutput, limit) {
 }
 
 /**
- * Try to improve selection by increasing input amount in [2x,3x[ range.
+ * Try to improve selection by increasing input amount in [2x,3x] range.
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
  * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
  * @param {int} limit - A limit on the number of inputs that can be selected.
  * @param {ImproveRange} range - Improvement range target values
  */
 function improve(utxoSelection, compiledOutput, limit, range) {
-  if (limit <= 0) {
-    return;
-  }
-
   let nbFreeUTxO = utxoSelection.subset.length;
 
-  if (nbFreeUTxO <= 0) {
+  let compiledAmount = utxoSelection.amount.find(
+    (amount) => amount.unit === compiledOutput.unit
+  );
+
+  if (nbFreeUTxO <= 0 || limit <= 0) {
+    // Cannot improve further, calculate change
+    let change = compiledAmount.quantity - compiledOutput.quantity;
+
+    if (change) {
+      utxoSelection.change.push({
+        unit: compiledOutput.unit,
+        quantity: change,
+      });
+    }
+
     return;
   }
 
@@ -410,18 +447,14 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     .splice(Math.floor(Math.random() * nbFreeUTxO), 1)
     .pop();
 
-  let compiledAmount = utxoSelection.amount.find(
-    (amount) => amount.unit === compiledOutput.unit
-  );
-
   let newAmount =
     utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity +
     compiledAmount.quantity;
 
   if (
-    Math.abs(newAmount - range.x2) <
-      Math.abs(compiledAmount.quantity - range.x2) &&
-    newAmount < range.x3
+    Math.abs(range.ideal - newAmount) <
+      Math.abs(range.ideal - compiledAmount.quantity) &&
+    newAmount <= range.maximum
   ) {
     utxoSelection.selection.push(utxo);
     addAmounts(utxo.amount, utxoSelection.amount);
@@ -430,20 +463,20 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     utxoSelection.remaining.push(utxo);
   }
 
-  return randomSelect(utxoSelection, compiledOutput, limit);
+  return improve(utxoSelection, compiledOutput, limit, range);
 }
 
 /**
  * Compile all required output to a flat amount list
- * @param {Outputs} outputs - The set of outputs requested for payment.
+ * @param {OutputList} outputList - The set of outputs requested for payment.
  * @return {AmountList} - The compiled set of amounts requested for payment.
  */
-function compileOutputs(outputs) {
-  let compiledOutputList = [];
+function compileOutputs(outputList) {
+  let compiledAmountList = [];
 
-  outputs.forEach((output) => addAmounts(output.amount, compiledOutputList));
+  outputList.forEach((output) => addAmounts(output.amount, compiledAmountList));
 
-  return compiledOutputList;
+  return compiledAmountList;
 }
 
 /**
