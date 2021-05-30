@@ -1,7 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "dapp-wallet",
-  "options_page": "options.html",
+  "name": "Nami Wallet",
   "background": { "scripts": ["background.bundle.js"], "persistent": false },
   "browser_action": {
     "default_popup": "mainPopup.html",
@@ -17,7 +16,6 @@
       "run_at": "document_start"
     }
   ],
-  "devtools_page": "devtools.html",
   "web_accessible_resources": [
     "icon-128.png",
     "icon-34.png",

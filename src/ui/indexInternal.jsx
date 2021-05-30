@@ -44,7 +44,7 @@ const App = () => {
       <Spinner color="teal" speed="0.5s" />
     </Box>
   ) : (
-    <div>
+    <div style={{ overflowX: 'hidden' }}>
       <Switch>
         <Route exact path="/signData">
           <SignData request={response} controller={controller} />

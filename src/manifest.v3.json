@@ -1,7 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "dapp-wallet",
-  "options_page": "options.html",
+  "name": "nami-wallet",
   "background": { "service_worker": "background.bundle.js" },
   "action": {
     "default_popup": "mainPopup.html",
@@ -17,7 +16,6 @@
       "run_at": "document_start"
     }
   ],
-  "devtools_page": "devtools.html",
   "web_accessible_resources": [
     {
       "resources": [
@@ -29,5 +27,5 @@
       "matches": ["http://*/*", "https://*/*", "<all_urls>"]
     }
   ],
-  "permissions": ["activeTab", "tabs", "storage", "webRequest"]
+  "permissions": ["activeTab", "tabs", "storage"]
 }
