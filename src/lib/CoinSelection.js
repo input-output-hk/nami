@@ -430,7 +430,7 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     (amount) => amount.unit === compiledOutput.unit
   );
 
-  if (nbFreeUTxO <= 0 || limit <= 0) {
+  if (compiledAmount.quantity >= range.ideal || nbFreeUTxO <= 0 || limit <= 0) {
     // Cannot improve further, calculate change
     let change = compiledAmount.quantity - compiledOutput.quantity;
 
@@ -441,6 +441,13 @@ function improve(utxoSelection, compiledOutput, limit, range) {
       });
     }
 
+    // Return subset in remaining
+    utxoSelection.remaining = [
+      ...utxoSelection.remaining,
+      ...utxoSelection.subset,
+    ];
+    utxoSelection.subset = [];
+
     return;
   }
 
@@ -450,8 +457,9 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     .pop();
 
   let newAmount =
-    utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity +
-    compiledAmount.quantity;
+    parseInt(
+      utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity
+    ) + parseInt(compiledAmount.quantity);
 
   if (
     Math.abs(range.ideal - newAmount) <
