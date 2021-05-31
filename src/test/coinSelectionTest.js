@@ -266,7 +266,7 @@ let utxoList = [
   },
 ];
 
-const CoinSelection = require('./CoinSelection');
+const CoinSelection = require('../lib/coinSelection');
 
 let result = CoinSelection.randomImprove(utxoList, reqOutputs, 20);
 
