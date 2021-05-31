@@ -1,7 +1,7 @@
 {
-  "name": "chrome-extension-boilerplate-react",
-  "version": "4.0.1",
-  "description": "A chrome extension boilerplate built with React 17 and Webpack 5",
+  "name": "nami-wallet",
+  "version": "1.0.0",
+  "description": "Browser extension Cardano wallet",
   "license": "MIT",
   "repository": {
     "type": "git",
