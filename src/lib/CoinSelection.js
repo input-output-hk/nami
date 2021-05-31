@@ -1,5 +1,5 @@
 /**
- * An implementation of the __Random-Improve__ coin selection algorithm.
+ * BerryPool implementation of the __Random-Improve__ coin selection algorithm.
  *
  * = Overview
  *
@@ -106,29 +106,12 @@
  *      /available/) is /less than/ the total value of the output list (the
  *      amount of money /required/).
  *
- *      See: __'InputValueInsufficientError'__.
- *
- *  2.  The /number/ of entries in the initial UTxO set is /smaller than/ the
- *      number of requested outputs.
- *
- *      Due to the nature of the algorithm, /at least one/ UTxO entry is
- *      required /for each/ output.
- *
- *      See: __'InputCountInsufficientError'__.
- *
- *  3.  Due to the particular /distribution/ of values within the initial UTxO
- *      set, the algorithm depletes all entries from the UTxO set /before/ it
- *      is able to pay for all requested outputs.
- *
  *      See: __'InputsExhaustedError'__.
  *
- *  4.  The /number/ of UTxO entries needed to pay for the requested outputs
+ *  2.  The /number/ of UTxO entries needed to pay for the requested outputs
  *      would /exceed/ the upper limit specified by 'limit'.
  *
  *      See: __'InputLimitExceededError'__.
- *
- *
- *
  *
  * == Motivating Principles
  *
@@ -236,6 +219,7 @@
  * @typedef {Object} SelectionResult - Coin Selection algorithm return
  * @property {UTxOList} input - Accumulated UTxO set.
  * @property {OutputList} output - Requested outputs.
+ * @property {UTxOList} remaining - Remaining UTxO set.
  * @property {AmountList} change - Accumulated change amount.
  */
 
@@ -271,7 +255,7 @@ module.exports = {
 
       try {
         utxoSelection = randomSelect(
-          JSON.parse(JSON.stringify(utxoSelection)), // Deep copy
+          JSON.parse(JSON.stringify(utxoSelection)), // Deep copy in case of fallback needed
           compiledOutput,
           limit - utxoSelection.selection.length
         );
@@ -311,6 +295,7 @@ module.exports = {
     return {
       input: utxoSelection.selection,
       output: outputsRequested,
+      remaining: utxoSelection.remaining,
       change: utxoSelection.change,
     };
   },
