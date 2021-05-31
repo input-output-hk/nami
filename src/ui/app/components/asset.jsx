@@ -8,6 +8,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import React from 'react';
+import { getNetwork } from '../../../api/extension';
 import provider from '../../../config/provider';
 
 import './lineClamp.css';
@@ -34,9 +35,13 @@ const Asset = ({ asset }) => {
   };
 
   const fetchMetadata = async () => {
-    const result = await fetch(provider.api.base + `/assets/${asset.unit}`, {
-      headers: provider.api.key,
-    }).then((res) => res.json());
+    const network = await getNetwork();
+    const result = await fetch(
+      provider.api.base(network) + `/assets/${asset.unit}`,
+      {
+        headers: provider.api.key(network),
+      }
+    ).then((res) => res.json());
     console.log(result);
     const name =
       (result.onchain_metadata && result.onchain_metadata.name) ||

@@ -11,6 +11,7 @@ import Wallet from './app/pages/wallet';
 import { getAccounts } from '../api/extension';
 import CreateWallet from './app/pages/createWallet';
 import { Box } from '@chakra-ui/layout';
+import Settings from './app/pages/settings';
 
 const App = () => {
   const history = useHistory();
@@ -18,7 +19,7 @@ const App = () => {
   const init = async () => {
     const hasWallet = await getAccounts();
     setLoading(false);
-    if (hasWallet) history.push('wallet');
+    if (hasWallet) history.push('/wallet');
     else history.push('/welcome');
   };
   React.useEffect(() => {
@@ -38,14 +39,17 @@ const App = () => {
   ) : (
     <div style={{ overflowX: 'hidden' }}>
       <Switch>
-        <Route exact path={ROUTE.wallet}>
+        <Route exact path="/wallet">
           <Wallet />
         </Route>
-        <Route exact path={ROUTE.welcome}>
+        <Route exact path="/welcome">
           <Welcome />
         </Route>
-        <Route path={ROUTE.createWallet}>
+        <Route path="/createWallet">
           <CreateWallet />
+        </Route>
+        <Route path="/settings">
+          <Settings />
         </Route>
       </Switch>
     </div>

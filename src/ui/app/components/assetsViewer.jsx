@@ -2,7 +2,6 @@ import { Box, SimpleGrid } from '@chakra-ui/layout';
 import { Spinner, Text } from '@chakra-ui/react';
 import { ChevronRightIcon, ChevronLeftIcon } from '@chakra-ui/icons';
 import React from 'react';
-import provider from '../../../config/provider';
 import Asset from './asset';
 import Slider from 'react-slick';
 import { Planet } from 'react-kawaii';

@@ -8,6 +8,7 @@ import {
   displayUnit,
   getAccounts,
   getCurrentAccount,
+  getNetwork,
   getTransactions,
   switchAccount,
   updateAccount,
@@ -87,17 +88,15 @@ const Wallet = ({ data }) => {
   const checkTransactions = async () => {
     const currentAccount = await getCurrentAccount();
     const transactions = await getTransactions();
-    console.log(transactions);
-    console.log(currentAccount.history.confirmed);
     if (
       !transactions.every((tx) =>
         currentAccount.history.confirmed.slice(0, 10).includes(tx)
       )
     ) {
       await getData();
-      return setTimeout(() => checkTransactions(), 5000);
+      return setTimeout(() => checkTransactions(), 10000);
     }
-    return setTimeout(() => checkTransactions(), 5000);
+    return setTimeout(() => checkTransactions(), 10000);
   };
 
   const getData = async () => {
@@ -105,12 +104,13 @@ const Wallet = ({ data }) => {
     const currentAccount = await getCurrentAccount();
     const allAccounts = await getAccounts();
     const fiatPrice = await provider.api.price();
-    setState((s) => ({
-      ...s,
-      account: currentAccount,
-      accounts: allAccounts,
-      fiatPrice,
-    }));
+    const network = await getNetwork();
+    // setState((s) => ({
+    //   ...s,
+    //   account: currentAccount,
+    //   accounts: allAccounts,
+    //   fiatPrice,
+    // }));
     await updateAccount();
     const updatedCurrentAccount = await getCurrentAccount();
     const updatedAllAccounts = await getAccounts();
@@ -122,6 +122,8 @@ const Wallet = ({ data }) => {
       ...s,
       account: updatedCurrentAccount,
       accounts: updatedAllAccounts,
+      fiatPrice,
+      network,
     }));
   };
 
@@ -198,7 +200,7 @@ const Wallet = ({ data }) => {
                                 </Text>
                                 <Text>
                                   <UnitDisplay
-                                    quantity={account.lovelace}
+                                    quantity={account[state.network].lovelace}
                                     decimals={6}
                                     symbol="₳"
                                   />
@@ -240,7 +242,12 @@ const Wallet = ({ data }) => {
                     </MenuItem>
                   )}
                 <MenuDivider />
-                <MenuItem icon={<SettingsIcon />}>Settings</MenuItem>
+                <MenuItem
+                  onClick={() => history.push('/settings')}
+                  icon={<SettingsIcon />}
+                >
+                  Settings
+                </MenuItem>
                 <MenuItem>Help</MenuItem>
               </MenuList>
             </Menu>

@@ -23,6 +23,12 @@ export const STORAGE = {
   encryptedKey: 'encryptedKey',
   accounts: 'accounts',
   currentAccount: 'currentAccount',
+  network: 'network',
+};
+
+export const NETWORK = {
+  mainnet: 'mainnet',
+  testnet: 'testnet',
 };
 
 export const POPUP = {

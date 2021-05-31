@@ -1,4 +1,11 @@
-import { ERROR, EVENT, SENDER, STORAGE, TARGET } from '../../config/config';
+import {
+  ERROR,
+  EVENT,
+  NETWORK,
+  SENDER,
+  STORAGE,
+  TARGET,
+} from '../../config/config';
 import provider from '../../config/provider';
 import { POPUP_WINDOW } from '../../config/config';
 import { mnemonicToEntropy } from 'bip39';
@@ -73,9 +80,10 @@ export const setWhitelisted = async (_location) => {
 
 export const getDelegation = async () => {
   const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
   const result = await fetch(
-    provider.api.base + `/accounts/${currentAccount.rewardAddr}`,
-    { headers: provider.api.key }
+    provider.api.base(network) + `/accounts/${currentAccount.rewardAddr}`,
+    { headers: provider.api.key(network) }
   ).then((res) => res.json());
   if (!result || result.error) return {};
   return {
@@ -89,9 +97,10 @@ export const getDelegation = async () => {
 
 export const getBalance = async () => {
   const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
   const result = await fetch(
-    provider.api.base + `/addresses/${currentAccount.paymentAddr}`,
-    { headers: provider.api.key }
+    provider.api.base(network) + `/addresses/${currentAccount.paymentAddr}`,
+    { headers: provider.api.key(network) }
   ).then((res) => res.json());
   if (!result || result.error) return [];
   return result.amount;
@@ -99,10 +108,11 @@ export const getBalance = async () => {
 
 export const getTransactions = async (paginate = 1) => {
   const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
   const result = await fetch(
-    provider.api.base +
+    provider.api.base(network) +
       `/addresses/${currentAccount.paymentAddr}/txs?page=${paginate}&order=desc&count=10`,
-    { headers: provider.api.key }
+    { headers: provider.api.key(network) }
   ).then((res) => res.json());
   if (!result || result.error) return [];
   return result;
@@ -110,13 +120,14 @@ export const getTransactions = async (paginate = 1) => {
 
 export const getUtxos = async (paginate = undefined) => {
   const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
   let result = [];
   let page = paginate || 1;
   while (true) {
     let pageResult = await fetch(
-      provider.api.base +
+      provider.api.base(network) +
         `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}`,
-      { headers: provider.api.key }
+      { headers: provider.api.key(network) }
     ).then((res) => res.json());
     if (!result || result.error) pageResult = [];
     result = result.concat(pageResult);
@@ -145,10 +156,66 @@ export const getCurrentAccountIndex = async () => {
   );
 };
 
+export const getNetwork = async () => {
+  return await getStorage(STORAGE.network).then(
+    (store) => store[STORAGE.network]
+  );
+};
+
+export const switchNetwork = async () => {
+  const network = await getNetwork();
+  if (network === NETWORK.mainnet) {
+    await setStorage({ [STORAGE.network]: NETWORK.testnet });
+    return NETWORK.testnet;
+  } else {
+    await setStorage({ [STORAGE.network]: NETWORK.mainnet });
+    return NETWORK.mainnet;
+  }
+};
+
 export const getCurrentAccount = async () => {
+  await Loader.load();
   const currentAccountIndex = await getCurrentAccountIndex();
   const accounts = await getAccounts();
-  return await accounts[currentAccountIndex];
+  const network = await getNetwork();
+  const currentAccount = await accounts[currentAccountIndex];
+  const paymentKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
+    Buffer.from(currentAccount.paymentKeyHash, 'hex')
+  );
+  const stakeKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
+    Buffer.from(currentAccount.stakeKeyHash, 'hex')
+  );
+  const paymentAddr = Loader.Cardano.BaseAddress.new(
+    network === NETWORK.mainnet
+      ? Loader.Cardano.NetworkInfo.mainnet().network_id()
+      : Loader.Cardano.NetworkInfo.testnet().network_id(),
+    Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHash),
+    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
+  )
+    .to_address()
+    .to_bech32();
+
+  const rewardAddr = Loader.Cardano.RewardAddress.new(
+    network === NETWORK.mainnet
+      ? Loader.Cardano.NetworkInfo.mainnet().network_id()
+      : Loader.Cardano.NetworkInfo.testnet().network_id(),
+    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
+  )
+    .to_address()
+    .to_bech32();
+
+  const assets = currentAccount[network].assets;
+  const lovelace = currentAccount[network].lovelace;
+  const history = currentAccount[network].history;
+
+  return {
+    ...currentAccount,
+    paymentAddr,
+    rewardAddr,
+    assets,
+    lovelace,
+    history,
+  };
 };
 
 export const getAccounts = async () => {
@@ -303,8 +370,12 @@ export const signTx = async (tx, keyHashes, password, accountIndex) => {
  */
 
 export const submitTx = async (tx) => {
-  const txHash = await fetch(provider.api.base + `/tx/submit`, {
-    headers: { ...provider.api.key, 'Content-Type': 'application/cbor' },
+  const network = await getNetwork();
+  const txHash = await fetch(provider.api.base(network) + `/tx/submit`, {
+    headers: {
+      ...provider.api.key(network),
+      'Content-Type': 'application/cbor',
+    },
     method: 'POST',
     body: Buffer.from(tx, 'hex'),
   }).then((res) => res.json());
@@ -384,30 +455,29 @@ export const createAccount = async (name, password) => {
   paymentKey = null;
   stakeKey = null;
 
-  const paymentAddr = Loader.Cardano.BaseAddress.new(
-    Loader.Cardano.NetworkInfo.mainnet().network_id(),
-    Loader.Cardano.StakeCredential.from_keyhash(paymentKeyPub.hash()),
-    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.hash())
-  )
-    .to_address()
-    .to_bech32();
+  const paymentKeyHash = Buffer.from(
+    paymentKeyPub.hash().to_bytes(),
+    'hex'
+  ).toString('hex');
+  const stakeKeyHash = Buffer.from(
+    stakeKeyPub.hash().to_bytes(),
+    'hex'
+  ).toString('hex');
 
-  const rewardAddr = Loader.Cardano.RewardAddress.new(
-    Loader.Cardano.NetworkInfo.mainnet().network_id(),
-    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.hash())
-  )
-    .to_address()
-    .to_bech32();
+  const networkDefault = {
+    lovelace: 0,
+    assets: [],
+    history: { confirmed: [], details: {} },
+  };
 
   const newAccount = {
     [accountIndex]: {
       index: accountIndex,
-      paymentAddr,
-      rewardAddr,
+      paymentKeyHash,
+      stakeKeyHash,
       name,
-      lovelace: 0,
-      assets: [],
-      history: { confirmed: [], details: {} },
+      [NETWORK.mainnet]: networkDefault,
+      [NETWORK.testnet]: networkDefault,
       avatar: Math.random().toString(),
     },
   };
@@ -450,6 +520,7 @@ export const createWallet = async (name, seedPhrase, password) => {
   );
   if (checkStore) throw new Error(ERROR.storeNotEmpty);
   await setStorage({ [STORAGE.encryptedKey]: encryptedRootKey });
+  await setStorage({ [STORAGE.network]: NETWORK.mainnet });
 
   await createAccount(name, password);
   password = null;
@@ -482,30 +553,33 @@ export const avatarToImage = (avatar) => {
   return URL.createObjectURL(blob);
 };
 
-const updateBalance = async (currentAccount) => {
+const updateBalance = async (currentAccount, network) => {
   const amount = await getBalance();
   if (amount.length > 0) {
-    currentAccount.lovelace = amount.find(
+    currentAccount[network].lovelace = amount.find(
       (am) => am.unit === 'lovelace'
     ).quantity;
-    currentAccount.assets = amount.filter((am) => am.unit !== 'lovelace');
+    currentAccount[network].assets = amount.filter(
+      (am) => am.unit !== 'lovelace'
+    );
   } else {
-    currentAccount.lovelace = 0;
-    currentAccount.assets = [];
+    currentAccount[network].lovelace = 0;
+    currentAccount[network].assets = [];
   }
 };
 
-const updateTransactions = async (currentAccount) => {
+const updateTransactions = async (currentAccount, network) => {
   const transactions = await getTransactions();
   transactions.concat(currentAccount.history.confirmed);
   const txSet = new Set(transactions);
-  currentAccount.history.confirmed = Array.from(txSet);
+  currentAccount[network].history.confirmed = Array.from(txSet);
 };
 
 export const setTransactions = async (txs) => {
   const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
   const accounts = await getAccounts();
-  currentAccount.history.confirmed = txs;
+  currentAccount[network].history.confirmed = txs;
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
@@ -518,8 +592,9 @@ export const setTransactions = async (txs) => {
 export const updateAccount = async () => {
   const currentAccount = await getCurrentAccount();
   const accounts = await getAccounts();
-  await updateBalance(currentAccount);
-  await updateTransactions(currentAccount);
+  const network = await getNetwork();
+  await updateBalance(currentAccount, network);
+  await updateTransactions(currentAccount, network);
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
