@@ -30,6 +30,7 @@ const AssetsViewer = ({ assets }) => {
     dots: false,
     lazyLoad: true,
     infinite: true,
+    swipeToSlide: false,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
@@ -60,7 +61,11 @@ const AssetsViewer = ({ assets }) => {
       ) : (
         <>
           <Slider
-            style={{ overflowX: 'hidden' }}
+            style={{
+              overflowX: 'hidden',
+              userSelect: 'text',
+              zIndex: 0,
+            }}
             ref={(el) => (ref.current = el)}
             {...settings}
           >

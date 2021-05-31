@@ -75,6 +75,8 @@ const Asset = ({ asset }) => {
         display="flex"
         alignItems="center"
         justifyContent="center"
+        cursor="pointer"
+        userSelect="none"
       >
         {!token ? (
           <SkeletonCircle size="14" />

@@ -10,8 +10,9 @@ import provider from '../config/provider';
  *  sender: SENDER (extension || webpage),
  *  target: TARGET,
  *  ?id: requestId,
- *  origin: window.origin
+ *  ?origin: window.origin
  *  ?event: EVENT
+ *  ?network: NETWORK
  * }
  */
 
@@ -213,12 +214,14 @@ export const Messaging = {
       }
       await Messaging.sendToBackground(request).then((response) => {
         window.postMessage(response);
+
+        //only relevant for txSubmit endpoint (listens until transaction is confirmed on-chain)
         if (request.method === METHOD.submitTx && !response.error) {
           const interval = setInterval(async () => {
             const result = await fetch(
-              provider.api.base + `/txs/${response.data}`,
+              provider.api.base(response.network) + `/txs/${response.data}`,
               {
-                headers: provider.api.key,
+                headers: provider.api.key(response.network),
               }
             ).then((res) => res.json());
             if (result && !result.error) {

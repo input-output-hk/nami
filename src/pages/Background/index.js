@@ -3,6 +3,7 @@ import {
   getAddresses,
   getBalance,
   getDelegation,
+  getNetwork,
   getUtxos,
   isWhitelisted,
   submitTx,
@@ -116,13 +117,16 @@ app.add(METHOD.submitTx, async (request, sendResponse) => {
       error: ERROR.txFailed,
       sender: SENDER.extension,
     });
-  else
+  else {
+    const network = await getNetwork();
     sendResponse({
       id: request.id,
       data: txHash,
       target: TARGET,
       sender: SENDER.extension,
+      network,
     });
+  }
 });
 
 app.add(METHOD.isWhitelisted, async (request, sendResponse) => {
