@@ -103,11 +103,12 @@ const Asset = ({ asset }) => {
           <Skeleton height="16px" width="80%" />
         ) : (
           <>
-            <Text fontSize="9" textAlign="center">
+            <Text userSelect="text" fontSize="9" textAlign="center">
               {token.quantity}
             </Text>
             {/* <Box height="1" /> */}
             <Text
+              userSelect="text"
               className="lineClamp"
               overflow="hidden"
               height="40px"

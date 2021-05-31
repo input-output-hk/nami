@@ -12,6 +12,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { Button } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
+import UnitDisplay from '../components/unitDisplay';
 
 const SignTx = ({ request, controller }) => {
   const history = useHistory();
@@ -275,7 +276,17 @@ const SignTx = ({ request, controller }) => {
             REQUEST
           </Text>
         </Box>
-        <Box
+        <Box mt="10">
+          <UnitDisplay
+            quantity="4500000"
+            decimals="6"
+            symbol="₳"
+            fontSize="2xl"
+            fontWeight="bold"
+            color="green"
+          />
+        </Box>
+        {/* <Box
           mt="10"
           width="76%"
           height="200px"
@@ -286,7 +297,7 @@ const SignTx = ({ request, controller }) => {
           wordBreak="break-all"
         >
           <Scrollbars autoHide>{request.data.tx}</Scrollbars>
-        </Box>
+        </Box> */}
         <Box mt="2.5" maxWidth="90%" wordBreak="break-all" textAlign="center">
           <Text fontSize="sm">
             <b>Fee:</b> {fee || '...'} ₳

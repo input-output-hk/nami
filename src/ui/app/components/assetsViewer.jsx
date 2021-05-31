@@ -63,8 +63,6 @@ const AssetsViewer = ({ assets }) => {
           <Slider
             style={{
               overflowX: 'hidden',
-              userSelect: 'text',
-              zIndex: 0,
             }}
             ref={(el) => (ref.current = el)}
             {...settings}

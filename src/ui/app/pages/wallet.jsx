@@ -82,6 +82,7 @@ const Wallet = ({ data }) => {
     fiatPrice: 0,
   });
   const [copied, setCopied] = React.useState(false);
+  const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
   const deletAccountRef = React.useRef();
 
@@ -150,8 +151,13 @@ const Wallet = ({ data }) => {
           position="relative"
         >
           <Box zIndex="2" position="absolute" top="6" right="6">
-            <Menu autoSelect={false}>
+            <Menu
+              isOpen={menu}
+              autoSelect={false}
+              onClose={() => setMenu(false)}
+            >
               <MenuButton
+                onClick={() => setMenu(true)}
                 position="relative"
                 rounded="full"
                 background="white"
@@ -183,6 +189,7 @@ const Wallet = ({ data }) => {
                             key={accountIndex}
                             onClick={async () => {
                               if (state.account.index === account.index) return;
+                              setMenu(false);
                               await switchAccount(accountIndex);
                             }}
                           >
