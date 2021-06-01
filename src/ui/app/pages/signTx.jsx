@@ -6,24 +6,31 @@ import {
   getUtxos,
   signTx,
 } from '../../../api/extension';
-import { Box, Text } from '@chakra-ui/layout';
+import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
 import { Button } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import UnitDisplay from '../components/unitDisplay';
+import { ArrowRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import MiddleEllipsis from 'react-middle-ellipsis';
+import AssetFingerprint from '@emurgo/cip14-js';
+
+const abs = (big) => {
+  return big < 0 ? BigInt(big.toString().slice(1)) : big;
+};
 
 const SignTx = ({ request, controller }) => {
   const history = useHistory();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [fee, setFee] = React.useState(0);
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = React.useState(null);
   const [keyHashes, setKeyHashes] = React.useState({ kind: [], key: [] });
 
   const getFee = (tx) => {
-    const fee = displayUnit(tx.body().fee().to_str());
+    const fee = tx.body().fee().to_str();
     setFee(fee);
   };
 
@@ -54,25 +61,44 @@ const SignTx = ({ request, controller }) => {
     }
     const outputs = tx.body().outputs();
     const ownOutputValue = { lovelace: '0' };
+    const externalOutputs = {};
     if (!outputs) return;
     for (let i = 0; i < outputs.len(); i++) {
       const output = outputs.get(i);
-      if (output.address().to_bech32() === account.paymentAddr) {
+      const address = output.address().to_bech32();
+      if (address === account.paymentAddr) {
+        //own
         ownOutputValue.lovelace = Loader.Cardano.BigNum.from_str(
           ownOutputValue.lovelace
         )
           .checked_add(output.amount().coin())
           .to_str();
-        if (!output.amount().multiasset()) continue;
-        for (let j = 0; j < output.amount().multiasset().keys().len(); j++) {
-          const policy = output.amount().multiasset().keys().get(j);
-          const policyAssets = output.amount().multiasset().get(policy);
-          for (let k = 0; k < policyAssets.keys().len(); k++) {
-            const policyAsset = policyAssets.keys().get(k);
-            const quantity = policyAssets.get(policyAsset);
-            const asset =
-              Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
-              Buffer.from(policyAsset.to_bytes(), 'hex').toString('hex');
+      } else {
+        //external
+        if (!externalOutputs[address])
+          externalOutputs[address] = {
+            lovelace: output.amount().coin().to_str(),
+          };
+        else
+          externalOutputs[address].lovelace = Loader.Cardano.BigNum.from_str(
+            externalOutputs[address].lovelace
+          )
+            .checked_add(output.amount().coin())
+            .to_str();
+      }
+
+      if (!output.amount().multiasset()) continue;
+      for (let j = 0; j < output.amount().multiasset().keys().len(); j++) {
+        const policy = output.amount().multiasset().keys().get(j);
+        const policyAssets = output.amount().multiasset().get(policy);
+        for (let k = 0; k < policyAssets.keys().len(); k++) {
+          const policyAsset = policyAssets.keys().get(k);
+          const quantity = policyAssets.get(policyAsset);
+          const asset =
+            Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
+            Buffer.from(policyAsset.name(), 'hex').toString('hex');
+          if (address === account.paymentAddr) {
+            //own
             if (!ownOutputValue[asset])
               ownOutputValue[asset] = quantity.to_str();
             else
@@ -81,24 +107,53 @@ const SignTx = ({ request, controller }) => {
               )
                 .checked_add(quantity)
                 .to_str();
+          } else {
+            //external
+            if (!externalOutputs[address][asset])
+              externalOutputs[address][asset] = quantity.to_str();
+            else
+              externalOutputs[address][asset] = Loader.Cardano.BigNum.from_str(
+                externalOutputs[address][asset]
+              )
+                .checked_add(quantity)
+                .to_str();
           }
         }
       }
     }
 
-    ownOutputValue.lovelace = Loader.Cardano.BigNum.from_str(
-      ownOutputValue.lovelace
-    )
-      .checked_add(tx.body().fee())
-      .to_str();
+    console.log(externalOutputs);
+    console.log(inputValue);
+    console.log(ownOutputValue);
 
-    setValue(
-      displayUnit(
-        Loader.Cardano.BigNum.from_str(inputValue.lovelace)
-          .clamped_sub(Loader.Cardano.BigNum.from_str(ownOutputValue.lovelace))
-          .to_str()
-      )
-    );
+    // ownOutputValue.lovelace = Loader.Cardano.BigNum.from_str(
+    //   ownOutputValue.lovelace
+    // )
+    //   .checked_add(tx.body().fee())
+    //   .to_str();
+
+    const involvedAssets = [
+      ...new Set([...Object.keys(inputValue), ...Object.keys(ownOutputValue)]),
+    ];
+    console.log(Object.keys(inputValue));
+    console.log(Object.keys(ownOutputValue));
+    const ownOutputValueDifference = involvedAssets.map((asset) => {
+      const difference =
+        BigInt(inputValue[asset] || '') - BigInt(ownOutputValue[asset] || '');
+      if (asset === 'lovelace') {
+        return { unit: asset, quantity: difference };
+      }
+      const policy = asset.slice(0, 56);
+      const name = asset.slice(56);
+      const fingerprint = new AssetFingerprint(
+        Buffer.from(policy, 'hex'),
+        Buffer.from(name, 'hex')
+      ).fingerprint();
+      return { unit: asset, quantity: difference, fingerprint };
+    });
+
+    console.log(ownOutputValueDifference.filter((v) => v.quantity != 0));
+    setValue(ownOutputValueDifference.filter((v) => v.quantity != 0));
   };
 
   const getKeyHashes = async (tx, utxos, account) => {
@@ -276,15 +331,104 @@ const SignTx = ({ request, controller }) => {
             REQUEST
           </Text>
         </Box>
-        <Box mt="10">
-          <UnitDisplay
-            quantity="4500000"
-            decimals="6"
-            symbol="₳"
-            fontSize="2xl"
-            fontWeight="bold"
-            color="green"
-          />
+        <Box
+          mt="4"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          flexDirection="column"
+          rounded="lg"
+          shadow="md"
+          padding="5"
+        >
+          {value ? (
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="center"
+              fontSize="2xl"
+              fontWeight="bold"
+              color={
+                value.find((v) => v.unit === 'lovelace').quantity < 0
+                  ? 'green.500'
+                  : 'red.500'
+              }
+            >
+              <Text>
+                {value.find((v) => v.unit === 'lovelace').quantity < 0
+                  ? '+'
+                  : '-'}
+              </Text>
+              <UnitDisplay
+                quantity={abs(
+                  value.find((v) => v.unit === 'lovelace').quantity
+                )}
+                decimals="6"
+                symbol="₳"
+              />
+            </Stack>
+          ) : (
+            <Text fontSize="2xl" fontWeight="bold">
+              ...
+            </Text>
+          )}
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            fontSize="sm"
+            ml="4"
+          >
+            <Text>and</Text>
+            <Text>
+              <b>-7 | +5</b>
+            </Text>{' '}
+            <Text>assets</Text> <ChevronDownIcon cursor="pointer" />
+          </Stack>
+          <Box height="1px" mt="3" mb="2" width="50%" background="GrayText" />
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            fontSize="sm"
+          >
+            <Text fontWeight="bold">Fee:</Text>
+            <UnitDisplay quantity={fee} decimals="6" symbol="₳" />
+          </Stack>
+        </Box>
+        <Box mt="6">
+          <Text textAlign="center" fontSize="16" fontWeight="bold">
+            Sending To
+            <ArrowRightIcon ml="4" />
+          </Text>
+          <Box height="4" />
+          <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={80}>
+            {[1, 2].map(() => (
+              <>
+                <Stack direction="row" alignItems="center" mr="4">
+                  <Box width="200px" whiteSpace="nowrap">
+                    <MiddleEllipsis>
+                      <span>
+                        addr1qy90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sgxhc9z
+                      </span>
+                    </MiddleEllipsis>
+                  </Box>
+                  <Box textAlign="center">
+                    <UnitDisplay
+                      fontWeight="bold"
+                      quantity="100000000"
+                      decimals="6"
+                      symbol="₳"
+                    />
+                    <Text mt="-1" fontWeight="bold">
+                      + 5 assets <ChevronDownIcon />
+                    </Text>
+                  </Box>
+                </Stack>
+                <Box height="2" />
+              </>
+            ))}
+          </Scrollbars>
         </Box>
         {/* <Box
           mt="10"
@@ -298,14 +442,26 @@ const SignTx = ({ request, controller }) => {
         >
           <Scrollbars autoHide>{request.data.tx}</Scrollbars>
         </Box> */}
-        <Box mt="2.5" maxWidth="90%" wordBreak="break-all" textAlign="center">
-          <Text fontSize="sm">
-            <b>Fee:</b> {fee || '...'} ₳
-          </Text>
-          <Text fontSize="sm">
-            <b>ADA spent:</b> {value || value === 0 ? value : '...'} ₳
-          </Text>
-          <Text fontSize="sm">
+        <Box
+          bottom="24"
+          position="absolute"
+          maxWidth="90%"
+          wordBreak="break-all"
+          textAlign="center"
+          fontSize="xs"
+        >
+          {/* <Stack direction="row">
+            <Text>
+              <b>+ Minting</b>
+            </Text>
+            <Text>
+              <b>+ Certificates</b>
+            </Text>
+            <Text>
+              <b>+ Withdrawal</b>
+            </Text>
+          </Stack> */}
+          <Text>
             <b>Required keys:</b>{' '}
             {keyHashes.kind.map((keyHash, index) =>
               keyHashes.kind.length > 1 &&
@@ -320,7 +476,7 @@ const SignTx = ({ request, controller }) => {
         <Box
           position="absolute"
           width="full"
-          bottom="10"
+          bottom="8"
           display="flex"
           alignItems="center"
           justifyContent="center"
