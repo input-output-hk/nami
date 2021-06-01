@@ -65,7 +65,7 @@ const SignData = ({ request, controller }) => {
         <Box
           position="absolute"
           width="full"
-          bottom="10"
+          bottom="8"
           display="flex"
           alignItems="center"
           justifyContent="center"
