@@ -10,7 +10,7 @@ const theme = extendTheme({
       body: {
         width: POPUP_WINDOW.width + 'px',
         height: POPUP_WINDOW.height + 'px',
-        overflowX: 'hidden',
+        overflow: 'hidden',
       },
     },
   },
