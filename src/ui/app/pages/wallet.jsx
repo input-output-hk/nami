@@ -375,6 +375,7 @@ const Wallet = ({ data }) => {
             height="8"
           >
             <Button
+              onClick={() => history.push('/send')}
               size="sm"
               rightIcon={<Icon as={BsArrowUpRight} />}
               colorScheme="orange"

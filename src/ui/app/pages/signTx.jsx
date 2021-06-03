@@ -27,6 +27,7 @@ import {
 } from '@chakra-ui/popover';
 import Copy from '../components/copy';
 import { Portal } from '@chakra-ui/portal';
+import { Avatar } from '@chakra-ui/avatar';
 
 const abs = (big) => {
   return big < 0 ? BigInt(big.toString().slice(1)) : big;
@@ -645,25 +646,41 @@ const AssetsPopover = ({ assets, isDifference }) => {
                 assets.map((asset) => (
                   <Stack
                     mr="4"
-                    mb="1"
+                    m="1.5"
                     fontSize="xs"
                     direction="row"
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <Box
-                      width="180px"
-                      textAlign="center"
-                      whiteSpace="nowrap"
-                      fontWeight="normal"
-                      display="flex"
-                    >
-                      <MiddleEllipsis>
-                        <Copy label="Copied asset" copy={asset.fingerprint}>
-                          {hexToAscii(asset.unit.slice(56))}
-                        </Copy>
-                      </MiddleEllipsis>
-                    </Box>
+                    <Avatar
+                      userSelect="none"
+                      size="xs"
+                      name={hexToAscii(asset.unit.slice(56))}
+                    />
+
+                    <Copy label="Copied asset" copy={asset.fingerprint}>
+                      <Box
+                        width="200px"
+                        whiteSpace="nowrap"
+                        fontWeight="normal"
+                      >
+                        <Box mb="-0.5">
+                          <MiddleEllipsis>
+                            <span>{hexToAscii(asset.unit.slice(56))}</span>
+                          </MiddleEllipsis>
+                        </Box>
+                        <Box
+                          whiteSpace="nowrap"
+                          fontSize="xx-small"
+                          fontWeight="thin"
+                        >
+                          <MiddleEllipsis>
+                            <span>Policy: {asset.unit.slice(0, 56)}</span>
+                          </MiddleEllipsis>
+                        </Box>
+                      </Box>
+                    </Copy>
+
                     <Text
                       fontWeight="bold"
                       textAlign="center"

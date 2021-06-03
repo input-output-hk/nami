@@ -12,6 +12,7 @@ import { getAccounts } from '../api/extension';
 import CreateWallet from './app/pages/createWallet';
 import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
+import Send from './app/pages/send';
 
 const App = () => {
   const history = useHistory();
@@ -48,8 +49,11 @@ const App = () => {
         <Route path="/createWallet">
           <CreateWallet />
         </Route>
-        <Route path="/settings">
+        <Route exact path="/settings">
           <Settings />
+        </Route>
+        <Route exact path="/send">
+          <Send />
         </Route>
       </Switch>
     </div>
