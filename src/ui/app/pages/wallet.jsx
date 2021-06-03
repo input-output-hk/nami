@@ -52,7 +52,6 @@ import {
   PopoverBody,
   PopoverArrow,
   PopoverCloseButton,
-  Tooltip,
   Tabs,
   TabList,
   Tab,
@@ -73,6 +72,7 @@ import UnitDisplay from '../components/unitDisplay';
 import { onAccountChange } from '../../../api/extension/wallet';
 import AssetsViewer from '../components/assetsViewer';
 import HistoryViewer from '../components/historyViewer';
+import Copy from '../components/copy';
 
 const Wallet = ({ data }) => {
   const history = useHistory();
@@ -81,7 +81,6 @@ const Wallet = ({ data }) => {
     accounts: null,
     fiatPrice: 0,
   });
-  const [copied, setCopied] = React.useState(false);
   const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
   const deletAccountRef = React.useRef();
@@ -301,20 +300,17 @@ const Wallet = ({ data }) => {
             justifyContent="center"
           >
             <Text color="white" fontSize="md">
-              {state.account ? (
-                <UnitDisplay
-                  fontSize="sm"
-                  quantity={
-                    displayUnit(state.account.lovelace, 6) *
+              <UnitDisplay
+                fontSize="sm"
+                quantity={
+                  state.account &&
+                  displayUnit(state.account.lovelace, 6) *
                     state.fiatPrice *
                     10 ** 2
-                  }
-                  symbol="$"
-                  decimals={2}
-                />
-              ) : (
-                '...'
-              )}
+                }
+                symbol="$"
+                decimals={2}
+              />
             </Text>
           </Box>
 
@@ -352,22 +348,18 @@ const Wallet = ({ data }) => {
                     <>
                       <QRCode size={140} value={state.account.paymentAddr} />
                       <Box height="4" />
-                      <Tooltip isOpen={copied} label="Copied address">
+                      <Copy
+                        label="Copied address"
+                        copy={state.account.paymentAddr}
+                      >
                         <Text
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              state.account.paymentAddr
-                            );
-                            setCopied(true);
-                            setTimeout(() => setCopied(false), 800);
-                          }}
                           lineHeight="1.2"
                           cursor="pointer"
                           wordBreak="break-all"
                         >
                           {state.account.paymentAddr} <CopyIcon />
                         </Text>
-                      </Tooltip>
+                      </Copy>
                       <Box height="2" />
                     </>
                   )}

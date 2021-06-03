@@ -16,6 +16,17 @@ import UnitDisplay from '../components/unitDisplay';
 import { ArrowRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import MiddleEllipsis from 'react-middle-ellipsis';
 import AssetFingerprint from '@emurgo/cip14-js';
+import {
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+} from '@chakra-ui/popover';
+import Copy from '../components/copy';
+import { Portal } from '@chakra-ui/portal';
 
 const abs = (big) => {
   return big < 0 ? BigInt(big.toString().slice(1)) : big;
@@ -26,12 +37,29 @@ const SignTx = ({ request, controller }) => {
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [fee, setFee] = React.useState(0);
-  const [value, setValue] = React.useState(null);
+  const [value, setValue] = React.useState({
+    ownValue: null,
+    externalValue: null,
+  });
+  const [property, setProperty] = React.useState({
+    metadata: null,
+    certificate: null,
+    withdrawal: null,
+    minting: null,
+  });
   const [keyHashes, setKeyHashes] = React.useState({ kind: [], key: [] });
 
   const getFee = (tx) => {
     const fee = tx.body().fee().to_str();
     setFee(fee);
+  };
+
+  const getProperties = (tx) => {
+    const metadata = tx.metadata();
+    const certificate = tx.body().certs();
+    const withdrawal = tx.body().withdrawals();
+    const minting = tx.body().multiassets();
+    setProperty({ metadata, certificate, withdrawal, minting });
   };
 
   const getValue = (tx, utxos, account) => {
@@ -152,8 +180,35 @@ const SignTx = ({ request, controller }) => {
       return { unit: asset, quantity: difference, fingerprint };
     });
 
-    console.log(ownOutputValueDifference.filter((v) => v.quantity != 0));
-    setValue(ownOutputValueDifference.filter((v) => v.quantity != 0));
+    const externalValue = {};
+    Object.keys(externalOutputs).forEach(
+      (address) =>
+        (externalValue[address] = Object.keys(externalOutputs[address]).map(
+          (asset) => {
+            if (asset === 'lovelace') {
+              return {
+                unit: asset,
+                quantity: externalOutputs[address][asset],
+              };
+            }
+            const policy = asset.slice(0, 56);
+            const name = asset.slice(56);
+            const fingerprint = new AssetFingerprint(
+              Buffer.from(policy, 'hex'),
+              Buffer.from(name, 'hex')
+            ).fingerprint();
+            return {
+              unit: asset,
+              quantity: externalOutputs[address][asset],
+              fingerprint,
+            };
+          }
+        ))
+    );
+
+    console.log(externalValue);
+    const ownValue = ownOutputValueDifference.filter((v) => v.quantity != 0);
+    setValue({ ownValue, externalValue });
   };
 
   const getKeyHashes = async (tx, utxos, account) => {
@@ -308,6 +363,7 @@ const SignTx = ({ request, controller }) => {
     getFee(tx);
     getValue(tx, utxos, currentAccount);
     getKeyHashes(tx, utxos, currentAccount);
+    getProperties(tx);
   };
 
   React.useEffect(() => {
@@ -341,107 +397,141 @@ const SignTx = ({ request, controller }) => {
           shadow="md"
           padding="5"
         >
-          {value ? (
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="center"
-              fontSize="2xl"
-              fontWeight="bold"
-              color={
-                value.find((v) => v.unit === 'lovelace').quantity < 0
-                  ? 'green.500'
-                  : 'red.500'
-              }
-            >
-              <Text>
-                {value.find((v) => v.unit === 'lovelace').quantity < 0
-                  ? '+'
-                  : '-'}
-              </Text>
-              <UnitDisplay
-                quantity={abs(
-                  value.find((v) => v.unit === 'lovelace').quantity
-                )}
-                decimals="6"
-                symbol="₳"
-              />
-            </Stack>
+          {value.ownValue ? (
+            (() => {
+              const lovelace = value.ownValue.find(
+                (v) => v.unit === 'lovelace'
+              ).quantity;
+              const assets = value.ownValue.filter(
+                (v) => v.unit !== 'lovelace'
+              );
+              return (
+                <>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    fontSize="2xl"
+                    fontWeight="bold"
+                    color={lovelace <= 0 ? 'green.500' : 'red.500'}
+                  >
+                    <Text>{lovelace <= 0 ? '+' : '-'}</Text>
+                    <UnitDisplay
+                      quantity={abs(lovelace)}
+                      decimals="6"
+                      symbol="₳"
+                    />
+                  </Stack>
+                  {assets.length > 0 && (
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="center"
+                      fontSize="sm"
+                      ml="4"
+                    >
+                      <Text>and</Text>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="center"
+                        fontWeight="bold"
+                      >
+                        {assets.filter((v) => v.quantity > 0).length > 0 && (
+                          <Text color="red.500">
+                            - {assets.filter((v) => v.quantity > 0).length}{' '}
+                          </Text>
+                        )}
+                        {assets.filter((v) => v.quantity < 0).length > 0 &&
+                          assets.filter((v) => v.quantity > 0).length > 0 && (
+                            <Text>|</Text>
+                          )}
+                        {assets.filter((v) => v.quantity < 0).length > 0 && (
+                          <Text color="green.500">
+                            + {assets.filter((v) => v.quantity < 0).length}
+                          </Text>
+                        )}
+                      </Stack>
+                      <Text>assets</Text>{' '}
+                      <AssetsPopover assets={assets} isDifference />
+                    </Stack>
+                  )}
+                  <Box
+                    height="1px"
+                    mt="3"
+                    mb="2"
+                    width="50%"
+                    background="GrayText"
+                  />
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    fontSize="sm"
+                  >
+                    <Text fontWeight="bold">Fee:</Text>
+                    <UnitDisplay quantity={fee} decimals="6" symbol="₳" />
+                  </Stack>
+                </>
+              );
+            })()
           ) : (
             <Text fontSize="2xl" fontWeight="bold">
               ...
             </Text>
           )}
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="center"
-            fontSize="sm"
-            ml="4"
-          >
-            <Text>and</Text>
-            <Text>
-              <b>-7 | +5</b>
-            </Text>{' '}
-            <Text>assets</Text> <ChevronDownIcon cursor="pointer" />
-          </Stack>
-          <Box height="1px" mt="3" mb="2" width="50%" background="GrayText" />
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="center"
-            fontSize="sm"
-          >
-            <Text fontWeight="bold">Fee:</Text>
-            <UnitDisplay quantity={fee} decimals="6" symbol="₳" />
-          </Stack>
         </Box>
-        <Box mt="6">
-          <Text textAlign="center" fontSize="16" fontWeight="bold">
-            Sending To
-            <ArrowRightIcon ml="4" />
-          </Text>
-          <Box height="4" />
-          <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={80}>
-            {[1, 2].map(() => (
-              <>
-                <Stack direction="row" alignItems="center" mr="4">
-                  <Box width="200px" whiteSpace="nowrap">
-                    <MiddleEllipsis>
-                      <span>
-                        addr1qy90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sgxhc9z
-                      </span>
-                    </MiddleEllipsis>
-                  </Box>
-                  <Box textAlign="center">
-                    <UnitDisplay
-                      fontWeight="bold"
-                      quantity="100000000"
-                      decimals="6"
-                      symbol="₳"
-                    />
-                    <Text mt="-1" fontWeight="bold">
-                      + 5 assets <ChevronDownIcon />
-                    </Text>
-                  </Box>
-                </Stack>
-                <Box height="2" />
-              </>
-            ))}
-          </Scrollbars>
-        </Box>
-        {/* <Box
-          mt="10"
-          width="76%"
-          height="200px"
-          rounded="lg"
-          border="solid 2px"
-          borderColor="teal.400"
-          padding="2.5"
-          wordBreak="break-all"
-        >
-          <Scrollbars autoHide>{request.data.tx}</Scrollbars>
-        </Box> */}
+        {value.externalValue && Object.keys(value.externalValue).length > 0 && (
+          <Box mt="6">
+            <Text textAlign="center" fontSize="16" fontWeight="bold">
+              Sending To
+              <ArrowRightIcon ml="4" />
+            </Text>
+            <Box height="2" />
+            <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={80}>
+              {Object.keys(value.externalValue).map((address) => {
+                const lovelace = value.externalValue[address].find(
+                  (v) => v.unit === 'lovelace'
+                ).quantity;
+                const assets = value.externalValue[address].filter(
+                  (v) => v.unit !== 'lovelace'
+                );
+                return (
+                  <>
+                    <Stack direction="row" alignItems="center" mr="4">
+                      <Copy label="Copied address" copy={address}>
+                        <Box
+                          width="200px"
+                          whiteSpace="nowrap"
+                          fontWeight="normal"
+                        >
+                          <MiddleEllipsis>
+                            <span style={{ cursor: 'pointer' }}>{address}</span>
+                          </MiddleEllipsis>
+                        </Box>
+                      </Copy>
+                      <Box textAlign="center">
+                        <UnitDisplay
+                          fontWeight="bold"
+                          quantity="100000000"
+                          decimals="6"
+                          symbol="₳"
+                        />
+                        {assets.length > 0 && (
+                          <Text mt="-1" fontWeight="bold">
+                            + {assets.length} assets{' '}
+                            <AssetsPopover assets={assets} />
+                          </Text>
+                        )}
+                      </Box>
+                    </Stack>
+                    <Box height="2" />
+                  </>
+                );
+              })}
+            </Scrollbars>
+          </Box>
+        )}
         <Box
           bottom="24"
           position="absolute"
@@ -450,17 +540,28 @@ const SignTx = ({ request, controller }) => {
           textAlign="center"
           fontSize="xs"
         >
-          {/* <Stack direction="row">
-            <Text>
-              <b>+ Minting</b>
-            </Text>
-            <Text>
-              <b>+ Certificates</b>
-            </Text>
-            <Text>
-              <b>+ Withdrawal</b>
-            </Text>
-          </Stack> */}
+          <Stack direction="row" alignItems="center" justifyContent="center">
+            {property.minting && (
+              <Text>
+                <b>+ Minting</b>
+              </Text>
+            )}
+            {property.certificate && (
+              <Text>
+                <b>+ Certificate</b>
+              </Text>
+            )}
+            {property.withdrawal && (
+              <Text>
+                <b>+ Withdrawal</b>
+              </Text>
+            )}
+            {property.metadata && (
+              <Text>
+                <b>+ Metadata</b>
+              </Text>
+            )}
+          </Stack>
           <Text>
             <b>Required keys:</b>{' '}
             {keyHashes.kind.map((keyHash, index) =>
@@ -513,6 +614,77 @@ const SignTx = ({ request, controller }) => {
         }}
       />
     </>
+  );
+};
+
+const AssetsPopover = ({ assets, isDifference }) => {
+  const hexToAscii = (hex) => {
+    var _hex = hex.toString();
+    var str = '';
+    for (var i = 0; i < _hex.length && _hex.substr(i, 2) !== '00'; i += 2)
+      str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
+    return str;
+  };
+  return (
+    <Popover matchWidth={true} offset={[isDifference ? -60 : -125, 0]}>
+      <PopoverTrigger>
+        <ChevronDownIcon cursor="pointer" />
+      </PopoverTrigger>
+      <Portal>
+        <PopoverContent width="full">
+          <PopoverArrow />
+          <PopoverCloseButton />
+          <PopoverHeader fontWeight="bold">Assets</PopoverHeader>
+          <PopoverBody>
+            <Scrollbars
+              style={{ width: '100%' }}
+              autoHeight
+              autoHeightMax={200}
+            >
+              {assets &&
+                assets.map((asset) => (
+                  <Stack
+                    mr="4"
+                    mb="1"
+                    fontSize="xs"
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Box
+                      width="180px"
+                      textAlign="center"
+                      whiteSpace="nowrap"
+                      fontWeight="normal"
+                      display="flex"
+                    >
+                      <MiddleEllipsis>
+                        <Copy label="Copied asset" copy={asset.fingerprint}>
+                          {hexToAscii(asset.unit.slice(56))}
+                        </Copy>
+                      </MiddleEllipsis>
+                    </Box>
+                    <Text
+                      fontWeight="bold"
+                      textAlign="center"
+                      color={
+                        isDifference
+                          ? asset.quantity <= 0
+                            ? 'green.500'
+                            : 'red.500'
+                          : 'black'
+                      }
+                    >
+                      {isDifference ? (asset.quantity <= 0 ? '+' : '-') : '+'}{' '}
+                      {abs(asset.quantity).toString()}
+                    </Text>
+                  </Stack>
+                ))}
+            </Scrollbars>
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
+    </Popover>
   );
 };
 

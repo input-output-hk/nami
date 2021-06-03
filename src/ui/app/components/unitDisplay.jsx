@@ -12,7 +12,13 @@ const UnitDisplay = ({ quantity, decimals, symbol, ...props }) => {
     .split('.')[1];
   return (
     <Box {...props}>
-      {num}.<span style={{ fontSize: '75%' }}>{quantity ? subNum : '...'}</span>{' '}
+      {quantity || quantity === 0 ? (
+        <>
+          {num}.<span style={{ fontSize: '75%' }}>{subNum}</span>{' '}
+        </>
+      ) : (
+        '...'
+      )}
       {symbol}
     </Box>
   );
