@@ -268,6 +268,53 @@ let utxoList = [
 
 const CoinSelection = require('../lib/coinSelection');
 
-let result = CoinSelection.randomImprove(utxoList, reqOutputs, 20);
+const utxos = [
+  {
+    txHash: 'ab19f49bfa03fa14cc9d58b169c5547da59f8135f871e19962a4777d4040db27',
+    txId: 0,
+    amount: [
+      {
+        unit: 'lovelace',
+        quantity: '998930164',
+      },
+      {
+        unit: '1e852216c006c55490cd85b6e0ba523a37c2be3526f479e61cca41eb436f6f6c',
+        quantity: '10',
+      },
+      {
+        unit: '1e852216c006c55490cd85b6e0ba523a37c2be3526f479e61cca41eb4e616d69',
+        quantity: '1',
+      },
+    ],
+  },
+  {
+    txHash: 'ab19f49bfa03fa14cc9d58b169c5547da59f8135f871e19962a4777d4040db27',
+    txId: 0,
+    amount: [
+      {
+        unit: 'lovelace',
+        quantity: '998930164',
+      },
+      {
+        unit: '1e852216c006c55490cd85b6e0ba523a37c2be3526f479e61cca41eb436f6f6c',
+        quantity: '10',
+      },
+      {
+        unit: '1e852216c006c55490cd85b6e0ba523a37c2be3526f479e61cca41eb4e616d69',
+        quantity: '1',
+      },
+    ],
+  },
+];
+
+const receiver = [
+  {
+    address:
+      'addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa',
+    amount: [{ unit: 'lovelace', quantity: '80000000' }],
+  },
+];
+
+let result = CoinSelection.randomImprove(utxos, receiver, 20);
 
 console.log(result);
