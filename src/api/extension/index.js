@@ -605,4 +605,8 @@ export const updateAccount = async () => {
 };
 
 export const displayUnit = (quantity, decimals = 6) =>
-  parseInt(quantity) / (1 * 10 ** decimals);
+  parseInt(quantity) / 10 ** decimals;
+
+export const toUnit = (amount, decimals = 6) => {
+  return amount.replace(/[.,\s]/g, '') + '0'.repeat(6);
+};

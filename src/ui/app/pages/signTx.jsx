@@ -645,12 +645,11 @@ const AssetsPopover = ({ assets, isDifference }) => {
               {assets &&
                 assets.map((asset) => (
                   <Stack
-                    mr="4"
-                    m="1.5"
+                    mr="5"
+                    my="2"
                     fontSize="xs"
                     direction="row"
                     alignItems="center"
-                    justifyContent="center"
                   >
                     <Avatar
                       userSelect="none"

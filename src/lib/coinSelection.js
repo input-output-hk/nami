@@ -284,8 +284,8 @@ module.exports = {
         compiledOutput,
         limit - utxoSelection.selection.length,
         {
-          ideal: compiledOutput.quantity * 2,
-          maximum: compiledOutput.quantity * 3,
+          ideal: compiledOutput.quantity * BigInt(2),
+          maximum: compiledOutput.quantity * BigInt(3),
         }
       );
     });
@@ -360,7 +360,7 @@ function descSelect(utxoSelection, compiledOutput, limit) {
   utxoSelection.subset = utxoSelection.subset.sort((utxoA, utxoB) => {
     let a = utxoA.amount.find((amount) => amount.unit === compiledOutput.unit);
     let b = utxoB.amount.find((amount) => amount.unit === compiledOutput.unit);
-    return (a.quantity - b.quantity) * -1;
+    return (a.quantity - b.quantity) * BigInt(-1);
   });
 
   let compiledAmount = utxoSelection.amount.find(
@@ -442,7 +442,7 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     .pop();
 
   let newAmount =
-    parseInt(
+    BigInt(
       utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity
     ) + compiledAmount.quantity;
 
@@ -486,7 +486,7 @@ function addAmounts(amountList, compiledAmountList) {
     );
 
     // Normalize amount value
-    amount.quantity = parseInt(amount.quantity);
+    amount.quantity = BigInt(amount.quantity);
 
     // 'Add to' or 'insert' in compiledOutputList
     entry
