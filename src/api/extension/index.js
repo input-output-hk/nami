@@ -604,9 +604,12 @@ export const updateAccount = async () => {
   return true;
 };
 
-export const displayUnit = (quantity, decimals = 6) =>
-  parseInt(quantity) / 10 ** decimals;
+export const displayUnit = (quantity, decimals = 6) => {
+  return parseInt(quantity) / 10 ** decimals;
+};
 
 export const toUnit = (amount, decimals = 6) => {
-  return amount.replace(/[.,\s]/g, '') + '0'.repeat(6);
+  return parseFloat(amount.replace(/[,\s]/g, ''))
+    .toLocaleString('en-EN', { minimumFractionDigits: decimals })
+    .replace(/[.,\s]/g, '');
 };

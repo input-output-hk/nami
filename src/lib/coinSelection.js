@@ -227,7 +227,7 @@
  * CoinSelection Module.
  * @module src/lib/CoinSelection
  */
-module.exports = {
+export default {
   /**
    * Random-Improve coin selection algorithm
    * @param {UTxOList} inputsAvailable - The set of inputs available for selection.
@@ -284,8 +284,8 @@ module.exports = {
         compiledOutput,
         limit - utxoSelection.selection.length,
         {
-          ideal: compiledOutput.quantity * BigInt(2),
-          maximum: compiledOutput.quantity * BigInt(3),
+          ideal: BigInt(compiledOutput.quantity) * BigInt(2),
+          maximum: BigInt(compiledOutput.quantity) * BigInt(3),
         }
       );
     });
@@ -316,7 +316,10 @@ function randomSelect(utxoSelection, compiledOutput, limit) {
   );
 
   // If quantity is met, return subset into remaining list and exit
-  if (compiledAmount && compiledAmount.quantity >= compiledOutput.quantity) {
+  if (
+    compiledAmount &&
+    BigInt(compiledAmount.quantity) >= BigInt(compiledOutput.quantity)
+  ) {
     utxoSelection.remaining = [
       ...utxoSelection.remaining,
       ...utxoSelection.subset,
@@ -360,7 +363,7 @@ function descSelect(utxoSelection, compiledOutput, limit) {
   utxoSelection.subset = utxoSelection.subset.sort((utxoA, utxoB) => {
     let a = utxoA.amount.find((amount) => amount.unit === compiledOutput.unit);
     let b = utxoB.amount.find((amount) => amount.unit === compiledOutput.unit);
-    return (a.quantity - b.quantity) * BigInt(-1);
+    return (BigInt(a.quantity) - BigInt(b.quantity)) * BigInt(-1);
   });
 
   let compiledAmount = utxoSelection.amount.find(
@@ -389,7 +392,7 @@ function descSelect(utxoSelection, compiledOutput, limit) {
     }
 
     limit--;
-  } while (compiledAmount.quantity < compiledOutput.quantity);
+  } while (BigInt(compiledAmount.quantity) < BigInt(compiledOutput.quantity));
 
   // Quantity is met, return subset into remaining list and return selection
   utxoSelection.remaining = [
@@ -415,9 +418,14 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     (amount) => amount.unit === compiledOutput.unit
   );
 
-  if (compiledAmount.quantity >= range.ideal || nbFreeUTxO <= 0 || limit <= 0) {
+  if (
+    BigInt(compiledAmount.quantity) >= range.ideal ||
+    nbFreeUTxO <= 0 ||
+    limit <= 0
+  ) {
     // Cannot improve further, calculate change
-    let change = compiledAmount.quantity - compiledOutput.quantity;
+    let change =
+      BigInt(compiledAmount.quantity) - BigInt(compiledOutput.quantity);
 
     if (change) {
       utxoSelection.change.push({
@@ -444,11 +452,11 @@ function improve(utxoSelection, compiledOutput, limit, range) {
   let newAmount =
     BigInt(
       utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity
-    ) + compiledAmount.quantity;
+    ) + BigInt(compiledAmount.quantity);
 
   if (
-    Math.abs(range.ideal - newAmount) <
-      Math.abs(range.ideal - compiledAmount.quantity) &&
+    abs(BigInt(range.ideal) - newAmount) <
+      abs(BigInt(range.ideal) - BigInt(compiledAmount.quantity)) &&
     newAmount <= range.maximum
   ) {
     utxoSelection.selection.push(utxo);
@@ -486,11 +494,13 @@ function addAmounts(amountList, compiledAmountList) {
     );
 
     // Normalize amount value
-    amount.quantity = BigInt(amount.quantity);
+    // amount.quantity = BigInt(amount.quantity);
 
     // 'Add to' or 'insert' in compiledOutputList
     entry
-      ? (entry.quantity = entry.quantity + amount.quantity)
+      ? (entry.quantity = (
+          BigInt(entry.quantity) + BigInt(amount.quantity)
+        ).toString())
       : compiledAmountList.push(amount);
   });
 }
@@ -502,8 +512,11 @@ function addAmounts(amountList, compiledAmountList) {
  * @return {AmountList} - The sorted AmountList
  */
 function sortAmountList(amountList, sortOrder = 'ASC') {
-  return amountList.sort(
-    (a, b) => (a.quantity - b.quantity) * (sortOrder === 'DESC' ? -1 : 1)
+  return amountList.sort((a, b) =>
+    Number(
+      (BigInt(a.quantity) - BigInt(b.quantity)) *
+        BigInt(sortOrder === 'DESC' ? -1 : 1)
+    )
   );
 }
 
@@ -544,4 +557,9 @@ function addChangeExtra(utxoSelection, compiledOutputList) {
       utxoSelection.change.push(amount);
     }
   });
+}
+
+// Helper
+function abs(big) {
+  return big < 0 ? BigInt(big.toString().slice(1)) : big;
 }
