@@ -105,12 +105,13 @@ const Wallet = ({ data }) => {
     const allAccounts = await getAccounts();
     const fiatPrice = await provider.api.price();
     const network = await getNetwork();
-    // setState((s) => ({
-    //   ...s,
-    //   account: currentAccount,
-    //   accounts: allAccounts,
-    //   fiatPrice,
-    // }));
+    setState((s) => ({
+      ...s,
+      account: currentAccount,
+      accounts: allAccounts,
+      fiatPrice,
+      network,
+    }));
     await updateAccount();
     const updatedCurrentAccount = await getCurrentAccount();
     const updatedAllAccounts = await getAccounts();
@@ -304,9 +305,11 @@ const Wallet = ({ data }) => {
                 fontSize="sm"
                 quantity={
                   state.account &&
-                  displayUnit(state.account.lovelace, 6) *
-                    state.fiatPrice *
-                    10 ** 2
+                  parseInt(
+                    displayUnit(state.account.lovelace) *
+                      state.fiatPrice *
+                      10 ** 2
+                  )
                 }
                 symbol="$"
                 decimals={2}

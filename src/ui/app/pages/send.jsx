@@ -5,6 +5,7 @@ import {
   getCurrentAccount,
   getUtxos,
   signData,
+  toUnit,
 } from '../../../api/extension';
 import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
@@ -27,6 +28,14 @@ import MiddleEllipsis from 'react-middle-ellipsis';
 import { Avatar } from '@chakra-ui/avatar';
 import AssetFingerprint from '@emurgo/cip14-js';
 import UnitDisplay from '../components/unitDisplay';
+import {
+  assetsToValue,
+  buildTx,
+  initTx,
+  minRequiredAda,
+  signAndSubmit,
+} from '../../../api/extension/wallet';
+import { FixedSizeList as List } from 'react-window';
 
 const Send = () => {
   const hexToAscii = (hex) => {
@@ -40,15 +49,25 @@ const Send = () => {
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [assets, setAssets] = React.useState(null);
+  const [utxos, setUtxos] = React.useState([]);
   const [fee, setFee] = React.useState('0');
-  const [ada, setAda] = React.useState('');
+  const [value, setValue] = React.useState({ ada: '', assets: [] });
+  const [address, setAddress] = React.useState('');
   const getInfo = async () => {
     const currentAccount = await getCurrentAccount();
     setAccount(currentAccount);
     const utxos = await getUtxos();
-    console.log(utxos);
+    setUtxos(utxos);
     setAssets(sumUtxos(utxos));
+    // console.log(await minR(utxos[0]));
   };
+
+  // const minR = async (utxo) => {
+  //   const value = await assetsToValue(utxo.amount);
+  //   const parameters = await initTx();
+  //   const min = await minRequiredAda(value, parameters.minUtxo);
+  //   return min.to_str();
+  // };
 
   const sumUtxos = (utxos) => {
     const sumObject = {};
@@ -110,27 +129,33 @@ const Send = () => {
           justifyContent="center"
           width="80%"
         >
-          <Input fontSize="xs" placeholder="Receiver" />
+          <Input
+            fontSize="xs"
+            placeholder="Receiver"
+            onChange={(e) => setAddress(e.target.value)}
+          />
           <Box height="4" />
           <Stack direction="row" alignItems="center" justifyContent="center">
             <InputGroup size="sm" flex={3}>
-              <InputLeftAddon rounded="lg" children="₳" />
+              <InputLeftAddon rounded="md" children="₳" />
               <Input
-                value={ada}
-                onChange={(e) => setAda(e.target.value)}
+                value={value.ada}
+                onChange={(e) =>
+                  setValue((v) => ({ ...v, ada: e.target.value }))
+                }
                 onBlur={(e) => {
-                  const v = parseFloat(
+                  const ada = parseFloat(
                     e.target.value.replace(/[,\s]/g, '')
                   ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
-                  if (v != 'NaN') {
-                    setAda(v);
-                  } else setAda('');
+                  if (ada != 'NaN') {
+                    setValue((v) => ({ ...v, ada }));
+                  } else setValue('');
                 }}
                 placeholder="0.000000"
-                rounded="lg"
+                rounded="md"
               />
             </InputGroup>
-            <AssetsSelector assets={assets} />
+            <AssetsSelector assets={assets} setValue={setValue} />
           </Stack>
         </Box>
         <Box
@@ -141,8 +166,13 @@ const Send = () => {
           alignItems="center"
           justifyContent="center"
         >
-          <Stack direction="row" alignItems="center" justifyContent="center">
-            <Text>Fee: </Text>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            fontSize="sm"
+          >
+            <Text fontWeight="bold">Fee: </Text>
             <UnitDisplay quantity={fee} decimals={6} symbol="₳" />
           </Stack>
         </Box>
@@ -156,7 +186,31 @@ const Send = () => {
         >
           <Button
             colorScheme="orange"
-            onClick={() => ref.current.openModal()}
+            // onClick={() => ref.current.openModal()}
+            onClick={async () => {
+              const output = {
+                address,
+                amount: [{ unit: 'lovelace', quantity: toUnit(value.ada) }],
+              };
+              value.assets.forEach((asset) =>
+                output.amount.push({
+                  unit: asset.unit,
+                  quantity: toUnit(asset.quantity, 0),
+                })
+              );
+
+              console.log(output);
+              const protocolParameters = await initTx();
+              const tx = await buildTx(
+                account,
+                utxos,
+                [output],
+                protocolParameters
+              );
+              console.log(tx);
+              const txHash = await signAndSubmit(account, tx);
+              console.log(txHash);
+            }}
             rightIcon={<Icon as={BsArrowUpRight} />}
           >
             Send
@@ -184,7 +238,33 @@ const Send = () => {
   );
 };
 
-const AssetsSelector = ({ assets }) => {
+// Asset Popup
+
+const CustomScrollbars = ({ onScroll, forwardedRef, style, children }) => {
+  const refSetter = React.useCallback((scrollbarsRef) => {
+    if (scrollbarsRef) {
+      forwardedRef(scrollbarsRef.view);
+    } else {
+      forwardedRef(null);
+    }
+  }, []);
+
+  return (
+    <Scrollbars
+      ref={refSetter}
+      style={{ ...style, overflow: 'hidden' }}
+      onScroll={onScroll}
+    >
+      {children}
+    </Scrollbars>
+  );
+};
+
+const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
+  <CustomScrollbars {...props} forwardedRef={ref} />
+));
+
+const AssetsSelector = ({ assets, setValue }) => {
   const hexToAscii = (hex) => {
     var _hex = hex.toString();
     var str = '';
@@ -193,7 +273,7 @@ const AssetsSelector = ({ assets }) => {
     return str;
   };
   return (
-    <Popover matchWidth={true} offset={[-110, 0]}>
+    <Popover matchWidth={true} offset={[-108, 0]}>
       <PopoverTrigger>
         <Button
           flex={1}
@@ -220,35 +300,61 @@ const AssetsSelector = ({ assets }) => {
           />
         </PopoverHeader>
         <PopoverBody p="-2" pr="-5">
-          <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={200}>
-            <Box display="flex" flexDirection="column" my="1">
-              {assets &&
-                assets
-                  .filter((asset) => asset.unit !== 'lovelace')
-                  .map((asset) => (
-                    <Button
-                      p="1.5"
-                      mr="4"
-                      ml="1"
-                      my="0.5"
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            flexDirection="column"
+            my="1"
+          >
+            {assets && (
+              <List
+                outerElementType={CustomScrollbarsVirtualList}
+                height={200}
+                itemCount={assets.length - 1}
+                itemSize={45}
+                width={385}
+                layout="vertical"
+              >
+                {({ index, style }) => {
+                  const asset = assets.filter(
+                    (asset) => asset.unit !== 'lovelace'
+                  )[index];
+                  return (
+                    <Box
+                      style={style}
                       display="flex"
                       alignItems="center"
-                      justifyContent="start"
-                      variant="ghost"
+                      justifyContent="center"
                     >
-                      <Stack
-                        fontSize="xs"
-                        direction="row"
+                      <Button
+                        width="96%"
+                        onClick={() =>
+                          setValue((v) => ({
+                            ...v,
+                            assets: v.assets.concat(asset),
+                          }))
+                        }
+                        mr="3"
+                        ml="3"
+                        display="flex"
                         alignItems="center"
                         justifyContent="start"
+                        variant="ghost"
                       >
-                        <Avatar
-                          userSelect="none"
-                          size="xs"
-                          name={hexToAscii(asset.unit.slice(56))}
-                        />
+                        <Stack
+                          width="100%"
+                          fontSize="xs"
+                          direction="row"
+                          alignItems="center"
+                          justifyContent="start"
+                        >
+                          <Avatar
+                            userSelect="none"
+                            size="xs"
+                            name={hexToAscii(asset.unit.slice(56))}
+                          />
 
-                        <Copy label="Copied asset" copy={asset.fingerprint}>
                           <Box
                             textAlign="left"
                             width="200px"
@@ -270,16 +376,17 @@ const AssetsSelector = ({ assets }) => {
                               </MiddleEllipsis>
                             </Box>
                           </Box>
-                        </Copy>
-
-                        <Text fontWeight="bold" textAlign="center">
-                          {asset.quantity}
-                        </Text>
-                      </Stack>
-                    </Button>
-                  ))}
-            </Box>
-          </Scrollbars>
+                          <Box>
+                            <Text fontWeight="bold">{asset.quantity}</Text>
+                          </Box>
+                        </Stack>
+                      </Button>
+                    </Box>
+                  );
+                }}
+              </List>
+            )}
+          </Box>
         </PopoverBody>
       </PopoverContent>
     </Popover>

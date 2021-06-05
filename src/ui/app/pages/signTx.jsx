@@ -28,6 +28,7 @@ import {
 import Copy from '../components/copy';
 import { Portal } from '@chakra-ui/portal';
 import { Avatar } from '@chakra-ui/avatar';
+import { FixedSizeList as List } from 'react-window';
 
 const abs = (big) => {
   return big < 0 ? BigInt(big.toString().slice(1)) : big;
@@ -37,7 +38,7 @@ const SignTx = ({ request, controller }) => {
   const history = useHistory();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
-  const [fee, setFee] = React.useState(0);
+  const [fee, setFee] = React.useState('0');
   const [value, setValue] = React.useState({
     ownValue: null,
     externalValue: null,
@@ -52,6 +53,7 @@ const SignTx = ({ request, controller }) => {
 
   const getFee = (tx) => {
     const fee = tx.body().fee().to_str();
+    console.log(fee);
     setFee(fee);
   };
 
@@ -514,7 +516,7 @@ const SignTx = ({ request, controller }) => {
                       <Box textAlign="center">
                         <UnitDisplay
                           fontWeight="bold"
-                          quantity="100000000"
+                          quantity={lovelace}
                           decimals="6"
                           symbol="₳"
                         />
@@ -618,6 +620,32 @@ const SignTx = ({ request, controller }) => {
   );
 };
 
+// Assets Popover
+
+const CustomScrollbars = ({ onScroll, forwardedRef, style, children }) => {
+  const refSetter = React.useCallback((scrollbarsRef) => {
+    if (scrollbarsRef) {
+      forwardedRef(scrollbarsRef.view);
+    } else {
+      forwardedRef(scrollbarsRef.view);
+    }
+  }, []);
+
+  return (
+    <Scrollbars
+      ref={refSetter}
+      style={{ ...style, overflow: 'hidden' }}
+      onScroll={onScroll}
+    >
+      {children}
+    </Scrollbars>
+  );
+};
+
+const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
+  <CustomScrollbars {...props} forwardedRef={ref} />
+));
+
 const AssetsPopover = ({ assets, isDifference }) => {
   const hexToAscii = (hex) => {
     var _hex = hex.toString();
@@ -627,7 +655,21 @@ const AssetsPopover = ({ assets, isDifference }) => {
     return str;
   };
   return (
-    <Popover matchWidth={true} offset={[isDifference ? -60 : -125, 0]}>
+    <Popover
+      offset={[
+        isDifference
+          ? assets.filter((v) => v.quantity < 0).length > 0 &&
+            assets.filter((v) => v.quantity > 0).length > 0
+            ? assets.length < 5
+              ? -80
+              : -70
+            : assets.length < 5
+            ? -60
+            : -70
+          : -125,
+        0,
+      ]}
+    >
       <PopoverTrigger>
         <ChevronDownIcon cursor="pointer" />
       </PopoverTrigger>
@@ -636,67 +678,109 @@ const AssetsPopover = ({ assets, isDifference }) => {
           <PopoverArrow />
           <PopoverCloseButton />
           <PopoverHeader fontWeight="bold">Assets</PopoverHeader>
-          <PopoverBody>
-            <Scrollbars
-              style={{ width: '100%' }}
-              autoHeight
-              autoHeightMax={200}
+          <PopoverBody p="-2" pr="-5">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              flexDirection="column"
+              my="1"
             >
-              {assets &&
-                assets.map((asset) => (
-                  <Stack
-                    mr="5"
-                    my="2"
-                    fontSize="xs"
-                    direction="row"
-                    alignItems="center"
-                  >
-                    <Avatar
-                      userSelect="none"
-                      size="xs"
-                      name={hexToAscii(asset.unit.slice(56))}
-                    />
-
-                    <Copy label="Copied asset" copy={asset.fingerprint}>
+              {assets && (
+                <List
+                  outerElementType={CustomScrollbarsVirtualList}
+                  height={200}
+                  itemCount={assets.length}
+                  itemSize={45}
+                  width={385}
+                  layout="vertical"
+                >
+                  {({ index, style }) => {
+                    const asset = assets[index];
+                    return (
                       <Box
-                        width="200px"
-                        whiteSpace="nowrap"
-                        fontWeight="normal"
+                        style={style}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
                       >
-                        <Box mb="-0.5">
-                          <MiddleEllipsis>
-                            <span>{hexToAscii(asset.unit.slice(56))}</span>
-                          </MiddleEllipsis>
-                        </Box>
                         <Box
-                          whiteSpace="nowrap"
-                          fontSize="xx-small"
-                          fontWeight="thin"
+                          width="110%"
+                          ml="3"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="start"
                         >
-                          <MiddleEllipsis>
-                            <span>Policy: {asset.unit.slice(0, 56)}</span>
-                          </MiddleEllipsis>
+                          <Stack
+                            width="100%"
+                            fontSize="xs"
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="start"
+                          >
+                            <Avatar
+                              userSelect="none"
+                              size="xs"
+                              name={hexToAscii(asset.unit.slice(56))}
+                            />
+
+                            <Box
+                              textAlign="left"
+                              width="200px"
+                              whiteSpace="nowrap"
+                              fontWeight="normal"
+                            >
+                              <Copy
+                                label="Copied asset"
+                                copy={asset.fingerprint}
+                              >
+                                <Box mb="-0.5">
+                                  <MiddleEllipsis>
+                                    <span>
+                                      {hexToAscii(asset.unit.slice(56))}
+                                    </span>
+                                  </MiddleEllipsis>
+                                </Box>
+                                <Box
+                                  whiteSpace="nowrap"
+                                  fontSize="xx-small"
+                                  fontWeight="thin"
+                                >
+                                  <MiddleEllipsis>
+                                    <span>
+                                      Policy: {asset.unit.slice(0, 56)}
+                                    </span>
+                                  </MiddleEllipsis>
+                                </Box>
+                              </Copy>
+                            </Box>
+                            <Box>
+                              <Text
+                                fontWeight="bold"
+                                color={
+                                  isDifference
+                                    ? asset.quantity <= 0
+                                      ? 'green.500'
+                                      : 'red.500'
+                                    : 'black'
+                                }
+                              >
+                                {isDifference
+                                  ? asset.quantity <= 0
+                                    ? '+'
+                                    : '-'
+                                  : '+'}{' '}
+                                {abs(asset.quantity).toString()}
+                              </Text>
+                            </Box>
+                          </Stack>
                         </Box>
                       </Box>
-                    </Copy>
-
-                    <Text
-                      fontWeight="bold"
-                      textAlign="center"
-                      color={
-                        isDifference
-                          ? asset.quantity <= 0
-                            ? 'green.500'
-                            : 'red.500'
-                          : 'black'
-                      }
-                    >
-                      {isDifference ? (asset.quantity <= 0 ? '+' : '-') : '+'}{' '}
-                      {abs(asset.quantity).toString()}
-                    </Text>
-                  </Stack>
-                ))}
-            </Scrollbars>
+                    );
+                  }}
+                </List>
+              )}
+            </Box>
           </PopoverBody>
         </PopoverContent>
       </Portal>

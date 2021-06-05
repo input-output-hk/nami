@@ -43,7 +43,8 @@
     "react-router-dom": "^5.2.0",
     "react-slick": "^0.28.1",
     "react-tiger-transition": "^4.1.2",
-    "react-transition-group": "^4.4.1"
+    "react-transition-group": "^4.4.1",
+    "react-window": "^1.8.6"
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",

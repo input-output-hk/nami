@@ -4,11 +4,10 @@ import { displayUnit } from '../../../api/extension';
 
 const UnitDisplay = ({ quantity, decimals, symbol, ...props }) => {
   const num = displayUnit(quantity, decimals)
-    .toLocaleString('en-EN')
+    .toLocaleString('en-EN', { minimumFractionDigits: decimals })
     .split('.')[0];
   const subNum = displayUnit(quantity, decimals)
-    .toFixed(decimals)
-    .toLocaleString('en-EN')
+    .toLocaleString('en-EN', { minimumFractionDigits: decimals })
     .split('.')[1];
   return (
     <Box {...props}>
