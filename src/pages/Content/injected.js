@@ -1,9 +1,7 @@
 import {
   enable,
-  getAddresses,
+  getAddress,
   getBalance,
-  getChangeAddress,
-  getDelegation,
   getUtxos,
   isEnabled,
   onAccountChange,
@@ -12,16 +10,22 @@ import {
   submitTx,
 } from '../../api/webpage';
 
-window.cardano = {
-  getBalance: () => getBalance(),
-  getDelegation: () => getDelegation(),
-  enable: () => enable(),
-  isEnabled: () => isEnabled(),
-  signData: (address, message) => signData(address, message),
-  signTx: (tx) => signTx(tx),
-  submitTx: (tx) => submitTx(tx),
-  getUtxos: (paginate = undefined) => getUtxos(paginate),
-  getAddresses: () => getAddresses(),
-  getChangeAddress: () => getChangeAddress(),
-  onAccountChange: (callback) => onAccountChange(callback),
+window.cardano_request_read_access = async () => {
+  if (await enable()) {
+    window.cardano = {
+      get_balance: () => getBalance(),
+      sign_data: (address, message) => signData(address, message),
+      sign_tx: (tx) => signTx(tx),
+      submit_tx: (tx) => submitTx(tx),
+      get_utxos: (paginate = undefined) => getUtxos(paginate),
+      get_used_addresses: async () => [await getAddress()],
+      get_unused_addresses: () => [],
+      get_change_address: async () => [await getAddress()],
+      on_account_change: (callback) => onAccountChange(callback),
+    };
+    return true;
+  }
+  return false;
 };
+
+window.cardano_check_read_access = () => isEnabled();

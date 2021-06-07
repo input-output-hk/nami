@@ -662,7 +662,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
             assets.filter((v) => v.quantity > 0).length > 0
             ? assets.length < 5
               ? -80
-              : -70
+              : -95
             : assets.length < 5
             ? -60
             : -70
