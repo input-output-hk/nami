@@ -74,6 +74,9 @@ import AssetsViewer from '../components/assetsViewer';
 import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
 
+// Assets
+import Logo from '../../../assets/img/icon-128.png';
+
 const Wallet = ({ data }) => {
   const history = useHistory();
   const [state, setState] = React.useState({
@@ -150,6 +153,9 @@ const Wallet = ({ data }) => {
           width="full"
           position="relative"
         >
+          {/* <Box zIndex="2" position="absolute" top="6" left="6">
+            <Image width="40px" src={Logo} />
+          </Box> */}
           <Box zIndex="2" position="absolute" top="6" right="6">
             <Menu
               isOpen={menu}

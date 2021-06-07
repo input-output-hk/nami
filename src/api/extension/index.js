@@ -14,6 +14,7 @@ import randomColor from 'randomcolor';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
+import { assetsToValue, utxoToCbor } from './wallet';
 
 const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -103,7 +104,8 @@ export const getBalance = async () => {
     { headers: provider.api.key(network) }
   ).then((res) => res.json());
   if (!result || result.error) return [];
-  return result.amount;
+  const value = await assetsToValue(result.amount);
+  return Buffer.from(value.to_bytes(), 'hex').toString('hex');
 };
 
 export const getTransactions = async (paginate = 1) => {
@@ -129,25 +131,28 @@ export const getUtxos = async (paginate = undefined) => {
         `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}`,
       { headers: provider.api.key(network) }
     ).then((res) => res.json());
-    if (!result || result.error) pageResult = [];
+    if (!pageResult || pageResult.error) pageResult = [];
     result = result.concat(pageResult);
     if (pageResult.length <= 0 || paginate) break;
     page++;
   }
-
-  return result.map((utxo) => ({
-    txHash: utxo.tx_hash,
-    txId: utxo.output_index,
-    amount: utxo.amount,
-  }));
+  const address = await getAddress();
+  return await Promise.all(
+    result.map(async (utxo) => {
+      const output = await utxoToCbor(utxo);
+      return { ...output, address };
+    })
+  );
 };
 
-export const getAddresses = async () => {
+export const getAddress = async () => {
+  await Loader.load();
   const currentAccount = await getCurrentAccount();
-  return {
-    paymentAddr: [currentAccount.paymentAddr],
-    rewardAddr: currentAccount.rewardAddr,
-  };
+  const paymentAddr = Buffer.from(
+    Loader.Cardano.Address.from_bech32(currentAccount.paymentAddr).to_bytes(),
+    'hex'
+  ).toString('hex');
+  return paymentAddr;
 };
 
 export const getCurrentAccountIndex = async () => {
@@ -407,11 +412,8 @@ const emitAccountChange = async (addresses) => {
 
 export const switchAccount = async (accountIndex) => {
   await setStorage({ [STORAGE.currentAccount]: accountIndex });
-  const currentAccount = await getCurrentAccount();
-  emitAccountChange({
-    paymentAddr: [currentAccount.paymentAddr],
-    rewardAddr: currentAccount.paymentAddr,
-  });
+  const address = await getAddress();
+  emitAccountChange([address]);
   return true;
 };
 

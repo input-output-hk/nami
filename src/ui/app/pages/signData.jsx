@@ -50,7 +50,7 @@ const SignData = ({ request, controller }) => {
           <Scrollbars autoHide>{request.data.message}</Scrollbars>
         </Box>
         <Box mt="2.5">
-          <Text fontSize="sm">
+          <Text fontSize="xs">
             Data to be signed with{' '}
             <b>
               {request.data.address.startsWith('addr')

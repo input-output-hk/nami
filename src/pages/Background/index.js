@@ -1,8 +1,7 @@
 import {
   createPopup,
-  getAddresses,
+  getAddress,
   getBalance,
-  getDelegation,
   getNetwork,
   getUtxos,
   isWhitelisted,
@@ -22,16 +21,6 @@ app.add(METHOD.getBalance, async (request, sendResponse) => {
   sendResponse({
     id: request.id,
     data: value,
-    target: TARGET,
-    sender: SENDER.extension,
-  });
-});
-
-app.add(METHOD.getDelegation, async (request, sendResponse) => {
-  const delegation = await getDelegation();
-  sendResponse({
-    id: request.id,
-    data: delegation,
     target: TARGET,
     sender: SENDER.extension,
   });
@@ -78,21 +67,11 @@ app.add(METHOD.isEnabled, async (request, sendResponse) => {
   });
 });
 
-app.add(METHOD.getAddresses, async (request, sendResponse) => {
-  const addresses = await getAddresses();
+app.add(METHOD.getAddress, async (request, sendResponse) => {
+  const addresses = await getAddress();
   sendResponse({
     id: request.id,
     data: addresses,
-    target: TARGET,
-    sender: SENDER.extension,
-  });
-});
-
-app.add(METHOD.getChangeAddress, async (request, sendResponse) => {
-  const addresses = await getAddresses();
-  sendResponse({
-    id: request.id,
-    data: addresses.paymentAddr[0],
     target: TARGET,
     sender: SENDER.extension,
   });
@@ -118,13 +97,11 @@ app.add(METHOD.submitTx, async (request, sendResponse) => {
       sender: SENDER.extension,
     });
   else {
-    const network = await getNetwork();
     sendResponse({
       id: request.id,
       data: txHash,
       target: TARGET,
       sender: SENDER.extension,
-      network,
     });
   }
 });

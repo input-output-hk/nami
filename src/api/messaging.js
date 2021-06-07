@@ -12,7 +12,6 @@ import provider from '../config/provider';
  *  ?id: requestId,
  *  ?origin: window.origin
  *  ?event: EVENT
- *  ?network: NETWORK
  * }
  */
 
@@ -212,45 +211,9 @@ export const Messaging = {
         window.postMessage({ ...whitelisted, id: request.id });
         return;
       }
+      console.log('JO!');
       await Messaging.sendToBackground(request).then((response) => {
         window.postMessage(response);
-
-        //only relevant for txSubmit endpoint (listens until transaction is confirmed on-chain)
-        if (request.method === METHOD.submitTx && !response.error) {
-          const interval = setInterval(async () => {
-            const result = await fetch(
-              provider.api.base(response.network) + `/txs/${response.data}`,
-              {
-                headers: provider.api.key(response.network),
-              }
-            ).then((res) => res.json());
-            if (result && !result.error) {
-              window.postMessage({
-                data: {
-                  block: result.block,
-                  blockHeight: result.block_height,
-                  index: result.index,
-                  slot: result.slot,
-                  outputAmount: result.output_amount,
-                  fees: result.fees,
-                  deposit: result.deposit,
-                  withdrawalCount: result.withdrawal_count,
-                  delegationCount: result.delegation_count,
-                  stakeCertCount: result.stake_cert_count,
-                  pooolUpdateCount: result.pool_update_count,
-                  poolRetireCount: result.pool_retire_count,
-                  utxoCount: result.utxo_count,
-                  txHash: response.data,
-                },
-                target: TARGET,
-                sender: SENDER.extension,
-                event: EVENT.txConfirmation,
-              });
-              clearInterval(interval);
-              return;
-            }
-          }, 3000);
-        }
       });
     });
   },

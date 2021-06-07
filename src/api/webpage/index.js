@@ -6,13 +6,6 @@ export const getBalance = async () => {
   return result.data;
 };
 
-export const getDelegation = async () => {
-  const result = await Messaging.sendToContent({
-    method: METHOD.getDelegation,
-  });
-  return result.data;
-};
-
 export const enable = async () => {
   const result = await Messaging.sendToContent({ method: METHOD.enable });
   return result.data;
@@ -39,16 +32,16 @@ export const signTx = async (tx) => {
   return result.data;
 };
 
-export const getAddresses = async () => {
+export const getAddress = async () => {
   const result = await Messaging.sendToContent({
-    method: METHOD.getAddresses,
+    method: METHOD.getAddress,
   });
   return result.data;
 };
 
 export const getChangeAddress = async () => {
   const result = await Messaging.sendToContent({
-    method: METHOD.getChangeAddress,
+    method: METHOD.getAddress,
   });
   return result.data;
 };

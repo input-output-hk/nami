@@ -36,6 +36,9 @@ import {
   signAndSubmit,
 } from '../../../api/extension/wallet';
 import { FixedSizeList as List } from 'react-window';
+import { useDisclosure } from '@chakra-ui/hooks';
+import Asset from '../components/asset';
+import AssetBadge from '../components/assetBadge';
 
 const Send = () => {
   const hexToAscii = (hex) => {
@@ -48,7 +51,7 @@ const Send = () => {
   const history = useHistory();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
-  const [assets, setAssets] = React.useState(null);
+  const [balance, setBalance] = React.useState({ lovelace: '0', assets: null });
   const [utxos, setUtxos] = React.useState([]);
   const [fee, setFee] = React.useState('0');
   const [value, setValue] = React.useState({ ada: '', assets: [] });
@@ -58,16 +61,19 @@ const Send = () => {
     setAccount(currentAccount);
     const utxos = await getUtxos();
     setUtxos(utxos);
-    setAssets(sumUtxos(utxos));
-    // console.log(await minR(utxos[0]));
+    const utxoSum = sumUtxos(utxos);
+    setBalance({
+      lovelace: utxoSum.find((v) => v.unit === 'lovelace').quantity,
+      assets: utxoSum.filter((v) => v.unit !== 'lovelace'),
+    });
   };
 
-  // const minR = async (utxo) => {
-  //   const value = await assetsToValue(utxo.amount);
-  //   const parameters = await initTx();
-  //   const min = await minRequiredAda(value, parameters.minUtxo);
-  //   return min.to_str();
-  // };
+  const minR = async (utxo) => {
+    const value = await assetsToValue(utxo.amount);
+    const parameters = await initTx();
+    const min = await minRequiredAda(value, parameters.minUtxo);
+    return min.to_str();
+  };
 
   const sumUtxos = (utxos) => {
     const sumObject = {};
@@ -155,9 +161,28 @@ const Send = () => {
                 rounded="md"
               />
             </InputGroup>
-            <AssetsSelector assets={assets} setValue={setValue} />
+            <AssetsSelector
+              assets={balance.assets}
+              setValue={setValue}
+              value={value}
+            />
           </Stack>
+          <Box height="4" />
+          <Box display="flex" width="full" flexWrap="wrap">
+            {value.assets.map((asset, index) => (
+              <Box
+                onClick={() => {
+                  value.assets.splice(value.assets.indexOf(asset), 1);
+                  setValue((v) => ({ ...v, assets: value.assets }));
+                }}
+                key={index}
+              >
+                <AssetBadge asset={asset} />
+              </Box>
+            ))}
+          </Box>
         </Box>
+
         <Box
           position="absolute"
           width="full"
@@ -264,7 +289,7 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
   <CustomScrollbars {...props} forwardedRef={ref} />
 ));
 
-const AssetsSelector = ({ assets, setValue }) => {
+const AssetsSelector = ({ assets, setValue, value }) => {
   const hexToAscii = (hex) => {
     var _hex = hex.toString();
     var str = '';
@@ -272,8 +297,15 @@ const AssetsSelector = ({ assets, setValue }) => {
       str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
     return str;
   };
+  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
-    <Popover matchWidth={true} offset={[-108, 0]}>
+    <Popover
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={onClose}
+      matchWidth={true}
+      offset={[-108, 0]}
+    >
       <PopoverTrigger>
         <Button
           flex={1}
@@ -311,14 +343,18 @@ const AssetsSelector = ({ assets, setValue }) => {
               <List
                 outerElementType={CustomScrollbarsVirtualList}
                 height={200}
-                itemCount={assets.length - 1}
+                itemCount={
+                  assets.filter((asset) =>
+                    value.assets.every((asset2) => asset.unit !== asset2.unit)
+                  ).length
+                }
                 itemSize={45}
                 width={385}
                 layout="vertical"
               >
                 {({ index, style }) => {
-                  const asset = assets.filter(
-                    (asset) => asset.unit !== 'lovelace'
+                  const asset = assets.filter((asset) =>
+                    value.assets.every((asset2) => asset.unit !== asset2.unit)
                   )[index];
                   return (
                     <Box
@@ -329,12 +365,13 @@ const AssetsSelector = ({ assets, setValue }) => {
                     >
                       <Button
                         width="96%"
-                        onClick={() =>
+                        onClick={() => {
                           setValue((v) => ({
                             ...v,
                             assets: v.assets.concat(asset),
-                          }))
-                        }
+                          }));
+                          onClose();
+                        }}
                         mr="3"
                         ml="3"
                         display="flex"

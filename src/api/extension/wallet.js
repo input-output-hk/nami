@@ -45,6 +45,43 @@ export const initTx = async () => {
   };
 };
 
+export const utxoToCbor = async (output) => {
+  await Loader.load();
+  return {
+    input: Buffer.from(
+      Loader.Cardano.TransactionInput.new(
+        Loader.Cardano.TransactionHash.from_bytes(
+          Buffer.from(output.tx_hash, 'hex')
+        ),
+        output.output_index
+      ).to_bytes(),
+      'hex'
+    ).toString('hex'),
+    value: Buffer.from(
+      (await assetsToValue(output.amount)).to_bytes(),
+      'hex'
+    ).toString('hex'),
+  };
+};
+
+export const cborToUtxo = async (cborObject) => {
+  await Loader.load();
+  const input = Loader.Cardano.TransactionInput.from_bytes(
+    cborObject.input,
+    'hex'
+  );
+  const assets = await valueToAssets(
+    Loader.Cardano.Value.from_bytes(cborObject.value)
+  );
+  return {
+    txHash: Buffer.from(input.transaction_id().to_bytes(), 'hex').toString(
+      'hex'
+    ),
+    txId: input.index(),
+    amount: assets,
+  };
+};
+
 export const assetsToValue = async (assets) => {
   await Loader.load();
   const multiAsset = Loader.Cardano.MultiAsset.new();
@@ -77,6 +114,26 @@ export const assetsToValue = async (assets) => {
   );
   value.set_multiasset(multiAsset);
   return value;
+};
+
+export const valueToAssets = async (value) => {
+  const assets = [];
+  assets.push({ unit: 'lovelace', quantity: value.coin().to_str() });
+  if (value.multiasset()) {
+    for (let j = 0; j < value.multiasset().keys().len(); j++) {
+      const policy = value.multiasset().keys().get(j);
+      const policyAssets = value.multiasset().get(policy);
+      for (let k = 0; k < policyAssets.keys().len(); k++) {
+        const policyAsset = policyAssets.keys().get(k);
+        const quantity = policyAssets.get(policyAsset);
+        const asset =
+          Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
+          Buffer.from(policyAsset.name(), 'hex').toString('hex');
+        assets.push({ unit: asset, quantity });
+      }
+    }
+  }
+  return assets;
 };
 
 export const minRequiredAda = async (value, utxoVal) => {
