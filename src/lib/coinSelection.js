@@ -233,9 +233,10 @@ export default {
    * @param {UTxOList} inputsAvailable - The set of inputs available for selection.
    * @param {OutputList} outputsRequested - The set of outputs requested for payment.
    * @param {int} limit - A limit on the number of inputs that can be selected.
+   * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
    * @return {SelectionResult} - Coin Selection algorithm return
    */
-  randomImprove: (inputsAvailable, outputsRequested, limit) => {
+  randomImprove: (inputsAvailable, outputsRequested, limit, minUTxOValue) => {
     /** @type {UTxOSelection} */
     let utxoSelection = {
       selection: [],
@@ -257,7 +258,8 @@ export default {
         utxoSelection = randomSelect(
           JSON.parse(JSON.stringify(utxoSelection)), // Deep copy in case of fallback needed
           compiledOutput,
-          limit - utxoSelection.selection.length
+          limit - utxoSelection.selection.length,
+          minUTxOValue
         );
       } catch (e) {
         if (e.message === 'INPUT_LIMIT_EXCEEDED') {
@@ -265,7 +267,8 @@ export default {
           utxoSelection = descSelect(
             utxoSelection,
             compiledOutput,
-            limit - utxoSelection.selection.length
+            limit - utxoSelection.selection.length,
+            minUTxOValue
           );
         } else {
           throw e;
@@ -306,11 +309,12 @@ export default {
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
  * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
  * @param {int} limit - A limit on the number of inputs that can be selected.
+ * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
  * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter
  * @throws INPUTS_EXHAUSTED if all UTxO doesn't hold enough funds to pay for output
  * @return {UTxOSelection} - Successful random utxo selection
  */
-function randomSelect(utxoSelection, compiledOutput, limit) {
+function randomSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
   let compiledAmount = utxoSelection.amount.find(
     (amount) => amount.unit === compiledOutput.unit
   );
@@ -318,7 +322,7 @@ function randomSelect(utxoSelection, compiledOutput, limit) {
   // If quantity is met, return subset into remaining list and exit
   if (
     compiledAmount &&
-    BigInt(compiledAmount.quantity) >= BigInt(compiledOutput.quantity)
+    isQtyFulfilled(compiledOutput, compiledAmount, minUTxOValue)
   ) {
     utxoSelection.remaining = [
       ...utxoSelection.remaining,
@@ -346,7 +350,7 @@ function randomSelect(utxoSelection, compiledOutput, limit) {
   utxoSelection.selection.push(utxo);
   addAmounts(utxo.amount, utxoSelection.amount);
 
-  return randomSelect(utxoSelection, compiledOutput, limit - 1);
+  return randomSelect(utxoSelection, compiledOutput, limit - 1, minUTxOValue);
 }
 
 /**
@@ -354,11 +358,12 @@ function randomSelect(utxoSelection, compiledOutput, limit) {
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
  * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
  * @param {int} limit - A limit on the number of inputs that can be selected.
+ * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
  * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter
  * @throws INPUTS_EXHAUSTED if all UTxO doesn't hold enough funds to pay for output
  * @return {UTxOSelection} - Successful random utxo selection
  */
-function descSelect(utxoSelection, compiledOutput, limit) {
+function descSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
   // Sort UTxO subset in DESC order for required Output unit type
   utxoSelection.subset = utxoSelection.subset.sort((utxoA, utxoB) => {
     let a = utxoA.amount.find((amount) => amount.unit === compiledOutput.unit);
@@ -392,7 +397,7 @@ function descSelect(utxoSelection, compiledOutput, limit) {
     }
 
     limit--;
-  } while (BigInt(compiledAmount.quantity) < BigInt(compiledOutput.quantity));
+  } while (!isQtyFulfilled(compiledOutput, compiledAmount, minUTxOValue));
 
   // Quantity is met, return subset into remaining list and return selection
   utxoSelection.remaining = [
@@ -430,7 +435,7 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     if (change) {
       utxoSelection.change.push({
         unit: compiledOutput.unit,
-        quantity: change,
+        quantity: change.toString(),
       });
     }
 
@@ -449,15 +454,16 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     .splice(Math.floor(Math.random() * nbFreeUTxO), 1)
     .pop();
 
-  let newAmount =
+  let newAmount = (
     BigInt(
       utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity
-    ) + BigInt(compiledAmount.quantity);
+    ) + BigInt(compiledAmount.quantity)
+  ).toString();
 
   if (
-    abs(BigInt(range.ideal) - newAmount) <
+    abs(BigInt(range.ideal) - BigInt(newAmount)) <
       abs(BigInt(range.ideal) - BigInt(compiledAmount.quantity)) &&
-    newAmount <= range.maximum
+    BigInt(newAmount) <= range.maximum
   ) {
     utxoSelection.selection.push(utxo);
     addAmounts(utxo.amount, utxoSelection.amount);
@@ -492,9 +498,6 @@ function addAmounts(amountList, compiledAmountList) {
     let entry = compiledAmountList.find(
       (compiledAmount) => compiledAmount.unit === amount.unit
     );
-
-    // Normalize amount value
-    // amount.quantity = BigInt(amount.quantity);
 
     // 'Add to' or 'insert' in compiledOutputList
     entry
@@ -557,6 +560,21 @@ function addChangeExtra(utxoSelection, compiledOutputList) {
       utxoSelection.change.push(amount);
     }
   });
+}
+
+/**
+ * Is Quantity Fulfilled Condition - Handle 'minUTxOValue' protocol parameter.
+ * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
+ * @param {Amount} compiledAmount - Single compiled accumulated UTxO qty.
+ * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
+ * @return {boolean}
+ */
+function isQtyFulfilled(compiledOutput, compiledAmount, minUTxOValue) {
+  return compiledOutput.unit === 'lovelace'
+    ? BigInt(compiledAmount.quantity) === BigInt(compiledOutput.quantity) ||
+        BigInt(compiledAmount.quantity) >
+          BigInt(compiledOutput.quantity) + BigInt(minUTxOValue)
+    : BigInt(compiledAmount.quantity) >= BigInt(compiledOutput.quantity);
 }
 
 // Helper
