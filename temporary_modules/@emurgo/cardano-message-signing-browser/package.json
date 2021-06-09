@@ -1,0 +1,12 @@
+{
+  "name": "emurgo-message-signing",
+  "version": "0.1.0",
+  "files": [
+    "emurgo_message_signing_bg.wasm",
+    "emurgo_message_signing.js",
+    "emurgo_message_signing.d.ts"
+  ],
+  "module": "emurgo_message_signing.js",
+  "types": "emurgo_message_signing.d.ts",
+  "sideEffects": false
+}
