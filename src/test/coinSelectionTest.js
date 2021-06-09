@@ -1,14 +1,16 @@
+import CoinSelection from '../lib/coinSelection.js';
+
 let reqOutputs = [
   {
     address: 'addr_test1qpndlx95xlnn8t(...)9n7d2qlvgrpngvvsggsysr',
-    amount: [{ unit: 'lovelace', quantity: 100000000 }],
+    amount: [{ unit: 'lovelace', quantity: '100000000' }],
   },
   {
     address: 'addr_test1qpndlx95xlnn8t(...)9n7d2qlvgrpngvvsggsysr',
     amount: [
-      { unit: 'lovelace', quantity: 50000000 },
-      { unit: '09809090.SpaceBudz_00001', quantity: 1 },
-      { unit: '82828271.berrycoin', quantity: 25000000000 },
+      { unit: 'lovelace', quantity: '50000000' },
+      { unit: '09809090.SpaceBudz_00001', quantity: '1' },
+      { unit: '82828271.berrycoin', quantity: '25000000000' },
     ],
   },
 ];
@@ -21,7 +23,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '1000000' },
-      { unit: '09809090.SpaceBudz_00004', quantity: 1 },
+      { unit: '09809090.SpaceBudz_00004', quantity: '1' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -40,7 +42,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '1000000' },
-      { unit: '82828271.berrycoin', quantity: 115000432 },
+      { unit: '82828271.berrycoin', quantity: '115000432' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -59,7 +61,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '350000000' },
-      { unit: '09809090.SpaceBudz_00002', quantity: 1 },
+      { unit: '09809090.SpaceBudz_00002', quantity: '1' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -70,7 +72,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '10000000' },
-      { unit: '82828271.berrycoin', quantity: 10000000000 },
+      { unit: '82828271.berrycoin', quantity: '10000000000' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -81,7 +83,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '1000000' },
-      { unit: '82828271.berrycoin', quantity: 1000000000 },
+      { unit: '82828271.berrycoin', quantity: '1000000000' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -108,8 +110,8 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '1000000' },
-      { unit: '09809090.SpaceBudz_00003', quantity: 1 },
-      { unit: '82828271.berrycoin', quantity: 500000000 },
+      { unit: '09809090.SpaceBudz_00003', quantity: '1' },
+      { unit: '82828271.berrycoin', quantity: '500000000' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -120,7 +122,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '5043032' },
-      { unit: '09809090.SpaceBudz_00001', quantity: 1 },
+      { unit: '09809090.SpaceBudz_00001', quantity: '1' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -131,7 +133,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '10000000' },
-      { unit: '82828271.berrycoin', quantity: 15987987654 },
+      { unit: '82828271.berrycoin', quantity: '15987987654' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -142,7 +144,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '15000000' },
-      { unit: '82828271.berrycoin', quantity: 1598987654 },
+      { unit: '82828271.berrycoin', quantity: '1598987654' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -161,7 +163,7 @@ let utxoList = [
     output_index: 0,
     amount: [
       { unit: 'lovelace', quantity: '1746352' },
-      { unit: '82828271.berrycoin', quantity: 987654 },
+      { unit: '82828271.berrycoin', quantity: '987654' },
     ],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
@@ -266,8 +268,6 @@ let utxoList = [
   },
 ];
 
-const CoinSelection = require('../lib/coinSelection');
-
 const utxos = [
   {
     txHash: 'ab19f49bfa03fa14cc9d58b169c5547da59f8135f871e19962a4777d4040db27',
@@ -315,6 +315,7 @@ const receiver = [
   },
 ];
 
-let result = CoinSelection.randomImprove(utxos, receiver, 20);
+let result1 = CoinSelection.randomImprove(utxoList, reqOutputs, 20, 1000000);
+let result2 = CoinSelection.randomImprove(utxos, receiver, 20, 1000000);
 
-console.log(result);
+console.log(result1, result2);
