@@ -6,18 +6,50 @@ import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
 import { Button } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
+import Loader from '../../../api/loader';
 
 const SignData = ({ request, controller }) => {
   const history = useHistory();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
+  const [payload, setPayload] = React.useState('');
+  const [address, setAddress] = React.useState('');
   const getAccount = async () => {
     const currentAccount = await getCurrentAccount();
     setAccount(currentAccount);
   };
+  const getPayload = async () => {
+    await Loader.load();
+    const sigStructure = Loader.Message.SigStructure.from_bytes(
+      Buffer.from(request.data.sigStructure, 'hex')
+    );
+    const payload = Buffer.from(sigStructure.payload()).toString();
+    setPayload(payload);
+  };
+
+  const getAddress = async () => {
+    await Loader.load();
+    try {
+      const baseAddr = Loader.Cardano.BaseAddress.from_address(
+        Loader.Cardano.Address.from_bytes(Buffer.from(request.data.address, 'hex'))
+      );
+      setAddress('payment');
+      return;
+    } catch (e) {}
+    try {
+      const rewardAddr = Loader.Cardano.RewardAddress.from_address(
+        Loader.Cardano.Address.from_bytes(Buffer.from(request.data.address, 'hex'))
+      );
+      setAddress('stake');
+      return;
+    } catch (e) {}
+    setAddress('unknown');
+  };
 
   React.useEffect(() => {
     getAccount();
+    getPayload();
+    getAddress();
   }, []);
   return (
     <>
@@ -47,19 +79,11 @@ const SignData = ({ request, controller }) => {
           padding="2.5"
           wordBreak="break-all"
         >
-          <Scrollbars autoHide>{request.data.message}</Scrollbars>
+          <Scrollbars autoHide>{payload}</Scrollbars>
         </Box>
         <Box mt="2.5">
           <Text fontSize="xs">
-            Data to be signed with{' '}
-            <b>
-              {request.data.address.startsWith('addr')
-                ? 'payment'
-                : request.data.address.startsWith('stake')
-                ? 'stake'
-                : 'unknown'}
-            </b>{' '}
-            key
+            Data to be signed with <b>{address}</b> key
           </Text>
         </Box>
         <Box
@@ -90,7 +114,7 @@ const SignData = ({ request, controller }) => {
         sign={(password) =>
           signData(
             request.data.address,
-            request.data.message,
+            request.data.sigStructure,
             password,
             account.index
           )

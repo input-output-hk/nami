@@ -14,7 +14,7 @@ import randomColor from 'randomcolor';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
-import { assetsToValue, utxoToCbor } from './wallet';
+import { assetsToValue, utxoToStructure, valueToAssets } from './wallet';
 
 const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -97,15 +97,17 @@ export const getDelegation = async () => {
 };
 
 export const getBalance = async () => {
+  await Loader.load();
   const currentAccount = await getCurrentAccount();
   const network = await getNetwork();
   const result = await fetch(
     provider.api.base(network) + `/addresses/${currentAccount.paymentAddr}`,
     { headers: provider.api.key(network) }
   ).then((res) => res.json());
-  if (!result || result.error) return [];
+  if (!result || result.error)
+    return Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
   const value = await assetsToValue(result.amount);
-  return Buffer.from(value.to_bytes(), 'hex').toString('hex');
+  return value;
 };
 
 export const getTransactions = async (paginate = 1) => {
@@ -120,15 +122,24 @@ export const getTransactions = async (paginate = 1) => {
   return result;
 };
 
-export const getUtxos = async (paginate = undefined) => {
+/**
+ *
+ * @param {string} amount - cbor value
+ * @param {Object} paginate
+ * @param {number} paginate.page
+ * @param {number} paginate.limit
+ * @returns
+ */
+export const getUtxos = async (amount = undefined, paginate = undefined) => {
   const currentAccount = await getCurrentAccount();
   const network = await getNetwork();
   let result = [];
-  let page = paginate || 1;
+  let page = paginate && paginate.page ? paginate.page + 1 : 1;
+  const limit = paginate && paginate.limit ? `&count=${paginate.limit}` : '';
   while (true) {
     let pageResult = await fetch(
       provider.api.base(network) +
-        `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}`,
+        `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}${limit}`,
       { headers: provider.api.key(network) }
     ).then((res) => res.json());
     if (!pageResult || pageResult.error) pageResult = [];
@@ -137,12 +148,23 @@ export const getUtxos = async (paginate = undefined) => {
     page++;
   }
   const address = await getAddress();
-  return await Promise.all(
-    result.map(async (utxo) => {
-      const output = await utxoToCbor(utxo);
-      return { ...output, address };
-    })
+  let converted = await Promise.all(
+    result.map(async (utxo) => await utxoToStructure(utxo, address))
   );
+  // filter utxos
+  if (amount) {
+    await Loader.load();
+    const filterValue = Loader.Cardano.Value.from_bytes(
+      Buffer.from(amount, 'hex')
+    );
+
+    converted = converted.filter(
+      (unspent) =>
+        !unspent.output().amount().compare(filterValue) ||
+        unspent.output().amount().compare(filterValue) !== -1
+    );
+  }
+  return converted;
 };
 
 export const getAddress = async () => {
@@ -278,17 +300,18 @@ const harden = (num) => {
 const extractKeyHash = async (address) => {
   await Loader.load();
   //TODO: implement for various address types
-  if (address.startsWith('addr')) {
+  try {
     const baseAddr = Loader.Cardano.BaseAddress.from_address(
-      Loader.Cardano.Address.from_bech32(address)
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
     );
     return baseAddr.payment_cred().to_keyhash().to_bech32('hbas_');
-  } else if (address.startsWith('stake')) {
+  } catch (e) {}
+  try {
     const rewardAddr = Loader.Cardano.RewardAddress.from_address(
-      Loader.Cardano.Address.from_bech32(address)
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
     );
     return rewardAddr.payment_cred().to_keyhash().to_bech32('hrew_');
-  }
+  } catch (e) {}
   throw new Error(ERROR.noKeyHash);
 };
 
@@ -298,7 +321,13 @@ const extractKeyHash = async (address) => {
  * @param {string} password
  * @returns
  */
-export const signData = async (address, data, password, accountIndex) => {
+export const signData = async (
+  address,
+  sigStructure,
+  password,
+  accountIndex
+) => {
+  await Loader.load();
   const keyHash = await extractKeyHash(address);
   const prefix = keyHash.slice(0, 5);
   let { paymentKey, stakeKey } = await requestAccountKey(
@@ -310,8 +339,8 @@ export const signData = async (address, data, password, accountIndex) => {
   const publicKey = accountKey.to_public();
   if (keyHash !== publicKey.hash().to_bech32(prefix))
     throw new Error('Key hashes do not match');
-  const bytesData = new Uint8Array(Buffer.from(data));
-  const signature = accountKey.sign(bytesData);
+
+  const signature = accountKey.sign(Buffer.from(sigStructure, 'hex'));
 
   stakeKey.free();
   stakeKey = null;
@@ -319,8 +348,11 @@ export const signData = async (address, data, password, accountIndex) => {
   paymentKey = null;
 
   return {
-    signature: signature.to_hex(),
-    publicKey: publicKey.to_bech32(),
+    signed_structure: signature.to_hex(),
+    vkey: Buffer.from(
+      Loader.Cardano.Vkey.new(publicKey).to_bytes(),
+      'hex'
+    ).toString('hex'),
   };
 };
 
@@ -556,7 +588,10 @@ export const avatarToImage = (avatar) => {
 };
 
 const updateBalance = async (currentAccount, network) => {
-  const amount = await getBalance();
+  let amount = await getBalance();
+  amount = await valueToAssets(amount);
+
+  console.log(amount);
   if (amount.length > 0) {
     currentAccount[network].lovelace = amount.find(
       (am) => am.unit === 'lovelace'

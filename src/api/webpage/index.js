@@ -16,10 +16,10 @@ export const isEnabled = async () => {
   return result.data;
 };
 
-export const signData = async (address, message) => {
+export const signData = async (address, sigStructure) => {
   const result = await Messaging.sendToContent({
     method: METHOD.signData,
-    data: { address, message },
+    data: { address, sigStructure },
   });
   return result.data;
 };
@@ -39,17 +39,10 @@ export const getAddress = async () => {
   return result.data;
 };
 
-export const getChangeAddress = async () => {
-  const result = await Messaging.sendToContent({
-    method: METHOD.getAddress,
-  });
-  return result.data;
-};
-
-export const getUtxos = async (paginate = undefined) => {
+export const getUtxos = async (amount = undefined, paginate = undefined) => {
   const result = await Messaging.sendToContent({
     method: METHOD.getUtxos,
-    data: paginate,
+    data: { amount, paginate },
   });
   return result.data;
 };
@@ -59,29 +52,6 @@ export const submitTx = async (tx) => {
     method: METHOD.submitTx,
     data: tx,
   });
-  return {
-    txHash: result.data,
-    onConfirm: (callback) => {
-      window.addEventListener('message', function responseHandler(e) {
-        const response = e.data;
-        if (
-          typeof response !== 'object' ||
-          response === null ||
-          !response.target ||
-          response.target !== TARGET ||
-          !response.event ||
-          response.event !== EVENT.txConfirmation ||
-          !response.sender ||
-          response.sender !== SENDER.extension ||
-          !response.data.txHash ||
-          response.data.txHash !== result.data
-        )
-          return;
-        window.removeEventListener('message', responseHandler);
-        callback(response.data);
-      });
-    },
-  };
 };
 
 export const onAccountChange = (callback) => {

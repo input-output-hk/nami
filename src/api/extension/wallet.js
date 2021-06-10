@@ -3,6 +3,10 @@ import { EVENT, SENDER, TARGET } from '../../config/config';
 import provider from '../../config/provider';
 import Loader from '../loader';
 import CoinSelection from '../../lib/coinSelection';
+import {
+  TransactionUnspentOutput,
+  Value,
+} from '../../../temporary_modules/@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
 
 export const onAccountChange = (callback) => {
   window.addEventListener('message', function responseHandler(e) {
@@ -45,39 +49,45 @@ export const initTx = async () => {
   };
 };
 
-export const utxoToCbor = async (output) => {
+// convert blockfrost type to cbor data structure
+export const utxoToStructure = async (output, address) => {
   await Loader.load();
-  return {
-    input: Buffer.from(
-      Loader.Cardano.TransactionInput.new(
-        Loader.Cardano.TransactionHash.from_bytes(
-          Buffer.from(output.tx_hash, 'hex')
-        ),
-        output.output_index
-      ).to_bytes(),
-      'hex'
-    ).toString('hex'),
-    value: Buffer.from(
-      (await assetsToValue(output.amount)).to_bytes(),
-      'hex'
-    ).toString('hex'),
-  };
+  console.log(output);
+  return Loader.Cardano.TransactionUnspentOutput.new(
+    Loader.Cardano.TransactionInput.new(
+      Loader.Cardano.TransactionHash.from_bytes(
+        Buffer.from(output.tx_hash, 'hex')
+      ),
+      output.output_index
+    ),
+    Loader.Cardano.TransactionOutput.new(
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex')),
+      await assetsToValue(output.amount)
+    )
+  );
 };
 
-export const cborToUtxo = async (cborObject) => {
+/**
+ *
+ * @param {TransactionUnspentOutput[]} utxos
+ */
+export const sumUtxos = async (utxos) => {
   await Loader.load();
-  const input = Loader.Cardano.TransactionInput.from_bytes(
-    cborObject.input,
-    'hex'
-  );
-  const assets = await valueToAssets(
-    Loader.Cardano.Value.from_bytes(cborObject.value)
-  );
+  let value = Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
+  utxos.forEach((utxo) => (value = value.checked_add(utxo.output().amount())));
+  return value;
+};
+
+// convert cbor data structure to blockfrost type
+export const structureToUtxo = async (structure) => {
+  await Loader.load();
+  const assets = await valueToAssets(structure.output().amount());
   return {
-    txHash: Buffer.from(input.transaction_id().to_bytes(), 'hex').toString(
+    txHash: Buffer.from(
+      structure.input().transaction_id().to_bytes(),
       'hex'
-    ),
-    txId: input.index(),
+    ).toString('hex'),
+    txId: structure.input().index(),
     amount: assets,
   };
 };
@@ -116,20 +126,27 @@ export const assetsToValue = async (assets) => {
   return value;
 };
 
+/**
+ *
+ * @param {Value} value
+ */
 export const valueToAssets = async (value) => {
+  await Loader.load();
   const assets = [];
   assets.push({ unit: 'lovelace', quantity: value.coin().to_str() });
   if (value.multiasset()) {
-    for (let j = 0; j < value.multiasset().keys().len(); j++) {
-      const policy = value.multiasset().keys().get(j);
+    const multiAssets = value.multiasset().keys();
+    for (let j = 0; j < multiAssets.len(); j++) {
+      const policy = multiAssets.get(j);
       const policyAssets = value.multiasset().get(policy);
-      for (let k = 0; k < policyAssets.keys().len(); k++) {
-        const policyAsset = policyAssets.keys().get(k);
+      const assetNames = policyAssets.keys();
+      for (let k = 0; k < assetNames.len(); k++) {
+        const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset);
         const asset =
           Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
           Buffer.from(policyAsset.name(), 'hex').toString('hex');
-        assets.push({ unit: asset, quantity });
+        assets.push({ unit: asset, quantity: quantity.to_str() });
       }
     }
   }
@@ -143,7 +160,12 @@ export const minRequiredAda = async (value, utxoVal) => {
 
 export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   await Loader.load();
-  const inputs = CoinSelection.randomImprove(utxos, outputs, 20).input;
+  const inputs = CoinSelection.randomImprove(
+    utxos,
+    outputs,
+    20,
+    protocolParameters.minUtxo.to_str()
+  ).input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
     protocolParameters.linearFee,
     protocolParameters.minUtxo,
@@ -155,7 +177,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   console.log(account.paymentAddr);
 
   await Promise.all(
-    inputs.map(async (input) => {
+    inputs.map(async (input) =>
       txBuilder.add_input(
         Loader.Cardano.Address.from_bech32(account.paymentAddr),
         Loader.Cardano.TransactionInput.new(
@@ -165,19 +187,19 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
           input.txId
         ),
         await assetsToValue(input.amount)
-      );
-    })
+      )
+    )
   );
 
-  await Promise.all(
-    outputs.map(async (output) => {
+  const o = await Promise.all(
+    outputs.map(async (output) =>
       txBuilder.add_output(
         Loader.Cardano.TransactionOutput.new(
           Loader.Cardano.Address.from_bech32(output.address),
           await assetsToValue(output.amount)
         )
-      );
-    })
+      )
+    )
   );
 
   txBuilder.add_change_if_needed(
