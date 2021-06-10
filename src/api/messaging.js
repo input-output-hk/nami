@@ -211,7 +211,6 @@ export const Messaging = {
         window.postMessage({ ...whitelisted, id: request.id });
         return;
       }
-      console.log('JO!');
       await Messaging.sendToBackground(request).then((response) => {
         window.postMessage(response);
       });

@@ -29,6 +29,7 @@ import Copy from '../components/copy';
 import { Portal } from '@chakra-ui/portal';
 import { Avatar } from '@chakra-ui/avatar';
 import { FixedSizeList as List } from 'react-window';
+import { structureToUtxo } from '../../../api/extension/wallet';
 
 const abs = (big) => {
   return big < 0 ? BigInt(big.toString().slice(1)) : big;
@@ -357,7 +358,8 @@ const SignTx = ({ request, controller }) => {
   const getInfo = async () => {
     const currentAccount = await getCurrentAccount();
     setAccount(currentAccount);
-    const utxos = await getUtxos();
+    let utxos = await getUtxos();
+    utxos = await Promise.all(utxos.map(async (utxo) => structureToUtxo(utxo)));
     await Loader.load();
 
     const tx = Loader.Cardano.Transaction.from_bytes(

@@ -34,6 +34,9 @@ import {
   initTx,
   minRequiredAda,
   signAndSubmit,
+  structureToUtxo,
+  sumUtxos,
+  valueToAssets,
 } from '../../../api/extension/wallet';
 import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
@@ -61,47 +64,41 @@ const Send = () => {
     setAccount(currentAccount);
     const utxos = await getUtxos();
     setUtxos(utxos);
-    const utxoSum = sumUtxos(utxos);
+    const utxoSum = await sumUtxos(utxos);
+    const balance = await valueToAssets(utxoSum);
     setBalance({
-      lovelace: utxoSum.find((v) => v.unit === 'lovelace').quantity,
-      assets: utxoSum.filter((v) => v.unit !== 'lovelace'),
+      lovelace: balance.find((v) => v.unit === 'lovelace').quantity,
+      assets: balance.filter((v) => v.unit !== 'lovelace'),
     });
   };
 
-  const minR = async (utxo) => {
-    const value = await assetsToValue(utxo.amount);
-    const parameters = await initTx();
-    const min = await minRequiredAda(value, parameters.minUtxo);
-    return min.to_str();
-  };
-
-  const sumUtxos = (utxos) => {
-    const sumObject = {};
-    utxos.forEach((utxo) => {
-      utxo.amount.forEach((amount) => {
-        if (!sumObject[amount.unit])
-          sumObject[amount.unit] = BigInt(amount.quantity);
-        else
-          sumObject[amount.unit] =
-            sumObject[amount.unit] + BigInt(amount.quantity);
-      });
-    });
-    return Object.keys(sumObject).map((unit) => {
-      const policy = unit.slice(0, 56),
-        name = hexToAscii(unit.slice(56)),
-        fingerprint = new AssetFingerprint(
-          Buffer.from(policy, 'hex'),
-          Buffer.from(name, 'hex')
-        ).fingerprint();
-      return {
-        unit,
-        quantity: sumObject[unit].toString(),
-        policy,
-        name,
-        fingerprint,
-      };
-    });
-  };
+  // const sumUtxos = (utxos) => {
+  //   const sumObject = {};
+  //   utxos.forEach((utxo) => {
+  //     utxo.amount.forEach((amount) => {
+  //       if (!sumObject[amount.unit])
+  //         sumObject[amount.unit] = BigInt(amount.quantity);
+  //       else
+  //         sumObject[amount.unit] =
+  //           sumObject[amount.unit] + BigInt(amount.quantity);
+  //     });
+  //   });
+  //   return Object.keys(sumObject).map((unit) => {
+  //     const policy = unit.slice(0, 56),
+  //       name = hexToAscii(unit.slice(56)),
+  //       fingerprint = new AssetFingerprint(
+  //         Buffer.from(policy, 'hex'),
+  //         Buffer.from(name, 'hex')
+  //       ).fingerprint();
+  //     return {
+  //       unit,
+  //       quantity: sumObject[unit].toString(),
+  //       policy,
+  //       name,
+  //       fingerprint,
+  //     };
+  //   });
+  // };
 
   React.useEffect(() => {
     getInfo();
@@ -223,12 +220,14 @@ const Send = () => {
                   quantity: toUnit(asset.quantity, 0),
                 })
               );
+              const u = await Promise.all(
+                utxos.map(async (utxo) => await structureToUtxo(utxo))
+              );
 
-              console.log(output);
               const protocolParameters = await initTx();
               const tx = await buildTx(
                 account,
-                utxos,
+                u,
                 [output],
                 protocolParameters
               );

@@ -2,7 +2,6 @@ import {
   createPopup,
   getAddress,
   getBalance,
-  getNetwork,
   getUtxos,
   isWhitelisted,
   submitTx,
@@ -17,7 +16,9 @@ const app = Messaging.createBackgroundController();
  */
 
 app.add(METHOD.getBalance, async (request, sendResponse) => {
-  const value = await getBalance();
+  let value = await getBalance();
+  value = Buffer.from(value.to_bytes(), 'hex').toString('hex');
+
   sendResponse({
     id: request.id,
     data: value,
@@ -78,7 +79,10 @@ app.add(METHOD.getAddress, async (request, sendResponse) => {
 });
 
 app.add(METHOD.getUtxos, async (request, sendResponse) => {
-  const utxos = await getUtxos();
+  let utxos = await getUtxos(request.data.amount, request.data.paginate);
+  utxos = utxos.map((utxo) =>
+    Buffer.from(utxo.to_bytes(), 'hex').toString('hex')
+  );
   sendResponse({
     id: request.id,
     data: utxos,
