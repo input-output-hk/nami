@@ -120,11 +120,13 @@ const SignTx = ({ request, controller }) => {
       }
 
       if (!output.amount().multiasset()) continue;
-      for (let j = 0; j < output.amount().multiasset().keys().len(); j++) {
-        const policy = output.amount().multiasset().keys().get(j);
+      const multiAssets = output.amount().multiasset().keys();
+      for (let j = 0; j < multiAssets.len(); j++) {
+        const policy = multiAssets.get(j);
         const policyAssets = output.amount().multiasset().get(policy);
-        for (let k = 0; k < policyAssets.keys().len(); k++) {
-          const policyAsset = policyAssets.keys().get(k);
+        const assets = policyAssets.keys();
+        for (let k = 0; k < assets.len(); k++) {
+          const policyAsset = assets.get(k);
           const quantity = policyAssets.get(policyAsset);
           const asset =
             Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
