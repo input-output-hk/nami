@@ -173,9 +173,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     protocolParameters.keyDeposit
   );
 
-  console.log(inputs);
-  console.log(account.paymentAddr);
-
   await Promise.all(
     inputs.map(async (input) =>
       txBuilder.add_input(
@@ -191,7 +188,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     )
   );
 
-  const o = await Promise.all(
+  await Promise.all(
     outputs.map(async (output) =>
       txBuilder.add_output(
         Loader.Cardano.TransactionOutput.new(
@@ -210,6 +207,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     txBuilder.build(),
     Loader.Cardano.TransactionWitnessSet.new()
   );
+  console.log(Buffer.from(transaction.to_bytes(), 'hex').toString('hex'));
 
   return transaction;
 };

@@ -450,20 +450,19 @@ function improve(utxoSelection, compiledOutput, limit, range) {
   }
 
   /** @type {UTxO} utxo */
-  let utxo = utxoSelection.subset
+  const utxo = utxoSelection.subset
     .splice(Math.floor(Math.random() * nbFreeUTxO), 1)
     .pop();
 
-  let newAmount = (
+  const newAmount =
     BigInt(
       utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity
-    ) + BigInt(compiledAmount.quantity)
-  ).toString();
+    ) + BigInt(compiledAmount.quantity);
 
   if (
-    abs(BigInt(range.ideal) - BigInt(newAmount)) <
+    abs(BigInt(range.ideal) - newAmount) <
       abs(BigInt(range.ideal) - BigInt(compiledAmount.quantity)) &&
-    BigInt(newAmount) <= range.maximum
+    newAmount <= range.maximum
   ) {
     utxoSelection.selection.push(utxo);
     addAmounts(utxo.amount, utxoSelection.amount);
@@ -500,11 +499,12 @@ function addAmounts(amountList, compiledAmountList) {
     );
 
     // 'Add to' or 'insert' in compiledOutputList
+    const am = JSON.parse(JSON.stringify(amount)); // Deep Copy
     entry
       ? (entry.quantity = (
           BigInt(entry.quantity) + BigInt(amount.quantity)
         ).toString())
-      : compiledAmountList.push(amount);
+      : compiledAmountList.push(am);
   });
 }
 
@@ -579,5 +579,5 @@ function isQtyFulfilled(compiledOutput, compiledAmount, minUTxOValue) {
 
 // Helper
 function abs(big) {
-  return big < 0 ? BigInt(big.toString().slice(1)) : big;
+  return big < 0 ? big * BigInt(-1) : big;
 }

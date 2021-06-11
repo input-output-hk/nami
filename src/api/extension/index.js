@@ -347,13 +347,12 @@ export const signData = async (
   paymentKey.free();
   paymentKey = null;
 
-  return {
-    signed_structure: signature.to_hex(),
-    vkey: Buffer.from(
-      Loader.Cardano.Vkey.new(publicKey).to_bytes(),
+  return [
+    Buffer.from(Loader.Cardano.Vkey.new(publicKey).to_bytes(), 'hex').toString(
       'hex'
-    ).toString('hex'),
-  };
+    ),
+    signature.to_hex(),
+  ];
 };
 
 /**
