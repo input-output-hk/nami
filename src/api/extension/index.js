@@ -1,10 +1,13 @@
 import {
+  APIError,
+  DataSignError,
   ERROR,
   EVENT,
   NETWORK,
   SENDER,
   STORAGE,
   TARGET,
+  TxSendError,
 } from '../../config/config';
 import provider from '../../config/provider';
 import { POPUP_WINDOW } from '../../config/config';
@@ -104,8 +107,11 @@ export const getBalance = async () => {
     provider.api.base(network) + `/addresses/${currentAccount.paymentAddr}`,
     { headers: provider.api.key(network) }
   ).then((res) => res.json());
-  if (!result || result.error)
-    return Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
+  if (result.error) {
+    if (result.status_code === 400) throw APIError.InvalidRequest;
+    else if (result.status_code === 500) throw APIError.InternalError;
+    else return Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
+  }
   const value = await assetsToValue(result.amount);
   return value;
 };
@@ -142,7 +148,15 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
         `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}${limit}`,
       { headers: provider.api.key(network) }
     ).then((res) => res.json());
-    if (!pageResult || pageResult.error) pageResult = [];
+    console.log(pageResult);
+    if (pageResult.error) {
+      if (result.status_code === 400) throw APIError.InvalidRequest;
+      else if (result.status_code === 500) throw APIError.InternalError;
+      else {
+        console.log('JOOO');
+        pageResult = [];
+      }
+    }
     result = result.concat(pageResult);
     if (pageResult.length <= 0 || paginate) break;
     page++;
@@ -154,9 +168,12 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
   // filter utxos
   if (amount) {
     await Loader.load();
-    const filterValue = Loader.Cardano.Value.from_bytes(
-      Buffer.from(amount, 'hex')
-    );
+    let filterValue;
+    try {
+      filterValue = Loader.Cardano.Value.from_bytes(Buffer.from(amount, 'hex'));
+    } catch (e) {
+      throw APIError.InvalidRequest;
+    }
 
     converted = converted.filter(
       (unspent) =>
@@ -297,7 +314,7 @@ const harden = (num) => {
   return 0x80000000 + num;
 };
 
-const extractKeyHash = async (address) => {
+export const extractKeyHash = async (address) => {
   await Loader.load();
   //TODO: implement for various address types
   try {
@@ -312,15 +329,35 @@ const extractKeyHash = async (address) => {
     );
     return rewardAddr.payment_cred().to_keyhash().to_bech32('hrew_');
   } catch (e) {}
-  throw new Error(ERROR.noKeyHash);
+  throw DataSignError.AddressNotPK;
+};
+
+export const verifySigStructure = async (sigStructure) => {
+  await Loader.load();
+  try {
+    Loader.Message.SigStructure.from_bytes(Buffer.from(sigStructure, 'hex'));
+  } catch (e) {
+    throw DataSignError.InvalidFormat;
+  }
+};
+
+export const verifyTx = async (tx) => {
+  await Loader.load();
+  try {
+    Loader.Cardano.Transaction.from_bytes(Buffer.from(tx, 'hex'));
+  } catch (e) {
+    throw APIError.InvalidRequest;
+  }
 };
 
 /**
- * @param {string} address - Bech32
- * @param {string} data
+ * @param {string} address - cbor
+ * @param {string} sigStructure - CIP-0008 SigStructure
  * @param {string} password
+ * @param {number} accountIndex
  * @returns
  */
+
 export const signData = async (
   address,
   sigStructure,
@@ -338,7 +375,7 @@ export const signData = async (
 
   const publicKey = accountKey.to_public();
   if (keyHash !== publicKey.hash().to_bech32(prefix))
-    throw new Error('Key hashes do not match');
+    throw DataSignError.ProofGeneration;
 
   const signature = accountKey.sign(Buffer.from(sigStructure, 'hex'));
 
@@ -347,12 +384,13 @@ export const signData = async (
   paymentKey.free();
   paymentKey = null;
 
-  return [
-    Buffer.from(Loader.Cardano.Vkey.new(publicKey).to_bytes(), 'hex').toString(
-      'hex'
-    ),
-    signature.to_hex(),
-  ];
+  return Buffer.from(
+    Loader.Cardano.Vkeywitness.new(
+      Loader.Cardano.Vkey.new(publicKey),
+      signature
+    ).to_bytes(),
+    'hex'
+  ).toString('hex');
 };
 
 /**
@@ -407,7 +445,7 @@ export const signTx = async (tx, keyHashes, password, accountIndex) => {
 
 export const submitTx = async (tx) => {
   const network = await getNetwork();
-  const txHash = await fetch(provider.api.base(network) + `/tx/submit`, {
+  const result = await fetch(provider.api.base(network) + `/tx/submit`, {
     headers: {
       ...provider.api.key(network),
       'Content-Type': 'application/cbor',
@@ -415,7 +453,14 @@ export const submitTx = async (tx) => {
     method: 'POST',
     body: Buffer.from(tx, 'hex'),
   }).then((res) => res.json());
-  return txHash;
+  console.log(result);
+  if (result.error) {
+    if (result.status_code === 400) throw TxSendError.Failure;
+    else if (result.status_code === 500) throw APIError.InternalError;
+    else if (result.status_code === 429) throw TxSendError.Refused;
+    else throw APIError.InvalidRequest;
+  }
+  return result;
 };
 
 const emitAccountChange = async (addresses) => {
@@ -453,12 +498,17 @@ const requestAccountKey = async (password, accountIndex) => {
   const encryptedRootKey = await getStorage(STORAGE.encryptedKey).then(
     (store) => store[STORAGE.encryptedKey]
   );
-  const accountKey = Loader.Cardano.Bip32PrivateKey.from_bytes(
-    Buffer.from(await decryptWithPassword(password, encryptedRootKey), 'hex')
-  )
-    .derive(harden(1852)) // purpose
-    .derive(harden(1815)) // coin type;
-    .derive(harden(parseInt(accountIndex)));
+  let accountKey;
+  try {
+    accountKey = Loader.Cardano.Bip32PrivateKey.from_bytes(
+      Buffer.from(await decryptWithPassword(password, encryptedRootKey), 'hex')
+    )
+      .derive(harden(1852)) // purpose
+      .derive(harden(1815)) // coin type;
+      .derive(harden(parseInt(accountIndex)));
+  } catch (e) {
+    throw ERROR.wrongPassword;
+  }
 
   return {
     paymentKey: accountKey.derive(0).derive(0).to_raw_key(),

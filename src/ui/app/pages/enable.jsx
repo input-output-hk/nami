@@ -2,6 +2,7 @@ import { Button } from '@chakra-ui/button';
 import { Box, Text } from '@chakra-ui/layout';
 import React from 'react';
 import { setWhitelisted } from '../../../api/extension';
+import { APIError } from '../../../config/config';
 
 const Enable = ({ request, controller }) => {
   return (
@@ -41,7 +42,7 @@ const Enable = ({ request, controller }) => {
           mr={3}
           variant="ghost"
           onClick={async () => {
-            await controller.returnData('CANCEL');
+            await controller.returnData({ error: APIError.Refused });
             window.close();
           }}
         >
@@ -51,7 +52,7 @@ const Enable = ({ request, controller }) => {
           colorScheme="teal"
           onClick={async () => {
             await setWhitelisted(request.origin);
-            await controller.returnData(true);
+            await controller.returnData({ data: true });
             window.close();
           }}
         >
