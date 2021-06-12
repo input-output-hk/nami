@@ -72,34 +72,6 @@ const Send = () => {
     });
   };
 
-  // const sumUtxos = (utxos) => {
-  //   const sumObject = {};
-  //   utxos.forEach((utxo) => {
-  //     utxo.amount.forEach((amount) => {
-  //       if (!sumObject[amount.unit])
-  //         sumObject[amount.unit] = BigInt(amount.quantity);
-  //       else
-  //         sumObject[amount.unit] =
-  //           sumObject[amount.unit] + BigInt(amount.quantity);
-  //     });
-  //   });
-  //   return Object.keys(sumObject).map((unit) => {
-  //     const policy = unit.slice(0, 56),
-  //       name = hexToAscii(unit.slice(56)),
-  //       fingerprint = new AssetFingerprint(
-  //         Buffer.from(policy, 'hex'),
-  //         Buffer.from(name, 'hex')
-  //       ).fingerprint();
-  //     return {
-  //       unit,
-  //       quantity: sumObject[unit].toString(),
-  //       policy,
-  //       name,
-  //       fingerprint,
-  //     };
-  //   });
-  // };
-
   React.useEffect(() => {
     getInfo();
   }, []);

@@ -7,6 +7,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { Button } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
+import { DataSignError } from '../../../config/config';
 
 const SignData = ({ request, controller }) => {
   const history = useHistory();
@@ -31,14 +32,18 @@ const SignData = ({ request, controller }) => {
     await Loader.load();
     try {
       const baseAddr = Loader.Cardano.BaseAddress.from_address(
-        Loader.Cardano.Address.from_bytes(Buffer.from(request.data.address, 'hex'))
+        Loader.Cardano.Address.from_bytes(
+          Buffer.from(request.data.address, 'hex')
+        )
       );
       setAddress('payment');
       return;
     } catch (e) {}
     try {
       const rewardAddr = Loader.Cardano.RewardAddress.from_address(
-        Loader.Cardano.Address.from_bytes(Buffer.from(request.data.address, 'hex'))
+        Loader.Cardano.Address.from_bytes(
+          Buffer.from(request.data.address, 'hex')
+        )
       );
       setAddress('stake');
       return;
@@ -98,7 +103,9 @@ const SignData = ({ request, controller }) => {
             variant="ghost"
             mr="3"
             onClick={async () => {
-              await controller.returnData(null);
+              await controller.returnData({
+                error: DataSignError.UserDeclined,
+              });
               window.close();
             }}
           >
@@ -121,7 +128,7 @@ const SignData = ({ request, controller }) => {
         }
         onConfirm={async (status, signedMessage) => {
           if (status === true) {
-            await controller.returnData(signedMessage);
+            await controller.returnData({ data: signedMessage });
             window.close();
           }
         }}

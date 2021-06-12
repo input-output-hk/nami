@@ -30,6 +30,7 @@ import { Portal } from '@chakra-ui/portal';
 import { Avatar } from '@chakra-ui/avatar';
 import { FixedSizeList as List } from 'react-window';
 import { structureToUtxo } from '../../../api/extension/wallet';
+import { TxSignError } from '../../../config/config';
 
 const abs = (big) => {
   return big < 0 ? BigInt(big.toString().slice(1)) : big;
@@ -593,7 +594,7 @@ const SignTx = ({ request, controller }) => {
             variant="ghost"
             mr="3"
             onClick={async () => {
-              await controller.returnData(null);
+              await controller.returnData({ error: TxSignError.UserDeclined });
               window.close();
             }}
           >
@@ -615,7 +616,7 @@ const SignTx = ({ request, controller }) => {
         }
         onConfirm={async (status, signedTx) => {
           if (status === true) {
-            await controller.returnData(signedTx);
+            await controller.returnData({ data: signedTx });
             window.close();
           }
         }}

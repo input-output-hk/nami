@@ -1,4 +1,4 @@
-import { EVENT, METHOD, SENDER, TARGET } from '../config/config';
+import { APIError, EVENT, METHOD, SENDER, TARGET } from '../config/config';
 import provider from '../config/provider';
 
 /**
@@ -40,9 +40,10 @@ class InternalController {
       });
     });
 
-  returnData = async (data) => {
+  returnData = async ({ data, error }) => {
     this.port.postMessage({
       data,
+      error,
       method: METHOD.returnData,
       tabId: await this.tabId,
     });
@@ -132,18 +133,14 @@ export const Messaging = {
             port.postMessage(request);
           }
           if (response.method === METHOD.returnData) {
-            res({
-              target: TARGET,
-              sender: SENDER.extension,
-              data: response.data,
-            });
+            res(response);
           }
           chrome.tabs.onRemoved.addListener(function tabsHandler(tabId) {
             if (tab.id !== tabId) return;
             res({
               target: TARGET,
               sender: SENDER.extension,
-              error: 'window unexpectedly closed',
+              error: APIError.Refused,
             });
             chrome.runtime.onConnect.removeListener(connetionHandler);
             port.onMessage.removeListener(messageHandler);
