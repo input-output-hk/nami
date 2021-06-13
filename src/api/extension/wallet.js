@@ -52,7 +52,6 @@ export const initTx = async () => {
 // convert blockfrost type to cbor data structure
 export const utxoToStructure = async (output, address) => {
   await Loader.load();
-  console.log(output);
   return Loader.Cardano.TransactionUnspentOutput.new(
     Loader.Cardano.TransactionInput.new(
       Loader.Cardano.TransactionHash.from_bytes(
@@ -172,6 +171,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     protocolParameters.poolDeposit,
     protocolParameters.keyDeposit
   );
+  console.log(inputs);
 
   await Promise.all(
     inputs.map(async (input) =>
@@ -207,7 +207,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     txBuilder.build(),
     Loader.Cardano.TransactionWitnessSet.new()
   );
-  console.log(Buffer.from(transaction.to_bytes(), 'hex').toString('hex'));
 
   return transaction;
 };

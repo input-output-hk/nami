@@ -29,7 +29,7 @@ import Copy from '../components/copy';
 import { Portal } from '@chakra-ui/portal';
 import { Avatar } from '@chakra-ui/avatar';
 import { FixedSizeList as List } from 'react-window';
-import { structureToUtxo } from '../../../api/extension/wallet';
+import { structureToUtxo, valueToAssets } from '../../../api/extension/wallet';
 import { TxSignError } from '../../../config/config';
 
 const abs = (big) => {
@@ -55,7 +55,6 @@ const SignTx = ({ request, controller }) => {
 
   const getFee = (tx) => {
     const fee = tx.body().fee().to_str();
-    console.log(fee);
     setFee(fee);
   };
 
@@ -67,33 +66,35 @@ const SignTx = ({ request, controller }) => {
     setProperty({ metadata, certificate, withdrawal, minting });
   };
 
-  const getValue = (tx, utxos, account) => {
-    const inputValue = {};
+  const getValue = async (tx, utxos, account) => {
+    await Loader.load();
+    let inputValue = Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_str('0')
+    );
     const inputs = tx.body().inputs();
     for (let i = 0; i < inputs.len(); i++) {
-      const txHash = Buffer.from(
-        inputs.get(i).transaction_id().to_bytes(),
+      const input = inputs.get(i);
+      const inputTxHash = Buffer.from(
+        input.transaction_id().to_bytes(),
         'hex'
       ).toString('hex');
-      const utxo = utxos.find((utxo) => utxo.txHash === txHash);
+      const inputTxId = input.index();
+      const utxo = utxos.find((utxo) => {
+        const utxoTxHash = Buffer.from(
+          utxo.input().transaction_id().to_bytes(),
+          'hex'
+        ).toString('hex');
+        const utxoTxId = utxo.input().index();
+        return inputTxHash === utxoTxHash && inputTxId === utxoTxId;
+      });
       if (utxo) {
-        utxo.amount.forEach((amount) => {
-          if (!inputValue[amount.unit])
-            inputValue[amount.unit] = amount.quantity;
-          else {
-            const valueBigNum = Loader.Cardano.BigNum.from_str(
-              inputValue[amount.unit]
-            );
-            const addedBigNum = Loader.Cardano.BigNum.from_str(amount.quantity);
-            inputValue[amount.unit] = valueBigNum
-              .checked_add(addedBigNum)
-              .to_str();
-          }
-        });
+        inputValue = inputValue.checked_add(utxo.output().amount());
       }
     }
     const outputs = tx.body().outputs();
-    const ownOutputValue = { lovelace: '0' };
+    let ownOutputValue = Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_str('0')
+    );
     const externalOutputs = {};
     if (!outputs) return;
     for (let i = 0; i < outputs.len(); i++) {
@@ -101,65 +102,19 @@ const SignTx = ({ request, controller }) => {
       const address = output.address().to_bech32();
       if (address === account.paymentAddr) {
         //own
-        ownOutputValue.lovelace = Loader.Cardano.BigNum.from_str(
-          ownOutputValue.lovelace
-        )
-          .checked_add(output.amount().coin())
-          .to_str();
+        ownOutputValue = ownOutputValue.checked_add(output.amount());
       } else {
         //external
-        if (!externalOutputs[address])
-          externalOutputs[address] = {
-            lovelace: output.amount().coin().to_str(),
-          };
-        else
-          externalOutputs[address].lovelace = Loader.Cardano.BigNum.from_str(
-            externalOutputs[address].lovelace
-          )
-            .checked_add(output.amount().coin())
-            .to_str();
-      }
-
-      if (!output.amount().multiasset()) continue;
-      const multiAssets = output.amount().multiasset().keys();
-      for (let j = 0; j < multiAssets.len(); j++) {
-        const policy = multiAssets.get(j);
-        const policyAssets = output.amount().multiasset().get(policy);
-        const assets = policyAssets.keys();
-        for (let k = 0; k < assets.len(); k++) {
-          const policyAsset = assets.get(k);
-          const quantity = policyAssets.get(policyAsset);
-          const asset =
-            Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
-            Buffer.from(policyAsset.name(), 'hex').toString('hex');
-          if (address === account.paymentAddr) {
-            //own
-            if (!ownOutputValue[asset])
-              ownOutputValue[asset] = quantity.to_str();
-            else
-              ownOutputValue[asset] = Loader.Cardano.BigNum.from_str(
-                ownOutputValue[asset]
-              )
-                .checked_add(quantity)
-                .to_str();
-          } else {
-            //external
-            if (!externalOutputs[address][asset])
-              externalOutputs[address][asset] = quantity.to_str();
-            else
-              externalOutputs[address][asset] = Loader.Cardano.BigNum.from_str(
-                externalOutputs[address][asset]
-              )
-                .checked_add(quantity)
-                .to_str();
-          }
-        }
+        if (!externalOutputs[address]) {
+          const value = Loader.Cardano.Value.new(output.amount().coin());
+          value.set_multiasset(output.amount().multiasset());
+          externalOutputs[address] = value;
+        } else
+          externalOutputs[address] = externalOutputs[address].checked_add(
+            output.amount()
+          );
       }
     }
-
-    console.log(externalOutputs);
-    console.log(inputValue);
-    console.log(ownOutputValue);
 
     // ownOutputValue.lovelace = Loader.Cardano.BigNum.from_str(
     //   ownOutputValue.lovelace
@@ -167,53 +122,57 @@ const SignTx = ({ request, controller }) => {
     //   .checked_add(tx.body().fee())
     //   .to_str();
 
+    inputValue = await valueToAssets(inputValue);
+    ownOutputValue = await valueToAssets(ownOutputValue);
+
     const involvedAssets = [
-      ...new Set([...Object.keys(inputValue), ...Object.keys(ownOutputValue)]),
+      ...new Set([
+        ...inputValue.map((asset) => asset.unit),
+        ...ownOutputValue.map((asset) => asset.unit),
+      ]),
     ];
-    console.log(Object.keys(inputValue));
-    console.log(Object.keys(ownOutputValue));
-    const ownOutputValueDifference = involvedAssets.map((asset) => {
+    const ownOutputValueDifference = involvedAssets.map((unit) => {
+      const leftValue = inputValue.find((asset) => asset.unit === unit);
+      const rightValue = ownOutputValue.find((asset) => asset.unit === unit);
       const difference =
-        BigInt(inputValue[asset] || '') - BigInt(ownOutputValue[asset] || '');
-      if (asset === 'lovelace') {
-        return { unit: asset, quantity: difference };
+        BigInt(leftValue ? leftValue.quantity : '') -
+        BigInt(rightValue ? rightValue.quantity : '');
+      if (unit === 'lovelace') {
+        return { unit, quantity: difference };
       }
-      const policy = asset.slice(0, 56);
-      const name = asset.slice(56);
+      const policy = unit.slice(0, 56);
+      const name = unit.slice(56);
       const fingerprint = new AssetFingerprint(
         Buffer.from(policy, 'hex'),
         Buffer.from(name, 'hex')
       ).fingerprint();
-      return { unit: asset, quantity: difference, fingerprint };
+      return { unit, quantity: difference, fingerprint };
     });
 
     const externalValue = {};
-    Object.keys(externalOutputs).forEach(
-      (address) =>
-        (externalValue[address] = Object.keys(externalOutputs[address]).map(
-          (asset) => {
-            if (asset === 'lovelace') {
-              return {
-                unit: asset,
-                quantity: externalOutputs[address][asset],
-              };
-            }
-            const policy = asset.slice(0, 56);
-            const name = asset.slice(56);
-            const fingerprint = new AssetFingerprint(
-              Buffer.from(policy, 'hex'),
-              Buffer.from(name, 'hex')
-            ).fingerprint();
-            return {
-              unit: asset,
-              quantity: externalOutputs[address][asset],
-              fingerprint,
-            };
-          }
-        ))
-    );
+    for (const address of Object.keys(externalOutputs)) {
+      const assets = await valueToAssets(externalValue[address]);
+      externalValue[address] = assets.map((asset) => {
+        if (asset.unit === 'lovelace') {
+          return {
+            unit: asset.unit,
+            quantity: asset.quantity,
+          };
+        }
+        const policy = asset.unit.slice(0, 56);
+        const name = asset.unit.slice(56);
+        const fingerprint = new AssetFingerprint(
+          Buffer.from(policy, 'hex'),
+          Buffer.from(name, 'hex')
+        ).fingerprint();
+        return {
+          unit: asset.unit,
+          quantity: asset.quantity,
+          fingerprint,
+        };
+      });
+    }
 
-    console.log(externalValue);
     const ownValue = ownOutputValueDifference.filter((v) => v.quantity != 0);
     setValue({ ownValue, externalValue });
   };
@@ -240,7 +199,15 @@ const SignTx = ({ request, controller }) => {
         inputs.get(i).transaction_id().to_bytes(),
         'hex'
       ).toString('hex');
-      if (utxos.some((utxo) => utxo.txHash === txHash)) {
+      if (
+        utxos.some(
+          (utxo) =>
+            Buffer.from(
+              utxo.input().transaction_id().to_bytes(),
+              'hex'
+            ).toString('hex') === txHash
+        )
+      ) {
         requiredKeyHashes.push(paymentKeyHash);
         break;
       }
@@ -359,12 +326,10 @@ const SignTx = ({ request, controller }) => {
   };
 
   const getInfo = async () => {
+    await Loader.load();
     const currentAccount = await getCurrentAccount();
     setAccount(currentAccount);
     let utxos = await getUtxos();
-    utxos = await Promise.all(utxos.map(async (utxo) => structureToUtxo(utxo)));
-    await Loader.load();
-
     const tx = Loader.Cardano.Transaction.from_bytes(
       Buffer.from(request.data, 'hex')
     );

@@ -149,12 +149,10 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
         `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}${limit}`,
       { headers: provider.api.key(network) }
     ).then((res) => res.json());
-    console.log(pageResult);
     if (pageResult.error) {
       if (result.status_code === 400) throw APIError.InvalidRequest;
       else if (result.status_code === 500) throw APIError.InternalError;
       else {
-        console.log('JOOO');
         pageResult = [];
       }
     }
@@ -460,7 +458,6 @@ export const submitTx = async (tx) => {
     method: 'POST',
     body: Buffer.from(tx, 'hex'),
   }).then((res) => res.json());
-  console.log(result);
   if (result.error) {
     if (result.status_code === 400) throw TxSendError.Failure;
     else if (result.status_code === 500) throw APIError.InternalError;
@@ -647,7 +644,6 @@ const updateBalance = async (currentAccount, network) => {
   let amount = await getBalance();
   amount = await valueToAssets(amount);
 
-  console.log(amount);
   if (amount.length > 0) {
     currentAccount[network].lovelace = amount.find(
       (am) => am.unit === 'lovelace'
