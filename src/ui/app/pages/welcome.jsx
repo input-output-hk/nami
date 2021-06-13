@@ -3,7 +3,6 @@ import { createWallet } from '../../../api/extension';
 import { Button } from '@chakra-ui/button';
 import { Backpack } from 'react-kawaii';
 import { useHistory } from 'react-router-dom';
-import { ROUTE } from '../../../config/config';
 import {
   Modal,
   ModalBody,

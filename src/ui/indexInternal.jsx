@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { getAccounts } from '../api/extension';
 import { Messaging } from '../api/messaging';
 
-import { METHOD, POPUP, ROUTE } from '../config/config';
+import { METHOD, POPUP } from '../config/config';
 import Enable from './app/pages/enable';
 import NoWallet from './app/pages/noWallet';
 import SignData from './app/pages/signData';
