@@ -366,7 +366,7 @@ const SignTx = ({ request, controller }) => {
     await Loader.load();
 
     const tx = Loader.Cardano.Transaction.from_bytes(
-      Buffer.from(request.data.tx, 'hex')
+      Buffer.from(request.data, 'hex')
     );
     getFee(tx);
     getValue(tx, utxos, currentAccount);
@@ -612,13 +612,12 @@ const SignTx = ({ request, controller }) => {
       <ConfirmModal
         ref={ref}
         sign={(password) =>
-          signTx(request.data.tx, keyHashes.key, password, account.index)
+          signTx(request.data, keyHashes.key, password, account.index)
         }
         onConfirm={async (status, signedTx) => {
-          if (status === true) {
-            await controller.returnData({ data: signedTx });
-            window.close();
-          }
+          if (status === true) await controller.returnData({ data: signedTx });
+          else await controller.returnData({ error: signedTx });
+          window.close();
         }}
       />
     </>

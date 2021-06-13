@@ -127,10 +127,10 @@ const SignData = ({ request, controller }) => {
           )
         }
         onConfirm={async (status, signedMessage) => {
-          if (status === true) {
+          if (status === true)
             await controller.returnData({ data: signedMessage });
-            window.close();
-          }
+          else await controller.returnData({ error: signedMessage });
+          window.close();
         }}
       />
     </>

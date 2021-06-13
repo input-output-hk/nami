@@ -204,8 +204,8 @@ const Send = () => {
                 protocolParameters
               );
               console.log(tx);
-              const txHash = await signAndSubmit(account, tx);
-              console.log(txHash);
+              // const txHash = await signAndSubmit(account, tx);
+              // console.log(txHash);
             }}
             rightIcon={<Icon as={BsArrowUpRight} />}
           >
