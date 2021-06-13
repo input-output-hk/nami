@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 
-import { POPUP, ROUTE } from '../config/config';
+import { POPUP } from '../config/config';
 import Theme from './theme';
 import { Spinner } from '@chakra-ui/spinner';
 import Welcome from './app/pages/welcome';

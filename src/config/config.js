@@ -17,6 +17,37 @@ export const METHOD = {
   returnData: 'returnData',
 };
 
+/*
+
+localStorage = {
+  whitelisted: [string],
+  encryptedKey: encrypted string
+  accounts: {
+     [accountIndex]: {
+      index: accountIndex,
+      paymentKeyHash: cbor string,
+      stakeKeyHash cbor string,
+      name: string,
+      utxos: [cbor],
+      mainnet: {
+            lovelace: 0,
+            assets: [],
+            history: {},
+          },
+      testnet: {
+            lovelace: 0,
+            assets: [],
+            history: {},
+          },
+      avatar: Math.random().toString(),
+    },
+  },
+  currentAccount: accountIndex,
+  network: "mainnet" | "testnet"
+  node: "https://cardano-mainnet.blockfrost.io/"
+}
+*/
+
 export const STORAGE = {
   whitelisted: 'whitelisted',
   encryptedKey: 'encryptedKey',
@@ -50,15 +81,6 @@ export const ERROR = {
   noKeyHash: 'No key hash could be generated',
   txFailed: 'Tx failed',
   onlyOneAccount: 'Only one account exist in the wallet',
-};
-
-export const ROUTE = {
-  wallet: '/wallet',
-  welcome: '/welcome',
-  createWallet: '/createWallet',
-  signData: '/signData',
-  signTx: '/signTx',
-  enable: '/enable',
 };
 
 export const EVENT = {
