@@ -27,7 +27,7 @@ export const signData = async (address, sigStructure) => {
 export const signTx = async (tx) => {
   const result = await Messaging.sendToContent({
     method: METHOD.signTx,
-    data: { tx },
+    data: tx,
   });
   return result.data;
 };

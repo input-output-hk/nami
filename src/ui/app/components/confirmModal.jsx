@@ -11,6 +11,7 @@ import {
   ModalOverlay,
 } from '@chakra-ui/modal';
 import React from 'react';
+import { ERROR } from '../../../config/config';
 
 const ConfirmModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -78,7 +79,9 @@ const ConfirmModal = React.forwardRef((props, ref) => {
                 const signedMessage = await props.sign(state.password);
                 props.onConfirm(true, signedMessage);
               } catch (e) {
-                setState((s) => ({ ...s, wrongPassword: true }));
+                if (e === ERROR.wrongPassword)
+                  setState((s) => ({ ...s, wrongPassword: true }));
+                else props.onConfirm(false, e);
               }
             }}
           >

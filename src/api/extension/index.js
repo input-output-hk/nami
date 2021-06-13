@@ -8,6 +8,7 @@ import {
   STORAGE,
   TARGET,
   TxSendError,
+  TxSignError,
 } from '../../config/config';
 import provider from '../../config/provider';
 import { POPUP_WINDOW } from '../../config/config';
@@ -424,10 +425,16 @@ export const signTx = async (tx, keyHashes, password, accountIndex) => {
     let signingKey;
     if (keyHash === paymentKeyHash) signingKey = paymentKey;
     else if (keyHash === stakeKeyHash) signingKey = stakeKey;
-    else throw new Error(ERROR.noKeyHash);
+    else throw TxSignError.ProofGeneration;
     const vkey = Loader.Cardano.make_vkey_witness(txHash, signingKey);
     vkeyWitnesses.add(vkey);
   });
+
+  stakeKey.free();
+  stakeKey = null;
+  paymentKey.free();
+  paymentKey = null;
+
   txWitnessSet.set_vkeys(vkeyWitnesses);
   const signedTx = Loader.Cardano.Transaction.new(
     rawTx.body(),

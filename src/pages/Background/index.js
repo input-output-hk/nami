@@ -7,6 +7,7 @@ import {
   isWhitelisted,
   submitTx,
   verifySigStructure,
+  verifyTx,
 } from '../../api/extension';
 import { Messaging } from '../../api/messaging';
 import { APIError, METHOD, POPUP, SENDER, TARGET } from '../../config/config';
@@ -227,28 +228,38 @@ app.add(METHOD.signData, async (request, sendResponse) => {
 });
 
 app.add(METHOD.signTx, async (request, sendResponse) => {
-  const response = await createPopup(POPUP.internal)
-    .then((tab) => Messaging.sendToPopupInternal(tab, request))
-    .then((response) => response);
+  try {
+    await verifyTx(request.data);
+    const response = await createPopup(POPUP.internal)
+      .then((tab) => Messaging.sendToPopupInternal(tab, request))
+      .then((response) => response);
 
-  if (response.data) {
+    if (response.data) {
+      sendResponse({
+        id: request.id,
+        data: response.data,
+        target: TARGET,
+        sender: SENDER.extension,
+      });
+    } else if (response.error) {
+      sendResponse({
+        id: request.id,
+        error: response.error,
+        target: TARGET,
+        sender: SENDER.extension,
+      });
+    } else {
+      sendResponse({
+        id: request.id,
+        error: APIError.InternalError,
+        target: TARGET,
+        sender: SENDER.extension,
+      });
+    }
+  } catch (e) {
     sendResponse({
       id: request.id,
-      data: response.data,
-      target: TARGET,
-      sender: SENDER.extension,
-    });
-  } else if (response.error) {
-    sendResponse({
-      id: request.id,
-      error: response.error,
-      target: TARGET,
-      sender: SENDER.extension,
-    });
-  } else {
-    sendResponse({
-      id: request.id,
-      error: APIError.InternalError,
+      error: e,
       target: TARGET,
       sender: SENDER.extension,
     });
