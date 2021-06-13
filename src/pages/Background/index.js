@@ -52,7 +52,6 @@ app.add(METHOD.enable, async (request, sendResponse) => {
         const response = await createPopup(POPUP.internal)
           .then((tab) => Messaging.sendToPopupInternal(tab, request))
           .then((response) => response);
-        console.log(response);
         if (response.data === true) {
           sendResponse({
             id: request.id,
