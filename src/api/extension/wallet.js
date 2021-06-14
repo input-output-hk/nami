@@ -1,5 +1,5 @@
 import { getNetwork, signTx, submitTx } from '.';
-import { EVENT, SENDER, TARGET } from '../../config/config';
+import { ERROR, EVENT, SENDER, TARGET } from '../../config/config';
 import provider from '../../config/provider';
 import Loader from '../loader';
 import CoinSelection from '../../lib/coinSelection';
@@ -46,6 +46,7 @@ export const initTx = async () => {
     minUtxo: Loader.Cardano.BigNum.from_str(p.min_utxo),
     poolDeposit: Loader.Cardano.BigNum.from_str(p.pool_deposit),
     keyDeposit: Loader.Cardano.BigNum.from_str(p.key_deposit),
+    maxTxSize: p.max_tx_size,
   };
 };
 
@@ -204,7 +205,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   if (change.length > 300) {
     const lovelace = (BigInt(change[0].quantity) / BigInt(2)).toString();
     const partialChange = change.slice(1, 300);
-    partialChange.unshift({ unit: 'lovelace', lovelace });
+    partialChange.unshift({ unit: 'lovelace', quantity: lovelace });
     txBuilder.add_output(
       Loader.Cardano.TransactionOutput.new(
         Loader.Cardano.Address.from_bech32(account.paymentAddr),
@@ -221,6 +222,9 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     txBuilder.build(),
     Loader.Cardano.TransactionWitnessSet.new()
   );
+
+  const size = transaction.to_bytes().length * 2;
+  if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 
   return transaction;
 };

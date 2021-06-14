@@ -206,7 +206,6 @@ const Send = () => {
                 protocolParameters
               );
               console.log(Buffer.from(tx.to_bytes(), 'hex').toString('hex'));
-              console.log(tx.to_bytes().length);
               const txHash = await signAndSubmit(account, tx);
               console.log(txHash);
             }}

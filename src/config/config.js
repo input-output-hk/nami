@@ -43,8 +43,7 @@ localStorage = {
     },
   },
   currentAccount: accountIndex,
-  network: "mainnet" | "testnet"
-  node: "https://cardano-mainnet.blockfrost.io/"
+  network: {id: "mainnet" | "testnet", node: "https://blockfrost..."}
 }
 */
 
@@ -56,7 +55,12 @@ export const STORAGE = {
   network: 'network',
 };
 
-export const NETWORK = {
+export const NODE = {
+  mainnet: 'https://cardano-mainnet.blockfrost.io/api/v0',
+  testnet: 'https://cardano-testnet.blockfrost.io/api/v0',
+};
+
+export const NETWORK_ID = {
   mainnet: 'mainnet',
   testnet: 'testnet',
 };
@@ -76,10 +80,8 @@ export const POPUP_WINDOW = {
 export const ERROR = {
   accessDenied: 'Access denied',
   wrongPassword: 'Wrong password',
-  signatureDenied: 'Signature denied',
+  txTooBig: 'Transaction too big',
   storeNotEmpty: 'Storage key is already set',
-  noKeyHash: 'No key hash could be generated',
-  txFailed: 'Tx failed',
   onlyOneAccount: 'Only one account exist in the wallet',
 };
 

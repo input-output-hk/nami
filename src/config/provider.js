@@ -1,13 +1,12 @@
-import { NETWORK } from './config';
+import { NODE, NETWORK_ID } from './config';
 
 export default {
   api: {
     ipfs: 'https://ipfs.blockfrost.dev/ipfs',
-    base: (network = 'mainnet') =>
-      `https://cardano-${network}.blockfrost.io/api/v0`,
+    base: (node = NODE.mainnet) => node,
     key: (network = 'mainnet') => ({
       project_id:
-        network === NETWORK.mainnet
+        network === NETWORK_ID.mainnet
           ? '3Ojodngr06BReeSN9lhsow0hypKf8gu5'
           : 'rbkrp5hOr3khPAWNo3x47t6CP7qKFyA5',
     }),
