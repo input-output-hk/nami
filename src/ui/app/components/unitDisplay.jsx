@@ -16,7 +16,7 @@ const UnitDisplay = ({ quantity, decimals, symbol, ...props }) => {
           {num}.<span style={{ fontSize: '75%' }}>{subNum}</span>{' '}
         </>
       ) : (
-        '...'
+        '... '
       )}
       {symbol}
     </Box>

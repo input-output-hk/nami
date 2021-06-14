@@ -4,6 +4,7 @@ import {
   displayUnit,
   getCurrentAccount,
   getUtxos,
+  isValidAddress,
   signData,
   toUnit,
 } from '../../../api/extension';
@@ -42,6 +43,9 @@ import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
 import Asset from '../components/asset';
 import AssetBadge from '../components/assetBadge';
+import { ERROR } from '../../../config/config';
+
+let timer = null;
 
 const Send = () => {
   const hexToAscii = (hex) => {
@@ -54,28 +58,63 @@ const Send = () => {
   const history = useHistory();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
-  const [balance, setBalance] = React.useState({ lovelace: '0', assets: null });
-  const [utxos, setUtxos] = React.useState([]);
-  const [fee, setFee] = React.useState('0');
+  const [fee, setFee] = React.useState({ fee: '0' });
   const [value, setValue] = React.useState({ ada: '', assets: [] });
-  const [address, setAddress] = React.useState('');
-  const [protocolParameters, setProtocolParameters] = React.useState(null);
+  const [address, setAddress] = React.useState({ address: '' });
+  const [txInfo, setTxInfo] = React.useState({
+    protocolParameters: null,
+    utxos: [],
+    balance: { lovelace: '0', assets: null },
+  });
+  const [tx, setTx] = React.useState(null);
+  const prepareTx = async (ada, assets = [], count) => {
+    if (count >= 5) throw ERROR.txNotPossible;
+    setFee({ fee: '' });
+    setTx(null);
+    await new Promise((res, rej) => setTimeout(() => res()));
+    try {
+      const output = {
+        address: address.address,
+        amount: [{ unit: 'lovelace', quantity: toUnit(ada) }],
+      };
+      assets.forEach((asset) =>
+        output.amount.push({
+          unit: asset.unit,
+          quantity: toUnit(asset.quantity, 0),
+        })
+      );
 
-  const prepareTx = async () => {};
+      const tx = await buildTx(
+        account,
+        txInfo.utxos,
+        [output],
+        txInfo.protocolParameters
+      );
+
+      setFee({ fee: tx.body().fee().to_str() });
+      setTx(tx);
+    } catch (e) {
+      if (!ada) setFee({ fee: '0' });
+      else setFee({ error: 'Cannot create transaction' });
+      prepareTx(ada, assets, count + 1);
+    }
+  };
 
   const getInfo = async () => {
     const currentAccount = await getCurrentAccount();
     setAccount(currentAccount);
     const utxos = await getUtxos();
     const protocolParameters = await initTx();
-    setUtxos(utxos);
     const utxoSum = await sumUtxos(utxos);
-    const balance = await valueToAssets(utxoSum);
-    setBalance({
+    let balance = await valueToAssets(utxoSum);
+    balance = {
       lovelace: balance.find((v) => v.unit === 'lovelace').quantity,
       assets: balance.filter((v) => v.unit !== 'lovelace'),
-    });
-    setProtocolParameters(protocolParameters);
+    };
+    const u = await Promise.all(
+      utxos.map(async (utxo) => await structureToUtxo(utxo))
+    );
+    setTxInfo({ protocolParameters, utxos: u, balance });
   };
 
   React.useEffect(() => {
@@ -113,7 +152,16 @@ const Send = () => {
           <Input
             fontSize="xs"
             placeholder="Receiver"
-            onChange={(e) => setAddress(e.target.value)}
+            onInput={async (e) => {
+              if (await isValidAddress(e.target.value))
+                setAddress({ address: e.target.value });
+              else
+                setAddress({
+                  error: 'Invalid address',
+                  address: e.target.value,
+                });
+            }}
+            isInvalid={address.address && address.error}
           />
           <Box height="4" />
           <Stack direction="row" alignItems="center" justifyContent="center">
@@ -121,23 +169,29 @@ const Send = () => {
               <InputLeftAddon rounded="md" children="₳" />
               <Input
                 value={value.ada}
-                onChange={(e) =>
-                  setValue((v) => ({ ...v, ada: e.target.value }))
-                }
+                onInput={(e) => {
+                  clearTimeout(timer);
+                  console.log(e.target.value);
+                  setValue((v) => ({ ...v, ada: e.target.value }));
+
+                  timer = setTimeout(() => {
+                    prepareTx(e.target.value, [], 0);
+                  }, 300);
+                }}
                 onBlur={(e) => {
                   const ada = parseFloat(
                     e.target.value.replace(/[,\s]/g, '')
                   ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
                   if (ada != 'NaN') {
                     setValue((v) => ({ ...v, ada }));
-                  } else setValue('');
+                  } else setValue((v) => ({ ...v, ada: '' }));
                 }}
                 placeholder="0.000000"
                 rounded="md"
               />
             </InputGroup>
             <AssetsSelector
-              assets={balance.assets}
+              assets={txInfo.balance.assets}
               setValue={setValue}
               value={value}
             />
@@ -172,8 +226,17 @@ const Send = () => {
             justifyContent="center"
             fontSize="sm"
           >
-            <Text fontWeight="bold">Fee: </Text>
-            <UnitDisplay quantity={fee} decimals={6} symbol="₳" />
+            {fee.error ? (
+              <Text fontSize="xs" color="red.500">
+                {fee.error}
+              </Text>
+            ) : (
+              <>
+                {' '}
+                <Text fontWeight="bold">Fee: </Text>
+                <UnitDisplay quantity={fee.fee} decimals={6} symbol="₳" />
+              </>
+            )}
           </Stack>
         </Box>
         <Box
@@ -185,32 +248,10 @@ const Send = () => {
           justifyContent="center"
         >
           <Button
+            isDisabled={!tx}
             colorScheme="orange"
             // onClick={() => ref.current.openModal()}
             onClick={async () => {
-              const output = {
-                address,
-                amount: [{ unit: 'lovelace', quantity: toUnit(value.ada) }],
-              };
-              value.assets.forEach((asset) =>
-                output.amount.push({
-                  unit: asset.unit,
-                  quantity: toUnit(asset.quantity, 0),
-                })
-              );
-              const u = await Promise.all(
-                utxos.map(async (utxo) => await structureToUtxo(utxo))
-              );
-
-              console.log(u);
-
-              const protocolParameters = await initTx();
-              const tx = await buildTx(
-                account,
-                u,
-                [output],
-                protocolParameters
-              );
               const txHash = await signAndSubmit(account, tx);
             }}
             rightIcon={<Icon as={BsArrowUpRight} />}
@@ -222,18 +263,11 @@ const Send = () => {
       <ConfirmModal
         ref={ref}
         sign={(password) =>
-          signData(
-            request.data.address,
-            request.data.message,
-            password,
-            account.index
-          )
+          signTx(request.data, keyHashes.key, password, account.index)
         }
-        onConfirm={async (status, signedMessage) => {
-          if (status === true) {
-            await controller.returnData(signedMessage);
-            window.close();
-          }
+        onConfirm={async (status, signedTx) => {
+          if (status === true) await controller.returnData({ data: signedTx });
+          else await controller.returnData({ error: signedTx });
         }}
       />
     </>

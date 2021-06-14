@@ -309,6 +309,30 @@ const harden = (num) => {
   return 0x80000000 + num;
 };
 
+export const isValidAddress = async (address) => {
+  await Loader.load();
+  const network = await getNetwork();
+  try {
+    const addr = Loader.Cardano.Address.from_bech32(address);
+    if (
+      (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
+      (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
+    )
+      return true;
+    return false;
+  } catch (e) {}
+  try {
+    const addr = Loader.Cardano.ByronAddress.from_base58(address);
+    if (
+      (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
+      (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
+    )
+      return true;
+    return false;
+  } catch (e) {}
+  return false;
+};
+
 export const extractKeyHash = async (address) => {
   await Loader.load();
   //TODO: implement for various address types
@@ -449,7 +473,7 @@ export const submitTx = async (tx) => {
     `/tx/submit`,
     { 'Content-Type': 'application/cbor' },
     Buffer.from(tx, 'hex')
-  ).then((res) => res.json());
+  );
   console.log(result);
   if (result.error) {
     if (result.status_code === 400) throw TxSendError.Failure;
