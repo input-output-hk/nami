@@ -309,10 +309,11 @@ export default {
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
  * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
  * @param {int} limit - A limit on the number of inputs that can be selected.
- * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
- * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter
- * @throws INPUTS_EXHAUSTED if all UTxO doesn't hold enough funds to pay for output
- * @return {UTxOSelection} - Successful random utxo selection
+ * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value.
+ * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter.
+ * @throws INPUTS_EXHAUSTED if all UTxO doesn't hold enough funds to pay for output.
+ * @throws MIN_UTXO_ERROR if lovelace change is under 'minUTxOValue' parameter.
+ * @return {UTxOSelection} - Successful random utxo selection.
  */
 function randomSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
   let compiledAmount = utxoSelection.amount.find(
@@ -339,6 +340,9 @@ function randomSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
   let nbFreeUTxO = utxoSelection.subset.length;
 
   if (nbFreeUTxO <= 0) {
+    if (isQtyFulfilled(compiledOutput, compiledAmount, 0)) {
+      throw new Error('MIN_UTXO_ERROR');
+    }
     throw new Error('INPUTS_EXHAUSTED');
   }
 
@@ -358,10 +362,11 @@ function randomSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
  * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
  * @param {int} limit - A limit on the number of inputs that can be selected.
- * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
- * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter
- * @throws INPUTS_EXHAUSTED if all UTxO doesn't hold enough funds to pay for output
- * @return {UTxOSelection} - Successful random utxo selection
+ * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value.
+ * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter.
+ * @throws INPUTS_EXHAUSTED if all UTxO doesn't hold enough funds to pay for output.
+ * @throws MIN_UTXO_ERROR if lovelace change is under 'minUTxOValue' parameter.
+ * @return {UTxOSelection} - Successful random utxo selection.
  */
 function descSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
   // Sort UTxO subset in DESC order for required Output unit type
@@ -381,6 +386,9 @@ function descSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
     }
 
     if (utxoSelection.subset.length <= 0) {
+      if (isQtyFulfilled(compiledOutput, compiledAmount, 0)) {
+        throw new Error('MIN_UTXO_ERROR');
+      }
       throw new Error('INPUTS_EXHAUSTED');
     }
 
