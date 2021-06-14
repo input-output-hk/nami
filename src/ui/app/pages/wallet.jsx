@@ -213,7 +213,9 @@ const Wallet = ({ data }) => {
                                 </Text>
                                 <Text>
                                   <UnitDisplay
-                                    quantity={account[state.network].lovelace}
+                                    quantity={
+                                      account[state.network.id].lovelace
+                                    }
                                     decimals={6}
                                     symbol="₳"
                                   />

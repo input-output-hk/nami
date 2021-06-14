@@ -37,9 +37,9 @@ const Asset = ({ asset }) => {
   const fetchMetadata = async () => {
     const network = await getNetwork();
     const result = await fetch(
-      provider.api.base(network) + `/assets/${asset.unit}`,
+      provider.api.base(network.node) + `/assets/${asset.unit}`,
       {
-        headers: provider.api.key(network),
+        headers: provider.api.key(network.id),
       }
     ).then((res) => res.json());
     console.log(result);
