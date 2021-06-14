@@ -153,9 +153,9 @@ export const valueToAssets = async (value) => {
   return assets;
 };
 
-export const minRequiredAda = async (value, utxoVal) => {
+export const minAdaRequired = async (value, utxoVal) => {
   await Loader.load();
-  return Loader.Cardano.min_ada_required(value, utxoVal);
+  return Loader.Cardano.min_ada_required(value, utxoVal).to_str();
 };
 
 export const buildTx = async (account, utxos, outputs, protocolParameters) => {
@@ -202,6 +202,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   );
   const change = selection.change;
   console.log(change);
+  // hard coded for now. about 300 assets fit into a single output
   if (change.length > 300) {
     const lovelace = (BigInt(change[0].quantity) / BigInt(2)).toString();
     const partialChange = change.slice(1, 300);

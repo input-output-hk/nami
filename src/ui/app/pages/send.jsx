@@ -205,9 +205,7 @@ const Send = () => {
                 [output],
                 protocolParameters
               );
-              console.log(Buffer.from(tx.to_bytes(), 'hex').toString('hex'));
               const txHash = await signAndSubmit(account, tx);
-              console.log(txHash);
             }}
             rightIcon={<Icon as={BsArrowUpRight} />}
           >
