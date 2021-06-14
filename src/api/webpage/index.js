@@ -52,6 +52,7 @@ export const submitTx = async (tx) => {
     method: METHOD.submitTx,
     data: tx,
   });
+  return result.data;
 };
 
 export const onAccountChange = (callback) => {
