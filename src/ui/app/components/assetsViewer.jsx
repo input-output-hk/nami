@@ -13,6 +13,7 @@ const AssetsViewer = ({ assets }) => {
   React.useEffect(() => {
     if (!assets) {
       setAssetsArray(null);
+      setSlideIndex(0);
       return;
     }
     const assetsArray = [];
