@@ -51,7 +51,7 @@ const SignTx = ({ request, controller }) => {
     withdrawal: null,
     minting: null,
   });
-  const [keyHashes, setKeyHashes] = React.useState({ kind: [], key: [] });
+  const [keyHashes, setKeyHashes] = React.useState({ kind: null, key: [] });
 
   const getFee = (tx) => {
     const fee = tx.body().fee().to_str();
@@ -116,14 +116,10 @@ const SignTx = ({ request, controller }) => {
       }
     }
 
-    // ownOutputValue.lovelace = Loader.Cardano.BigNum.from_str(
-    //   ownOutputValue.lovelace
-    // )
-    //   .checked_add(tx.body().fee())
-    //   .to_str();
-
+    console.log('START');
     inputValue = await valueToAssets(inputValue);
     ownOutputValue = await valueToAssets(ownOutputValue);
+    console.log('FINISH');
 
     const involvedAssets = [
       ...new Set([
@@ -151,7 +147,7 @@ const SignTx = ({ request, controller }) => {
 
     const externalValue = {};
     for (const address of Object.keys(externalOutputs)) {
-      const assets = await valueToAssets(externalValue[address]);
+      const assets = await valueToAssets(externalOutputs[address]);
       externalValue[address] = assets.map((asset) => {
         if (asset.unit === 'lovelace') {
           return {
@@ -372,9 +368,8 @@ const SignTx = ({ request, controller }) => {
         >
           {value.ownValue ? (
             (() => {
-              const lovelace = value.ownValue.find(
-                (v) => v.unit === 'lovelace'
-              ).quantity;
+              let lovelace = value.ownValue.find((v) => v.unit === 'lovelace');
+              lovelace = lovelace ? lovelace.quantity : '0';
               const assets = value.ownValue.filter(
                 (v) => v.unit !== 'lovelace'
               );
@@ -537,13 +532,20 @@ const SignTx = ({ request, controller }) => {
           </Stack>
           <Text>
             <b>Required keys:</b>{' '}
-            {keyHashes.kind.map((keyHash, index) =>
-              keyHashes.kind.length > 1 &&
-              index >= keyHashes.kind.length - 1 ? (
-                <span key={index}>, {keyHash}</span>
+            {keyHashes.kind ? (
+              keyHashes.kind.length <= 0 ? (
+                <span style={{ color: '#E53E3E' }}>Can't sign Tx</span>
               ) : (
-                <span key={index}>{keyHash}</span>
+                keyHashes.kind.map((keyHash, index) =>
+                  index >= keyHashes.kind.length - 1 ? (
+                    <span key={index}>, {keyHash}</span>
+                  ) : (
+                    <span key={index}>{keyHash}</span>
+                  )
+                )
               )
+            ) : (
+              '...'
             )}
           </Text>
         </Box>
@@ -603,7 +605,7 @@ const CustomScrollbars = ({ onScroll, forwardedRef, style, children }) => {
   return (
     <Scrollbars
       ref={refSetter}
-      style={{ ...style, overflow: 'hidden' }}
+      style={{ ...style, overflow: 'hidden', marginRight: 4 }}
       onScroll={onScroll}
     >
       {children}
@@ -625,29 +627,29 @@ const AssetsPopover = ({ assets, isDifference }) => {
   };
   return (
     <Popover
-      offset={[
-        isDifference
-          ? assets.filter((v) => v.quantity < 0).length > 0 &&
-            assets.filter((v) => v.quantity > 0).length > 0
-            ? assets.length < 5
-              ? -80
-              : -95
-            : assets.length < 5
-            ? -60
-            : -70
-          : -125,
-        0,
-      ]}
+    // offset={[
+    //   isDifference
+    //     ? assets.filter((v) => v.quantity < 0).length > 0 &&
+    //       assets.filter((v) => v.quantity > 0).length > 0
+    //       ? assets.length < 5
+    //         ? -80
+    //         : -95
+    //       : assets.length < 5
+    //       ? -60
+    //       : -70
+    //     : -133,
+    //   0,
+    // ]}
     >
       <PopoverTrigger>
         <ChevronDownIcon cursor="pointer" />
       </PopoverTrigger>
       <Portal>
-        <PopoverContent width="full">
+        <PopoverContent width="98%">
           <PopoverArrow />
           <PopoverCloseButton />
           <PopoverHeader fontWeight="bold">Assets</PopoverHeader>
-          <PopoverBody p="-2" pr="-5">
+          <PopoverBody pl="-2" pt="-2" pb="-2" pr="-2">
             <Box
               display="flex"
               alignItems="center"
@@ -674,7 +676,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
                         justifyContent="center"
                       >
                         <Box
-                          width="110%"
+                          width="100%"
                           ml="3"
                           display="flex"
                           alignItems="center"

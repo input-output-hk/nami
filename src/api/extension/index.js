@@ -458,6 +458,7 @@ export const submitTx = async (tx) => {
     method: 'POST',
     body: Buffer.from(tx, 'hex'),
   }).then((res) => res.json());
+  console.log(result);
   if (result.error) {
     if (result.status_code === 400) throw TxSendError.Failure;
     else if (result.status_code === 500) throw APIError.InternalError;

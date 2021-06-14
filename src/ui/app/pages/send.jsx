@@ -196,6 +196,8 @@ const Send = () => {
                 utxos.map(async (utxo) => await structureToUtxo(utxo))
               );
 
+              console.log(u);
+
               const protocolParameters = await initTx();
               const tx = await buildTx(
                 account,
@@ -204,8 +206,9 @@ const Send = () => {
                 protocolParameters
               );
               console.log(Buffer.from(tx.to_bytes(), 'hex').toString('hex'));
-              // const txHash = await signAndSubmit(account, tx);
-              // console.log(txHash);
+              console.log(tx.to_bytes().length);
+              const txHash = await signAndSubmit(account, tx);
+              console.log(txHash);
             }}
             rightIcon={<Icon as={BsArrowUpRight} />}
           >

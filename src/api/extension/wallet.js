@@ -159,12 +159,13 @@ export const minRequiredAda = async (value, utxoVal) => {
 
 export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   await Loader.load();
-  const inputs = CoinSelection.randomImprove(
+  const selection = CoinSelection.randomImprove(
     utxos,
     outputs,
-    20,
+    20 + outputs[0].amount.length,
     protocolParameters.minUtxo.to_str()
-  ).input;
+  );
+  const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
     protocolParameters.linearFee,
     protocolParameters.minUtxo,
@@ -198,6 +199,19 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
       )
     )
   );
+  const change = selection.change;
+  console.log(change);
+  if (change.length > 300) {
+    const lovelace = (BigInt(change[0].quantity) / BigInt(2)).toString();
+    const partialChange = change.slice(1, 300);
+    partialChange.unshift({ unit: 'lovelace', lovelace });
+    txBuilder.add_output(
+      Loader.Cardano.TransactionOutput.new(
+        Loader.Cardano.Address.from_bech32(account.paymentAddr),
+        await assetsToValue(partialChange)
+      )
+    );
+  }
 
   txBuilder.add_change_if_needed(
     Loader.Cardano.Address.from_bech32(account.paymentAddr)
