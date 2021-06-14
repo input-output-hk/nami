@@ -59,10 +59,15 @@ const Send = () => {
   const [fee, setFee] = React.useState('0');
   const [value, setValue] = React.useState({ ada: '', assets: [] });
   const [address, setAddress] = React.useState('');
+  const [protocolParameters, setProtocolParameters] = React.useState(null);
+
+  const prepareTx = async () => {};
+
   const getInfo = async () => {
     const currentAccount = await getCurrentAccount();
     setAccount(currentAccount);
     const utxos = await getUtxos();
+    const protocolParameters = await initTx();
     setUtxos(utxos);
     const utxoSum = await sumUtxos(utxos);
     const balance = await valueToAssets(utxoSum);
@@ -70,6 +75,7 @@ const Send = () => {
       lovelace: balance.find((v) => v.unit === 'lovelace').quantity,
       assets: balance.filter((v) => v.unit !== 'lovelace'),
     });
+    setProtocolParameters(protocolParameters);
   };
 
   React.useEffect(() => {

@@ -1,14 +1,13 @@
-import { Box, SimpleGrid, Stack } from '@chakra-ui/layout';
+import { Box } from '@chakra-ui/layout';
 import {
   Avatar,
-  Button,
   Image,
   Skeleton,
   SkeletonCircle,
   Text,
 } from '@chakra-ui/react';
 import React from 'react';
-import { getNetwork } from '../../../api/extension';
+import { blockfrostRequest } from '../../../api/util';
 import provider from '../../../config/provider';
 
 import './lineClamp.css';
@@ -35,14 +34,7 @@ const Asset = ({ asset }) => {
   };
 
   const fetchMetadata = async () => {
-    const network = await getNetwork();
-    const result = await fetch(
-      provider.api.base(network.node) + `/assets/${asset.unit}`,
-      {
-        headers: provider.api.key(network.id),
-      }
-    ).then((res) => res.json());
-    console.log(result);
+    const result = await blockfrostRequest(`/assets/${asset.unit}`);
     const name =
       (result.onchain_metadata && result.onchain_metadata.name) ||
       (result.metadata && result.metadata.name) ||

@@ -20,6 +20,7 @@ import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
 import { assetsToValue, utxoToStructure, valueToAssets } from './wallet';
+import { blockfrostRequest } from '../util';
 
 const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -86,11 +87,9 @@ export const setWhitelisted = async (_location) => {
 
 export const getDelegation = async () => {
   const currentAccount = await getCurrentAccount();
-  const network = await getNetwork();
-  const result = await fetch(
-    provider.api.base(network.node) + `/accounts/${currentAccount.rewardAddr}`,
-    { headers: provider.api.key(network.id) }
-  ).then((res) => res.json());
+  const result = await blockfrostRequest(
+    `/accounts/${currentAccount.rewardAddr}`
+  );
   if (!result || result.error) return {};
   return {
     active: result.active,
@@ -104,12 +103,9 @@ export const getDelegation = async () => {
 export const getBalance = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
-  const network = await getNetwork();
-  const result = await fetch(
-    provider.api.base(network.node) +
-      `/addresses/${currentAccount.paymentAddr}`,
-    { headers: provider.api.key(network.id) }
-  ).then((res) => res.json());
+  const result = await blockfrostRequest(
+    `/addresses/${currentAccount.paymentAddr}`
+  );
   if (result.error) {
     if (result.status_code === 400) throw APIError.InvalidRequest;
     else if (result.status_code === 500) throw APIError.InternalError;
@@ -121,12 +117,9 @@ export const getBalance = async () => {
 
 export const getTransactions = async (paginate = 1) => {
   const currentAccount = await getCurrentAccount();
-  const network = await getNetwork();
-  const result = await fetch(
-    provider.api.base(network.node) +
-      `/addresses/${currentAccount.paymentAddr}/txs?page=${paginate}&order=desc&count=10`,
-    { headers: provider.api.key(network.id) }
-  ).then((res) => res.json());
+  const result = await blockfrostRequest(
+    `/addresses/${currentAccount.paymentAddr}/txs?page=${paginate}&order=desc&count=10`
+  );
   if (!result || result.error) return [];
   return result;
 };
@@ -141,16 +134,13 @@ export const getTransactions = async (paginate = 1) => {
  */
 export const getUtxos = async (amount = undefined, paginate = undefined) => {
   const currentAccount = await getCurrentAccount();
-  const network = await getNetwork();
   let result = [];
   let page = paginate && paginate.page ? paginate.page + 1 : 1;
   const limit = paginate && paginate.limit ? `&count=${paginate.limit}` : '';
   while (true) {
-    let pageResult = await fetch(
-      provider.api.base(network.node) +
-        `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}${limit}`,
-      { headers: provider.api.key(network.id) }
-    ).then((res) => res.json());
+    let pageResult = await blockfrostRequest(
+      `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}${limit}`
+    );
     if (pageResult.error) {
       if (result.status_code === 400) throw APIError.InvalidRequest;
       else if (result.status_code === 500) throw APIError.InternalError;
@@ -455,15 +445,11 @@ export const signTx = async (tx, keyHashes, password, accountIndex) => {
  */
 
 export const submitTx = async (tx) => {
-  const network = await getNetwork();
-  const result = await fetch(provider.api.base(network.node) + `/tx/submit`, {
-    headers: {
-      ...provider.api.key(network.id),
-      'Content-Type': 'application/cbor',
-    },
-    method: 'POST',
-    body: Buffer.from(tx, 'hex'),
-  }).then((res) => res.json());
+  const result = await blockfrostRequest(
+    `/tx/submit`,
+    { 'Content-Type': 'application/cbor' },
+    Buffer.from(tx, 'hex')
+  ).then((res) => res.json());
   console.log(result);
   if (result.error) {
     if (result.status_code === 400) throw TxSendError.Failure;
