@@ -7,6 +7,7 @@ import {
   TransactionUnspentOutput,
   Value,
 } from '../../../temporary_modules/@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
+import { blockfrostRequest } from '../util';
 
 export const onAccountChange = (callback) => {
   window.addEventListener('message', function responseHandler(e) {
@@ -28,15 +29,9 @@ export const onAccountChange = (callback) => {
 
 export const initTx = async () => {
   const network = await getNetwork();
-  const latest_block = await fetch(
-    provider.api.base(network) + '/blocks/latest',
-    { headers: provider.api.key(network) }
-  ).then((res) => res.json());
+  const latest_block = await blockfrostRequest('/blocks/latest');
 
-  const p = await fetch(
-    provider.api.base(network) + `/epochs/${latest_block.epoch}/parameters`,
-    { headers: provider.api.key(network) }
-  ).then((res) => res.json());
+  const p = await blockfrostRequest(`/epochs/${latest_block.epoch}/parameters`);
 
   return {
     linearFee: Loader.Cardano.LinearFee.new(
