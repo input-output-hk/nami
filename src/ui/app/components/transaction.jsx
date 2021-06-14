@@ -2,13 +2,13 @@ import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Box, Link } from '@chakra-ui/layout';
 import React from 'react';
 import { getNetwork } from '../../../api/extension';
-import { NETWORK } from '../../../config/config';
+import { NETWORK_ID } from '../../../config/config';
 
 const Transaction = ({ txHash }) => {
   const [url, setUrl] = React.useState('');
   React.useEffect(() => {
     getNetwork().then((network) =>
-      network === NETWORK.mainnet
+      network.id === NETWORK_ID.mainnet
         ? setUrl('https://cardanoscan.io/transaction/')
         : setUrl(
             'https://explorer.cardano-testnet.iohkdev.io/en/transaction?id='
