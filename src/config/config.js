@@ -81,6 +81,7 @@ export const ERROR = {
   accessDenied: 'Access denied',
   wrongPassword: 'Wrong password',
   txTooBig: 'Transaction too big',
+  txNotPossible: 'Transaction not possible',
   storeNotEmpty: 'Storage key is already set',
   onlyOneAccount: 'Only one account exist in the wallet',
 };

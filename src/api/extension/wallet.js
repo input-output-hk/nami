@@ -28,11 +28,12 @@ export const onAccountChange = (callback) => {
 };
 
 export const initTx = async () => {
-  const network = await getNetwork();
   const latest_block = await blockfrostRequest('/blocks/latest');
 
   const p = await blockfrostRequest(`/epochs/${latest_block.epoch}/parameters`);
 
+  console.log('MIN UTXO');
+  console.log(p.min_utxo);
   return {
     linearFee: Loader.Cardano.LinearFee.new(
       Loader.Cardano.BigNum.from_str(p.min_fee_a.toString()),
@@ -117,7 +118,7 @@ export const assetsToValue = async (assets) => {
   const value = Loader.Cardano.Value.new(
     Loader.Cardano.BigNum.from_str(lovelace ? lovelace.quantity : '0')
   );
-  value.set_multiasset(multiAsset);
+  if (assets.length > 1 || !lovelace) value.set_multiasset(multiAsset);
   return value;
 };
 
@@ -168,7 +169,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     protocolParameters.poolDeposit,
     protocolParameters.keyDeposit
   );
-  console.log(inputs);
 
   await Promise.all(
     inputs.map(async (input) =>
@@ -233,5 +233,6 @@ export const signAndSubmit = async (account, tx) => {
     account.index
   );
   const txHash = await submitTx(signedTx);
+  console.log(txHash);
   return txHash;
 };
