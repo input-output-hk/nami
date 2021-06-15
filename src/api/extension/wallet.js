@@ -225,14 +225,13 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   return transaction;
 };
 
-export const signAndSubmit = async (account, tx) => {
+export const signAndSubmit = async (tx, account, password) => {
   const signedTx = await signTx(
     Buffer.from(tx.to_bytes(), 'hex').toString('hex'),
     [account.paymentKeyHash],
-    '12345678',
+    password,
     account.index
   );
   const txHash = await submitTx(signedTx);
-  console.log(txHash);
   return txHash;
 };

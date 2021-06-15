@@ -474,7 +474,6 @@ export const submitTx = async (tx) => {
     { 'Content-Type': 'application/cbor' },
     Buffer.from(tx, 'hex')
   );
-  console.log(result);
   if (result.error) {
     if (result.status_code === 400) throw TxSendError.Failure;
     else if (result.status_code === 500) throw APIError.InternalError;

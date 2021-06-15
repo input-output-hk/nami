@@ -44,6 +44,7 @@ import { useDisclosure } from '@chakra-ui/hooks';
 import Asset from '../components/asset';
 import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
+import { Alert, AlertIcon, useToast } from '@chakra-ui/react';
 
 let timer = null;
 
@@ -56,6 +57,7 @@ const Send = () => {
     return str;
   };
   const history = useHistory();
+  const toast = useToast();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [fee, setFee] = React.useState({ fee: '0' });
@@ -163,6 +165,11 @@ const Send = () => {
             }}
             isInvalid={address.address && address.error}
           />
+          {address.address && address.error && (
+            <Text width="full" textAlign="left" color="red.300">
+              Address is invalid
+            </Text>
+          )}
           <Box height="4" />
           <Stack direction="row" alignItems="center" justifyContent="center">
             <InputGroup size="sm" flex={3}>
@@ -227,7 +234,7 @@ const Send = () => {
             fontSize="sm"
           >
             {fee.error ? (
-              <Text fontSize="xs" color="red.500">
+              <Text fontSize="xs" color="red.300">
                 {fee.error}
               </Text>
             ) : (
@@ -250,10 +257,7 @@ const Send = () => {
           <Button
             isDisabled={!tx}
             colorScheme="orange"
-            // onClick={() => ref.current.openModal()}
-            onClick={async () => {
-              const txHash = await signAndSubmit(account, tx);
-            }}
+            onClick={() => ref.current.openModal()}
             rightIcon={<Icon as={BsArrowUpRight} />}
           >
             Send
@@ -262,12 +266,22 @@ const Send = () => {
       </Box>
       <ConfirmModal
         ref={ref}
-        sign={(password) =>
-          signTx(request.data, keyHashes.key, password, account.index)
-        }
+        sign={(password) => signAndSubmit(tx, account, password)}
         onConfirm={async (status, signedTx) => {
-          if (status === true) await controller.returnData({ data: signedTx });
-          else await controller.returnData({ error: signedTx });
+          if (status === true)
+            toast({
+              title: 'Transaction submitted',
+              status: 'success',
+              duration: 5000,
+            });
+          else
+            toast({
+              title: 'Transaction failed',
+              status: 'error',
+              duration: 5000,
+            });
+          ref.current.closeModal();
+          setTimeout(() => history.goBack(), 200);
         }}
       />
     </>

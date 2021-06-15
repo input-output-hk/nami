@@ -25,6 +25,9 @@ const ConfirmModal = React.forwardRef((props, ref) => {
     openModal() {
       onOpen();
     },
+    closeModal() {
+      onClose();
+    },
   }));
 
   React.useEffect(() => {
