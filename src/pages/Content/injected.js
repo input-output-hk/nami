@@ -10,6 +10,8 @@ import {
   submitTx,
 } from '../../api/webpage';
 
+//dApp connector API follows https://github.com/cardano-foundation/CIPs/pull/88
+
 window.cardano_request_read_access = async () => {
   if (await enable()) {
     window.cardano = {
