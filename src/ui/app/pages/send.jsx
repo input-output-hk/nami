@@ -49,13 +49,6 @@ import { Alert, AlertIcon, useToast } from '@chakra-ui/react';
 let timer = null;
 
 const Send = () => {
-  const hexToAscii = (hex) => {
-    var _hex = hex.toString();
-    var str = '';
-    for (var i = 0; i < _hex.length && _hex.substr(i, 2) !== '00'; i += 2)
-      str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
-    return str;
-  };
   const history = useHistory();
   const toast = useToast();
   const ref = React.useRef();
@@ -69,7 +62,8 @@ const Send = () => {
     balance: { lovelace: '0', assets: null },
   });
   const [tx, setTx] = React.useState(null);
-  const prepareTx = async (ada, assets = [], count) => {
+  const prepareTx = async (result, count) => {
+    if (address.error) return;
     if (count >= 5) throw ERROR.txNotPossible;
     setFee({ fee: '' });
     setTx(null);
@@ -77,13 +71,16 @@ const Send = () => {
     try {
       const output = {
         address: address.address,
-        amount: [{ unit: 'lovelace', quantity: toUnit(ada) }],
+        amount: [{ unit: 'lovelace', quantity: toUnit(result.ada) }],
       };
-      assets.forEach((asset) =>
-        output.amount.push({
-          unit: asset.unit,
-          quantity: toUnit(asset.quantity, 0),
-        })
+      result.assets.forEach(
+        (asset) =>
+          asset.input &&
+          BigInt(asset.input) > 0 &&
+          output.amount.push({
+            unit: asset.unit,
+            quantity: toUnit(asset.input, 0),
+          })
       );
 
       const tx = await buildTx(
@@ -96,9 +93,9 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(tx);
     } catch (e) {
-      if (!ada) setFee({ fee: '0' });
+      if (!result.ada) setFee({ fee: '0' });
       else setFee({ error: 'Cannot create transaction' });
-      prepareTx(ada, assets, count + 1);
+      prepareTx(result, count + 1);
     }
   };
 
@@ -155,6 +152,7 @@ const Send = () => {
             fontSize="xs"
             placeholder="Receiver"
             onInput={async (e) => {
+              clearTimeout(timer);
               if (await isValidAddress(e.target.value))
                 setAddress({ address: e.target.value });
               else
@@ -162,6 +160,10 @@ const Send = () => {
                   error: 'Invalid address',
                   address: e.target.value,
                 });
+
+              timer = setTimeout(() => {
+                prepareTx(value, 0);
+              }, 300);
             }}
             isInvalid={address.address && address.error}
           />
@@ -178,11 +180,12 @@ const Send = () => {
                 value={value.ada}
                 onInput={(e) => {
                   clearTimeout(timer);
-                  console.log(e.target.value);
+                  value.ada = e.target.value;
+                  const v = value;
                   setValue((v) => ({ ...v, ada: e.target.value }));
 
                   timer = setTimeout(() => {
-                    prepareTx(e.target.value, [], 0);
+                    prepareTx(v, 0);
                   }, 300);
                 }}
                 onBlur={(e) => {
@@ -203,17 +206,42 @@ const Send = () => {
               value={value}
             />
           </Stack>
-          <Box height="4" />
+          <Box height="6" />
           <Box display="flex" width="full" flexWrap="wrap">
             {value.assets.map((asset, index) => (
-              <Box
-                onClick={() => {
-                  value.assets.splice(value.assets.indexOf(asset), 1);
-                  setValue((v) => ({ ...v, assets: value.assets }));
-                }}
-                key={index}
-              >
-                <AssetBadge asset={asset} />
+              <Box key={index}>
+                <AssetBadge
+                  onRemove={() => {
+                    clearTimeout(timer);
+                    let hasInput = value.assets[index].input;
+                    delete value.assets[index].input;
+                    delete value.assets[index].loaded;
+                    value.assets = value.assets.filter(
+                      (a) => a.unit != asset.unit
+                    );
+                    const v = value;
+                    setValue((v) => ({ ...v, assets: value.assets }));
+                    timer = setTimeout(() => {
+                      if (hasInput) prepareTx(v, 0);
+                    }, 300);
+                  }}
+                  onLoad={({ name, image }) => {
+                    value.assets[index].loaded = true;
+                    value.assets[index].name = name;
+                    value.assets[index].image = image;
+                    setValue((v) => ({ ...v, assets: value.assets }));
+                  }}
+                  onInput={(val) => {
+                    clearTimeout(timer);
+                    value.assets[index].input = val;
+                    const v = value;
+                    setValue((v) => ({ ...v, assets: value.assets }));
+                    timer = setTimeout(() => {
+                      prepareTx(v, 0);
+                    }, 300);
+                  }}
+                  asset={asset}
+                />
               </Box>
             ))}
           </Box>
@@ -240,7 +268,7 @@ const Send = () => {
             ) : (
               <>
                 {' '}
-                <Text fontWeight="bold">Fee: </Text>
+                <Text fontWeight="bold">+ Fee: </Text>
                 <UnitDisplay quantity={fee.fee} decimals={6} symbol="₳" />
               </>
             )}
@@ -314,14 +342,8 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
   <CustomScrollbars {...props} forwardedRef={ref} />
 ));
 
+let clicked = false;
 const AssetsSelector = ({ assets, setValue, value }) => {
-  const hexToAscii = (hex) => {
-    var _hex = hex.toString();
-    var str = '';
-    for (var i = 0; i < _hex.length && _hex.substr(i, 2) !== '00'; i += 2)
-      str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
-    return str;
-  };
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <Popover
@@ -391,11 +413,14 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                       <Button
                         width="96%"
                         onClick={() => {
+                          if (clicked) return;
+                          clicked = true;
+                          onClose();
                           setValue((v) => ({
                             ...v,
                             assets: v.assets.concat(asset),
                           }));
-                          onClose();
+                          setTimeout(() => (clicked = false), 500); // Prevent user from selecting multiple at once
                         }}
                         mr="3"
                         ml="3"
@@ -414,7 +439,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                           <Avatar
                             userSelect="none"
                             size="xs"
-                            name={hexToAscii(asset.unit.slice(56))}
+                            name={asset.name}
                           />
 
                           <Box
@@ -425,7 +450,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                           >
                             <Box mb="-1px">
                               <MiddleEllipsis>
-                                <span>{hexToAscii(asset.unit.slice(56))}</span>
+                                <span>{asset.name}</span>
                               </MiddleEllipsis>
                             </Box>
                             <Box
@@ -434,7 +459,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                               fontWeight="thin"
                             >
                               <MiddleEllipsis>
-                                <span>Policy: {asset.unit.slice(0, 56)}</span>
+                                <span>Policy: {asset.policy}</span>
                               </MiddleEllipsis>
                             </Box>
                           </Box>

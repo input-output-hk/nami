@@ -8,6 +8,7 @@ import {
   Value,
 } from '../../../temporary_modules/@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
 import { blockfrostRequest } from '../util';
+import AssetFingerprint from '@emurgo/cip14-js';
 
 export const onAccountChange = (callback) => {
   window.addEventListener('message', function responseHandler(e) {
@@ -122,6 +123,14 @@ export const assetsToValue = async (assets) => {
   return value;
 };
 
+const hexToAscii = (hex) => {
+  var _hex = hex.toString();
+  var str = '';
+  for (var i = 0; i < _hex.length && _hex.substr(i, 2) !== '00'; i += 2)
+    str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
+  return str;
+};
+
 /**
  *
  * @param {Value} value
@@ -142,7 +151,16 @@ export const valueToAssets = async (value) => {
         const asset =
           Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
           Buffer.from(policyAsset.name(), 'hex').toString('hex');
-        assets.push({ unit: asset, quantity: quantity.to_str() });
+        const _policy = asset.slice(0, 56);
+        const _name = asset.slice(56);
+        const fingerprint = new AssetFingerprint(_policy, _name).fingerprint();
+        assets.push({
+          unit: asset,
+          quantity: quantity.to_str(),
+          policy: _policy,
+          name: hexToAscii(_name),
+          fingerprint,
+        });
       }
     }
   }

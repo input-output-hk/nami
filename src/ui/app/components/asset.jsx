@@ -25,20 +25,12 @@ const Asset = ({ asset }) => {
     return false;
   };
 
-  const hexToAscii = (hex) => {
-    var _hex = hex.toString();
-    var str = '';
-    for (var i = 0; i < _hex.length && _hex.substr(i, 2) !== '00'; i += 2)
-      str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
-    return str;
-  };
-
   const fetchMetadata = async () => {
     const result = await blockfrostRequest(`/assets/${asset.unit}`);
     const name =
       (result.onchain_metadata && result.onchain_metadata.name) ||
       (result.metadata && result.metadata.name) ||
-      hexToAscii(result.asset_name);
+      asset.name;
     const image =
       (result.onchain_metadata && linkToHttps(result.onchain_metadata.image)) ||
       (result.metadata && result.metadata.logo) ||
