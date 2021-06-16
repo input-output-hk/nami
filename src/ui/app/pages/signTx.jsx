@@ -147,26 +147,7 @@ const SignTx = ({ request, controller }) => {
 
     const externalValue = {};
     for (const address of Object.keys(externalOutputs)) {
-      const assets = await valueToAssets(externalOutputs[address]);
-      externalValue[address] = assets.map((asset) => {
-        if (asset.unit === 'lovelace') {
-          return {
-            unit: asset.unit,
-            quantity: asset.quantity,
-          };
-        }
-        const policy = asset.unit.slice(0, 56);
-        const name = asset.unit.slice(56);
-        const fingerprint = new AssetFingerprint(
-          Buffer.from(policy, 'hex'),
-          Buffer.from(name, 'hex')
-        ).fingerprint();
-        return {
-          unit: asset.unit,
-          quantity: asset.quantity,
-          fingerprint,
-        };
-      });
+      externalValue[address] = await valueToAssets(externalOutputs[address]);
     }
 
     const ownValue = ownOutputValueDifference.filter((v) => v.quantity != 0);
