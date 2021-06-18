@@ -36,7 +36,11 @@ const Asset = ({ asset }) => {
       (result.metadata && result.metadata.logo) ||
       '';
 
-    setToken({ name, image, quantity: asset.quantity });
+    setToken({
+      displayName: name,
+      image,
+      ...asset,
+    });
   };
 
   React.useEffect(() => {
@@ -65,7 +69,7 @@ const Asset = ({ asset }) => {
         {!token ? (
           <SkeletonCircle size="14" />
         ) : !token.image ? (
-          <Avatar name={token.name} />
+          <Avatar name={token.displayName} />
         ) : (
           <Image
             width="full"
@@ -102,7 +106,7 @@ const Asset = ({ asset }) => {
               lineHeight="1.1"
               textAlign="center"
             >
-              {token.name}
+              {token.displayName}
             </Text>
           </>
         )}

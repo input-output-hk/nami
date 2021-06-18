@@ -33,7 +33,7 @@ import {
   assetsToValue,
   buildTx,
   initTx,
-  minRequiredAda,
+  minAdaRequired,
   signAndSubmit,
   structureToUtxo,
   sumUtxos,
@@ -45,8 +45,10 @@ import Asset from '../components/asset';
 import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
 import { Alert, AlertIcon, useToast } from '@chakra-ui/react';
+import { Planet } from 'react-kawaii';
 
 let timer = null;
+let isPreparing = false;
 
 const Send = () => {
   const history = useHistory();
@@ -54,35 +56,81 @@ const Send = () => {
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [fee, setFee] = React.useState({ fee: '0' });
-  const [value, setValue] = React.useState({ ada: '', assets: [] });
-  const [address, setAddress] = React.useState({ address: '' });
+  const [address, setAddress] = React.useState({ result: '' });
+  const [value, setValue] = React.useState({
+    ada: '',
+    assets: [],
+    personalAda: '',
+    minAda: '0',
+  });
   const [txInfo, setTxInfo] = React.useState({
     protocolParameters: null,
     utxos: [],
     balance: { lovelace: '0', assets: null },
   });
   const [tx, setTx] = React.useState(null);
-  const prepareTx = async (result, count) => {
-    if (address.error) return;
+  const prepareTx = async (v, a, count) => {
+    const _value = v || value;
+    const _address = a || address;
+    if (!_value.ada && _value.assets.length <= 0) {
+      setFee({ fee: '0' });
+      setTx(null);
+    }
+    if (
+      _address.error ||
+      !_address.result ||
+      (!_value.ada && _value.assets.length <= 0)
+    ) {
+      return;
+    }
     if (count >= 5) throw ERROR.txNotPossible;
+
     setFee({ fee: '' });
     setTx(null);
     await new Promise((res, rej) => setTimeout(() => res()));
     try {
       const output = {
-        address: address.address,
-        amount: [{ unit: 'lovelace', quantity: toUnit(result.ada) }],
+        address: _address.result,
+        amount: [
+          {
+            unit: 'lovelace',
+            quantity: toUnit(_value.ada || '10000000'),
+          },
+        ],
       };
-      result.assets.forEach(
-        (asset) =>
-          asset.input &&
-          BigInt(asset.input) > 0 &&
-          output.amount.push({
-            unit: asset.unit,
-            quantity: toUnit(asset.input, 0),
-          })
+
+      _value.assets.forEach((asset) => {
+        if (!asset.input || BigInt(asset.input || '0') < 1)
+          throw 'Balance too small';
+        output.amount.push({
+          unit: asset.unit,
+          quantity: toUnit(asset.input, 0),
+        });
+      });
+
+      const outputValue = await assetsToValue(output.amount);
+      const minAda = await minAdaRequired(
+        outputValue,
+        txInfo.protocolParameters.minUtxo
       );
 
+      if (BigInt(minAda) <= BigInt(toUnit(_value.personalAda || '0'))) {
+        const displayAda = parseFloat(
+          _value.personalAda.replace(/[,\s]/g, '')
+        ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
+        output.amount[0].quantity = toUnit(_value.personalAda || '0');
+        setValue((v) => ({ ...v, ada: displayAda }));
+      } else if (_value.assets.length > 0) {
+        output.amount[0].quantity = minAda;
+        const minAdaDisplay = parseFloat(
+          displayUnit(minAda).toString().replace(/[,\s]/g, '')
+        ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
+        setValue((v) => ({
+          ...v,
+          ada: minAdaDisplay,
+        }));
+      }
+      setValue((v) => ({ ...v, minAda }));
       const tx = await buildTx(
         account,
         txInfo.utxos,
@@ -93,9 +141,10 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(tx);
     } catch (e) {
-      if (!result.ada) setFee({ fee: '0' });
+      console.log(e);
+      if (!_value.ada) setFee({ fee: '0' });
       else setFee({ error: 'Cannot create transaction' });
-      prepareTx(result, count + 1);
+      prepareTx(v, a, count + 1);
     }
   };
 
@@ -153,21 +202,25 @@ const Send = () => {
             placeholder="Receiver"
             onInput={async (e) => {
               clearTimeout(timer);
-              if (await isValidAddress(e.target.value))
-                setAddress({ address: e.target.value });
-              else
-                setAddress({
-                  error: 'Invalid address',
-                  address: e.target.value,
-                });
+              let addr;
+              if (!e.target.value) {
+                addr = { result: '' };
+                setAddress(addr);
+              } else if (await isValidAddress(e.target.value)) {
+                addr = { result: e.target.value };
+                setAddress(addr);
+              } else {
+                addr = { error: 'Address is invalid' };
+                setAddress(addr);
+              }
 
               timer = setTimeout(() => {
-                prepareTx(value, 0);
+                prepareTx(undefined, addr, 0);
               }, 300);
             }}
-            isInvalid={address.address && address.error}
+            isInvalid={address.error}
           />
-          {address.address && address.error && (
+          {address.error && (
             <Text width="full" textAlign="left" color="red.300">
               Address is invalid
             </Text>
@@ -177,25 +230,41 @@ const Send = () => {
             <InputGroup size="sm" flex={3}>
               <InputLeftAddon rounded="md" children="₳" />
               <Input
+                isInvalid={
+                  value.ada &&
+                  (BigInt(toUnit(value.ada)) < BigInt(value.minAda) ||
+                    BigInt(toUnit(value.ada)) >
+                      BigInt(txInfo.balance.lovelace || '0'))
+                }
                 value={value.ada}
                 onInput={(e) => {
                   clearTimeout(timer);
-                  value.ada = e.target.value;
-                  const v = value;
-                  setValue((v) => ({ ...v, ada: e.target.value }));
+                  if (
+                    e.target.value &&
+                    !e.target.value.match(/^\d*[0-9,.]\d*$/)
+                  )
+                    return;
 
+                  value.ada = e.target.value;
+                  value.personalAda = e.target.value;
+                  const v = value;
+                  setValue((v) => ({
+                    ...v,
+                    ada: e.target.value,
+                    personalAda: e.target.value,
+                  }));
                   timer = setTimeout(() => {
-                    prepareTx(v, 0);
+                    prepareTx(v, undefined, 0);
                   }, 300);
                 }}
-                onBlur={(e) => {
-                  const ada = parseFloat(
-                    e.target.value.replace(/[,\s]/g, '')
-                  ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
-                  if (ada != 'NaN') {
-                    setValue((v) => ({ ...v, ada }));
-                  } else setValue((v) => ({ ...v, ada: '' }));
-                }}
+                // onBlur={(e) => {
+                //   const ada = parseFloat(
+                //     e.target.value.replace(/[,\s]/g, '')
+                //   ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
+                //   if (ada != 'NaN') {
+                //     setValue((v) => ({ ...v, ada }));
+                //   } else setValue((v) => ({ ...v, ada: '' }));
+                // }}
                 placeholder="0.000000"
                 rounded="md"
               />
@@ -207,44 +276,57 @@ const Send = () => {
             />
           </Stack>
           <Box height="6" />
-          <Box display="flex" width="full" flexWrap="wrap">
-            {value.assets.map((asset, index) => (
-              <Box key={index}>
-                <AssetBadge
-                  onRemove={() => {
-                    clearTimeout(timer);
-                    let hasInput = value.assets[index].input;
-                    delete value.assets[index].input;
-                    delete value.assets[index].loaded;
-                    value.assets = value.assets.filter(
-                      (a) => a.unit != asset.unit
-                    );
-                    const v = value;
-                    setValue((v) => ({ ...v, assets: value.assets }));
-                    timer = setTimeout(() => {
-                      if (hasInput) prepareTx(v, 0);
-                    }, 300);
-                  }}
-                  onLoad={({ name, image }) => {
-                    value.assets[index].loaded = true;
-                    value.assets[index].name = name;
-                    value.assets[index].image = image;
-                    setValue((v) => ({ ...v, assets: value.assets }));
-                  }}
-                  onInput={(val) => {
-                    clearTimeout(timer);
-                    value.assets[index].input = val;
-                    const v = value;
-                    setValue((v) => ({ ...v, assets: value.assets }));
-                    timer = setTimeout(() => {
-                      prepareTx(v, 0);
-                    }, 300);
-                  }}
-                  asset={asset}
-                />
-              </Box>
-            ))}
-          </Box>
+          <Scrollbars
+            style={{
+              width: '100%',
+              height: '150px',
+            }}
+          >
+            <Box display="flex" width="full" flexWrap="wrap">
+              {value.assets.map((asset, index) => (
+                <Box key={index}>
+                  <AssetBadge
+                    onRemove={() => {
+                      clearTimeout(timer);
+                      let hasInput = value.assets[index].input;
+                      delete value.assets[index].input;
+                      delete value.assets[index].loaded;
+                      value.assets = value.assets.filter(
+                        (a) => a.unit != asset.unit
+                      );
+                      const v = value;
+                      setValue((v) => ({ ...v, assets: value.assets }));
+                      timer = setTimeout(() => {
+                        prepareTx(v, undefined, 0);
+                      }, 300);
+                    }}
+                    onLoad={({ displayName, image }) => {
+                      clearTimeout(timer);
+                      value.assets[index].loaded = true;
+                      value.assets[index].displayName = displayName;
+                      value.assets[index].image = image;
+                      const v = value;
+                      setValue((v) => ({ ...v, assets: value.assets }));
+                      timer = setTimeout(() => {
+                        prepareTx(v, undefined, 0);
+                      }, 300);
+                    }}
+                    onInput={(val) => {
+                      clearTimeout(timer);
+                      if (!val.match(/^\d*[0-9,.]\d*$/) && val) return;
+                      value.assets[index].input = val;
+                      const v = value;
+                      setValue((v) => ({ ...v, assets: value.assets }));
+                      timer = setTimeout(() => {
+                        prepareTx(v, undefined, 0);
+                      }, 300);
+                    }}
+                    asset={asset}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </Scrollbars>
         </Box>
 
         <Box
@@ -269,7 +351,11 @@ const Send = () => {
               <>
                 {' '}
                 <Text fontWeight="bold">+ Fee: </Text>
-                <UnitDisplay quantity={fee.fee} decimals={6} symbol="₳" />
+                <UnitDisplay
+                  quantity={!address.result ? '0' : fee.fee}
+                  decimals={6}
+                  symbol="₳"
+                />
               </>
             )}
           </Stack>
@@ -283,7 +369,7 @@ const Send = () => {
           justifyContent="center"
         >
           <Button
-            isDisabled={!tx}
+            isDisabled={!tx || fee.error}
             colorScheme="orange"
             onClick={() => ref.current.openModal()}
             rightIcon={<Icon as={BsArrowUpRight} />}
@@ -345,6 +431,19 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
 let clicked = false;
 const AssetsSelector = ({ assets, setValue, value }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [search, setSearch] = React.useState('');
+
+  const filterAssets = () => {
+    const filter1 = (asset) =>
+      value.assets.every((asset2) => asset.unit !== asset2.unit);
+    const filter2 = (asset) =>
+      search
+        ? asset.name.toLowerCase().includes(search.toLowerCase()) ||
+          asset.policy.includes(search)
+        : true;
+    return assets.filter((asset) => filter1(asset) && filter2(asset));
+  };
+
   return (
     <Popover
       isOpen={isOpen}
@@ -376,6 +475,9 @@ const AssetsSelector = ({ assets, setValue, value }) => {
             variant="filled"
             rounded="md"
             placeholder="Search assets"
+            onInput={(e) => {
+              setSearch(e.target.value);
+            }}
           />
         </PopoverHeader>
         <PopoverBody p="-2" pr="-5">
@@ -386,23 +488,17 @@ const AssetsSelector = ({ assets, setValue, value }) => {
             flexDirection="column"
             my="1"
           >
-            {assets && (
+            {assets && filterAssets().length > 0 ? (
               <List
                 outerElementType={CustomScrollbarsVirtualList}
                 height={200}
-                itemCount={
-                  assets.filter((asset) =>
-                    value.assets.every((asset2) => asset.unit !== asset2.unit)
-                  ).length
-                }
+                itemCount={filterAssets().length}
                 itemSize={45}
                 width={385}
                 layout="vertical"
               >
                 {({ index, style }) => {
-                  const asset = assets.filter((asset) =>
-                    value.assets.every((asset2) => asset.unit !== asset2.unit)
-                  )[index];
+                  const asset = filterAssets()[index];
                   return (
                     <Box
                       style={style}
@@ -472,6 +568,22 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                   );
                 }}
               </List>
+            ) : (
+              <Box
+                width={385}
+                height={200}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                flexDirection="column"
+                opacity="0.5"
+              >
+                <Planet size={80} mood="ko" color="#61DDBC" />
+                <Box height="2" />
+                <Text fontWeight="bold" color="GrayText">
+                  No Assets
+                </Text>
+              </Box>
             )}
           </Box>
         </PopoverBody>
