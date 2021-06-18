@@ -13,7 +13,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import React from 'react';
-import { getNetwork } from '../../../api/extension';
+import { getNetwork, toUnit } from '../../../api/extension';
 import { blockfrostRequest } from '../../../api/util';
 import provider from '../../../config/provider';
 
@@ -46,7 +46,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
       (result.onchain_metadata && linkToHttps(result.onchain_metadata.image)) ||
       (result.metadata && result.metadata.logo) ||
       '';
-    onLoad({ name, image });
+    onLoad({ displayName: name, image });
     setLoad(false);
   };
 
@@ -58,57 +58,65 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
     if (BigInt(asset.quantity) <= 1) onInput(asset.quantity);
   }, [asset]);
   return (
-    <InputGroup m="5px" size="sm" width={`${width}px`} maxWidth="130px">
-      <InputLeftElement
-        rounded="lg"
-        pointerEvents="none"
-        children={
-          <Box
-            userSelect="none"
-            width="6"
-            height="6"
-            rounded="full"
-            overflow="hidden"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            {load ? (
-              <SkeletonCircle size="5" />
-            ) : (
-              <Image
-                src={asset.image}
-                fallback={
-                  asset.image ? (
-                    <SkeletonCircle size="5" />
-                  ) : (
-                    <Avatar size="xs" name={asset.name} />
-                  )
-                }
-              />
-            )}
-          </Box>
-        }
-      />
-      <Input
-        isReadOnly={BigInt(asset.quantity) <= 1}
-        value={asset.input || ''}
-        fontSize="xs"
-        rounded="lg"
-        placeholder="Qty"
-        onInput={(e) => {
-          setWidth(initialWidth + e.target.value.length * 4);
-          onInput(e.target.value);
-        }}
-        isInvalid={asset.input && BigInt(asset.input) > BigInt(asset.quantity)}
-      />
-      <InputRightElement
-        rounded="lg"
-        children={
-          <SmallCloseIcon cursor="pointer" onClick={() => onRemove()} />
-        }
-      />
-    </InputGroup>
+    <Box m="0.5">
+      <InputGroup size="sm">
+        <InputLeftElement
+          rounded="lg"
+          pointerEvents="none"
+          children={
+            <Box
+              userSelect="none"
+              width="6"
+              height="6"
+              rounded="full"
+              overflow="hidden"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              {load ? (
+                <SkeletonCircle size="5" />
+              ) : (
+                <Image
+                  src={asset.image}
+                  fallback={
+                    asset.image ? (
+                      <SkeletonCircle size="5" />
+                    ) : (
+                      <Avatar size="xs" name={asset.name} />
+                    )
+                  }
+                />
+              )}
+            </Box>
+          }
+        />
+        <Input
+          width={`${width}px`}
+          maxWidth="130px"
+          isReadOnly={BigInt(asset.quantity) <= 1}
+          value={asset.input || ''}
+          fontSize="xs"
+          rounded="lg"
+          placeholder="Qty"
+          onInput={(e) => {
+            setWidth(initialWidth + e.target.value.length * 4);
+            onInput(e.target.value);
+          }}
+          isInvalid={
+            asset.input &&
+            (BigInt(toUnit(asset.input, 0)) > BigInt(asset.quantity) ||
+              BigInt(toUnit(asset.input, 0)) <= 0)
+          }
+        />
+        <InputRightElement
+          rounded="lg"
+          children={
+            <SmallCloseIcon cursor="pointer" onClick={() => onRemove()} />
+          }
+        />
+      </InputGroup>
+    </Box>
   );
 };
 
