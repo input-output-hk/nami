@@ -3,3 +3,7 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
+body::-webkit-scrollbar {
+  display: none;
+}

@@ -5,6 +5,7 @@ import React from 'react';
 import Asset from './asset';
 import Slider from 'react-slick';
 import { Planet } from 'react-kawaii';
+import AssetPopover from './assetPopover';
 
 const AssetsViewer = ({ assets }) => {
   const [assetsArray, setAssetsArray] = React.useState(null);
