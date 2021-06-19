@@ -255,7 +255,7 @@ const Send = () => {
                   }));
                   timer = setTimeout(() => {
                     prepareTx(v, undefined, 0);
-                  }, 300);
+                  }, 800);
                 }}
                 // onBlur={(e) => {
                 //   const ada = parseFloat(
@@ -319,7 +319,7 @@ const Send = () => {
                       setValue((v) => ({ ...v, assets: value.assets }));
                       timer = setTimeout(() => {
                         prepareTx(v, undefined, 0);
-                      }, 300);
+                      }, 500);
                     }}
                     asset={asset}
                   />
@@ -416,7 +416,7 @@ const CustomScrollbars = ({ onScroll, forwardedRef, style, children }) => {
   return (
     <Scrollbars
       ref={refSetter}
-      style={{ ...style, overflow: 'hidden' }}
+      style={{ ...style, overflow: 'hidden', marginRight: 4 }}
       onScroll={onScroll}
     >
       {children}
@@ -444,13 +444,16 @@ const AssetsSelector = ({ assets, setValue, value }) => {
     return assets.filter((asset) => filter1(asset) && filter2(asset));
   };
 
+  React.useEffect(() => {
+    setSearch('');
+  }, [isOpen]);
+
   return (
     <Popover
       isOpen={isOpen}
       onOpen={onOpen}
       onClose={onClose}
       matchWidth={true}
-      offset={[-108, 0]}
     >
       <PopoverTrigger>
         <Button
@@ -462,14 +465,15 @@ const AssetsSelector = ({ assets, setValue, value }) => {
           Assets
         </Button>
       </PopoverTrigger>
-      <PopoverContent width="full">
-        <PopoverArrow />
+      <PopoverContent w="98%">
+        <PopoverArrow ml="4px" />
         <PopoverHeader
           display="flex"
           alignItems="center"
           justifyContent="center"
         >
           <Input
+            value={search}
             width="90%"
             size="sm"
             variant="filled"
@@ -480,7 +484,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
             }}
           />
         </PopoverHeader>
-        <PopoverBody p="-2" pr="-5">
+        <PopoverBody p="-2">
           <Box
             display="flex"
             alignItems="center"

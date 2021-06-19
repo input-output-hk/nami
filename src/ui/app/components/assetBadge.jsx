@@ -1,5 +1,5 @@
-import { CloseIcon, SmallCloseIcon } from '@chakra-ui/icons';
-import { Box, SimpleGrid, Stack } from '@chakra-ui/layout';
+import { SmallCloseIcon } from '@chakra-ui/icons';
+import { Box } from '@chakra-ui/layout';
 import {
   Avatar,
   Button,
@@ -8,14 +8,13 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightElement,
-  Skeleton,
   SkeletonCircle,
-  Text,
 } from '@chakra-ui/react';
 import React from 'react';
-import { getNetwork, toUnit } from '../../../api/extension';
+import { toUnit } from '../../../api/extension';
 import { blockfrostRequest } from '../../../api/util';
 import provider from '../../../config/provider';
+import AssetPopover from './assetPopover';
 
 const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const [initialWidth, setInitialWidth] = React.useState(
@@ -62,7 +61,6 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
       <InputGroup size="sm">
         <InputLeftElement
           rounded="lg"
-          pointerEvents="none"
           children={
             <Box
               userSelect="none"
@@ -77,16 +75,35 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
               {load ? (
                 <SkeletonCircle size="5" />
               ) : (
-                <Image
-                  src={asset.image}
-                  fallback={
-                    asset.image ? (
-                      <SkeletonCircle size="5" />
-                    ) : (
-                      <Avatar size="xs" name={asset.name} />
-                    )
-                  }
-                />
+                <AssetPopover asset={asset}>
+                  <Button
+                    style={{
+                      all: 'revert',
+                      margin: 0,
+                      padding: 0,
+                      background: 'none',
+                      border: 'none',
+                      outline: 'none',
+                      width: '100%',
+                      height: '100%',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Image
+                      src={asset.image}
+                      fallback={
+                        asset.image ? (
+                          <SkeletonCircle size="5" />
+                        ) : (
+                          <Avatar size="xs" name={asset.name} />
+                        )
+                      }
+                    />
+                  </Button>
+                </AssetPopover>
               )}
             </Box>
           }

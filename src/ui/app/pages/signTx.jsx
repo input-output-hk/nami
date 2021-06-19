@@ -623,14 +623,24 @@ const AssetsPopover = ({ assets, isDifference }) => {
     // ]}
     >
       <PopoverTrigger>
-        <ChevronDownIcon cursor="pointer" />
+        <Button
+          style={{
+            all: 'revert',
+            background: 'none',
+            border: 'none',
+            outline: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <ChevronDownIcon cursor="pointer" />
+        </Button>
       </PopoverTrigger>
       <Portal>
-        <PopoverContent width="98%">
-          <PopoverArrow />
+        <PopoverContent w="98%">
+          <PopoverArrow ml="4px" />
           <PopoverCloseButton />
           <PopoverHeader fontWeight="bold">Assets</PopoverHeader>
-          <PopoverBody pl="-2" pt="-2" pb="-2" pr="-2">
+          <PopoverBody p="-2">
             <Box
               display="flex"
               alignItems="center"

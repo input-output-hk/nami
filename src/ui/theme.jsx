@@ -4,6 +4,8 @@ import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { POPUP_WINDOW } from '../config/config';
 import { Scrollbars } from 'react-custom-scrollbars';
 
+import './app/components/styles.css';
+
 const theme = extendTheme({
   styles: {
     global: {

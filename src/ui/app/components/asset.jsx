@@ -5,12 +5,12 @@ import {
   Skeleton,
   SkeletonCircle,
   Text,
+  Button,
 } from '@chakra-ui/react';
 import React from 'react';
 import { blockfrostRequest } from '../../../api/util';
 import provider from '../../../config/provider';
-
-import './lineClamp.css';
+import AssetPopover from './assetPopover';
 
 const Asset = ({ asset }) => {
   const [token, setToken] = React.useState(null);
@@ -47,71 +47,87 @@ const Asset = ({ asset }) => {
     fetchMetadata();
   }, [asset]);
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      flexDirection="column"
-      width="full"
-      height="full"
-    >
+    <AssetPopover asset={token}>
       <Box
-        rounded="lg"
-        overflow="hidden"
-        width="16"
-        height="20"
         display="flex"
         alignItems="center"
         justifyContent="center"
-        cursor="pointer"
-        userSelect="none"
-      >
-        {!token ? (
-          <SkeletonCircle size="14" />
-        ) : !token.image ? (
-          <Avatar name={token.displayName} />
-        ) : (
-          <Image
-            width="full"
-            rounded="md"
-            src={token.image}
-            fallback={<SkeletonCircle size="14" />}
-          />
-        )}
-      </Box>
-      <Box
-        width="74px"
-        height="40px"
-        display="flex"
-        alignItems="center"
         flexDirection="column"
-        justifyContent="center"
+        width="full"
+        height="full"
       >
-        {!token ? (
-          <Skeleton height="16px" width="80%" />
-        ) : (
-          <>
-            <Text userSelect="text" fontSize="9" textAlign="center">
-              {token.quantity}
-            </Text>
-            {/* <Box height="1" /> */}
-            <Text
-              userSelect="text"
-              className="lineClamp"
-              overflow="hidden"
-              height="40px"
-              maxWidth="74px"
-              fontWeight="semibold"
-              color="GrayText"
-              lineHeight="1.1"
-              textAlign="center"
-            >
-              {token.displayName}
-            </Text>
-          </>
-        )}
+        <Box
+          rounded="lg"
+          overflow="hidden"
+          width="16"
+          height="20"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          cursor="pointer"
+          userSelect="none"
+        >
+          {!token ? (
+            <SkeletonCircle size="14" />
+          ) : (
+            <Image
+              width="full"
+              rounded="sm"
+              src={token.image}
+              fallback={
+                token.image ? (
+                  <SkeletonCircle size="14" />
+                ) : (
+                  <Button
+                    style={{
+                      all: 'revert',
+                      background: 'none',
+                      border: 'none',
+                      outline: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Avatar name={token.displayName} />
+                  </Button>
+                )
+              }
+            />
+          )}
+        </Box>
+        <Box
+          width="74px"
+          height="40px"
+          display="flex"
+          alignItems="center"
+          flexDirection="column"
+          justifyContent="center"
+        >
+          {!token ? (
+            <Skeleton height="16px" width="80%" />
+          ) : (
+            <>
+              <Text userSelect="text" fontSize="9" textAlign="center">
+                {token.quantity}
+              </Text>
+              {/* <Box height="1" /> */}
+              <Text
+                userSelect="text"
+                className="lineClamp"
+                overflow="hidden"
+                height="40px"
+                maxWidth="74px"
+                fontWeight="semibold"
+                color="GrayText"
+                lineHeight="1.1"
+                textAlign="center"
+              >
+                {token.displayName}
+              </Text>
+            </>
+          )}
+        </Box>
       </Box>
-    </Box>
+    </AssetPopover>
   );
 };
 
