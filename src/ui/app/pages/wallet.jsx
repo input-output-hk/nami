@@ -66,7 +66,7 @@ import {
   CopyIcon,
 } from '@chakra-ui/icons';
 import Scrollbars from 'react-custom-scrollbars';
-import QRCode from 'react-qr-code';
+import QrCode from '../components/qrCode';
 import provider from '../../../config/provider';
 import UnitDisplay from '../components/unitDisplay';
 import { onAccountChange } from '../../../api/extension/wallet';
@@ -348,7 +348,7 @@ const Wallet = ({ data }) => {
                 <PopoverArrow />
                 <PopoverCloseButton />
                 <PopoverBody
-                  mt="8"
+                  mt="6"
                   alignItems="center"
                   justifyContent="center"
                   display="flex"
@@ -357,7 +357,9 @@ const Wallet = ({ data }) => {
                 >
                   {state.account && (
                     <>
-                      <QRCode size={140} value={state.account.paymentAddr} />
+                      <Box>
+                        <QrCode value={state.account.paymentAddr} />
+                      </Box>
                       <Box height="4" />
                       <Copy
                         label="Copied address"
