@@ -1,6 +1,6 @@
 import React from 'react';
 import QRCodeStyling from 'qr-code-styling';
-import Ada from '../../../assets/img/ada.svg';
+import Ada from '../../../assets/img/ada.png';
 
 const qrCode = new QRCodeStyling({
   width: 150,
