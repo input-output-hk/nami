@@ -1,7 +1,7 @@
 import React from 'react';
-import { createWallet } from '../../../api/extension';
 import { Button } from '@chakra-ui/button';
 import { Backpack } from 'react-kawaii';
+import { Image } from '@chakra-ui/react';
 import { useHistory } from 'react-router-dom';
 import {
   Modal,
@@ -12,12 +12,11 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/modal';
-import { Box, Spacer, Text } from '@chakra-ui/layout';
+import { Box, Spacer, Text, Link } from '@chakra-ui/layout';
 import { useDisclosure } from '@chakra-ui/hooks';
 import { Select } from '@chakra-ui/select';
 
-const TEST_PHRASE =
-  'grab level comic recipe speak paddle lift air try concert include asset exhibit refuse index sense noble erupt water trial require frame pistol account';
+import Banner from '../../../assets/img/banner.svg';
 
 const Welcome = ({ data }) => {
   const history = useHistory();
@@ -34,9 +33,31 @@ const Welcome = ({ data }) => {
           justifyContent: 'center',
           flexDirection: 'column',
         }}
+        position="relative"
       >
-        <Backpack size={200} mood="blissful" color="#61DDBC" />
-        <Box height="10" />
+        {/* Header */}
+        <Box position="absolute" top="9">
+          <Image draggable={false} width="100px" src={Banner} />
+        </Box>
+        {/* Footer */}
+        <Box position="absolute" bottom="3">
+          <Link color="GrayText">namiwallet.io</Link>
+        </Box>
+        <Box h="12" />
+        <Text fontWeight="bold" fontSize="3xl">
+          Welcome,
+        </Text>
+        <Text
+          fontWeight="thin"
+          fontSize="sm"
+          textAlign="center"
+          lineHeight="1.2"
+        >
+          let's get started with creating a wallet.
+        </Text>
+        <Box h="8" />
+        <Backpack size={120} mood="blissful" color="#61DDBC" />
+        <Box height="8" />
         <Button
           onClick={() => {
             refWallet.current.openModal();
@@ -52,7 +73,7 @@ const Welcome = ({ data }) => {
             refImport.current.openModal();
           }}
           colorScheme="orange"
-          size="md"
+          size="sm"
         >
           Import
         </Button>
@@ -73,7 +94,7 @@ const WalletModal = React.forwardRef((props, ref) => {
     },
   }));
   return (
-    <Modal size="sm" isOpen={isOpen} onClose={onClose} isCentered>
+    <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Create a wallet</ModalHeader>
@@ -112,7 +133,7 @@ const ImportModal = React.forwardRef((props, ref) => {
     },
   }));
   return (
-    <Modal size="sm" isOpen={isOpen} onClose={onClose} isCentered>
+    <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Import a wallet</ModalHeader>
