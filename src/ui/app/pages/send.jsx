@@ -180,6 +180,7 @@ const Send = () => {
         <Account account={account} />
         <Box position="absolute" top="24" left="6">
           <IconButton
+            rounded="md"
             onClick={() => history.goBack()}
             variant="ghost"
             icon={<ChevronLeftIcon boxSize="7" />}
@@ -516,10 +517,15 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                           if (clicked) return;
                           clicked = true;
                           onClose();
-                          setValue((v) => ({
-                            ...v,
-                            assets: v.assets.concat(asset),
-                          }));
+                          setTimeout(
+                            () =>
+                              setValue((v) => ({
+                                ...v,
+                                assets: v.assets.concat(asset),
+                              })),
+                            100
+                          );
+
                           setTimeout(() => (clicked = false), 500); // Prevent user from selecting multiple at once
                         }}
                         mr="3"

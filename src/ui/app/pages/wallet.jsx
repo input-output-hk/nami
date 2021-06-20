@@ -75,7 +75,8 @@ import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
 
 // Assets
-import Logo from '../../../assets/img/icon-128.png';
+import Logo from '../../../assets/img/logo.svg';
+import AvatarLoader from '../components/AvatarLoader';
 
 const Wallet = ({ data }) => {
   const history = useHistory();
@@ -87,6 +88,7 @@ const Wallet = ({ data }) => {
   const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
   const deletAccountRef = React.useRef();
+  const [avatar, setAvatar] = React.useState(''); // for quicker displaying
 
   const checkTransactions = async () => {
     const currentAccount = await getCurrentAccount();
@@ -105,6 +107,7 @@ const Wallet = ({ data }) => {
   const getData = async () => {
     setState((s) => ({ ...s, account: null, accounts: null }));
     const currentAccount = await getCurrentAccount();
+    setAvatar(currentAccount.avatar);
     const allAccounts = await getAccounts();
     const fiatPrice = await provider.api.price();
     const network = await getNetwork();
@@ -153,9 +156,19 @@ const Wallet = ({ data }) => {
           width="full"
           position="relative"
         >
-          {/* <Box zIndex="2" position="absolute" top="6" left="6">
-            <Image width="40px" src={Logo} />
-          </Box> */}
+          <Box
+            zIndex="2"
+            position="absolute"
+            top="6"
+            left="6"
+            width="14"
+            height="14"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Image draggable={false} width="30px" src={Logo} />
+          </Box>
           <Box zIndex="2" position="absolute" top="6" right="6">
             <Menu
               isOpen={menu}
@@ -171,13 +184,9 @@ const Wallet = ({ data }) => {
                 height="14"
                 as={Button}
               >
-                {state.account && (
-                  <img
-                    style={{ position: 'absolute', top: 5, right: 6 }}
-                    src={avatarToImage(state.account.avatar)}
-                    width="76%"
-                  />
-                )}
+                <Box position="absolute" top="5px" right="6px" width="76%">
+                  <AvatarLoader avatar={avatar} />
+                </Box>
               </MenuButton>
               <MenuList>
                 <MenuGroup title="Accounts">
@@ -200,12 +209,10 @@ const Wallet = ({ data }) => {
                             }}
                           >
                             <Stack direction="row" alignItems="center">
-                              <Image
-                                boxSize="2rem"
-                                rounded="full"
-                                src={avatarToImage(account.avatar)}
-                                mr="12px"
-                              />
+                              <Box boxSize="2rem" mr="12px">
+                                <AvatarLoader avatar={account.avatar} />
+                              </Box>
+
                               <Box display="flex" flexDirection="column">
                                 <Box height="1.5" />
                                 <Text mb="-1" fontWeight="bold" fontSize="14px">
