@@ -1,4 +1,4 @@
-export const TARGET = 'cardano-wallet';
+export const TARGET = 'nami-wallet';
 export const SENDER = { extension: 'extension', webpage: 'webpage' };
 export const METHOD = {
   isWhitelisted: 'isWhitelisted',
@@ -28,7 +28,6 @@ localStorage = {
       paymentKeyHash: cbor string,
       stakeKeyHash cbor string,
       name: string,
-      utxos: [cbor],
       mainnet: {
             lovelace: 0,
             assets: [],
