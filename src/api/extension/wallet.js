@@ -153,7 +153,10 @@ export const valueToAssets = async (value) => {
           Buffer.from(policyAsset.name(), 'hex').toString('hex');
         const _policy = asset.slice(0, 56);
         const _name = asset.slice(56);
-        const fingerprint = new AssetFingerprint(_policy, _name).fingerprint();
+        const fingerprint = new AssetFingerprint(
+          Buffer.from(_policy, 'hex'),
+          Buffer.from(_name, 'hex')
+        ).fingerprint();
         assets.push({
           unit: asset,
           quantity: quantity.to_str(),
