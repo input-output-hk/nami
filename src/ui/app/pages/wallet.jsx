@@ -75,7 +75,7 @@ import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
 
 // Assets
-import Logo from '../../../assets/img/logo.svg';
+import Logo from '../../../assets/img/logoWhite.svg';
 import AvatarLoader from '../components/AvatarLoader';
 
 const Wallet = ({ data }) => {
@@ -188,7 +188,7 @@ const Wallet = ({ data }) => {
                   <AvatarLoader avatar={avatar} />
                 </Box>
               </MenuButton>
-              <MenuList>
+              <MenuList fontSize="xs">
                 <MenuGroup title="Accounts">
                   <Scrollbars
                     style={{ width: '100%' }}
@@ -215,7 +215,13 @@ const Wallet = ({ data }) => {
 
                               <Box display="flex" flexDirection="column">
                                 <Box height="1.5" />
-                                <Text mb="-1" fontWeight="bold" fontSize="14px">
+                                <Text
+                                  mb="-1"
+                                  fontWeight="bold"
+                                  fontSize="14px"
+                                  isTruncated={true}
+                                  maxWidth="210px"
+                                >
                                   {account.name}
                                 </Text>
                                 <Text>
@@ -283,7 +289,12 @@ const Wallet = ({ data }) => {
             alignItems="center"
             justifyContent="center"
           >
-            <Text color="white" fontSize="lg">
+            <Text
+              color="white"
+              fontSize="lg"
+              isTruncated={true}
+              maxWidth="210px"
+            >
               {state.account && state.account.name}
             </Text>
           </Box>
@@ -373,6 +384,7 @@ const Wallet = ({ data }) => {
                         copy={state.account.paymentAddr}
                       >
                         <Text
+                          fontSize="xs"
                           lineHeight="1.2"
                           cursor="pointer"
                           wordBreak="break-all"
@@ -552,7 +564,7 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
 
           <AlertDialogBody>
             <Text fontSize="sm">
-              Are you sure you want to delete {props.name}?
+              Are you sure you want to delete <b>{props.name}</b>?
             </Text>
           </AlertDialogBody>
 

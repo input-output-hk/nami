@@ -99,7 +99,7 @@ const AssetsViewer = ({ assets }) => {
                 bottom="-30px"
                 color="GrayText"
               >
-                <Text width="full" textAlign="center">
+                <Text fontSize="xs" width="full" textAlign="center">
                   {assets && assets.length} total
                 </Text>
               </Box>

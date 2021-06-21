@@ -68,37 +68,29 @@ const AssetPopover = ({ asset, gutter, ...props }) => {
                   </Text>
                 </Copy>
                 <Box h="2" />
-                <Text fontWeight="bold">{asset.quantity}</Text>
+                <Text fontSize="xs" fontWeight="bold">
+                  {asset.quantity}
+                </Text>
                 <Box h="2" />
                 <Copy label="Copied policy" copy={asset.policy}>
-                  <Box
-                    whiteSpace="nowrap"
-                    fontSize="xx-small"
-                    fontWeight="thin"
-                  >
+                  <Box whiteSpace="nowrap" fontSize="xx-small">
                     <MiddleEllipsis>
                       <span>
-                        <b>Policy</b>: {asset.policy}
+                        <b>Policy:</b> {asset.policy}
                       </span>
                     </MiddleEllipsis>
                   </Box>
                 </Copy>
                 <Box h="1" />
                 <Copy label="Copied asset" copy={asset.fingerprint}>
-                  <Box
-                    whiteSpace="nowrap"
-                    fontSize="xx-small"
-                    fontWeight="thin"
-                  >
+                  <Box whiteSpace="nowrap" fontSize="xx-small">
                     <MiddleEllipsis>
                       <span>
-                        <b>Asset</b>: {asset.fingerprint}
+                        <b>Asset:</b> {asset.fingerprint}
                       </span>
                     </MiddleEllipsis>
                   </Box>
                 </Copy>
-                {/* <Text lineHeight="1.1">Policy: {asset.policy}</Text>
-                <Text lineHeight="1.1">Asset: {asset.fingerprint}</Text> */}
               </Box>
             ) : (
               <Spinner color="teal" speed="0.5s" />

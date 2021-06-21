@@ -40,25 +40,27 @@ const Welcome = ({ data }) => {
           <Image draggable={false} width="100px" src={Banner} />
         </Box>
         {/* Footer */}
-        <Box position="absolute" bottom="3">
+        <Box position="absolute" bottom="3" fontSize="xs">
           <Link color="GrayText">namiwallet.io</Link>
         </Box>
         <Box h="12" />
-        <Text fontWeight="bold" fontSize="3xl">
-          Welcome,
+        <Text fontWeight="medium" fontSize="3xl">
+          Welcome
         </Text>
         <Text
-          fontWeight="thin"
+          color="grey"
+          fontWeight="light"
           fontSize="sm"
           textAlign="center"
           lineHeight="1.2"
         >
-          let's get started with creating a wallet.
+          Let's get started with creating a wallet.
         </Text>
         <Box h="8" />
         <Backpack size={120} mood="blissful" color="#61DDBC" />
         <Box height="8" />
         <Button
+          display="inline-flex"
           onClick={() => {
             refWallet.current.openModal();
           }}

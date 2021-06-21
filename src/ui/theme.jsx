@@ -16,6 +16,9 @@ const theme = extendTheme({
       },
     },
   },
+  fonts: {
+    body: 'Ubuntu, sans-serif',
+  },
 });
 
 const Theme = (props) => {
