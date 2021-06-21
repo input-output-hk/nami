@@ -80,6 +80,11 @@ var options = {
         ],
       },
       {
+        test: /\.(woff|woff2)$/,
+        loader: 'file-loader',
+        options: { name: '[name].[ext]' },
+      },
+      {
         test: new RegExp('.(' + fileExtensions.join('|') + ')$'),
         loader: 'file-loader',
         options: {

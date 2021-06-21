@@ -6,6 +6,7 @@ import {
 } from '../../../api/extension';
 import { Button } from '@chakra-ui/button';
 import { Route, Switch, useHistory } from 'react-router-dom';
+import { Image } from '@chakra-ui/react';
 import {
   Input,
   InputGroup,
@@ -19,8 +20,7 @@ import { CloseButton } from '@chakra-ui/close-button';
 import { Checkbox } from '@chakra-ui/checkbox';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 
-const TEST_PHRASE =
-  'grab level comic recipe speak paddle lift air try concert include asset exhibit refuse index sense noble erupt water trial require frame pistol account';
+import Logo from '../../../assets/img/logo.svg';
 
 const CreateWallet = ({ data }) => {
   const history = useHistory();
@@ -34,6 +34,9 @@ const CreateWallet = ({ data }) => {
       height="100vh"
       position="relative"
     >
+      <Box position="absolute" top="6" left="6">
+        <Image src={Logo} width="30px" draggable={false} />
+      </Box>
       <Box position="absolute" top="6" right="6">
         <CloseButton size="md" onClick={() => history.push('/welcome')} />
       </Box>
@@ -115,7 +118,7 @@ const GenerateSeed = (props) => {
       <Stack alignItems="center" direction="column">
         <Stack direction="row" width="64" spacing="6">
           <Checkbox onChange={(e) => setChecked(e.target.checked)} size="lg" />
-          <Text wordBreak="break-word" fontWeight="bold">
+          <Text wordBreak="break-word" fontWeight="bold" fontSize="xs">
             I've written down the seed phrase and stored it in a secure place.
           </Text>
         </Stack>
@@ -161,7 +164,9 @@ const VerifySeed = () => {
         Verify Seed Phrase
       </Text>
       <Spacer height="2" />
-      <Text textAlign="center">Enter the seed phrase you've just stored.</Text>
+      <Text fontSize="xs" textAlign="center">
+        Enter the seed phrase you've just stored.
+      </Text>
       <Spacer height="4" />
       <Stack spacing={4} direction="row">
         {[0, 1].map((colIndex) => (
@@ -253,7 +258,9 @@ const ImportSeed = () => {
         Import Seed Phrase
       </Text>
       <Spacer height="2" />
-      <Text textAlign="center">Enter a {seedLength}-word seed phrase.</Text>
+      <Text fontSize="xs" textAlign="center">
+        Enter a {seedLength}-word seed phrase.
+      </Text>
       <Spacer height="4" />
       <Stack spacing={4} direction="row">
         {[0, 1].map((colIndex) => (

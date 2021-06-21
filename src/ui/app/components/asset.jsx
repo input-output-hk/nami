@@ -111,6 +111,7 @@ const Asset = ({ asset }) => {
               </Text>
               {/* <Box height="1" /> */}
               <Text
+                fontSize="xs"
                 userSelect="text"
                 className="lineClamp"
                 overflow="hidden"

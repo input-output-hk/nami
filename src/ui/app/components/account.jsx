@@ -2,7 +2,7 @@ import React from 'react';
 import { avatarToImage, getCurrentAccount } from '../../../api/extension';
 import { Box, Text } from '@chakra-ui/layout';
 
-import Logo from '../../../assets/img/logo.svg';
+import Logo from '../../../assets/img/logoWhite.svg';
 import { Image } from '@chakra-ui/react';
 import AvatarLoader from './AvatarLoader';
 
@@ -53,7 +53,7 @@ const Account = ({ account }) => {
         alignItems="center"
         justifyContent="center"
       >
-        <Text color="white" fontSize="lg">
+        <Text color="white" fontSize="lg" isTruncated={true} maxWidth="210px">
           {account && account.name}
         </Text>
       </Box>

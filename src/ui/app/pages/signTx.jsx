@@ -33,7 +33,7 @@ import { structureToUtxo, valueToAssets } from '../../../api/extension/wallet';
 import { TxSignError } from '../../../config/config';
 
 const abs = (big) => {
-  return big < 0 ? BigInt(big.toString().slice(1)) : big;
+  return big < 0 ? big * BigInt(-1) : big;
 };
 
 const SignTx = ({ request, controller }) => {
@@ -116,10 +116,8 @@ const SignTx = ({ request, controller }) => {
       }
     }
 
-    console.log('START');
     inputValue = await valueToAssets(inputValue);
     ownOutputValue = await valueToAssets(ownOutputValue);
-    console.log('FINISH');
 
     const involvedAssets = [
       ...new Set([
@@ -142,7 +140,13 @@ const SignTx = ({ request, controller }) => {
         Buffer.from(policy, 'hex'),
         Buffer.from(name, 'hex')
       ).fingerprint();
-      return { unit, quantity: difference, fingerprint };
+      return {
+        unit,
+        quantity: difference,
+        fingerprint,
+        name: (leftValue || rightValue).name,
+        policy,
+      };
     });
 
     const externalValue = {};
@@ -431,7 +435,7 @@ const SignTx = ({ request, controller }) => {
           )}
         </Box>
         {value.externalValue && Object.keys(value.externalValue).length > 0 && (
-          <Box mt="6">
+          <Box fontSize="xs" mt="6">
             <Text textAlign="center" fontSize="16" fontWeight="bold">
               Sending To
               <ArrowRightIcon ml="4" />
@@ -515,7 +519,7 @@ const SignTx = ({ request, controller }) => {
             <b>Required keys:</b>{' '}
             {keyHashes.kind ? (
               keyHashes.kind.length <= 0 ? (
-                <span style={{ color: '#FC8181' }}>Can't sign Tx</span>
+                <span style={{ color: '#FC8181' }}>Cannot sign Tx</span>
               ) : (
                 keyHashes.kind.map((keyHash, index) =>
                   index >= keyHashes.kind.length - 1 ? (
@@ -683,7 +687,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
                             <Avatar
                               userSelect="none"
                               size="xs"
-                              name={hexToAscii(asset.unit.slice(56))}
+                              name={asset.name}
                             />
 
                             <Box
@@ -698,20 +702,16 @@ const AssetsPopover = ({ assets, isDifference }) => {
                               >
                                 <Box mb="-0.5">
                                   <MiddleEllipsis>
-                                    <span>
-                                      {hexToAscii(asset.unit.slice(56))}
-                                    </span>
+                                    <span>{asset.name}</span>
                                   </MiddleEllipsis>
                                 </Box>
                                 <Box
                                   whiteSpace="nowrap"
                                   fontSize="xx-small"
-                                  fontWeight="thin"
+                                  fontWeight="light"
                                 >
                                   <MiddleEllipsis>
-                                    <span>
-                                      Policy: {asset.unit.slice(0, 56)}
-                                    </span>
+                                    <span>Policy: {asset.policy}</span>
                                   </MiddleEllipsis>
                                 </Box>
                               </Copy>

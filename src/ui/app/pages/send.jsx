@@ -44,7 +44,7 @@ import { useDisclosure } from '@chakra-ui/hooks';
 import Asset from '../components/asset';
 import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
-import { Alert, AlertIcon, useToast } from '@chakra-ui/react';
+import { Spinner, useToast } from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 
 let timer = null;
@@ -493,91 +493,109 @@ const AssetsSelector = ({ assets, setValue, value }) => {
             flexDirection="column"
             my="1"
           >
-            {assets && filterAssets().length > 0 ? (
-              <List
-                outerElementType={CustomScrollbarsVirtualList}
-                height={200}
-                itemCount={filterAssets().length}
-                itemSize={45}
-                width={385}
-                layout="vertical"
-              >
-                {({ index, style }) => {
-                  const asset = filterAssets()[index];
-                  return (
-                    <Box
-                      style={style}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Button
-                        width="96%"
-                        onClick={() => {
-                          if (clicked) return;
-                          clicked = true;
-                          onClose();
-                          setTimeout(
-                            () =>
-                              setValue((v) => ({
-                                ...v,
-                                assets: v.assets.concat(asset),
-                              })),
-                            100
-                          );
-
-                          setTimeout(() => (clicked = false), 500); // Prevent user from selecting multiple at once
-                        }}
-                        mr="3"
-                        ml="3"
+            {assets ? (
+              filterAssets().length > 0 ? (
+                <List
+                  outerElementType={CustomScrollbarsVirtualList}
+                  height={200}
+                  itemCount={filterAssets().length}
+                  itemSize={45}
+                  width={385}
+                  layout="vertical"
+                >
+                  {({ index, style }) => {
+                    const asset = filterAssets()[index];
+                    return (
+                      <Box
+                        style={style}
                         display="flex"
                         alignItems="center"
-                        justifyContent="start"
-                        variant="ghost"
+                        justifyContent="center"
                       >
-                        <Stack
-                          width="100%"
-                          fontSize="xs"
-                          direction="row"
+                        <Button
+                          width="96%"
+                          onClick={() => {
+                            if (clicked) return;
+                            clicked = true;
+                            onClose();
+                            setTimeout(
+                              () =>
+                                setValue((v) => ({
+                                  ...v,
+                                  assets: v.assets.concat(asset),
+                                })),
+                              100
+                            );
+
+                            setTimeout(() => (clicked = false), 500); // Prevent user from selecting multiple at once
+                          }}
+                          mr="3"
+                          ml="3"
+                          display="flex"
                           alignItems="center"
                           justifyContent="start"
+                          variant="ghost"
                         >
-                          <Avatar
-                            userSelect="none"
-                            size="xs"
-                            name={asset.name}
-                          />
-
-                          <Box
-                            textAlign="left"
-                            width="200px"
-                            whiteSpace="nowrap"
-                            fontWeight="normal"
+                          <Stack
+                            width="100%"
+                            fontSize="xs"
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="start"
                           >
-                            <Box mb="-1px">
-                              <MiddleEllipsis>
-                                <span>{asset.name}</span>
-                              </MiddleEllipsis>
-                            </Box>
+                            <Avatar
+                              userSelect="none"
+                              size="xs"
+                              name={asset.name}
+                            />
+
                             <Box
+                              textAlign="left"
+                              width="200px"
                               whiteSpace="nowrap"
-                              fontSize="xx-small"
-                              fontWeight="thin"
+                              fontWeight="normal"
                             >
-                              <MiddleEllipsis>
-                                <span>Policy: {asset.policy}</span>
-                              </MiddleEllipsis>
+                              <Box mb="-1px">
+                                <MiddleEllipsis>
+                                  <span>{asset.name}</span>
+                                </MiddleEllipsis>
+                              </Box>
+                              <Box
+                                whiteSpace="nowrap"
+                                fontSize="xx-small"
+                                fontWeight="light"
+                              >
+                                <MiddleEllipsis>
+                                  <span>Policy: {asset.policy}</span>
+                                </MiddleEllipsis>
+                              </Box>
                             </Box>
-                          </Box>
-                          <Box>
-                            <Text fontWeight="bold">{asset.quantity}</Text>
-                          </Box>
-                        </Stack>
-                      </Button>
-                    </Box>
-                  );
-                }}
-              </List>
+                            <Box>
+                              <Text fontWeight="bold">{asset.quantity}</Text>
+                            </Box>
+                          </Stack>
+                        </Button>
+                      </Box>
+                    );
+                  }}
+                </List>
+              ) : (
+                <Box
+                  width={385}
+                  height={200}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  flexDirection="column"
+                  opacity="0.5"
+                >
+                  <Planet size={80} mood="ko" color="#61DDBC" />
+                  <Box height="2" />
+                  <Text fontWeight="bold" color="GrayText">
+                    No Assets
+                  </Text>
+                </Box>
+              )
             ) : (
               <Box
                 width={385}
@@ -585,14 +603,8 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                flexDirection="column"
-                opacity="0.5"
               >
-                <Planet size={80} mood="ko" color="#61DDBC" />
-                <Box height="2" />
-                <Text fontWeight="bold" color="GrayText">
-                  No Assets
-                </Text>
+                <Spinner color="teal" speed="0.5s" />
               </Box>
             )}
           </Box>
