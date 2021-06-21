@@ -3,15 +3,17 @@ import { avatarToImage, getCurrentAccount } from '../../../api/extension';
 import { Box, Text } from '@chakra-ui/layout';
 
 import Logo from '../../../assets/img/logoWhite.svg';
-import { Image } from '@chakra-ui/react';
+import { Image, useColorModeValue } from '@chakra-ui/react';
 import AvatarLoader from './AvatarLoader';
 
 const Account = ({ account }) => {
+  const avatarBg = useColorModeValue('white', 'gray.800');
+  const panelBg = useColorModeValue('teal.400', 'teal.900');
   return (
     <Box
       height="16"
       roundedBottom="3xl"
-      background="teal.400"
+      background={panelBg}
       shadow="md"
       width="full"
       position="relative"
@@ -35,7 +37,7 @@ const Account = ({ account }) => {
         top="13px"
         right="6"
         rounded="full"
-        background="white"
+        background={avatarBg}
         width="10"
         height="10"
         display="flex"

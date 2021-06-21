@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from '@chakra-ui/button';
 import { useHistory } from 'react-router-dom';
 import {
-  avatarToImage,
   createAccount,
   deleteAccount,
   displayUnit,
@@ -57,6 +56,8 @@ import {
   Tab,
   TabPanels,
   TabPanel,
+  LightMode,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import {
   SettingsIcon,
@@ -80,6 +81,8 @@ import AvatarLoader from '../components/AvatarLoader';
 
 const Wallet = ({ data }) => {
   const history = useHistory();
+  const avatarBg = useColorModeValue('white', 'gray.800');
+  const panelBg = useColorModeValue('teal.400', 'teal.900');
   const [state, setState] = React.useState({
     account: null,
     accounts: null,
@@ -151,7 +154,7 @@ const Wallet = ({ data }) => {
         <Box
           height="52"
           roundedBottom="3xl"
-          background="teal.400"
+          background={panelBg}
           shadow="md"
           width="full"
           position="relative"
@@ -179,7 +182,7 @@ const Wallet = ({ data }) => {
                 onClick={() => setMenu(true)}
                 position="relative"
                 rounded="full"
-                background="white"
+                background={avatarBg}
                 width="14"
                 height="14"
                 as={Button}
@@ -350,18 +353,20 @@ const Wallet = ({ data }) => {
             height="8"
           >
             <Popover matchWidth={true}>
-              <PopoverTrigger>
-                <Button
-                  rightIcon={<Icon as={BsArrowDownRight} />}
-                  background="white"
-                  color="orange.400"
-                  rounded="xl"
-                  size="sm"
-                  shadow="md"
-                >
-                  Receive
-                </Button>
-              </PopoverTrigger>
+              <LightMode>
+                <PopoverTrigger>
+                  <Button
+                    rightIcon={<Icon as={BsArrowDownRight} />}
+                    background="white"
+                    color="orange.400"
+                    rounded="xl"
+                    size="sm"
+                    shadow="md"
+                  >
+                    Receive
+                  </Button>
+                </PopoverTrigger>
+              </LightMode>
               <PopoverContent width="60">
                 <PopoverArrow />
                 <PopoverCloseButton />
@@ -406,16 +411,18 @@ const Wallet = ({ data }) => {
             width="20"
             height="8"
           >
-            <Button
-              onClick={() => history.push('/send')}
-              size="sm"
-              rightIcon={<Icon as={BsArrowUpRight} />}
-              colorScheme="orange"
-              rounded="xl"
-              shadow="md"
-            >
-              Send
-            </Button>
+            <LightMode>
+              <Button
+                onClick={() => history.push('/send')}
+                size="sm"
+                rightIcon={<Icon as={BsArrowUpRight} />}
+                colorScheme="orange"
+                rounded="xl"
+                shadow="md"
+              >
+                Send
+              </Button>
+            </LightMode>
           </Box>
         </Box>
         <Box height="8" />

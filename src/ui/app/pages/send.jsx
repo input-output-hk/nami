@@ -5,7 +5,6 @@ import {
   getCurrentAccount,
   getUtxos,
   isValidAddress,
-  signData,
   toUnit,
 } from '../../../api/extension';
 import { Box, Stack, Text } from '@chakra-ui/layout';
@@ -24,10 +23,8 @@ import {
   PopoverHeader,
   PopoverTrigger,
 } from '@chakra-ui/popover';
-import Copy from '../components/copy';
 import MiddleEllipsis from 'react-middle-ellipsis';
 import { Avatar } from '@chakra-ui/avatar';
-import AssetFingerprint from '@emurgo/cip14-js';
 import UnitDisplay from '../components/unitDisplay';
 import {
   assetsToValue,
@@ -41,10 +38,9 @@ import {
 } from '../../../api/extension/wallet';
 import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
-import Asset from '../components/asset';
 import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
-import { Spinner, useToast } from '@chakra-ui/react';
+import { LightMode, Spinner, useToast } from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 
 let timer = null;
@@ -369,14 +365,16 @@ const Send = () => {
           alignItems="center"
           justifyContent="center"
         >
-          <Button
-            isDisabled={!tx || fee.error}
-            colorScheme="orange"
-            onClick={() => ref.current.openModal()}
-            rightIcon={<Icon as={BsArrowUpRight} />}
-          >
-            Send
-          </Button>
+          <LightMode>
+            <Button
+              isDisabled={!tx || fee.error}
+              colorScheme="orange"
+              onClick={() => ref.current.openModal()}
+              rightIcon={<Icon as={BsArrowUpRight} />}
+            >
+              Send
+            </Button>
+          </LightMode>
         </Box>
       </Box>
       <ConfirmModal

@@ -2,6 +2,7 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { getCurrentAccount, signData } from '../../../api/extension';
 import { Box, Text } from '@chakra-ui/layout';
+import { LightMode } from '@chakra-ui/react';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
 import { Button } from '@chakra-ui/button';
@@ -111,9 +112,14 @@ const SignData = ({ request, controller }) => {
           >
             Cancel
           </Button>
-          <Button colorScheme="orange" onClick={() => ref.current.openModal()}>
-            Sign
-          </Button>
+          <LightMode>
+            <Button
+              colorScheme="orange"
+              onClick={() => ref.current.openModal()}
+            >
+              Sign
+            </Button>
+          </LightMode>
         </Box>
       </Box>
       <ConfirmModal

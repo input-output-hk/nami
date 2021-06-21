@@ -1,11 +1,6 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import {
-  displayUnit,
-  getCurrentAccount,
-  getUtxos,
-  signTx,
-} from '../../../api/extension';
+import { getCurrentAccount, getUtxos, signTx } from '../../../api/extension';
 import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
@@ -25,11 +20,12 @@ import {
   PopoverHeader,
   PopoverTrigger,
 } from '@chakra-ui/popover';
+import { LightMode } from '@chakra-ui/react';
 import Copy from '../components/copy';
 import { Portal } from '@chakra-ui/portal';
 import { Avatar } from '@chakra-ui/avatar';
 import { FixedSizeList as List } from 'react-window';
-import { structureToUtxo, valueToAssets } from '../../../api/extension/wallet';
+import { valueToAssets } from '../../../api/extension/wallet';
 import { TxSignError } from '../../../config/config';
 
 const abs = (big) => {
@@ -552,13 +548,15 @@ const SignTx = ({ request, controller }) => {
           >
             Cancel
           </Button>
-          <Button
-            isDisabled={keyHashes.key.length <= 0}
-            colorScheme="orange"
-            onClick={() => ref.current.openModal()}
-          >
-            Sign
-          </Button>
+          <LightMode>
+            <Button
+              isDisabled={keyHashes.key.length <= 0}
+              colorScheme="orange"
+              onClick={() => ref.current.openModal()}
+            >
+              Sign
+            </Button>
+          </LightMode>
         </Box>
       </Box>
       <ConfirmModal
@@ -603,29 +601,8 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
 ));
 
 const AssetsPopover = ({ assets, isDifference }) => {
-  const hexToAscii = (hex) => {
-    var _hex = hex.toString();
-    var str = '';
-    for (var i = 0; i < _hex.length && _hex.substr(i, 2) !== '00'; i += 2)
-      str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
-    return str;
-  };
   return (
-    <Popover
-    // offset={[
-    //   isDifference
-    //     ? assets.filter((v) => v.quantity < 0).length > 0 &&
-    //       assets.filter((v) => v.quantity > 0).length > 0
-    //       ? assets.length < 5
-    //         ? -80
-    //         : -95
-    //       : assets.length < 5
-    //       ? -60
-    //       : -70
-    //     : -133,
-    //   0,
-    // ]}
-    >
+    <Popover>
       <PopoverTrigger>
         <Button
           style={{
@@ -634,6 +611,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
             border: 'none',
             outline: 'none',
             cursor: 'pointer',
+            color: 'inherit',
           }}
         >
           <ChevronDownIcon cursor="pointer" />
@@ -724,7 +702,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
                                     ? asset.quantity <= 0
                                       ? 'green.500'
                                       : 'red.500'
-                                    : 'black'
+                                    : 'inherit'
                                 }
                               >
                                 {isDifference
