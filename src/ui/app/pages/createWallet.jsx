@@ -327,102 +327,112 @@ const MakeAccount = (props) => {
   const mnemonic = history.location.mnemonic;
 
   return (
-    <Box marginTop="40" textAlign="center">
-      <Text fontWeight="bold" fontSize="xl">
-        Create Account
-      </Text>
-      <Spacer height="10" />
-      <Input
-        onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
-        placeholder="Enter account name"
-      ></Input>
-      <Spacer height="6" />
-
-      <InputGroup size="md">
+    <Box
+      marginTop="40"
+      textAlign="center"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <Box width="85%">
+        <Text fontWeight="bold" fontSize="xl">
+          Create Account
+        </Text>
+        <Spacer height="10" />
         <Input
-          isInvalid={state.regularPassword === false}
-          pr="4.5rem"
-          type={state.show ? 'text' : 'password'}
-          onChange={(e) =>
-            setState((s) => ({ ...s, password: e.target.value }))
-          }
-          onBlur={(e) =>
-            setState((s) => ({
-              ...s,
-              regularPassword: e.target.value.length >= 8,
-            }))
-          }
-          placeholder="Enter password"
-        />
-        <InputRightElement width="4.5rem">
-          <Button
-            h="1.75rem"
-            size="sm"
-            onClick={() => setState((s) => ({ ...s, show: !s.show }))}
-          >
-            {state.show ? 'Hide' : 'Show'}
-          </Button>
-        </InputRightElement>
-      </InputGroup>
-      {state.regularPassword === false && (
-        <Text color="red.300">Password must be at least 8 characters long</Text>
-      )}
-      <Spacer height="2" />
+          onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
+          placeholder="Enter account name"
+        ></Input>
+        <Spacer height="6" />
 
-      <InputGroup size="md">
-        <Input
-          isInvalid={state.matchingPassword === false}
-          pr="4.5rem"
-          onChange={(e) =>
-            setState((s) => ({ ...s, passwordConfirm: e.target.value }))
+        <InputGroup size="md">
+          <Input
+            isInvalid={state.regularPassword === false}
+            pr="4.5rem"
+            type={state.show ? 'text' : 'password'}
+            onChange={(e) =>
+              setState((s) => ({ ...s, password: e.target.value }))
+            }
+            onBlur={(e) =>
+              setState((s) => ({
+                ...s,
+                regularPassword: e.target.value.length >= 8,
+              }))
+            }
+            placeholder="Enter password"
+          />
+          <InputRightElement width="4.5rem">
+            <Button
+              h="1.75rem"
+              size="sm"
+              onClick={() => setState((s) => ({ ...s, show: !s.show }))}
+            >
+              {state.show ? 'Hide' : 'Show'}
+            </Button>
+          </InputRightElement>
+        </InputGroup>
+        {state.regularPassword === false && (
+          <Text color="red.300">
+            Password must be at least 8 characters long
+          </Text>
+        )}
+        <Spacer height="2" />
+
+        <InputGroup size="md">
+          <Input
+            isInvalid={state.matchingPassword === false}
+            pr="4.5rem"
+            onChange={(e) =>
+              setState((s) => ({ ...s, passwordConfirm: e.target.value }))
+            }
+            onBlur={(e) =>
+              setState((s) => ({
+                ...s,
+                matchingPassword: e.target.value === s.password,
+              }))
+            }
+            type={state.show ? 'text' : 'password'}
+            placeholder="Confirm password"
+          />
+          <InputRightElement _disabled={true} width="4.5rem">
+            <Button
+              h="1.75rem"
+              size="sm"
+              onClick={() => setState((s) => ({ ...s, show: !s.show }))}
+            >
+              {state.show ? 'Hide' : 'Show'}
+            </Button>
+          </InputRightElement>
+        </InputGroup>
+        {state.matchingPassword === false && (
+          <Text color="red.300">Password doesn't match</Text>
+        )}
+        <Spacer height="8" />
+        <Button
+          isDisabled={
+            !state.password ||
+            !state.password.length >= 8 ||
+            state.password !== state.passwordConfirm ||
+            !state.name
           }
-          onBlur={(e) =>
-            setState((s) => ({
-              ...s,
-              matchingPassword: e.target.value === s.password,
-            }))
-          }
-          type={state.show ? 'text' : 'password'}
-          placeholder="Confirm password"
-        />
-        <InputRightElement _disabled={true} width="4.5rem">
-          <Button
-            h="1.75rem"
-            size="sm"
-            onClick={() => setState((s) => ({ ...s, show: !s.show }))}
-          >
-            {state.show ? 'Hide' : 'Show'}
-          </Button>
-        </InputRightElement>
-      </InputGroup>
-      {state.matchingPassword === false && (
-        <Text color="red.300">Password doesn't match</Text>
-      )}
-      <Spacer height="8" />
-      <Button
-        isDisabled={
-          !state.password ||
-          !state.password.length >= 8 ||
-          state.password !== state.passwordConfirm ||
-          !state.name
-        }
-        isLoading={loading}
-        colorScheme="teal"
-        loadingText="Creating"
-        rightIcon={<ChevronRightIcon />}
-        onClick={async () => {
-          setLoading(true);
-          await createWallet(
-            state.name,
-            mnemonicFromObject(mnemonic),
-            state.password
-          );
-          setLoading(false);
-          history.push('/wallet');
-        }}
-      >
-        Create
-      </Button>
+          isLoading={loading}
+          colorScheme="teal"
+          loadingText="Creating"
+          rightIcon={<ChevronRightIcon />}
+          onClick={async () => {
+            setLoading(true);
+            await createWallet(
+              state.name,
+              mnemonicFromObject(mnemonic),
+              state.password
+            );
+            setLoading(false);
+            history.push('/wallet');
+          }}
+        >
+          Create
+        </Button>
+      </Box>
     </Box>
   );
 };
