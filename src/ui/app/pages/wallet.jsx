@@ -91,16 +91,12 @@ const Wallet = ({ data }) => {
   const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
   const deletAccountRef = React.useRef();
-  const [avatar, setAvatar] = React.useState(''); // for quicker displaying
+  const [avatar, setAvatar] = React.useState({ avatar: '', name: '' }); // for quicker displaying
 
   const checkTransactions = async () => {
     const currentAccount = await getCurrentAccount();
     const transactions = await getTransactions();
-    if (
-      !transactions.every((tx) =>
-        currentAccount.history.confirmed.slice(0, 10).includes(tx)
-      )
-    ) {
+    if (!currentAccount.history.confirmed.includes(transactions[0].txHash)) {
       await getData();
       return setTimeout(() => checkTransactions(), 10000);
     }
@@ -109,29 +105,31 @@ const Wallet = ({ data }) => {
 
   const getData = async () => {
     setState((s) => ({ ...s, account: null, accounts: null }));
+    const { avatar, name } = await getCurrentAccount();
+    setAvatar({ avatar, name });
+    await updateAccount();
     const currentAccount = await getCurrentAccount();
-    setAvatar(currentAccount.avatar);
     const allAccounts = await getAccounts();
     const fiatPrice = await provider.api.price();
     const network = await getNetwork();
+    // setState((s) => ({
+    //   ...s,
+    //   account: currentAccount,
+    //   accounts: allAccounts,
+    //   fiatPrice,
+    //   network,
+    // }));
+    // const updatedCurrentAccount = await getCurrentAccount();
+    // const updatedAllAccounts = await getAccounts();
+    // if (
+    //   currentAccount.history.confirmed[0] !==
+    //   updatedCurrentAccount.history.confirmed[0]
+    // )
+    //   setState((s) => ({ ...s, account: null, accounts: null }));
     setState((s) => ({
       ...s,
       account: currentAccount,
       accounts: allAccounts,
-      fiatPrice,
-      network,
-    }));
-    await updateAccount();
-    const updatedCurrentAccount = await getCurrentAccount();
-    const updatedAllAccounts = await getAccounts();
-    if (
-      JSON.stringify(currentAccount) !== JSON.stringify(updatedCurrentAccount)
-    )
-      setState((s) => ({ ...s, account: null, accounts: null }));
-    setState((s) => ({
-      ...s,
-      account: updatedCurrentAccount,
-      accounts: updatedAllAccounts,
       fiatPrice,
       network,
     }));
@@ -188,7 +186,7 @@ const Wallet = ({ data }) => {
                 as={Button}
               >
                 <Box position="absolute" top="5px" right="6px" width="76%">
-                  <AvatarLoader avatar={avatar} />
+                  <AvatarLoader avatar={avatar.avatar} />
                 </Box>
               </MenuButton>
               <MenuList fontSize="xs">
@@ -298,7 +296,7 @@ const Wallet = ({ data }) => {
               isTruncated={true}
               maxWidth="210px"
             >
-              {state.account && state.account.name}
+              {avatar.name}
             </Text>
           </Box>
           <Box

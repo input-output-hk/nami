@@ -118,10 +118,14 @@ export const getBalance = async () => {
 export const getTransactions = async (paginate = 1) => {
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
-    `/addresses/${currentAccount.paymentAddr}/txs?page=${paginate}&order=desc&count=10`
+    `/addresses/${currentAccount.paymentAddr}/transactions?page=${paginate}&order=desc&count=10`
   );
   if (!result || result.error) return [];
-  return result;
+  return result.map((tx) => ({
+    txHash: tx.tx_hash,
+    txIndex: tx.tx_index,
+    blockHeight: tx.block_height,
+  }));
 };
 
 /**
@@ -677,8 +681,9 @@ const updateBalance = async (currentAccount, network) => {
 
 const updateTransactions = async (currentAccount, network) => {
   const transactions = await getTransactions();
-  transactions.concat(currentAccount.history.confirmed);
-  const txSet = new Set(transactions);
+  let txHashes = transactions.map((tx) => tx.txHash);
+  txHashes = txHashes.concat(currentAccount.history.confirmed);
+  const txSet = new Set(txHashes);
   currentAccount[network.id].history.confirmed = Array.from(txSet);
 };
 

@@ -29,12 +29,13 @@ const Transaction = ({ txHash }) => {
       <Box width="90%" isTruncated={true}>
         <b>TxHash:</b>{' '}
         <Link
-          href={url + txHash}
+          href={url + txHash.txHash} //quick fix, can be changed/removed
           isExternal
           color="teal.500"
           style={{ fontSize: 9 }}
         >
-          {txHash}
+          {txHash.txHash}
+          {/* quick fix, can be changed/removed */}
         </Link>
       </Box>
     </Box>
