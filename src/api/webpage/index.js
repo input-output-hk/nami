@@ -24,10 +24,10 @@ export const signData = async (address, sigStructure) => {
   return result.data;
 };
 
-export const signTx = async (tx) => {
+export const signTx = async (tx, partialSign = false) => {
   const result = await Messaging.sendToContent({
     method: METHOD.signTx,
-    data: tx,
+    data: { tx, partialSign },
   });
   return result.data;
 };
@@ -35,6 +35,20 @@ export const signTx = async (tx) => {
 export const getAddress = async () => {
   const result = await Messaging.sendToContent({
     method: METHOD.getAddress,
+  });
+  return result.data;
+};
+
+export const getRewardAddress = async () => {
+  const result = await Messaging.sendToContent({
+    method: METHOD.getRewardAddress,
+  });
+  return result.data;
+};
+
+export const getNetworkId = async () => {
+  const result = await Messaging.sendToContent({
+    method: METHOD.getNetworkId,
   });
   return result.data;
 };

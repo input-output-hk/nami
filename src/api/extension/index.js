@@ -189,6 +189,16 @@ export const getAddress = async () => {
   return paymentAddr;
 };
 
+export const getRewardAddress = async () => {
+  await Loader.load();
+  const currentAccount = await getCurrentAccount();
+  const rewardAddr = Buffer.from(
+    Loader.Cardano.Address.from_bech32(currentAccount.rewardAddr).to_bytes(),
+    'hex'
+  ).toString('hex');
+  return rewardAddr;
+};
+
 export const getCurrentAccountIndex = async () => {
   return await getStorage(STORAGE.currentAccount).then(
     (store) => store[STORAGE.currentAccount]
@@ -423,7 +433,13 @@ export const signData = async (
  * @param {string} password
  * @returns {string} witness set as hex string
  */
-export const signTx = async (tx, keyHashes, password, accountIndex) => {
+export const signTx = async (
+  tx,
+  keyHashes,
+  password,
+  accountIndex,
+  partialSign = false
+) => {
   await Loader.load();
   let { paymentKey, stakeKey } = await requestAccountKey(
     password,
@@ -447,7 +463,7 @@ export const signTx = async (tx, keyHashes, password, accountIndex) => {
     let signingKey;
     if (keyHash === paymentKeyHash) signingKey = paymentKey;
     else if (keyHash === stakeKeyHash) signingKey = stakeKey;
-    else throw TxSignError.ProofGeneration;
+    else if (!partialSign) throw TxSignError.ProofGeneration;
     const vkey = Loader.Cardano.make_vkey_witness(txHash, signingKey);
     vkeyWitnesses.add(vkey);
   });

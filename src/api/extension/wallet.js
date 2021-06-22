@@ -243,8 +243,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   const size = transaction.to_bytes().length * 2;
   if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 
-  console.log(Buffer.from(transaction.to_bytes(), 'hex').toString('hex'));
-
   return transaction;
 };
 
