@@ -438,7 +438,7 @@ const SignTx = ({ request, controller }) => {
             </Text>
             <Box height="2" />
             <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={80}>
-              {Object.keys(value.externalValue).map((address) => {
+              {Object.keys(value.externalValue).map((address, index) => {
                 const lovelace = value.externalValue[address].find(
                   (v) => v.unit === 'lovelace'
                 ).quantity;
@@ -446,7 +446,7 @@ const SignTx = ({ request, controller }) => {
                   (v) => v.unit !== 'lovelace'
                 );
                 return (
-                  <>
+                  <Box key={index} mb="2">
                     <Stack direction="row" alignItems="center" mr="4">
                       <Copy label="Copied address" copy={address}>
                         <Box
@@ -474,8 +474,7 @@ const SignTx = ({ request, controller }) => {
                         )}
                       </Box>
                     </Stack>
-                    <Box height="2" />
-                  </>
+                  </Box>
                 );
               })}
             </Scrollbars>
@@ -518,7 +517,8 @@ const SignTx = ({ request, controller }) => {
                 <span style={{ color: '#FC8181' }}>Cannot sign Tx</span>
               ) : (
                 keyHashes.kind.map((keyHash, index) =>
-                  index >= keyHashes.kind.length - 1 ? (
+                  index >= keyHashes.kind.length - 1 &&
+                  keyHashes.kind.length > 1 ? (
                     <span key={index}>, {keyHash}</span>
                   ) : (
                     <span key={index}>{keyHash}</span>
@@ -565,7 +565,10 @@ const SignTx = ({ request, controller }) => {
           signTx(request.data, keyHashes.key, password, account.index)
         }
         onConfirm={async (status, signedTx) => {
-          if (status === true) await controller.returnData({ data: signedTx });
+          if (status === true)
+            await controller.returnData({
+              data: Buffer.from(signedTx.to_bytes(), 'hex').toString('hex'),
+            });
           else await controller.returnData({ error: signedTx });
           window.close();
         }}
@@ -643,6 +646,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
                     const asset = assets[index];
                     return (
                       <Box
+                        key={index}
                         style={style}
                         display="flex"
                         alignItems="center"

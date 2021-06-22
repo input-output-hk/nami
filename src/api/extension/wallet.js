@@ -243,16 +243,23 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   const size = transaction.to_bytes().length * 2;
   if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 
+  console.log(Buffer.from(transaction.to_bytes(), 'hex').toString('hex'));
+
   return transaction;
 };
 
 export const signAndSubmit = async (tx, account, password) => {
-  const signedTx = await signTx(
+  await Loader.load();
+  const witnessSet = await signTx(
     Buffer.from(tx.to_bytes(), 'hex').toString('hex'),
     [account.paymentKeyHash],
     password,
     account.index
   );
-  const txHash = await submitTx(signedTx);
+  const transaction = Loader.Cardano.Transaction.new(tx.body(), witnessSet);
+
+  const txHash = await submitTx(
+    Buffer.from(transaction.to_bytes(), 'hex').toString('hex')
+  );
   return txHash;
 };

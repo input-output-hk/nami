@@ -458,12 +458,7 @@ export const signTx = async (tx, keyHashes, password, accountIndex) => {
   paymentKey = null;
 
   txWitnessSet.set_vkeys(vkeyWitnesses);
-  const signedTx = Loader.Cardano.Transaction.new(
-    rawTx.body(),
-    txWitnessSet,
-    rawTx.metadata()
-  );
-  return Buffer.from(signedTx.to_bytes(), 'hex').toString('hex');
+  return txWitnessSet;
 };
 
 /**
