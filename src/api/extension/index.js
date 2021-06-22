@@ -570,7 +570,7 @@ export const createAccount = async (name, password) => {
   const networkDefault = {
     lovelace: 0,
     assets: [],
-    history: {},
+    history: { confirmed: [], details: {} },
   };
 
   const newAccount = {
