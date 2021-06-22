@@ -3,6 +3,8 @@ import {
   extractKeyHash,
   getAddress,
   getBalance,
+  getNetwork,
+  getRewardAddress,
   getUtxos,
   isWhitelisted,
   submitTx,
@@ -125,6 +127,25 @@ app.add(METHOD.getAddress, async (request, sendResponse) => {
   }
 });
 
+app.add(METHOD.getRewardAddress, async (request, sendResponse) => {
+  const address = await getRewardAddress();
+  if (address) {
+    sendResponse({
+      id: request.id,
+      data: address,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  } else {
+    sendResponse({
+      id: request.id,
+      error: APIError.InternalError,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  }
+});
+
 app.add(METHOD.getUtxos, (request, sendResponse) => {
   getUtxos(request.data.amount, request.data.paginate)
     .then((utxos) => {
@@ -185,6 +206,25 @@ app.add(METHOD.isWhitelisted, async (request, sendResponse) => {
   }
 });
 
+app.add(METHOD.getNetworkId, async (request, sendResponse) => {
+  const networkMap = { mainnet: 1, testnet: 0 };
+  const network = await getNetwork();
+  if (network)
+    sendResponse({
+      id: request.id,
+      data: networkMap[network.id],
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  else
+    sendResponse({
+      id: request.id,
+      error: APIError.InternalError,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+});
+
 app.add(METHOD.signData, async (request, sendResponse) => {
   try {
     await verifySigStructure(request.data.sigStructure);
@@ -228,7 +268,7 @@ app.add(METHOD.signData, async (request, sendResponse) => {
 
 app.add(METHOD.signTx, async (request, sendResponse) => {
   try {
-    await verifyTx(request.data);
+    await verifyTx(request.data.tx);
     const response = await createPopup(POPUP.internal)
       .then((tab) => Messaging.sendToPopupInternal(tab, request))
       .then((response) => response);

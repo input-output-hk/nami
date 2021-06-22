@@ -103,7 +103,8 @@ const SignTx = ({ request, controller }) => {
         //external
         if (!externalOutputs[address]) {
           const value = Loader.Cardano.Value.new(output.amount().coin());
-          value.set_multiasset(output.amount().multiasset());
+          if (output.amount().multiasset())
+            value.set_multiasset(output.amount().multiasset());
           externalOutputs[address] = value;
         } else
           externalOutputs[address] = externalOutputs[address].checked_add(
@@ -186,21 +187,22 @@ const SignTx = ({ request, controller }) => {
         )
       ) {
         requiredKeyHashes.push(paymentKeyHash);
-        break;
+      } else {
+        requiredKeyHashes.push('<not_owned_key_hash>');
       }
     }
 
-    const check = (keyHash) => {
-      const tempKeyHashes = [...requiredKeyHashes];
-      if (keyHash === paymentKeyHash || keyHash === stakeKeyHash) {
-        tempKeyHashes.push(keyHash);
-        if (new Set(tempKeyHashes).size >= 2) {
-          requiredKeyHashes = tempKeyHashes;
-          return true;
-        }
-      }
-      return false;
-    };
+    // const check = (keyHash) => {
+    //   const tempKeyHashes = [...requiredKeyHashes];
+    //   if (keyHash === paymentKeyHash || keyHash === stakeKeyHash) {
+    //     tempKeyHashes.push(keyHash);
+    //     if (new Set(tempKeyHashes).size >= 2) {
+    //       requiredKeyHashes = tempKeyHashes;
+    //       return true;
+    //     }
+    //   }
+    //   return false;
+    // };
 
     //get key hashes from certificates
     const txBody = tx.body();
@@ -214,7 +216,8 @@ const SignTx = ({ request, controller }) => {
               credential.to_keyhash().to_bytes(),
               'hex'
             ).toString('hex');
-            if (check(keyHash)) return;
+            // if (check(keyHash)) return;
+            requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 1) {
           const credential = cert.as_stake_deregistration().stake_credential();
@@ -223,7 +226,8 @@ const SignTx = ({ request, controller }) => {
               credential.to_keyhash().to_bytes(),
               'hex'
             ).toString('hex');
-            if (check(keyHash)) return;
+            // if (check(keyHash)) return;
+            requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 2) {
           const credential = cert.as_stake_delegation().stake_credential();
@@ -232,7 +236,8 @@ const SignTx = ({ request, controller }) => {
               credential.to_keyhash().to_bytes(),
               'hex'
             ).toString('hex');
-            if (check(keyHash)) return;
+            // if (check(keyHash)) return;
+            requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 3) {
           const credential = cert
@@ -249,7 +254,8 @@ const SignTx = ({ request, controller }) => {
               owners.get(i).to_bytes(),
               'hex'
             ).toString('hex');
-            if (check(keyHash)) return;
+            // if (check(keyHash)) return;
+            requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 6) {
           const instant_reward = cert
@@ -264,7 +270,8 @@ const SignTx = ({ request, controller }) => {
                 credential.to_keyhash().to_bytes(),
                 'hex'
               ).toString('hex');
-              if (check(keyHash)) return;
+              // if (check(keyHash)) return;
+              requiredKeyHashes.push(keyHash);
             }
           }
         }
@@ -282,7 +289,8 @@ const SignTx = ({ request, controller }) => {
             script.as_script_pubkey().addr_keyhash().to_bytes(),
             'hex'
           ).toString('hex');
-          if (check(keyHash)) return;
+          // if (check(keyHash)) return;
+          requiredKeyHashes.push(keyHash);
         }
         if (script.kind() === 1) {
           return keyHashFromScript(script.as_script_all().native_scripts());
@@ -295,8 +303,9 @@ const SignTx = ({ request, controller }) => {
         }
       }
     };
-    if (scripts && requiredKeyHashes.length < 2) keyHashFromScript(scripts);
+    if (scripts) keyHashFromScript(scripts);
     const keyKind = [];
+    requiredKeyHashes = [...new Set(requiredKeyHashes)];
     if (requiredKeyHashes.includes(paymentKeyHash)) keyKind.push('payment');
     if (requiredKeyHashes.includes(stakeKeyHash)) keyKind.push('stake');
     setKeyHashes({ key: requiredKeyHashes, kind: keyKind });
@@ -308,7 +317,7 @@ const SignTx = ({ request, controller }) => {
     setAccount(currentAccount);
     let utxos = await getUtxos();
     const tx = Loader.Cardano.Transaction.from_bytes(
-      Buffer.from(request.data, 'hex')
+      Buffer.from(request.data.tx, 'hex')
     );
     getFee(tx);
     getValue(tx, utxos, currentAccount);
@@ -550,7 +559,7 @@ const SignTx = ({ request, controller }) => {
           </Button>
           <LightMode>
             <Button
-              isDisabled={keyHashes.key.length <= 0}
+              isDisabled={!keyHashes.kind || keyHashes.kind.length <= 0}
               colorScheme="orange"
               onClick={() => ref.current.openModal()}
             >
@@ -562,7 +571,13 @@ const SignTx = ({ request, controller }) => {
       <ConfirmModal
         ref={ref}
         sign={(password) =>
-          signTx(request.data, keyHashes.key, password, account.index)
+          signTx(
+            request.data.tx,
+            keyHashes.key,
+            password,
+            account.index,
+            request.data.partialSign
+          )
         }
         onConfirm={async (status, signedTx) => {
           if (status === true)
