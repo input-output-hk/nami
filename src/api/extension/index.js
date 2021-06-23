@@ -85,6 +85,18 @@ export const setWhitelisted = async (_location) => {
   return await setStorage({ [STORAGE.whitelisted]: whitelisted });
 };
 
+export const getCurrency = async () => {
+  const currency = await getStorage(STORAGE.currency).then(
+    (store) => store[STORAGE.currency]
+  );
+  return currency || 'usd';
+};
+
+export const setCurrency = async (currency) => {
+  await setStorage({ [STORAGE.currency]: currency });
+  return true;
+};
+
 export const getDelegation = async () => {
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
@@ -658,6 +670,10 @@ export const createWallet = async (name, seedPhrase, password) => {
   await setStorage({ [STORAGE.encryptedKey]: encryptedRootKey });
   await setStorage({
     [STORAGE.network]: { id: NETWORK_ID.mainnet, node: NODE.mainnet },
+  });
+
+  await setStorage({
+    [STORAGE.currency]: 'usd',
   });
 
   await createAccount(name, password);
