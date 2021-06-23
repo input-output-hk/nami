@@ -9,3 +9,8 @@ export const blockfrostRequest = async (endpoint, headers, body) => {
     body,
   }).then((res) => res.json());
 };
+
+export const currencyToSymbol = (currency) => {
+  const currencyMap = { usd: '$', ada: '₳', eur: '€' };
+  return currencyMap[currency];
+};
