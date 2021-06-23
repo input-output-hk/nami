@@ -8,7 +8,7 @@ import {
   getUtxos,
   isWhitelisted,
   submitTx,
-  verifySigStructure,
+  verifyPayload,
   verifyTx,
 } from '../../api/extension';
 import { Messaging } from '../../api/messaging';
@@ -227,7 +227,7 @@ app.add(METHOD.getNetworkId, async (request, sendResponse) => {
 
 app.add(METHOD.signData, async (request, sendResponse) => {
   try {
-    await verifySigStructure(request.data.sigStructure);
+    verifyPayload(request.data.payload);
     await extractKeyHash(request.data.address);
 
     const response = await createPopup(POPUP.internal)
