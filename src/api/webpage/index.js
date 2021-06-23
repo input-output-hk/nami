@@ -16,10 +16,10 @@ export const isEnabled = async () => {
   return result.data;
 };
 
-export const signData = async (address, sigStructure) => {
+export const signData = async (address, payload) => {
   const result = await Messaging.sendToContent({
     method: METHOD.signData,
-    data: { address, sigStructure },
+    data: { address, payload },
   });
   return result.data;
 };

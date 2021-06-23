@@ -22,10 +22,7 @@ const SignData = ({ request, controller }) => {
   };
   const getPayload = async () => {
     await Loader.load();
-    const sigStructure = Loader.Message.SigStructure.from_bytes(
-      Buffer.from(request.data.sigStructure, 'hex')
-    );
-    const payload = Buffer.from(sigStructure.payload()).toString();
+    const payload = Buffer.from(request.data.payload, 'hex').toString('utf8');
     setPayload(payload);
   };
 
@@ -127,7 +124,7 @@ const SignData = ({ request, controller }) => {
         sign={(password) =>
           signData(
             request.data.address,
-            request.data.sigStructure,
+            request.data.payload,
             password,
             account.index
           )

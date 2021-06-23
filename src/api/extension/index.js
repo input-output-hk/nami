@@ -374,6 +374,11 @@ export const verifySigStructure = async (sigStructure) => {
   }
 };
 
+export const verifyPayload = (payload) => {
+  if (Buffer.from(payload, 'hex').length <= 0)
+    throw DataSignError.InvalidFormat;
+};
+
 export const verifyTx = async (tx) => {
   await Loader.load();
   try {
@@ -385,18 +390,13 @@ export const verifyTx = async (tx) => {
 
 /**
  * @param {string} address - cbor
- * @param {string} sigStructure - CIP-0008 SigStructure
+ * @param {string} payload - hex encoded utf8 string
  * @param {string} password
  * @param {number} accountIndex
  * @returns
  */
 
-export const signData = async (
-  address,
-  sigStructure,
-  password,
-  accountIndex
-) => {
+export const signData = async (address, payload, password, accountIndex) => {
   await Loader.load();
   const keyHash = await extractKeyHash(address);
   const prefix = keyHash.slice(0, 5);
@@ -410,20 +410,38 @@ export const signData = async (
   if (keyHash !== publicKey.hash().to_bech32(prefix))
     throw DataSignError.ProofGeneration;
 
-  const signature = accountKey.sign(Buffer.from(sigStructure, 'hex'));
+  const protectedHeaders = Loader.Message.HeaderMap.new();
+  protectedHeaders.set_algorithm_id(
+    Loader.Message.Label.from_algorithm_id(Loader.Message.AlgorithmId.EdDSA)
+  );
+  protectedHeaders.set_key_id(publicKey.as_bytes());
+  protectedHeaders.set_header(
+    Loader.Message.Label.new_text('address'),
+    Loader.Message.CBORValue.new_bytes(Buffer.from(address, 'hex'))
+  );
+  const protectedSerialized =
+    Loader.Message.ProtectedHeaderMap.new(protectedHeaders);
+  const unprotectedHeaders = Loader.Message.HeaderMap.new();
+  const headers = Loader.Message.Headers.new(
+    protectedSerialized,
+    unprotectedHeaders
+  );
+  const builder = Loader.Message.COSESign1Builder.new(
+    headers,
+    Buffer.from(payload, 'hex'),
+    false
+  );
+  const toSign = builder.make_data_to_sign().to_bytes();
+
+  const signedSigStruc = accountKey.sign(toSign).to_bytes();
+  const coseSign1 = builder.build(signedSigStruc);
 
   stakeKey.free();
   stakeKey = null;
   paymentKey.free();
   paymentKey = null;
 
-  return Buffer.from(
-    Loader.Cardano.Vkeywitness.new(
-      Loader.Cardano.Vkey.new(publicKey),
-      signature
-    ).to_bytes(),
-    'hex'
-  ).toString('hex');
+  return Buffer.from(coseSign1.to_bytes(), 'hex').toString('hex');
 };
 
 /**
