@@ -44,7 +44,9 @@
     "react-slick": "^0.28.1",
     "react-tiger-transition": "^4.1.2",
     "react-transition-group": "^4.4.1",
-    "react-window": "^1.8.6"
+    "react-window": "^1.8.6",
+    "javascript-time-ago": "^2.3.7",
+    "react-time-ago": "^7.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",
