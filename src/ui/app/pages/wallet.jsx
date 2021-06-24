@@ -6,6 +6,7 @@ import {
   deleteAccount,
   displayUnit,
   getAccounts,
+  getCurrency,
   getCurrentAccount,
   getNetwork,
   getTransactions,
@@ -78,6 +79,7 @@ import Copy from '../components/copy';
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
 import AvatarLoader from '../components/AvatarLoader';
+import { currencyToSymbol } from '../../../api/util';
 
 const Wallet = ({ data }) => {
   const history = useHistory();
@@ -91,7 +93,11 @@ const Wallet = ({ data }) => {
   const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
   const deletAccountRef = React.useRef();
-  const [avatar, setAvatar] = React.useState({ avatar: '', name: '' }); // for quicker displaying
+  const [info, setInfo] = React.useState({
+    avatar: '',
+    name: '',
+    currency: '',
+  }); // for quicker displaying
 
   const checkTransactions = async () => {
     const currentAccount = await getCurrentAccount();
@@ -103,13 +109,14 @@ const Wallet = ({ data }) => {
   };
 
   const getData = async () => {
-    setState((s) => ({ ...s, account: null, accounts: null }));
     const { avatar, name } = await getCurrentAccount();
-    setAvatar({ avatar, name });
+    const currency = await getCurrency();
+    setInfo({ avatar, name, currency });
+    setState((s) => ({ ...s, account: null, accounts: null }));
     await updateAccount();
     const currentAccount = await getCurrentAccount();
     const allAccounts = await getAccounts();
-    const fiatPrice = await provider.api.price();
+    const fiatPrice = await provider.api.price(currency);
     const network = await getNetwork();
     // setState((s) => ({
     //   ...s,
@@ -185,7 +192,7 @@ const Wallet = ({ data }) => {
                 as={Button}
               >
                 <Box position="absolute" top="5px" right="6px" width="76%">
-                  <AvatarLoader avatar={avatar.avatar} />
+                  <AvatarLoader avatar={info.avatar} />
                 </Box>
               </MenuButton>
               <MenuList fontSize="xs">
@@ -295,7 +302,7 @@ const Wallet = ({ data }) => {
               isTruncated={true}
               maxWidth="210px"
             >
-              {avatar.name}
+              {info.name}
             </Text>
           </Box>
           <Box
@@ -337,7 +344,7 @@ const Wallet = ({ data }) => {
                       10 ** 2
                   )
                 }
-                symbol="$"
+                symbol={currencyToSymbol(info.currency)}
                 decimals={2}
               />
             </Text>
