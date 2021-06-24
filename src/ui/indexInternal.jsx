@@ -8,6 +8,7 @@ import { getAccounts } from '../api/extension';
 import { Messaging } from '../api/messaging';
 
 import { METHOD, POPUP } from '../config/config';
+import { useSettings } from './app/components/SettingsProvider';
 import Enable from './app/pages/enable';
 import NoWallet from './app/pages/noWallet';
 import SignData from './app/pages/signData';
@@ -17,6 +18,7 @@ import Theme from './theme';
 const App = () => {
   const controller = Messaging.createInternalController();
   const history = useHistory();
+  const { settings } = useSettings();
   const [response, setResponse] = React.useState(null);
 
   const init = async () => {
@@ -33,7 +35,7 @@ const App = () => {
     init();
   }, []);
 
-  return !response ? (
+  return !response || !settings ? (
     <Box
       height="full"
       width="full"

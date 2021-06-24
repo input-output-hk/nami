@@ -6,7 +6,6 @@ import {
   deleteAccount,
   displayUnit,
   getAccounts,
-  getCurrency,
   getCurrentAccount,
   getNetwork,
   getTransactions,
@@ -75,14 +74,17 @@ import { onAccountChange } from '../../../api/extension/wallet';
 import AssetsViewer from '../components/assetsViewer';
 import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
+import About from '../components/about';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
-import AvatarLoader from '../components/AvatarLoader';
+import AvatarLoader from '../components/avatarLoader';
 import { currencyToSymbol } from '../../../api/util';
+import { useSettings } from '../components/SettingsProvider';
 
 const Wallet = ({ data }) => {
   const history = useHistory();
+  const { settings } = useSettings();
   const avatarBg = useColorModeValue('white', 'gray.800');
   const panelBg = useColorModeValue('teal.400', 'teal.900');
   const [state, setState] = React.useState({
@@ -92,11 +94,11 @@ const Wallet = ({ data }) => {
   });
   const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
+  const aboutRef = React.useRef();
   const deletAccountRef = React.useRef();
   const [info, setInfo] = React.useState({
     avatar: '',
     name: '',
-    currency: '',
   }); // for quicker displaying
 
   const checkTransactions = async () => {
@@ -110,13 +112,12 @@ const Wallet = ({ data }) => {
 
   const getData = async () => {
     const { avatar, name } = await getCurrentAccount();
-    const currency = await getCurrency();
-    setInfo({ avatar, name, currency });
+    setInfo({ avatar, name });
     setState((s) => ({ ...s, account: null, accounts: null }));
     await updateAccount();
     const currentAccount = await getCurrentAccount();
     const allAccounts = await getAccounts();
-    const fiatPrice = await provider.api.price(currency);
+    const fiatPrice = await provider.api.price(settings.currency);
     const network = await getNetwork();
     // setState((s) => ({
     //   ...s,
@@ -283,7 +284,9 @@ const Wallet = ({ data }) => {
                 >
                   Settings
                 </MenuItem>
-                <MenuItem>Help</MenuItem>
+                <MenuItem onClick={() => aboutRef.current.openModal()}>
+                  About
+                </MenuItem>
               </MenuList>
             </Menu>
           </Box>
@@ -335,7 +338,7 @@ const Wallet = ({ data }) => {
           >
             <Text color="white" fontSize="md">
               <UnitDisplay
-                fontSize="sm"
+                fontSize="16"
                 quantity={
                   state.account &&
                   parseInt(
@@ -344,7 +347,7 @@ const Wallet = ({ data }) => {
                       10 ** 2
                   )
                 }
-                symbol={currencyToSymbol(info.currency)}
+                symbol={currencyToSymbol(settings.currency)}
                 decimals={2}
               />
             </Text>
@@ -466,6 +469,7 @@ const Wallet = ({ data }) => {
         name={state.account && state.account.name}
         ref={deletAccountRef}
       />
+      <About ref={aboutRef} />
     </>
   );
 };

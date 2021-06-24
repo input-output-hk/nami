@@ -13,9 +13,11 @@ import CreateWallet from './app/pages/createWallet';
 import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
+import { useSettings } from './app/components/SettingsProvider';
 
 const App = () => {
   const history = useHistory();
+  const { settings } = useSettings();
   const [loading, setLoading] = React.useState(true);
   const init = async () => {
     const hasWallet = await getAccounts();
@@ -27,7 +29,7 @@ const App = () => {
     init();
   }, []);
 
-  return loading ? (
+  return loading || !settings ? (
     <Box
       height="full"
       width="full"
@@ -49,7 +51,7 @@ const App = () => {
         <Route path="/createWallet">
           <CreateWallet />
         </Route>
-        <Route exact path="/settings">
+        <Route path="/settings">
           <Settings />
         </Route>
         <Route exact path="/send">

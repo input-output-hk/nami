@@ -79,9 +79,16 @@ export const isWhitelisted = async (_origin) => {
   return access;
 };
 
-export const setWhitelisted = async (_location) => {
+export const setWhitelisted = async (origin) => {
   const whitelisted = await getWhitelisted();
-  whitelisted ? whitelisted.push(_location) : (whitelisted = [_location]);
+  whitelisted ? whitelisted.push(origin) : (whitelisted = [origin]);
+  return await setStorage({ [STORAGE.whitelisted]: whitelisted });
+};
+
+export const removeWhitelisted = async (origin) => {
+  const whitelisted = await getWhitelisted();
+  const index = whitelisted.indexOf(origin);
+  whitelisted.splice(index, 1);
   return await setStorage({ [STORAGE.whitelisted]: whitelisted });
 };
 
@@ -258,19 +265,21 @@ export const getNetwork = async () => {
   );
 };
 
-export const switchNetwork = async () => {
-  const network = await getNetwork();
+export const setNetwork = async (network) => {
+  let id;
+  let node;
   if (network.id === NETWORK_ID.mainnet) {
-    await setStorage({
-      [STORAGE.network]: { node: NODE.testnet, id: NETWORK_ID.testnet },
-    });
-    return NETWORK_ID.testnet;
+    id = NETWORK_ID.mainnet;
+    node = NODE.mainnet;
   } else {
-    await setStorage({
-      [STORAGE.network]: { node: NODE.mainnet, id: NETWORK_ID.mainnet },
-    });
-    return NETWORK_ID.mainnet;
+    id = NETWORK_ID.testnet;
+    node = NODE.testnet;
   }
+  if (network.node) node = node;
+  await setStorage({
+    [STORAGE.network]: { id, node },
+  });
+  return true;
 };
 
 export const getCurrentAccount = async () => {
@@ -529,6 +538,7 @@ export const signTx = async (
     if (keyHash === paymentKeyHash) signingKey = paymentKey;
     else if (keyHash === stakeKeyHash) signingKey = stakeKey;
     else if (!partialSign) throw TxSignError.ProofGeneration;
+    else return;
     const vkey = Loader.Cardano.make_vkey_witness(txHash, signingKey);
     vkeyWitnesses.add(vkey);
   });

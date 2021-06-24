@@ -172,7 +172,7 @@ const Send = () => {
         flexDirection="column"
         position="relative"
       >
-        <Account account={account} />
+        <Account />
         <Box position="absolute" top="24" left="6">
           <IconButton
             rounded="md"
