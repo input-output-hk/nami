@@ -44,7 +44,6 @@ import { LightMode, Spinner, useToast } from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 
 let timer = null;
-let isPreparing = false;
 
 const Send = () => {
   const history = useHistory();

@@ -73,22 +73,22 @@ const AssetPopover = ({ asset, gutter, ...props }) => {
                 </Text>
                 <Box h="2" />
                 <Copy label="Copied policy" copy={asset.policy}>
-                  <Box whiteSpace="nowrap" fontSize="xx-small">
-                    <MiddleEllipsis>
-                      <span>
-                        <b>Policy:</b> {asset.policy}
-                      </span>
-                    </MiddleEllipsis>
+                  <Box fontSize="xx-small">
+                    <span>
+                      <b>Policy:</b> {asset.policy}
+                    </span>
                   </Box>
                 </Copy>
                 <Box h="1" />
-                <Copy label="Copied asset" copy={asset.fingerprint}>
-                  <Box whiteSpace="nowrap" fontSize="xx-small">
-                    <MiddleEllipsis>
-                      <span>
-                        <b>Asset:</b> {asset.fingerprint}
-                      </span>
-                    </MiddleEllipsis>
+                <Copy
+                  width="full"
+                  label="Copied asset"
+                  copy={asset.fingerprint}
+                >
+                  <Box fontSize="xx-small">
+                    <span>
+                      <b>Asset:</b> {asset.fingerprint}
+                    </span>
                   </Box>
                 </Copy>
               </Box>
