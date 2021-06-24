@@ -2,7 +2,7 @@ import { Button } from '@chakra-ui/button';
 import { useColorMode } from '@chakra-ui/react';
 import { Select } from '@chakra-ui/select';
 import React from 'react';
-import { switchNetwork } from '../../../api/extension';
+import { setCurrency, switchNetwork } from '../../../api/extension';
 
 const Settings = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -21,6 +21,13 @@ const Settings = () => {
         }}
       >
         Switch Theme
+      </Button>
+      <Button
+        onClick={() => {
+          setCurrency('usd');
+        }}
+      >
+        Currency
       </Button>
     </>
   );
