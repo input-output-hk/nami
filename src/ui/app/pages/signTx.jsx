@@ -337,7 +337,7 @@ const SignTx = ({ request, controller }) => {
         flexDirection="column"
         position="relative"
       >
-        <Account account={account} />
+        <Account />
         <Box mt="10" textAlign="center">
           <Text fontSize="2xl" fontWeight="bold">
             TRANSACTION SIGN

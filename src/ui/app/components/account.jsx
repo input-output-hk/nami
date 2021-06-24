@@ -4,11 +4,17 @@ import { Box, Text } from '@chakra-ui/layout';
 
 import Logo from '../../../assets/img/logoWhite.svg';
 import { Image, useColorModeValue } from '@chakra-ui/react';
-import AvatarLoader from './AvatarLoader';
+import AvatarLoader from './avatarLoader';
 
-const Account = ({ account }) => {
+const Account = () => {
   const avatarBg = useColorModeValue('white', 'gray.800');
   const panelBg = useColorModeValue('teal.400', 'teal.900');
+  const [account, setAccount] = React.useState(null);
+
+  React.useEffect(() => {
+    getCurrentAccount().then((account) => setAccount(account));
+  }, []);
+
   return (
     <Box
       height="16"

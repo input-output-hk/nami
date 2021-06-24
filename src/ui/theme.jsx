@@ -5,6 +5,7 @@ import { POPUP_WINDOW } from '../config/config';
 import { Scrollbars } from 'react-custom-scrollbars';
 
 import './app/components/styles.css';
+import SettingsProvider from './app/components/SettingsProvider';
 
 const theme = extendTheme({
   styles: {
@@ -30,12 +31,14 @@ const Theme = (props) => {
   }, []);
   return (
     <ChakraProvider theme={theme}>
-      <Scrollbars
-        style={{ width: POPUP_WINDOW.width, height: POPUP_WINDOW.height }}
-        autoHide
-      >
-        {props.children}
-      </Scrollbars>
+      <SettingsProvider>
+        <Scrollbars
+          style={{ width: POPUP_WINDOW.width, height: POPUP_WINDOW.height }}
+          autoHide
+        >
+          {props.children}
+        </Scrollbars>
+      </SettingsProvider>
     </ChakraProvider>
   );
 };
