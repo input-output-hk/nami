@@ -96,7 +96,7 @@ export const getCurrency = async () => {
   const currency = await getStorage(STORAGE.currency).then(
     (store) => store[STORAGE.currency]
   );
-  return currency || 'usd';
+  return currency;
 };
 
 export const setCurrency = async (currency) => {
@@ -624,6 +624,12 @@ const requestAccountKey = async (password, accountIndex) => {
     paymentKey: accountKey.derive(0).derive(0).to_raw_key(),
     stakeKey: accountKey.derive(2).derive(0).to_raw_key(),
   };
+};
+
+export const resetStorage = async (password) => {
+  await requestAccountKey(password, 0);
+  await new Promise((res, rej) => chrome.storage.local.clear(() => res()));
+  return true;
 };
 
 export const createAccount = async (name, password) => {

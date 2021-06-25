@@ -38,7 +38,7 @@ const Welcome = () => {
       >
         {/* Header */}
         <Box position="absolute" top="9">
-          <Image draggable={false} width="100px" src={Banner} />
+          <Image draggable={false} width="85px" src={Banner} />
         </Box>
         {/* Footer */}
         <Box position="absolute" bottom="3" fontSize="xs">
