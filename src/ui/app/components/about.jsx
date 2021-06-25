@@ -67,12 +67,12 @@ const About = React.forwardRef((props, ref) => {
                 Berry Pool
               </span>
             </Text>
-            <Box height="2" />
+            <Box height="4" />
             <Image
               cursor="pointer"
               onClick={() => window.open('https://pipool.online')}
               src={Berry}
-              width="36px"
+              width="30px"
             />
           </Box>
           <Box height="4" />

@@ -23,12 +23,14 @@ import {
   getCurrency,
   getWhitelisted,
   removeWhitelisted,
+  resetStorage,
   setCurrency,
 } from '../../../api/extension';
 import Account from '../components/account';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { useSettings } from '../components/SettingsProvider';
 import { NETWORK_ID, NODE } from '../../../config/config';
+import ConfirmModal from '../components/confirmModal';
 
 const Settings = () => {
   const history = useHistory();
@@ -114,6 +116,7 @@ const Overview = () => {
 const GeneralSettings = () => {
   const { settings, setSettings } = useSettings();
   const { toggleColorMode } = useColorMode();
+  const ref = React.useRef();
   return (
     <>
       <Box height="10" />
@@ -148,9 +151,28 @@ const GeneralSettings = () => {
         <Text>EUR</Text>
       </Box>
       <Box height="10" />
-      <Button size="xs" colorScheme="red" variant="link">
-        Delete Wallet
+      <Button
+        size="xs"
+        colorScheme="red"
+        variant="link"
+        onClick={() => ref.current.openModal()}
+      >
+        Reset Wallet
       </Button>
+      <ConfirmModal
+        info={
+          <Box mb="4" fontSize="sm" width="full">
+            The wallet will be reset. Make sure you have written down your seed
+            phrase. It's the only way to recover your current wallet! <br />
+            Type your password below, if you want to continue.
+          </Box>
+        }
+        ref={ref}
+        sign={(password) => resetStorage(password)}
+        onConfirm={async (status, signedTx) => {
+          if (status === true) window.close();
+        }}
+      />
     </>
   );
 };
