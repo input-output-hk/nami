@@ -1,17 +1,7 @@
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Box, Link } from '@chakra-ui/layout';
 import React from 'react';
-import {
-  getNetwork,
-  getTxInfo,
-  toUnit,
-  saveState,
-  getUtxos,
-  getTxUTxOs,
-  getBlock,
-  getTransactions,
-  updateTxInfo,
-} from '../../../api/extension';
+import { updateTxInfo } from '../../../api/extension';
 import UnitDisplay from './unitDisplay';
 import {
   AccordionButton,
@@ -48,7 +38,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses }) => {
   React.useEffect(() => getTxDetail(), [displayInfo]);
 
   return (
-    <AccordionItem borderTop="none">
+    <AccordionItem borderTop="none" _last={{ borderBottom: 'none' }}>
       {Object.keys(displayInfo).length < 1 ? (
         <Box mt="28" display="flex" alignItems="center" justifyContent="center">
           <Spinner color="teal" speed="0.5s" />
@@ -71,6 +61,8 @@ const Transaction = ({ txHash, details, currentAddr, addresses }) => {
             borderRadius={10}
             borderLeftRadius={30}
             p={0}
+            _hover={{ backgroundColor: 'teal.100' }}
+            _focus={{ border: 'none' }}
           >
             <Box
               display="flex"
@@ -88,7 +80,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses }) => {
               flexDirection="column"
               textAlign="center"
               position="relative"
-              left="-40px"
+              left="-25px"
             >
               <Box fontSize={20}>
                 <UnitDisplay
@@ -117,7 +109,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses }) => {
                 ''
               )}
             </Box>
-            <AccordionIcon />
+            <AccordionIcon color="teal.400" mr={5} fontSize={30} />
           </AccordionButton>
 
           <AccordionPanel wordBreak="break-word" pb={4}>
