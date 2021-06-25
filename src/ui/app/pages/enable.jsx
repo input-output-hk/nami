@@ -21,7 +21,7 @@ const Enable = ({ request, controller }) => {
       position="relative"
     >
       <Box position="absolute" top="9">
-        <Image draggable={false} width="100px" src={Banner} />
+        <Image draggable={false} width="85px" src={Banner} />
       </Box>
       <Box position="absolute" top="180px">
         <Text fontSize="2xl" fontWeight="bold">
