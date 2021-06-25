@@ -7,7 +7,7 @@ import {
   setCurrency,
   setNetwork,
 } from '../../../api/extension';
-import { NETWORK_ID } from '../../../config/config';
+import { NETWORK_ID, NODE } from '../../../config/config';
 
 const SettingsContext = React.createContext(null);
 
@@ -23,7 +23,10 @@ const SettingsProvider = ({ children }) => {
   const getSettings = async () => {
     const currency = await getCurrency();
     const network = await getNetwork();
-    setS({ currency, network });
+    setS({
+      currency: currency || 'usd',
+      network: network || { id: NETWORK_ID.mainnet, node: NODE.mainnet },
+    });
   };
 
   React.useEffect(() => {

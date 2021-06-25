@@ -44,6 +44,7 @@ const ConfirmModal = React.forwardRef((props, ref) => {
       <ModalContent>
         <ModalHeader fontSize="md">Confirm with password</ModalHeader>
         <ModalBody>
+          {props.info}
           <InputGroup size="md">
             <Input
               variant="filled"

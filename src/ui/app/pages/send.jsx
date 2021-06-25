@@ -82,6 +82,10 @@ const Send = () => {
 
     setFee({ fee: '' });
     setTx(null);
+    if (!txInfo.protocolParameters)
+      await new Promise((res, rej) =>
+        setInterval(() => txInfo.protocolParameters && res())
+      );
     await new Promise((res, rej) => setTimeout(() => res()));
     try {
       const output = {
