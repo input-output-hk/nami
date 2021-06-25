@@ -451,14 +451,14 @@ const Wallet = ({ data }) => {
             </TabPanel>
             <TabPanel>
               <HistoryViewer
-                  history={state.account && state.account.history}
-                  currentAddr={state.account && state.account.paymentAddr}
-                  addresses={
-                    state.accounts &&
-                    Object.keys(state.accounts).map(
-                        (index) => state.accounts[index].paymentAddr
-                    )
-                  }
+                history={state.account && state.account.history}
+                currentAddr={state.account && state.account.paymentAddr}
+                addresses={
+                  state.accounts &&
+                  Object.keys(state.accounts).map(
+                    (index) => state.accounts[index].paymentAddr
+                  )
+                }
               />
             </TabPanel>
           </TabPanels>
