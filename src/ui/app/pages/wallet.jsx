@@ -7,12 +7,13 @@ import {
   displayUnit,
   getAccounts,
   getCurrentAccount,
+  getDelegation,
   getNetwork,
   getTransactions,
   switchAccount,
   updateAccount,
 } from '../../../api/extension';
-import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
+import { Box, Link, Spacer, Stack, Text } from '@chakra-ui/layout';
 
 import {
   BsArrowDownRight,
@@ -65,22 +66,27 @@ import {
   StarIcon,
   DeleteIcon,
   CopyIcon,
+  ChevronDownIcon,
 } from '@chakra-ui/icons';
 import Scrollbars from 'react-custom-scrollbars';
 import QrCode from '../components/qrCode';
 import provider from '../../../config/provider';
 import UnitDisplay from '../components/unitDisplay';
-import { onAccountChange } from '../../../api/extension/wallet';
+import { delegationTx, onAccountChange } from '../../../api/extension/wallet';
 import AssetsViewer from '../components/assetsViewer';
 import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
 import About from '../components/about';
+import { useSettings } from '../components/SettingsProvider';
+import ConfirmModal from '../components/confirmModal';
+import AvatarLoader from '../components/avatarLoader';
+import { currencyToSymbol } from '../../../api/util';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
-import AvatarLoader from '../components/avatarLoader';
-import { currencyToSymbol } from '../../../api/util';
-import { useSettings } from '../components/SettingsProvider';
+import Berry from '../../../assets/img/berry.svg';
+import TransactionBuilder from '../components/transactionBuilder';
+import { NETWORK_ID } from '../../../config/config';
 
 const Wallet = ({ data }) => {
   const history = useHistory();
@@ -91,6 +97,8 @@ const Wallet = ({ data }) => {
     account: null,
     accounts: null,
     fiatPrice: 0,
+    delegation: null,
+    network: { id: '', node: '' },
   });
   const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
@@ -100,6 +108,7 @@ const Wallet = ({ data }) => {
     avatar: '',
     name: '',
   }); // for quicker displaying
+  const builderRef = React.useRef();
 
   const checkTransactions = async () => {
     const currentAccount = await getCurrentAccount();
@@ -114,12 +123,19 @@ const Wallet = ({ data }) => {
   const getData = async () => {
     const { avatar, name } = await getCurrentAccount();
     setInfo({ avatar, name });
-    setState((s) => ({ ...s, account: null, accounts: null }));
+    setState((s) => ({
+      ...s,
+      account: null,
+      accounts: null,
+      delegation: null,
+    }));
     await updateAccount();
     const currentAccount = await getCurrentAccount();
     const allAccounts = await getAccounts();
     const fiatPrice = await provider.api.price(settings.currency);
     const network = await getNetwork();
+    const delegation = await getDelegation();
+    console.log(delegation);
     // setState((s) => ({
     //   ...s,
     //   account: currentAccount,
@@ -140,6 +156,7 @@ const Wallet = ({ data }) => {
       accounts: allAccounts,
       fiatPrice,
       network,
+      delegation,
     }));
   };
 
@@ -178,6 +195,35 @@ const Wallet = ({ data }) => {
           >
             <Image draggable={false} width="30px" src={Logo} />
           </Box>
+          {/* Delegation */}
+          <Box zIndex="1" position="absolute" width="full" bottom="5" left="6">
+            {state.delegation && (
+              <>
+                {state.delegation.active ? (
+                  <DelegationPopover delegation={state.delegation}>
+                    {state.delegation.ticker}
+                  </DelegationPopover>
+                ) : (
+                  state.network.id === NETWORK_ID.mainnet && (
+                    <Button
+                      onClick={() =>
+                        builderRef.current.initDelegation(
+                          state.account,
+                          state.delegation
+                        )
+                      }
+                      size="xs"
+                      background="white"
+                      color="orange.400"
+                      rounded="lg"
+                    >
+                      Delegate
+                    </Button>
+                  )
+                )}
+              </>
+            )}
+          </Box>
           <Box zIndex="2" position="absolute" top="6" right="6">
             <Menu
               isOpen={menu}
@@ -202,7 +248,7 @@ const Wallet = ({ data }) => {
                   <Scrollbars
                     style={{ width: '100%' }}
                     autoHeight
-                    autoHeightMax={270}
+                    autoHeightMax={240}
                   >
                     {state.accounts &&
                       Object.keys(state.accounts).map((accountIndex) => {
@@ -274,10 +320,24 @@ const Wallet = ({ data }) => {
                       icon={<DeleteIcon />}
                       onClick={() => deletAccountRef.current.openModal()}
                     >
-                      {' '}
                       Delete Account
                     </MenuItem>
                   )}
+                <MenuDivider />
+                <MenuItem
+                  isDisabled={
+                    !state.account ||
+                    (state.account && state.network.id !== NETWORK_ID.mainnet)
+                  }
+                  onClick={() =>
+                    builderRef.current.initDelegation(
+                      state.account,
+                      state.delegation
+                    )
+                  }
+                >
+                  Stake & Earn Rewards
+                </MenuItem>
                 <MenuDivider />
                 <MenuItem
                   onClick={() => history.push('/settings')}
@@ -461,6 +521,7 @@ const Wallet = ({ data }) => {
         name={state.account && state.account.name}
         ref={deletAccountRef}
       />
+      <TransactionBuilder ref={builderRef} />
       <About ref={aboutRef} />
     </>
   );
@@ -604,5 +665,75 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
     </AlertDialog>
   );
 });
+
+const DelegationPopover = ({ delegation, children }) => {
+  return (
+    <Popover matchWidth={true} offset={[80, 8]}>
+      <PopoverTrigger>
+        <Button
+          style={{
+            all: 'revert',
+            background: 'none',
+            border: 'none',
+            outline: 'none',
+            cursor: 'pointer',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold',
+          }}
+          rightIcon={<ChevronDownIcon />}
+        >
+          {children}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent width="60">
+        <PopoverArrow />
+        <PopoverCloseButton />
+        <PopoverBody
+          mt="2"
+          alignItems="center"
+          justifyContent="center"
+          display="flex"
+          flexDirection="column"
+          textAlign="center"
+        >
+          <Text
+            fontWeight="bold"
+            fontSize="md"
+            textDecoration="underline"
+            cursor="pointer"
+            onClick={() => window.open(delegation.homepage)}
+          >
+            {delegation.ticker}
+          </Text>
+          <Box h="2" />
+          <Text fontWeight="light" fontSize="xs">
+            {delegation.description}
+          </Text>
+          <Box h="3" />
+          <Text fontSize="xs">Available rewards:</Text>
+          <UnitDisplay
+            fontWeight="bold"
+            fontSize="sm"
+            quantity={delegation.rewards}
+            decimals={6}
+            symbol="₳"
+          />
+          <Box h="6" />
+          <Button
+            isDisabled={BigInt(delegation.rewards) < BigInt('2000000')}
+            colorScheme="teal"
+            size="sm"
+          >
+            Withdraw
+          </Button>
+          <Box h="2" />
+        </PopoverBody>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 export default Wallet;

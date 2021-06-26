@@ -523,7 +523,7 @@ const SignTx = ({ request, controller }) => {
             <b>Required keys:</b>{' '}
             {keyHashes.kind ? (
               keyHashes.kind.length <= 0 ? (
-                <span style={{ color: '#FC8181' }}>Cannot sign Tx</span>
+                <span style={{ color: '#FC8181' }}>Signature not possible</span>
               ) : (
                 keyHashes.kind.map((keyHash, index) =>
                   index >= keyHashes.kind.length - 1 &&
