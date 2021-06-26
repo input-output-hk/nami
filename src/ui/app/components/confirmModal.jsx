@@ -42,7 +42,9 @@ const ConfirmModal = React.forwardRef((props, ref) => {
     <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader fontSize="md">Confirm with password</ModalHeader>
+        <ModalHeader fontSize="md">
+          {props.title ? props.title : 'Confirm with password'}
+        </ModalHeader>
         <ModalBody>
           {props.info}
           <InputGroup size="md">
@@ -76,7 +78,7 @@ const ConfirmModal = React.forwardRef((props, ref) => {
             Close
           </Button>
           <Button
-            isDisabled={!state.password}
+            isDisabled={!state.password || props.ready === false}
             colorScheme="teal"
             onClick={async () => {
               try {

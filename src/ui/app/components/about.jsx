@@ -11,6 +11,7 @@ import {
   Image,
   Text,
   Box,
+  Link,
 } from '@chakra-ui/react';
 
 import BannerWhite from '../../../assets/img/bannerWhite.svg';
@@ -76,6 +77,11 @@ const About = React.forwardRef((props, ref) => {
             />
           </Box>
           <Box height="4" />
+          {/* Footer */}
+          <Box>
+            <Link color="GrayText">Terms of use</Link>
+          </Box>
+          <Box height="1" />
         </ModalBody>
       </ModalContent>
     </Modal>

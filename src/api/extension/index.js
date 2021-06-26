@@ -106,16 +106,22 @@ export const setCurrency = async (currency) => {
 
 export const getDelegation = async () => {
   const currentAccount = await getCurrentAccount();
-  const result = await blockfrostRequest(
+  const stake = await blockfrostRequest(
     `/accounts/${currentAccount.rewardAddr}`
   );
-  if (!result || result.error) return {};
+  if (!stake || stake.error || !stake.pool_id) return {};
+  const delegation = await blockfrostRequest(
+    `/pools/${stake.pool_id}/metadata`
+  );
+  if (!delegation || delegation.error) return {};
   return {
-    active: result.active,
-    poolId: result.poolId,
-    activeEpoch: result.active_epoch,
-    availableRewards: result.withdrawable_amount,
-    withdrawnRewards: result.withdrawal_sum,
+    active: stake.active,
+    rewards: stake.withdrawable_amount,
+    homepage: delegation.homepage,
+    poolId: stake.pool_id,
+    ticker: delegation.ticker,
+    description: delegation.description,
+    name: delegation.name,
   };
 };
 
@@ -155,7 +161,11 @@ export const getTransactions = async (paginate = 1) => {
  * @param {number} paginate.limit
  * @returns
  */
-export const getUtxos = async (amount = undefined, paginate = undefined) => {
+export const getUtxos = async (
+  amount = undefined,
+  paginate = undefined,
+  internal = false
+) => {
   const currentAccount = await getCurrentAccount();
   let result = [];
   let page = paginate && paginate.page ? paginate.page + 1 : 1;
@@ -175,6 +185,12 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
     if (pageResult.length <= 0 || paginate) break;
     page++;
   }
+  if (internal)
+    return result.map((utxo) => ({
+      txHash: utxo.tx_hash,
+      txId: utxo.output_index,
+      amount: utxo.amount,
+    }));
   const address = await getAddress();
   let converted = await Promise.all(
     result.map(async (utxo) => await utxoToStructure(utxo, address))
@@ -529,6 +545,7 @@ export const submitTx = async (tx) => {
     { 'Content-Type': 'application/cbor' },
     Buffer.from(tx, 'hex')
   );
+  console.log(result);
   if (result.error) {
     if (result.status_code === 400) throw TxSendError.Failure;
     else if (result.status_code === 500) throw APIError.InternalError;
