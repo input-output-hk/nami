@@ -1,4 +1,4 @@
-import { getNetwork, signTx, submitTx } from '.';
+import { getNetwork, getUtxos, signTx, submitTx } from '.';
 import { ERROR, EVENT, SENDER, TARGET } from '../../config/config';
 import provider from '../../config/provider';
 import Loader from '../loader';
@@ -33,8 +33,6 @@ export const initTx = async () => {
 
   const p = await blockfrostRequest(`/epochs/${latest_block.epoch}/parameters`);
 
-  console.log('MIN UTXO');
-  console.log(p.min_utxo);
   return {
     linearFee: Loader.Cardano.LinearFee.new(
       Loader.Cardano.BigNum.from_str(p.min_fee_a.toString()),
@@ -217,7 +215,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     )
   );
   const change = selection.change;
-  console.log(change);
   // hard coded for now. about 300 assets fit into a single output
   if (change.length > 300) {
     const lovelace = (BigInt(change[0].quantity) / BigInt(2)).toString();
@@ -246,13 +243,17 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   return transaction;
 };
 
-export const signAndSubmit = async (tx, account, password) => {
+export const signAndSubmit = async (
+  tx,
+  { keyHashes, accountIndex },
+  password
+) => {
   await Loader.load();
   const witnessSet = await signTx(
     Buffer.from(tx.to_bytes(), 'hex').toString('hex'),
-    [account.paymentKeyHash],
+    keyHashes,
     password,
-    account.index
+    accountIndex
   );
   const transaction = Loader.Cardano.Transaction.new(tx.body(), witnessSet);
 
@@ -260,4 +261,107 @@ export const signAndSubmit = async (tx, account, password) => {
     Buffer.from(transaction.to_bytes(), 'hex').toString('hex')
   );
   return txHash;
+};
+
+export const delegationTx = async (account, delegation, protocolParameters) => {
+  await Loader.load();
+  const utxos = await getUtxos(undefined, undefined, true);
+  const selection = CoinSelection.randomImprove(
+    utxos,
+    [
+      {
+        address: '',
+        amount: [
+          {
+            unit: 'lovelace',
+            quantity: protocolParameters.keyDeposit.to_str(),
+          },
+        ],
+      },
+    ],
+    20,
+    protocolParameters.minUtxo.to_str()
+  );
+
+  const inputs = selection.input;
+  const txBuilder = Loader.Cardano.TransactionBuilder.new(
+    protocolParameters.linearFee,
+    protocolParameters.minUtxo,
+    protocolParameters.poolDeposit,
+    protocolParameters.keyDeposit
+  );
+
+  await Promise.all(
+    inputs.map(async (input) =>
+      txBuilder.add_input(
+        Loader.Cardano.Address.from_bech32(account.paymentAddr),
+        Loader.Cardano.TransactionInput.new(
+          Loader.Cardano.TransactionHash.from_bytes(
+            Buffer.from(input.txHash, 'hex')
+          ),
+          input.txId
+        ),
+        await assetsToValue(input.amount)
+      )
+    )
+  );
+
+  const certificates = Loader.Cardano.Certificates.new();
+  if (!delegation.active)
+    certificates.add(
+      Loader.Cardano.Certificate.new_stake_registration(
+        Loader.Cardano.StakeRegistration.new(
+          Loader.Cardano.StakeCredential.from_keyhash(
+            Loader.Cardano.Ed25519KeyHash.from_bytes(
+              Buffer.from(account.stakeKeyHash, 'hex')
+            )
+          )
+        )
+      )
+    );
+  const poolKeyHash =
+    '2a748e3885f6f73320ad16a8331247b81fe01b8d39f57eec9caa5091'; //BERRY
+  certificates.add(
+    Loader.Cardano.Certificate.new_stake_delegation(
+      Loader.Cardano.StakeDelegation.new(
+        Loader.Cardano.StakeCredential.from_keyhash(
+          Loader.Cardano.Ed25519KeyHash.from_bytes(
+            Buffer.from(account.stakeKeyHash, 'hex')
+          )
+        ),
+        Loader.Cardano.Ed25519KeyHash.from_bytes(
+          Buffer.from(poolKeyHash, 'hex')
+        )
+      )
+    )
+  );
+  txBuilder.set_certs(certificates);
+
+  const change = selection.change;
+  // hard coded for now. about 300 assets fit into a single output
+  if (change.length > 300) {
+    const lovelace = (BigInt(change[0].quantity) / BigInt(2)).toString();
+    const partialChange = change.slice(1, 300);
+    partialChange.unshift({ unit: 'lovelace', quantity: lovelace });
+    txBuilder.add_output(
+      Loader.Cardano.TransactionOutput.new(
+        Loader.Cardano.Address.from_bech32(account.paymentAddr),
+        await assetsToValue(partialChange)
+      )
+    );
+  }
+
+  txBuilder.add_change_if_needed(
+    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+  );
+
+  const transaction = Loader.Cardano.Transaction.new(
+    txBuilder.build(),
+    Loader.Cardano.TransactionWitnessSet.new()
+  );
+
+  const size = transaction.to_bytes().length * 2;
+  if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
+
+  return transaction;
 };

@@ -2,7 +2,10 @@ import { Box } from '@chakra-ui/layout';
 import React from 'react';
 import { displayUnit } from '../../../api/extension';
 
-const UnitDisplay = ({ quantity, decimals, symbol, ...props }) => {
+const hideZero = (str) =>
+  str[str.length - 1] == 0 ? hideZero(str.slice(0, -1)) : str;
+
+const UnitDisplay = ({ quantity, decimals, symbol, hide, ...props }) => {
   const num = displayUnit(quantity, decimals)
     .toLocaleString('en-EN', { minimumFractionDigits: decimals })
     .split('.')[0];
@@ -13,7 +16,11 @@ const UnitDisplay = ({ quantity, decimals, symbol, ...props }) => {
     <Box {...props}>
       {quantity || quantity === 0 ? (
         <>
-          {num}.<span style={{ fontSize: '75%' }}>{subNum}</span>{' '}
+          {num}
+          {hide && hideZero(subNum).length <= 0 ? '' : '.'}
+          <span style={{ fontSize: '75%' }}>
+            {hide ? hideZero(subNum) : subNum}
+          </span>{' '}
         </>
       ) : (
         '... '

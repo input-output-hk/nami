@@ -142,7 +142,7 @@ const Send = () => {
     } catch (e) {
       console.log(e);
       if (!_value.ada) setFee({ fee: '0' });
-      else setFee({ error: 'Cannot create transaction' });
+      else setFee({ error: 'Transaction not possible' });
       prepareTx(v, a, count + 1);
     }
   };
@@ -382,7 +382,16 @@ const Send = () => {
       </Box>
       <ConfirmModal
         ref={ref}
-        sign={(password) => signAndSubmit(tx, account, password)}
+        sign={(password) =>
+          signAndSubmit(
+            tx,
+            {
+              accountIndex: account.index,
+              keyHashes: [account.paymentKeyHash],
+            },
+            password
+          )
+        }
         onConfirm={async (status, signedTx) => {
           if (status === true)
             toast({
