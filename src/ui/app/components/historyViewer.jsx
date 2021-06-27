@@ -7,7 +7,7 @@ import { File } from 'react-kawaii';
 import { getTransactions } from '../../../api/extension';
 import Transaction from './transaction';
 
-const HistoryViewer = ({ history, currentAddr, addresses }) => {
+const HistoryViewer = ({ history, assets, currentAddr, addresses }) => {
   const [historySlice, setHistorySlice] = React.useState([]);
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
@@ -62,6 +62,7 @@ const HistoryViewer = ({ history, currentAddr, addresses }) => {
                 details={history && history.details}
                 currentAddr={currentAddr}
                 addresses={addresses}
+                assets={assets}
               />
             ))}
           </Accordion>
