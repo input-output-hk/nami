@@ -34,6 +34,7 @@ const SignData = ({ request, controller }) => {
           Buffer.from(request.data.address, 'hex')
         )
       );
+      if (!baseAddr) throw Error('Not a valid base address');
       setAddress('payment');
       return;
     } catch (e) {}
@@ -43,6 +44,7 @@ const SignData = ({ request, controller }) => {
           Buffer.from(request.data.address, 'hex')
         )
       );
+      if (!rewardAddr) throw Error('Not a valid base address');
       setAddress('stake');
       return;
     } catch (e) {}
