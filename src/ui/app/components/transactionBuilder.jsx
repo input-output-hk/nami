@@ -4,10 +4,10 @@ import {
   delegationTx,
   initTx,
   signAndSubmit,
+  withdrawalTx,
 } from '../../../api/extension/wallet';
 import ConfirmModal from './confirmModal';
 import UnitDisplay from './unitDisplay';
-import { Backpack } from 'react-kawaii';
 import {
   Image,
   Modal,
@@ -34,15 +34,13 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
     tx: null,
     account: null,
     stakeRegistration: '',
+    rewards: '',
     ready: false,
   });
-  const [showDelegation, setShowDelegation] = React.useState(true);
-  const [ready, setReady] = React.useState(false);
   const delegationRef = React.useRef();
   const withdrawRef = React.useRef();
   React.useImperativeHandle(ref, () => ({
     async initDelegation(account, delegation) {
-      console.log(delegation);
       if (
         delegation.poolId ===
         'pool19f6guwy97mmnxg9dz65rxyj8hq07qxud886hamyu4fgfz7dj9gl' // BERRY
@@ -50,7 +48,13 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
         onOpen();
         return;
       }
-      setData({ fee: '', stakeRegistration: '', ready: false });
+      setData({
+        fee: '',
+        stakeRegistration: '',
+        rewards: '',
+        ready: false,
+        error: '',
+      });
       delegationRef.current.openModal();
       const protocolParameters = await initTx();
       const checkTx = async (count) => {
@@ -81,14 +85,31 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
       };
       checkTx(0);
     },
-    async initWithdrawal() {
-      setData({ fee: '', stakeRegistration: '', ready: false });
-      showDelegation(false);
-      withdrawRef.current.openModal();
+    async initWithdrawal(account, delegation) {
       setData({
-        fee: tx.body().fee().to_str(),
-        ready: true,
+        fee: '',
+        stakeRegistration: '',
+        rewards: '',
+        ready: false,
+        error: '',
       });
+      withdrawRef.current.openModal();
+      const protocolParameters = await initTx();
+      try {
+        const tx = await withdrawalTx(account, delegation, protocolParameters);
+        setData({
+          tx,
+          account,
+          rewards: delegation.rewards,
+          fee: tx.body().fee().to_str(),
+          ready: true,
+        });
+      } catch (e) {
+        setData((d) => ({
+          ...d,
+          error: 'Transaction not possible (maybe reward amount too small)',
+        }));
+      }
     },
   }));
   return (
@@ -142,7 +163,7 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
               >
                 Berry Pool
               </Link>{' '}
-              and earn <b>5%</b> staking rewards per year.
+              and earn approximately <b>5%</b> staking rewards per year.
             </Text>
             <Box h="6" />
             {data.error ? (
@@ -181,7 +202,36 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
         ref={delegationRef}
       />
       <ConfirmModal
+        sign={(password) =>
+          signAndSubmit(
+            data.tx,
+            {
+              keyHashes: [
+                data.account.paymentKeyHash,
+                data.account.stakeKeyHash,
+              ],
+              accountIndex: data.account.index,
+            },
+            password
+          )
+        }
+        onConfirm={(status, signedTx) => {
+          if (status === true)
+            toast({
+              title: 'Withdrawal submitted',
+              status: 'success',
+              duration: 5000,
+            });
+          else
+            toast({
+              title: 'Transaction failed',
+              status: 'error',
+              duration: 5000,
+            });
+          withdrawRef.current.closeModal();
+        }}
         ready={data.ready}
+        title="Withdraw Rewards"
         info={
           <Box
             width="100%"
@@ -190,7 +240,41 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
             justifyContent="center"
             flexDirection="column"
           >
-            Withdraw
+            {data.error ? (
+              <Box textAlign="center" mb="4" color="red.300">
+                {data.error}
+              </Box>
+            ) : (
+              <Box fontSize="sm">
+                <Box
+                  mt="-2"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Text fontSize="md" color="green.500" fontWeight="bold">
+                    Rewards:{' '}
+                  </Text>
+                  <Box w="1" />
+                  <UnitDisplay
+                    fontSize="md"
+                    fontWeight="bold"
+                    color="green.500"
+                    hide
+                    quantity={data.rewards}
+                    decimals={6}
+                    symbol="₳"
+                  />
+                </Box>
+                <Box h="3" />
+                <Box display="flex" alignItems="center" justifyContent="center">
+                  <Text fontWeight="bold">+ Fee:</Text>
+                  <Box w="1" />
+                  <UnitDisplay quantity={data.fee} decimals={6} symbol="₳" />
+                </Box>
+                <Box h="4" />
+              </Box>
+            )}
           </Box>
         }
         ref={withdrawRef}
@@ -208,12 +292,11 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
               alignItems="center"
               justifyContent="center"
               flexDirection="column"
-              mt="2"
             >
-              <Backpack size={100} mood="lovestruck" color="#61DDBC" />
-              <Box height="2" />
-              <Text fontWeight="bold" color="GrayText">
-                Already delegated to Berry
+              <Image src={Berry} width="60px" />
+              <Box height="4" />
+              <Text textAlign="center" fontWeight="bold" color="GrayText">
+                Already delegated to Berry and earning rewards!
               </Text>
               <Box h="6" />
               <Button

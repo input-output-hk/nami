@@ -365,3 +365,37 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
 
   return transaction;
 };
+
+export const withdrawalTx = async (account, delegation, protocolParameters) => {
+  await Loader.load();
+  const txBuilder = Loader.Cardano.TransactionBuilder.new(
+    protocolParameters.linearFee,
+    protocolParameters.minUtxo,
+    protocolParameters.poolDeposit,
+    protocolParameters.keyDeposit
+  );
+
+  const withdrawals = Loader.Cardano.Withdrawals.new();
+  withdrawals.insert(
+    Loader.Cardano.RewardAddress.from_address(
+      Loader.Cardano.Address.from_bech32(account.rewardAddr)
+    ),
+    Loader.Cardano.BigNum.from_str(delegation.rewards)
+  );
+
+  txBuilder.set_withdrawals(withdrawals);
+
+  txBuilder.add_change_if_needed(
+    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+  );
+
+  const transaction = Loader.Cardano.Transaction.new(
+    txBuilder.build(),
+    Loader.Cardano.TransactionWitnessSet.new()
+  );
+
+  const size = transaction.to_bytes().length * 2;
+  if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
+
+  return transaction;
+};

@@ -121,12 +121,11 @@ const Wallet = ({ data }) => {
   };
 
   const getData = async () => {
-    const { avatar, name } = await getCurrentAccount();
-    setInfo({ avatar, name });
+    const { avatar, name, index } = await getCurrentAccount();
+    setInfo({ avatar, name, currentIndex: index });
     setState((s) => ({
       ...s,
       account: null,
-      accounts: null,
       delegation: null,
     }));
     await updateAccount();
@@ -135,7 +134,6 @@ const Wallet = ({ data }) => {
     const fiatPrice = await provider.api.price(settings.currency);
     const network = await getNetwork();
     const delegation = await getDelegation();
-    console.log(delegation);
     // setState((s) => ({
     //   ...s,
     //   account: currentAccount,
@@ -200,7 +198,10 @@ const Wallet = ({ data }) => {
             {state.delegation && (
               <>
                 {state.delegation.active ? (
-                  <DelegationPopover delegation={state.delegation}>
+                  <DelegationPopover
+                    account={state.account}
+                    delegation={state.delegation}
+                  >
                     {state.delegation.ticker}
                   </DelegationPopover>
                 ) : (
@@ -258,7 +259,7 @@ const Wallet = ({ data }) => {
                             position="relative"
                             key={accountIndex}
                             onClick={async () => {
-                              if (state.account.index === account.index) return;
+                              if (info.currentIndex === account.index) return;
                               setMenu(false);
                               await switchAccount(accountIndex);
                             }}
@@ -289,7 +290,7 @@ const Wallet = ({ data }) => {
                                   />
                                 </Text>
                               </Box>
-                              {state.account.index === account.index && (
+                              {info.currentIndex === account.index && (
                                 <>
                                   <Box width="2" />
                                   <StarIcon />
@@ -325,6 +326,7 @@ const Wallet = ({ data }) => {
                   )}
                 <MenuDivider />
                 <MenuItem
+                  fontWeight="bold"
                   isDisabled={
                     !state.account ||
                     (state.account && state.network.id !== NETWORK_ID.mainnet)
@@ -666,73 +668,81 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
   );
 });
 
-const DelegationPopover = ({ delegation, children }) => {
+const DelegationPopover = ({ account, delegation, children }) => {
+  const withdrawRef = React.useRef();
   return (
-    <Popover matchWidth={true} offset={[80, 8]}>
-      <PopoverTrigger>
-        <Button
-          style={{
-            all: 'revert',
-            background: 'none',
-            border: 'none',
-            outline: 'none',
-            cursor: 'pointer',
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold',
-          }}
-          rightIcon={<ChevronDownIcon />}
-        >
-          {children}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent width="60">
-        <PopoverArrow />
-        <PopoverCloseButton />
-        <PopoverBody
-          mt="2"
-          alignItems="center"
-          justifyContent="center"
-          display="flex"
-          flexDirection="column"
-          textAlign="center"
-        >
-          <Text
-            fontWeight="bold"
-            fontSize="md"
-            textDecoration="underline"
-            cursor="pointer"
-            onClick={() => window.open(delegation.homepage)}
-          >
-            {delegation.ticker}
-          </Text>
-          <Box h="2" />
-          <Text fontWeight="light" fontSize="xs">
-            {delegation.description}
-          </Text>
-          <Box h="3" />
-          <Text fontSize="xs">Available rewards:</Text>
-          <UnitDisplay
-            fontWeight="bold"
-            fontSize="sm"
-            quantity={delegation.rewards}
-            decimals={6}
-            symbol="₳"
-          />
-          <Box h="6" />
+    <>
+      <Popover matchWidth={true} offset={[80, 8]}>
+        <PopoverTrigger>
           <Button
-            isDisabled={BigInt(delegation.rewards) < BigInt('2000000')}
-            colorScheme="teal"
-            size="sm"
+            style={{
+              all: 'revert',
+              background: 'none',
+              border: 'none',
+              outline: 'none',
+              cursor: 'pointer',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 'bold',
+            }}
+            rightIcon={<ChevronDownIcon />}
           >
-            Withdraw
+            {children}
           </Button>
-          <Box h="2" />
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+        </PopoverTrigger>
+        <PopoverContent width="60">
+          <PopoverArrow />
+          <PopoverCloseButton />
+          <PopoverBody
+            mt="2"
+            alignItems="center"
+            justifyContent="center"
+            display="flex"
+            flexDirection="column"
+            textAlign="center"
+          >
+            <Text
+              fontWeight="bold"
+              fontSize="md"
+              textDecoration="underline"
+              cursor="pointer"
+              onClick={() => window.open(delegation.homepage)}
+            >
+              {delegation.ticker}
+            </Text>
+            <Box h="2" />
+            <Text fontWeight="light" fontSize="xs">
+              {delegation.description}
+            </Text>
+            <Box h="3" />
+            <Text fontSize="xs">Available rewards:</Text>
+            <UnitDisplay
+              hide
+              fontWeight="bold"
+              fontSize="sm"
+              quantity={delegation.rewards}
+              decimals={6}
+              symbol="₳"
+            />
+            <Box h="6" />
+            <Button
+              onClick={() =>
+                withdrawRef.current.initWithdrawal(account, delegation)
+              }
+              isDisabled={BigInt(delegation.rewards) < BigInt('2000000')}
+              colorScheme="teal"
+              size="sm"
+            >
+              Withdraw
+            </Button>
+            <Box h="2" />
+          </PopoverBody>
+        </PopoverContent>
+      </Popover>
+      <TransactionBuilder ref={withdrawRef} />
+    </>
   );
 };
 

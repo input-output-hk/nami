@@ -162,8 +162,9 @@ const GeneralSettings = () => {
       <ConfirmModal
         info={
           <Box mb="4" fontSize="sm" width="full">
-            The wallet will be reset. Make sure you have written down your seed
-            phrase. It's the only way to recover your current wallet! <br />
+            The wallet will be reset.{' '}
+            <b>Make sure you have written down your seed phrase.</b> It's the
+            only way to recover your current wallet! <br />
             Type your password below, if you want to continue.
           </Box>
         }
