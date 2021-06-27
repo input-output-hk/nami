@@ -43,6 +43,7 @@
     "react-middle-ellipsis": "^1.2.1",
     "react-router-dom": "^5.2.0",
     "react-slick": "^0.28.1",
+    "react-syntax-highlighter": "^15.4.3",
     "react-tiger-transition": "^4.1.2",
     "react-time-ago": "^7.0.0",
     "react-transition-group": "^4.4.1",

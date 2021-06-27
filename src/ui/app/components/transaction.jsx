@@ -17,9 +17,21 @@ import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import ReactTimeAgo from 'react-time-ago';
 import { TiArrowForward, TiArrowBack, TiArrowShuffle } from 'react-icons/ti';
+import { Button } from '@chakra-ui/button';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import ReactDOMServer from 'react-dom/server';
+
 TimeAgo.addDefaultLocale(en);
 
-const Transaction = ({ txHash, details, currentAddr, addresses }) => {
+const txTypeColor = {
+  internalIn: 'teal.500',
+  externalIn: 'teal.500',
+  internalOut: 'orange.500',
+  externalOut: 'orange.500',
+};
+
+const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
   let detail = details[txHash];
   const [displayInfo, setDisplayInfo] = React.useState({});
 
@@ -31,7 +43,9 @@ const Transaction = ({ txHash, details, currentAddr, addresses }) => {
     if (!detail) {
       detail = details[txHash] = {};
       await updateTxInfo(txHash, detail);
-      setDisplayInfo(genDisplayInfo(detail, currentAddr, addresses));
+      setDisplayInfo(
+        genDisplayInfo(txHash, detail, currentAddr, addresses, assets)
+      );
     }
   };
 
@@ -84,6 +98,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses }) => {
             >
               <Box fontSize={20}>
                 <UnitDisplay
+                  color={txTypeColor[displayInfo.type]}
                   quantity={displayInfo.amount[0].quantity}
                   decimals={6}
                   symbol="₳"
@@ -111,9 +126,8 @@ const Transaction = ({ txHash, details, currentAddr, addresses }) => {
             </Box>
             <AccordionIcon color="teal.400" mr={5} fontSize={30} />
           </AccordionButton>
-
           <AccordionPanel wordBreak="break-word" pb={4}>
-            <p>{txHash}</p>
+            <TxDetail displayInfo={displayInfo} />
           </AccordionPanel>
           <Box display="flex" flexDirection="column" alignItems="center">
             <Box
@@ -139,15 +153,93 @@ const Transaction = ({ txHash, details, currentAddr, addresses }) => {
   );
 };
 
-const genDisplayInfo = (detail, currentAddr, addresses) => {
+const TxIcon = ({ txType }) => {
+  const icons = {
+    internalIn: TiArrowShuffle,
+    externalIn: TiArrowForward,
+    internalOut: TiArrowShuffle,
+    externalOut: TiArrowBack,
+  };
+
+  const style =
+    txType === 'externalIn'
+      ? { transform: 'rotate(90deg)' }
+      : txType === 'internalOut'
+      ? { transform: 'rotate(180deg)' }
+      : '';
+
+  return (
+    <Icon
+      as={icons[txType]}
+      style={style}
+      w={8}
+      h={8}
+      color={txTypeColor[txType]}
+    />
+  );
+};
+
+const TxDetail = ({ displayInfo }) => {
+  return (
+    <>
+      <Box display="flex" flexDirection="horizontal">
+        <Box>
+          <Box
+            display="flex"
+            flexDirection="vertical"
+            color="gray.600"
+            fontSize="sm"
+            fontWeight="bold"
+          >
+            Transaction ID
+          </Box>
+          <Box>
+            <Link
+              color="teal"
+              href={'https://cardanoscan.io/transaction/' + displayInfo.txHash}
+              isExternal
+            >
+              {displayInfo.txHash} <ExternalLinkIcon mx="2px" />
+            </Link>
+          </Box>
+          {displayInfo.detail.metadata.length > 0 ? (
+            <Button
+              colorScheme="orange"
+              size="sm"
+              mt="5px"
+              onClick={() => viewMetadata(displayInfo.detail.metadata)}
+            >
+              See metadata
+            </Button>
+          ) : (
+            ''
+          )}
+        </Box>
+        <Box
+          textAlign="right"
+          pl="10px"
+          color="gray.500"
+          fontSize="sm"
+          fontWeight="400"
+        >
+          {displayInfo.timestamp}
+        </Box>
+      </Box>
+    </>
+  );
+};
+
+const genDisplayInfo = (txHash, detail, currentAddr, addresses, assets) => {
   if (!detail.info || !detail.utxos) return;
 
   const type = getTxType(currentAddr, addresses, detail.utxos);
   const date = dateFromUnix(detail.block.time);
 
   return {
+    txHash: txHash,
+    detail: detail,
     date: date,
-    formatDate: formatDate(date),
+    timestamp: getTimestamp(date),
     type: type,
     amount: calculateAmount(type, currentAddr, detail.utxos),
   };
@@ -172,7 +264,7 @@ const dateFromUnix = (unixTimestamp) => {
   return new Date(unixTimestamp * 1000);
 };
 
-const formatDate = (date) => {
+const getTimestamp = (date) => {
   const zeroLead = (str) => ('0' + str).slice(-2);
 
   return `${date.getFullYear()}-${zeroLead(date.getMonth())}-${zeroLead(
@@ -190,30 +282,26 @@ const calculateAmount = (txType, currentAddr, uTxOList) => {
   return CoinSelection.compileOutputs(outputs);
 };
 
-const TxIcon = ({ txType }) => {
-  const icons = {
-    internalIn: TiArrowShuffle,
-    externalIn: TiArrowForward,
-    internalOut: TiArrowShuffle,
-    externalOut: TiArrowBack,
-  };
-  const color = {
-    internalIn: 'teal.400',
-    externalIn: 'teal.400',
-    internalOut: 'orange.500',
-    externalOut: 'orange.500',
-  };
-
-  const style =
-    txType === 'externalIn'
-      ? { transform: 'rotate(90deg)' }
-      : txType === 'internalOut'
-      ? { transform: 'rotate(180deg)' }
-      : '';
-
-  return (
-    <Icon as={icons[txType]} style={style} w={8} h={8} color={color[txType]} />
+const viewMetadata = (metadata) => {
+  const HighlightJson = () => (
+    <html lang="en">
+      <head>
+        <title>Metadata</title>
+      </head>
+      <body style={{ backgroundColor: '#2b2b2b' }}>
+        <SyntaxHighlighter
+          language="json"
+          style={a11yDark}
+          customStyle={{ fontSize: '14px', lineHeight: '20px' }}
+        >
+          {JSON.stringify(metadata, null, 2)}
+        </SyntaxHighlighter>
+      </body>
+    </html>
   );
+  var newTab = window.open();
+  newTab.document.write(ReactDOMServer.renderToString(<HighlightJson />));
+  newTab.document.close();
 };
 
 export default Transaction;
