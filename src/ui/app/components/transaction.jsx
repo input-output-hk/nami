@@ -10,6 +10,8 @@ import {
   AccordionPanel,
   VStack,
   Icon,
+  Wrap,
+  WrapItem,
 } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import CoinSelection from '../../../lib/coinSelection';
@@ -21,6 +23,7 @@ import { Button } from '@chakra-ui/button';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import ReactDOMServer from 'react-dom/server';
+import Asset from './asset';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -99,7 +102,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
               <Box fontSize={20}>
                 <UnitDisplay
                   color={txTypeColor[displayInfo.type]}
-                  quantity={displayInfo.amount[0].quantity}
+                  quantity={displayInfo.amounts[0].quantity}
                   decimals={6}
                   symbol="₳"
                 />
@@ -113,11 +116,11 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                   symbol="₳"
                 />
               </Box>
-              {displayInfo.amount.length > 1 ? (
+              {displayInfo.assets.length > 0 ? (
                 <Box flexDirection="row" fontSize={12}>
                   <strong>
-                    + {displayInfo.amount.length - 1} Asset
-                    {displayInfo.amount.length > 2 ? 's' : ''}
+                    {displayInfo.assets.length} Asset
+                    {displayInfo.assets.length > 1 ? 's' : ''}
                   </strong>
                 </Box>
               ) : (
@@ -225,6 +228,28 @@ const TxDetail = ({ displayInfo }) => {
           {displayInfo.timestamp}
         </Box>
       </Box>
+      {displayInfo.assets.length > 0 ? (
+        <>
+          <Box
+            fontSize="16px"
+            fontWeight="semibold"
+            color="gray.500"
+            textAlign="center"
+            m="20px"
+          >
+            Assets
+          </Box>
+          <Wrap justify="center">
+            {displayInfo.assets.map((asset) => (
+              <WrapItem>
+                <Asset asset={asset} />
+              </WrapItem>
+            ))}
+          </Wrap>
+        </>
+      ) : (
+        ''
+      )}
     </>
   );
 };
@@ -234,14 +259,19 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses, assets) => {
 
   const type = getTxType(currentAddr, addresses, detail.utxos);
   const date = dateFromUnix(detail.block.time);
+  const amounts = calculateAmount(type, currentAddr, detail.utxos);
 
+  console.log(assets);
   return {
     txHash: txHash,
     detail: detail,
     date: date,
     timestamp: getTimestamp(date),
     type: type,
-    amount: calculateAmount(type, currentAddr, detail.utxos),
+    amounts: amounts,
+    assets: assets.filter((asset) =>
+      amounts.some((amount) => amount.unit === asset.unit)
+    ),
   };
 };
 
