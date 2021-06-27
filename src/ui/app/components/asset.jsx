@@ -32,7 +32,9 @@ const Asset = ({ asset }) => {
       (result.metadata && result.metadata.name) ||
       asset.name;
     const image =
-      (result.onchain_metadata && linkToHttps(result.onchain_metadata.image)) ||
+      (result.onchain_metadata &&
+        result.onchain_metadata.image &&
+        linkToHttps(result.onchain_metadata.image)) ||
       (result.metadata && result.metadata.logo) ||
       '';
 
