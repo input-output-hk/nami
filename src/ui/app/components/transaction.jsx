@@ -1,5 +1,5 @@
-import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { Box, Link } from '@chakra-ui/layout';
+import { ChevronDownIcon, ExternalLinkIcon } from '@chakra-ui/icons';
+import { Box, Link, Stack, Text } from '@chakra-ui/layout';
 import React from 'react';
 import { updateTxInfo } from '../../../api/extension';
 import UnitDisplay from './unitDisplay';
@@ -23,8 +23,7 @@ import { Button } from '@chakra-ui/button';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import ReactDOMServer from 'react-dom/server';
-import Asset from './asset';
-
+import AssetsPopover from './assetPopoverDiff';
 TimeAgo.addDefaultLocale(en);
 
 const txTypeColor = {
@@ -119,10 +118,14 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
               </Box>
               {displayInfo.assets.length > 0 ? (
                 <Box flexDirection="row" fontSize={12}>
-                  <strong>
-                    {displayInfo.assets.length} Asset
-                    {displayInfo.assets.length > 1 ? 's' : ''}
-                  </strong>
+                  <Text
+                    display="inline-block"
+                    fontWeight="bold"
+                    _hover={{ backgroundColor: 'teal.200' }}
+                    borderRadius="md"
+                  >
+                    <AssetsPopover assets={displayInfo.assets} />
+                  </Text>
                 </Box>
               ) : (
                 ''
@@ -185,73 +188,49 @@ const TxIcon = ({ txType }) => {
 
 const TxDetail = ({ displayInfo }) => {
   return (
-    <>
-      <Box display="flex" flexDirection="horizontal">
-        <Box>
-          <Box
-            display="flex"
-            flexDirection="vertical"
-            color="gray.600"
-            fontSize="sm"
-            fontWeight="bold"
-          >
-            Transaction ID
-          </Box>
-          <Box>
-            <Link
-              color="teal"
-              href={'https://cardanoscan.io/transaction/' + displayInfo.txHash}
-              isExternal
-            >
-              {displayInfo.txHash} <ExternalLinkIcon mx="2px" />
-            </Link>
-          </Box>
-          {displayInfo.detail.metadata.length > 0 ? (
-            <Button
-              colorScheme="orange"
-              size="sm"
-              mt="5px"
-              onClick={() => viewMetadata(displayInfo.detail.metadata)}
-            >
-              See metadata
-            </Button>
-          ) : (
-            ''
-          )}
-        </Box>
+    <Box display="flex" flexDirection="horizontal">
+      <Box>
         <Box
-          textAlign="right"
-          pl="10px"
-          color="gray.500"
+          display="flex"
+          flexDirection="vertical"
+          color="gray.600"
           fontSize="sm"
-          fontWeight="400"
+          fontWeight="bold"
         >
-          {displayInfo.timestamp}
+          Transaction ID
         </Box>
-      </Box>
-      {displayInfo.assets.length > 0 ? (
-        <>
-          <Box
-            fontSize="16px"
-            fontWeight="semibold"
-            color="gray.500"
-            textAlign="center"
-            m="20px"
+        <Box>
+          <Link
+            color="teal"
+            href={'https://cardanoscan.io/transaction/' + displayInfo.txHash}
+            isExternal
           >
-            Assets
-          </Box>
-          <Wrap justify="center">
-            {displayInfo.assets.map((asset) => (
-              <WrapItem>
-                <Asset asset={asset} />
-              </WrapItem>
-            ))}
-          </Wrap>
-        </>
-      ) : (
-        ''
-      )}
-    </>
+            {displayInfo.txHash} <ExternalLinkIcon mx="2px" />
+          </Link>
+        </Box>
+        {displayInfo.detail.metadata.length > 0 ? (
+          <Button
+            colorScheme="orange"
+            size="sm"
+            mt="5px"
+            onClick={() => viewMetadata(displayInfo.detail.metadata)}
+          >
+            See metadata
+          </Button>
+        ) : (
+          ''
+        )}
+      </Box>
+      <Box
+        textAlign="right"
+        pl="10px"
+        color="gray.500"
+        fontSize="sm"
+        fontWeight="400"
+      >
+        {displayInfo.timestamp}
+      </Box>
+    </Box>
   );
 };
 
