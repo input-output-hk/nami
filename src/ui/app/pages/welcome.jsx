@@ -180,11 +180,13 @@ const ImportModal = React.forwardRef((props, ref) => {
               Importing Daedalus or Yoroi
             </Text>
             <Spacer height="1" />
-            <Text fontSize="sm">
-              Nami Wallet will just track the first address of these wallets. If
-              you want to use/see your whole balance, you have to send all funds
-              to the first address! <br /> (You will find the address inside
-              Nami wallet)
+            <Text fontSize="13px">
+              We always recommend creating a new wallet, as Nami is best
+              experienced when not simultaneously used with Yoroi/Daedalus. Nami
+              will not track all addresses associated with your imported wallet,
+              and might result in partial reflection of assets. To accurately
+              reflect your balance, please transfer all assets into your new
+              Nami wallet. <Link textDecoration="underline">More info</Link>
             </Text>
             <Spacer height="4" />
             <Text fontSize="sm">

@@ -1,6 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "nami-wallet",
+  "name": "Nami Wallet",
+  "version": "1.0.0",
+  "description": "A wallet to experience Cardano to the fullest",
   "background": { "service_worker": "background.bundle.js" },
   "action": {
     "default_popup": "mainPopup.html",
