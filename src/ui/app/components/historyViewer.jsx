@@ -1,7 +1,8 @@
 import { Box, Text } from '@chakra-ui/layout';
 import { Spinner } from '@chakra-ui/spinner';
-import { Accordion, IconButton } from '@chakra-ui/react';
-import { TimeIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { Accordion, Button } from '@chakra-ui/react';
+import { ChevronDownIcon } from '@chakra-ui/icons';
+import { TimeIcon } from '@chakra-ui/icons';
 import React from 'react';
 import { File } from 'react-kawaii';
 import { getTransactions } from '../../../api/extension';
@@ -77,16 +78,19 @@ const HistoryViewer = ({ history, assets, currentAddr, addresses }) => {
             </Box>
           ) : (
             <Box textAlign="center">
-              <IconButton
-                onClick={() => setPage(page + 1)}
+              <Button
                 variant="outline"
-                colorScheme="teal"
-                aria-label="Next"
-                fontSize={40}
-                w="100%"
+                onClick={() => setPage(page + 1)}
+                colorScheme="orange"
+                aria-label="More"
+                fontSize={20}
+                w="50%"
                 h="40px"
-                icon={<ChevronDownIcon />}
-              />
+                rounded="xl"
+                shadow="md"
+              >
+                <ChevronDownIcon fontSize="40px" />
+              </Button>
             </Box>
           )}
         </>

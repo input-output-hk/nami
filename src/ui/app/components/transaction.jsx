@@ -77,6 +77,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
             bg="teal.50"
             borderRadius={10}
             borderLeftRadius={30}
+            shadow="base"
             p={0}
             _hover={{ backgroundColor: 'teal.100' }}
             _focus={{ border: 'none' }}
@@ -108,7 +109,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                 />
               </Box>
               <Box flexDirection="row" fontSize={12}>
-                Fees:{' '}
+                Fee:{' '}
                 <UnitDisplay
                   display="inline-block"
                   quantity={detail.info.fees}
@@ -261,7 +262,6 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses, assets) => {
   const date = dateFromUnix(detail.block.time);
   const amounts = calculateAmount(type, currentAddr, detail.utxos);
 
-  console.log(assets);
   return {
     txHash: txHash,
     detail: detail,
