@@ -1,5 +1,5 @@
-import { ChevronDownIcon, ExternalLinkIcon } from '@chakra-ui/icons';
-import { Box, Link, Stack, Text } from '@chakra-ui/layout';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { Box, Link, Text } from '@chakra-ui/layout';
 import React from 'react';
 import { updateTxInfo } from '../../../api/extension';
 import UnitDisplay from './unitDisplay';
@@ -10,8 +10,6 @@ import {
   AccordionPanel,
   VStack,
   Icon,
-  Wrap,
-  WrapItem,
 } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import CoinSelection from '../../../lib/coinSelection';
@@ -19,6 +17,7 @@ import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import ReactTimeAgo from 'react-time-ago';
 import { TiArrowForward, TiArrowBack, TiArrowShuffle } from 'react-icons/ti';
+import { FaCoins, FaPiggyBank } from 'react-icons/fa';
 import { Button } from '@chakra-ui/button';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -31,6 +30,8 @@ const txTypeColor = {
   externalIn: 'teal.500',
   internalOut: 'orange.500',
   externalOut: 'orange.500',
+  withdrawal: 'yellow.400',
+  delegation: 'purple.500',
 };
 
 const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
@@ -90,24 +91,40 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
               position="relative"
               left="-25px"
             >
-              <TxIcon txType={displayInfo.type} />
+              <TxIcon txType={displayInfo.type} extra={displayInfo.extra} />
             </Box>
             <Box
               display="flex"
               flexDirection="column"
               textAlign="center"
               position="relative"
-              left="-25px"
+              left="-20px"
             >
-              <Box fontSize={20}>
-                <UnitDisplay
-                  color={txTypeColor[displayInfo.type]}
-                  quantity={displayInfo.amounts[0].quantity}
-                  decimals={6}
-                  symbol="₳"
-                />
-              </Box>
-              <Box flexDirection="row" fontSize={12}>
+              {displayInfo.lovelace ? (
+                <Text fontSize={20}>
+                  <UnitDisplay
+                    color={txTypeColor[displayInfo.type]}
+                    quantity={displayInfo.lovelace.quantity}
+                    decimals={6}
+                    symbol="₳"
+                  />
+                </Text>
+              ) : (
+                ''
+              )}
+              {displayInfo.extra.length ? (
+                <Text
+                  fontSize={displayInfo.lovelace ? 12 : 16}
+                  fontWeight="semibold"
+                >
+                  {displayInfo.extra.map((extra, index, array) =>
+                    index < array.length - 1 ? extra + ', ' : extra
+                  )}
+                </Text>
+              ) : (
+                ''
+              )}
+              <Text flexDirection="row" fontSize={12}>
                 Fee:{' '}
                 <UnitDisplay
                   display="inline-block"
@@ -115,7 +132,20 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                   decimals={6}
                   symbol="₳"
                 />
-              </Box>
+                {parseInt(detail.info.deposit) ? (
+                  <>
+                    {' & Deposit: '}
+                    <UnitDisplay
+                      display="inline-block"
+                      quantity={detail.info.deposit}
+                      decimals={6}
+                      symbol="₳"
+                    />
+                  </>
+                ) : (
+                  ''
+                )}
+              </Text>
               {displayInfo.assets.length > 0 ? (
                 <Box flexDirection="row" fontSize={12}>
                   <Text
@@ -160,13 +190,18 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
   );
 };
 
-const TxIcon = ({ txType }) => {
+const TxIcon = ({ txType, extra }) => {
   const icons = {
     internalIn: TiArrowShuffle,
     externalIn: TiArrowForward,
     internalOut: TiArrowShuffle,
     externalOut: TiArrowBack,
+    withdrawal: FaCoins,
+    delegation: FaPiggyBank,
   };
+
+  if (extra.length && extra[0] === 'Rewards Withdrawal') txType = 'withdrawal';
+  if (extra.length && extra[0] === 'Pool Delegation') txType = 'delegation';
 
   const style =
     txType === 'externalIn'
@@ -247,7 +282,9 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses, assets) => {
     date: date,
     timestamp: getTimestamp(date),
     type: type,
+    extra: getExtra(detail.info),
     amounts: amounts,
+    lovelace: amounts.find((amount) => amount.unit === 'lovelace'),
     assets: assets.filter((asset) =>
       amounts.some((amount) => amount.unit === asset.unit)
     ),
@@ -289,6 +326,17 @@ const calculateAmount = (txType, currentAddr, uTxOList) => {
     : uTxOList.outputs.filter((utxo) => utxo.address !== currentAddr);
 
   return CoinSelection.compileOutputs(outputs);
+};
+
+const getExtra = (info) => {
+  let extra = [];
+  if (info.withdrawal_count) extra.push('Rewards Withdrawal');
+  if (info.stake_cert_count) extra.push('Stake Registration');
+  if (info.delegation_count) extra.push('Pool Delegation');
+  if (info.pool_update_count) extra.push('Pool Update');
+  if (info.pool_retire_count) extra.push('Pool Retire');
+
+  return extra;
 };
 
 const viewMetadata = (metadata) => {
