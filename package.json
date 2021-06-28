@@ -1,7 +1,7 @@
 {
   "name": "nami-wallet",
   "version": "1.0.0",
-  "description": "Browser extension Cardano wallet",
+  "description": "A wallet to experience Cardano to the fullest",
   "license": "MIT",
   "repository": {
     "type": "git",
