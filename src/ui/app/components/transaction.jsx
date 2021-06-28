@@ -328,11 +328,12 @@ const calculateAmount = (txType, currentAddr, uTxOList) => {
   return CoinSelection.compileOutputs(outputs);
 };
 
-const getExtra = (info) => {
+const getExtra = (info, txType) => {
   let extra = [];
-  if (info.withdrawal_count) extra.push('Rewards Withdrawal');
-  if (info.stake_cert_count) extra.push('Stake Registration');
+  if (info.withdrawal_count && txType === 'internalIn')
+    extra.push('Rewards Withdrawal');
   if (info.delegation_count) extra.push('Pool Delegation');
+  if (info.stake_cert_count) extra.push('Stake Registration');
   if (info.pool_update_count) extra.push('Pool Update');
   if (info.pool_retire_count) extra.push('Pool Retire');
 
