@@ -6,7 +6,7 @@ import CoinSelection from '../../lib/coinSelection';
 import {
   TransactionUnspentOutput,
   Value,
-} from '../../../temporary_modules/@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
+} from '@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
 import { blockfrostRequest } from '../util';
 import AssetFingerprint from '@emurgo/cip14-js';
 
