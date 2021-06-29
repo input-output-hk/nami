@@ -16,8 +16,19 @@ import CoinSelection from '../../../lib/coinSelection';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import ReactTimeAgo from 'react-time-ago';
-import { TiArrowForward, TiArrowBack, TiArrowShuffle } from 'react-icons/ti';
-import { FaCoins, FaPiggyBank } from 'react-icons/fa';
+import {
+  TiArrowForward,
+  TiArrowBack,
+  TiArrowShuffle,
+  TiArrowLoop,
+} from 'react-icons/ti';
+import {
+  FaCoins,
+  FaPiggyBank,
+  FaTrashAlt,
+  FaRegEdit,
+  FaUserCheck,
+} from 'react-icons/fa';
 import { Button } from '@chakra-ui/button';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -26,12 +37,24 @@ import AssetsPopover from './assetPopoverDiff';
 TimeAgo.addDefaultLocale(en);
 
 const txTypeColor = {
+  self: 'gray.500',
   internalIn: 'teal.500',
   externalIn: 'teal.500',
   internalOut: 'orange.500',
   externalOut: 'orange.500',
   withdrawal: 'yellow.400',
   delegation: 'purple.500',
+  stake: 'cyan.700',
+  poolUpdate: 'green.400',
+  poolRetire: 'red.500',
+};
+
+const txTypeLabel = {
+  withdrawal: 'Rewards Withdrawal',
+  delegation: 'Pool Delegation',
+  stake: 'Stake Registration',
+  poolUpdate: 'Pool Update',
+  poolRetire: 'Pool Retire',
 };
 
 const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
@@ -118,7 +141,9 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                   fontWeight="semibold"
                 >
                   {displayInfo.extra.map((extra, index, array) =>
-                    index < array.length - 1 ? extra + ', ' : extra
+                    index < array.length - 1
+                      ? txTypeLabel[extra] + ', '
+                      : txTypeLabel[extra]
                   )}
                 </Text>
               ) : (
@@ -192,23 +217,31 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
 
 const TxIcon = ({ txType, extra }) => {
   const icons = {
+    self: TiArrowLoop,
     internalIn: TiArrowShuffle,
     externalIn: TiArrowForward,
     internalOut: TiArrowShuffle,
     externalOut: TiArrowBack,
     withdrawal: FaCoins,
     delegation: FaPiggyBank,
+    stake: FaUserCheck,
+    poolUpdate: FaRegEdit,
+    poolRetire: FaTrashAlt,
   };
 
-  if (extra.length && extra[0] === 'Rewards Withdrawal') txType = 'withdrawal';
-  if (extra.length && extra[0] === 'Pool Delegation') txType = 'delegation';
+  if (extra.length) txType = extra[0];
 
-  const style =
-    txType === 'externalIn'
-      ? { transform: 'rotate(90deg)' }
-      : txType === 'internalOut'
-      ? { transform: 'rotate(180deg)' }
-      : '';
+  let style;
+  switch (txType) {
+    case 'externalIn':
+      style = { transform: 'rotate(90deg)' };
+      break;
+    case 'internalOut':
+      style = { transform: 'rotate(180deg)' };
+      break;
+    default:
+      style = {};
+  }
 
   return (
     <Icon
@@ -296,9 +329,11 @@ const getTxType = (currentAddr, addresses, uTxOList) => {
   let outputsAddr = uTxOList.outputs.map((utxo) => utxo.address);
 
   return inputsAddr.includes(currentAddr)
-    ? outputsAddr.some(
-        (addr) => addresses.includes(addr) && addr !== currentAddr
-      )
+    ? outputsAddr.every((addr) => addr === currentAddr)
+      ? 'self'
+      : outputsAddr.some(
+          (addr) => addresses.includes(addr) && addr !== currentAddr
+        )
       ? 'internalOut'
       : 'externalOut'
     : inputsAddr.some((addr) => addresses.includes(addr))
@@ -331,11 +366,11 @@ const calculateAmount = (txType, currentAddr, uTxOList) => {
 const getExtra = (info, txType) => {
   let extra = [];
   if (info.withdrawal_count && txType === 'internalIn')
-    extra.push('Rewards Withdrawal');
-  if (info.delegation_count) extra.push('Pool Delegation');
-  if (info.stake_cert_count) extra.push('Stake Registration');
-  if (info.pool_update_count) extra.push('Pool Update');
-  if (info.pool_retire_count) extra.push('Pool Retire');
+    extra.push('withdrawal');
+  if (info.delegation_count) extra.push('delegation');
+  if (info.stake_cert_count) extra.push('stake');
+  if (info.pool_update_count) extra.push('poolUpdate');
+  if (info.pool_retire_count) extra.push('poolRetire');
 
   return extra;
 };
