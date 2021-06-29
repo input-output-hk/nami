@@ -410,7 +410,7 @@ const SignTx = ({ request, controller }) => {
                           </Text>
                         )}
                       </Stack>
-                      <Text>assets</Text>{' '}
+                      <Text>{assets.length > 1 ?  "Assets" : "Asset"}</Text>{' '}
                       <AssetsPopover assets={assets} isDifference />
                     </Stack>
                   )}
@@ -477,7 +477,7 @@ const SignTx = ({ request, controller }) => {
                         />
                         {assets.length > 0 && (
                           <Text mt="-1" fontWeight="bold">
-                            + {assets.length} assets{' '}
+                            + {assets.length} {assets.length > 1 ? "Assets" : "Asset"}{' '}
                             <AssetsPopover assets={assets} />
                           </Text>
                         )}
