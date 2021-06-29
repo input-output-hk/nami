@@ -1,4 +1,5 @@
 import { NODE, NETWORK_ID } from './config';
+import { PROJECT_ID_MAINNET, PROJECT_ID_TESTNET } from '../../utils/env';
 
 export default {
   api: {
@@ -7,8 +8,8 @@ export default {
     key: (network = 'mainnet') => ({
       project_id:
         network === NETWORK_ID.mainnet
-          ? '3Ojodngr06BReeSN9lhsow0hypKf8gu5'
-          : 'rbkrp5hOr3khPAWNo3x47t6CP7qKFyA5',
+          ? PROJECT_ID_MAINNET
+          : PROJECT_ID_TESTNET,
     }),
     price: (currency = 'usd') =>
       fetch(
