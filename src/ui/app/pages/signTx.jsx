@@ -410,7 +410,7 @@ const SignTx = ({ request, controller }) => {
                           </Text>
                         )}
                       </Stack>
-                      <Text>{assets.length > 1 ?  "Assets" : "Asset"}</Text>{' '}
+                      <Text>{assets.length > 1 ? 'Assets' : 'Asset'}</Text>{' '}
                       <AssetsPopover assets={assets} isDifference />
                     </Stack>
                   )}
@@ -477,7 +477,8 @@ const SignTx = ({ request, controller }) => {
                         />
                         {assets.length > 0 && (
                           <Text mt="-1" fontWeight="bold">
-                            + {assets.length} {assets.length > 1 ? "Assets" : "Asset"}{' '}
+                            + {assets.length}{' '}
+                            {assets.length > 1 ? 'Assets' : 'Asset'}{' '}
                             <AssetsPopover assets={assets} />
                           </Text>
                         )}
@@ -519,25 +520,25 @@ const SignTx = ({ request, controller }) => {
               </Text>
             )}
           </Stack>
-          <Text>
-            <b>Required keys:</b>{' '}
-            {keyHashes.kind ? (
-              keyHashes.kind.length <= 0 ? (
-                <span style={{ color: '#FC8181' }}>Signature not possible</span>
-              ) : (
-                keyHashes.kind.map((keyHash, index) =>
+          {keyHashes.kind ? (
+            keyHashes.kind.length <= 0 ? (
+              <span style={{ color: '#FC8181' }}>Signature not possible</span>
+            ) : (
+              <Text>
+                <b>Required keys:</b>{' '}
+                {keyHashes.kind.map((keyHash, index) =>
                   index >= keyHashes.kind.length - 1 &&
                   keyHashes.kind.length > 1 ? (
                     <span key={index}>, {keyHash}</span>
                   ) : (
                     <span key={index}>{keyHash}</span>
                   )
-                )
-              )
-            ) : (
-              '...'
-            )}
-          </Text>
+                )}
+              </Text>
+            )
+          ) : (
+            <Text fontSize="md">...</Text>
+          )}
         </Box>
         <Box
           position="absolute"
