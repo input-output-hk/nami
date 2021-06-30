@@ -1,27 +1,30 @@
 import { Box, Text } from '@chakra-ui/layout';
 import { Spinner } from '@chakra-ui/spinner';
+import { Accordion, Button } from '@chakra-ui/react';
+import { ChevronDownIcon } from '@chakra-ui/icons';
 import React from 'react';
 import { File } from 'react-kawaii';
 import { getTransactions } from '../../../api/extension';
 import Transaction from './transaction';
 
-const HistoryViewer = ({ account }) => {
-  const [historySlice, setHistorySlice] = React.useState(null);
+const HistoryViewer = ({ history, assets, currentAddr, addresses }) => {
+  const [historySlice, setHistorySlice] = React.useState([]);
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
-
   const getTxs = async () => {
-    if (!account) {
-      setHistorySlice(null);
+    if (!history) {
       return;
     }
-    let slice = account.history.confirmed.slice(0, page * 10);
+
+    let slice = history.confirmed.slice(0, page * 10);
+
     if (slice.length < page * 10) {
       const txs = await getTransactions(page);
+
       if (txs.length <= 0) {
         setFinal(true);
       } else {
-        slice = Array.from(new Set(slice.concat(txs)));
+        slice = Array.from(new Set(slice.concat(txs.map((tx) => tx.txHash))));
       }
     }
     setHistorySlice(slice);
@@ -29,13 +32,11 @@ const HistoryViewer = ({ account }) => {
 
   React.useEffect(() => {
     getTxs();
-  }, [account]);
+  }, [history, page]);
   return (
     <Box position="relative">
-      {!historySlice ? (
-        <Box mt="28" display="flex" alignItems="center" justifyContent="center">
-          <Spinner color="teal" speed="0.5s" />
-        </Box>
+      {!history ? (
+        <HistorySpinner />
       ) : historySlice.length <= 0 ? (
         <Box
           mt="16"
@@ -52,20 +53,56 @@ const HistoryViewer = ({ account }) => {
           </Text>
         </Box>
       ) : (
-        <Box display="flex" alignItems="center" justifyContent="center">
-          <Box width="80%">
+        <>
+          <Accordion allowToggle borderBottom="none">
             {historySlice.map((txHash) => (
-              <>
-                {' '}
-                <Transaction txHash={txHash} />
-                <Box height="4" />
-              </>
+              <Transaction
+                key={txHash}
+                txHash={txHash}
+                details={history && history.details}
+                currentAddr={currentAddr}
+                addresses={addresses}
+                assets={assets}
+              />
             ))}
-          </Box>
-        </Box>
+          </Accordion>
+          {historySlice.length % 10 !== 0 || final ? (
+            <Box
+              textAlign="center"
+              // mt={18}
+              fontSize={16}
+              fontWeight="bold"
+              color="gray.400"
+            >
+              ... nothing more!
+            </Box>
+          ) : (
+            <Box textAlign="center">
+              <Button
+                variant="outline"
+                onClick={() => setPage(page + 1)}
+                colorScheme="orange"
+                aria-label="More"
+                fontSize={20}
+                w="50%"
+                h="30px"
+                rounded="xl"
+                shadow="md"
+              >
+                <ChevronDownIcon fontSize="30px" />
+              </Button>
+            </Box>
+          )}
+        </>
       )}
     </Box>
   );
 };
+
+const HistorySpinner = () => (
+  <Box mt="28" display="flex" alignItems="center" justifyContent="center">
+    <Spinner color="teal" speed="0.5s" />
+  </Box>
+);
 
 export default HistoryViewer;

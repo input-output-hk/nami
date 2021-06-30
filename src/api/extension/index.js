@@ -153,6 +153,41 @@ export const getTransactions = async (paginate = 1) => {
   }));
 };
 
+export const getTxInfo = async (txHash) => {
+  const result = await blockfrostRequest(`/txs/${txHash}`);
+  if (!result || result.error) return null;
+  return result;
+};
+
+export const getBlock = async (blockHashOrNumb) => {
+  const result = await blockfrostRequest(`/blocks/${blockHashOrNumb}`);
+  if (!result || result.error) return null;
+  return result;
+};
+
+export const getTxUTxOs = async (txHash) => {
+  const result = await blockfrostRequest(`/txs/${txHash}/utxos`);
+  if (!result || result.error) return null;
+  return result;
+};
+
+export const getTxMetadata = async (txHash) => {
+  const result = await blockfrostRequest(`/txs/${txHash}/metadata`);
+  if (!result || result.error) return null;
+  return result;
+};
+
+export const updateTxInfo = async (txHash, detail) => {
+  const info = getTxInfo(txHash);
+  const uTxOs = getTxUTxOs(txHash);
+  const metadata = getTxMetadata(txHash);
+
+  detail.info = await info;
+  if (info) detail.block = await getBlock(detail.info.block_height);
+  detail.utxos = await uTxOs;
+  detail.metadata = await metadata;
+};
+
 /**
  *
  * @param {string} amount - cbor value
