@@ -113,7 +113,10 @@ const Wallet = ({ data }) => {
   const checkTransactions = async () => {
     const currentAccount = await getCurrentAccount();
     const transactions = await getTransactions();
-    if (!currentAccount.history.confirmed.includes(transactions[0].txHash)) {
+    if (
+      transactions.length &&
+      !currentAccount.history.confirmed.includes(transactions[0].txHash)
+    ) {
       await getData();
     }
     return setTimeout(() => checkTransactions(), 10000);
