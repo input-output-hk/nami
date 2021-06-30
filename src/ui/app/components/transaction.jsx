@@ -132,14 +132,13 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
               left="-15px"
             >
               {displayInfo.lovelace ? (
-                <Text fontSize={18}>
-                  <UnitDisplay
-                    color={txTypeColor[displayInfo.type]}
-                    quantity={displayInfo.lovelace.quantity}
-                    decimals={6}
-                    symbol="₳"
-                  />
-                </Text>
+                <UnitDisplay
+                  fontSize={18}
+                  color={txTypeColor[displayInfo.type]}
+                  quantity={displayInfo.lovelace.quantity}
+                  decimals={6}
+                  symbol="₳"
+                />
               ) : displayInfo.extra.length ? (
                 <Text fontSize={12} fontWeight="semibold" color="teal.500">
                   {getTxExtra(displayInfo.extra)}
@@ -148,7 +147,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                 ''
               )}
 
-              <Text flexDirection="row" fontSize={12}>
+              <Box flexDirection="row" fontSize={12}>
                 Fee:{' '}
                 <UnitDisplay
                   display="inline-block"
@@ -169,7 +168,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                 ) : (
                   ''
                 )}
-              </Text>
+              </Box>
               {displayInfo.assets.length > 0 ? (
                 <Box flexDirection="row" fontSize={12}>
                   <Text

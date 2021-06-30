@@ -279,15 +279,11 @@ const Wallet = ({ data }) => {
                                 >
                                   {account.name}
                                 </Text>
-                                <Text>
-                                  <UnitDisplay
-                                    quantity={
-                                      account[state.network.id].lovelace
-                                    }
-                                    decimals={6}
-                                    symbol="₳"
-                                  />
-                                </Text>
+                                <UnitDisplay
+                                  quantity={account[state.network.id].lovelace}
+                                  decimals={6}
+                                  symbol="₳"
+                                />
                               </Box>
                               {info.currentIndex === account.index && (
                                 <>
@@ -378,17 +374,14 @@ const Wallet = ({ data }) => {
             alignItems="center"
             justifyContent="center"
           >
-            <Text color="white" fontSize="2xl" fontWeight="bold">
-              {state.account ? (
-                <UnitDisplay
-                  quantity={state.account.lovelace}
-                  decimals={6}
-                  symbol="₳"
-                />
-              ) : (
-                '... ₳'
-              )}
-            </Text>
+            <UnitDisplay
+              color="white"
+              fontSize="2xl"
+              fontWeight="bold"
+              quantity={state.account && state.account.lovelace}
+              decimals={6}
+              symbol="₳"
+            />
           </Box>
           <Box
             style={{ bottom: 66 }}
@@ -398,21 +391,21 @@ const Wallet = ({ data }) => {
             alignItems="center"
             justifyContent="center"
           >
-            <Text color="white" fontSize="md">
-              <UnitDisplay
-                fontSize="16"
-                quantity={
-                  state.account &&
-                  parseInt(
-                    displayUnit(state.account.lovelace) *
-                      state.fiatPrice *
-                      10 ** 2
-                  )
-                }
-                symbol={currencyToSymbol(settings.currency)}
-                decimals={2}
-              />
-            </Text>
+            <UnitDisplay
+              color="white"
+              fontSize="md"
+              fontSize="16"
+              quantity={
+                state.account &&
+                parseInt(
+                  displayUnit(state.account.lovelace) *
+                    state.fiatPrice *
+                    10 ** 2
+                )
+              }
+              symbol={currencyToSymbol(settings.currency)}
+              decimals={2}
+            />
           </Box>
 
           <Box
