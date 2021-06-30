@@ -10,6 +10,7 @@ import {
   AccordionPanel,
   VStack,
   Icon,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import CoinSelection from '../../../lib/coinSelection';
@@ -61,6 +62,13 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
   let detail = details[txHash];
   const [displayInfo, setDisplayInfo] = React.useState({});
 
+  const colorMode = {
+    iconBg: useColorModeValue('white', 'gray.800'),
+    txBg: useColorModeValue('teal.50', 'gray.700'),
+    txBgHover: useColorModeValue('teal.100', 'gray.600'),
+    assetsBtnHover: useColorModeValue('teal.200', 'gray.700'),
+  };
+
   const getTxDetail = async () => {
     if (!details) {
       return;
@@ -97,12 +105,12 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
             display="flex"
             wordBreak="break-word"
             justifyContent="space-between"
-            bg="teal.50"
+            bg={colorMode.txBg}
             borderRadius={10}
             borderLeftRadius={30}
             shadow="base"
             p={0}
-            _hover={{ backgroundColor: 'teal.100' }}
+            _hover={{ backgroundColor: colorMode.txBgHover }}
             _focus={{ border: 'none' }}
           >
             <Box
@@ -110,7 +118,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
               flexShrink={5}
               p={5}
               borderRadius={50}
-              bg="white"
+              bg={colorMode.iconBg}
               position="relative"
               left="-15px"
             >
@@ -133,7 +141,9 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                   />
                 </Text>
               ) : displayInfo.extra.length ? (
-                <TxExtra extra={displayInfo.extra} />
+                <Text fontSize={12} fontWeight="semibold" color="teal.500">
+                  {getTxExtra(displayInfo.extra)}
+                </Text>
               ) : (
                 ''
               )}
@@ -165,7 +175,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                   <Text
                     display="inline-block"
                     fontWeight="bold"
-                    _hover={{ backgroundColor: 'teal.200' }}
+                    _hover={{ backgroundColor: colorMode.assetsBtnHover }}
                     borderRadius="md"
                   >
                     <AssetsPopover assets={displayInfo.assets} />
@@ -244,6 +254,10 @@ const TxIcon = ({ txType, extra }) => {
 };
 
 const TxDetail = ({ displayInfo }) => {
+  const colorMode = {
+    extraDetail: useColorModeValue('black', 'white'),
+  };
+
   return (
     <>
       <Box display="flex" flexDirection="horizontal">
@@ -305,7 +319,13 @@ const TxDetail = ({ displayInfo }) => {
               Transaction Extra
             </Box>
             <Box>
-              <TxExtra extra={displayInfo.extra} />
+              <Text
+                fontSize={12}
+                fontWeight="semibold"
+                color={colorMode.extraDetail}
+              >
+                {getTxExtra(displayInfo.extra)}
+              </Text>
             </Box>
           </Box>
         </Box>
@@ -411,12 +431,9 @@ const viewMetadata = (metadata) => {
   newTab.document.close();
 };
 
-const TxExtra = ({ extra }) => (
-  <Text fontSize={12} fontWeight="semibold" color="teal.600">
-    {extra.map((item, index, array) =>
-      index < array.length - 1 ? txTypeLabel[item] + ', ' : txTypeLabel[item]
-    )}
-  </Text>
-);
+const getTxExtra = (extra) =>
+  extra.map((item, index, array) =>
+    index < array.length - 1 ? txTypeLabel[item] + ', ' : txTypeLabel[item]
+  );
 
 export default Transaction;
