@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from '@chakra-ui/popover';
 import { Box, Link, Stack, Text } from '@chakra-ui/layout';
+import { Button } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { Portal } from '@chakra-ui/portal';
 import { FixedSizeList as List } from 'react-window';
@@ -46,11 +47,19 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
 
 const AssetsPopover = ({ assets, isDifference }) => {
   return (
-    <Popover>
+    <Popover placement="top-start">
       <PopoverTrigger>
-        <Link
+        <Button
+          size="xs"
           onClick={(e) => e.stopPropagation()}
           style={{
+            all: 'revert',
+            background: 'none',
+            border: 'none',
+            outline: 'none',
+            cursor: 'pointer',
+            color: 'inherit',
+            fontWeight: 'bold',
             display: 'inline-block',
             padding: '2px 4px',
           }}
@@ -58,7 +67,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
         >
           {assets.length} Asset
           {assets.length > 1 ? 's' : ''} <ChevronDownIcon cursor="pointer" />
-        </Link>
+        </Button>
       </PopoverTrigger>
       <Portal>
         <PopoverContent onClick={(e) => e.stopPropagation()} w="98%">
