@@ -88,7 +88,17 @@ import Berry from '../../../assets/img/berry.svg';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID } from '../../../config/config';
 
-const Wallet = ({ data }) => {
+const useIsMounted = () => {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  return isMounted;
+};
+
+const Wallet = () => {
+  const isMounted = useIsMounted();
   const history = useHistory();
   const { settings } = useSettings();
   const avatarBg = useColorModeValue('white', 'gray.800');
@@ -121,6 +131,7 @@ const Wallet = ({ data }) => {
 
   const getData = async () => {
     const { avatar, name, index } = await getCurrentAccount();
+    if (!isMounted.current) return;
     setInfo({ avatar, name, currentIndex: index });
     setState((s) => ({
       ...s,
@@ -133,6 +144,7 @@ const Wallet = ({ data }) => {
     const fiatPrice = await provider.api.price(settings.currency);
     const network = await getNetwork();
     const delegation = await getDelegation();
+    if (!isMounted.current) return;
     // setState((s) => ({
     //   ...s,
     //   account: currentAccount,
