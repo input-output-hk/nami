@@ -419,9 +419,35 @@ export const isValidAddress = async (address) => {
   return false;
 };
 
+const isValidAddressBytes = async (address) => {
+  await Loader.load();
+  const network = await getNetwork();
+  try {
+    const addr = Loader.Cardano.Address.from_bytes(address);
+    if (
+      (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
+      (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
+    )
+      return true;
+    return false;
+  } catch (e) {}
+  try {
+    const addr = Loader.Cardano.ByronAddress.from_bytes(address);
+    if (
+      (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
+      (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
+    )
+      return true;
+    return false;
+  } catch (e) {}
+  return false;
+};
+
 export const extractKeyHash = async (address) => {
   await Loader.load();
   //TODO: implement for various address types
+  if (!(await isValidAddressBytes(Buffer.from(address, 'hex'))))
+    throw DataSignError.InvalidFormat;
   try {
     const baseAddr = Loader.Cardano.BaseAddress.from_address(
       Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
