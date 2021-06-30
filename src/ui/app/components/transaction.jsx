@@ -58,7 +58,17 @@ const txTypeLabel = {
   poolRetire: 'Pool Retire',
 };
 
+const useIsMounted = () => {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  return isMounted;
+};
+
 const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
+  const isMounted = useIsMounted();
   let detail = details[txHash];
   const [displayInfo, setDisplayInfo] = React.useState({});
 
@@ -77,6 +87,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
     if (!detail) {
       detail = details[txHash] = {};
       await updateTxInfo(txHash, detail);
+      if (!isMounted.current) return;
       setDisplayInfo(
         genDisplayInfo(txHash, detail, currentAddr, addresses, assets)
       );
