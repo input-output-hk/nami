@@ -2,7 +2,6 @@ import { Box, Text } from '@chakra-ui/layout';
 import { Spinner } from '@chakra-ui/spinner';
 import { Accordion, Button } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import { TimeIcon } from '@chakra-ui/icons';
 import React from 'react';
 import { File } from 'react-kawaii';
 import { getTransactions } from '../../../api/extension';
@@ -68,13 +67,14 @@ const HistoryViewer = ({ history, assets, currentAddr, addresses }) => {
             ))}
           </Accordion>
           {historySlice.length % 10 !== 0 || final ? (
-            <Box textAlign="center">
-              <Box>
-                <TimeIcon w={20} h={20} color="teal.100" />
-              </Box>
-              <Box mt={18} fontSize={20} fontWeight="bold" color="gray.400">
-                ... history complete!
-              </Box>
+            <Box
+              textAlign="center"
+              // mt={18}
+              fontSize={16}
+              fontWeight="bold"
+              color="gray.400"
+            >
+              ... nothing more!
             </Box>
           ) : (
             <Box textAlign="center">
@@ -85,11 +85,11 @@ const HistoryViewer = ({ history, assets, currentAddr, addresses }) => {
                 aria-label="More"
                 fontSize={20}
                 w="50%"
-                h="40px"
+                h="30px"
                 rounded="xl"
                 shadow="md"
               >
-                <ChevronDownIcon fontSize="40px" />
+                <ChevronDownIcon fontSize="30px" />
               </Button>
             </Box>
           )}

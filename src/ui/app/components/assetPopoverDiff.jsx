@@ -52,13 +52,12 @@ const AssetsPopover = ({ assets, isDifference }) => {
           onClick={(e) => e.stopPropagation()}
           style={{
             display: 'inline-block',
-            padding: '5px',
+            padding: '2px 4px',
           }}
           _hover={{ all: 'revert' }}
         >
           {assets.length} Asset
-          {assets.length > 1 ? 's' : ''}
-          <ChevronDownIcon cursor="pointer" />
+          {assets.length > 1 ? 's' : ''} <ChevronDownIcon cursor="pointer" />
         </Link>
       </PopoverTrigger>
       <Portal>
