@@ -77,7 +77,7 @@ import AssetsViewer from '../components/assetsViewer';
 import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
 import About from '../components/about';
-import { useSettings } from '../components/SettingsProvider';
+import { useSettings } from '../components/settingsProvider';
 import ConfirmModal from '../components/confirmModal';
 import AvatarLoader from '../components/avatarLoader';
 import { currencyToSymbol } from '../../../api/util';

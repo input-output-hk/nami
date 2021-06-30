@@ -28,7 +28,7 @@ import {
 } from '../../../api/extension';
 import Account from '../components/account';
 import { Route, Switch, useHistory } from 'react-router-dom';
-import { useSettings } from '../components/SettingsProvider';
+import { useSettings } from '../components/settingsProvider';
 import { NETWORK_ID, NODE } from '../../../config/config';
 import ConfirmModal from '../components/confirmModal';
 
