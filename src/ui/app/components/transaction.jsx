@@ -50,8 +50,8 @@ const txTypeColor = {
 };
 
 const txTypeLabel = {
-  withdrawal: 'Rewards Withdrawal',
-  delegation: 'Pool Delegation',
+  withdrawal: 'Withdrawal',
+  delegation: 'Delegation',
   stake: 'Stake Registration',
   poolUpdate: 'Pool Update',
   poolRetire: 'Pool Retire',
@@ -84,8 +84,8 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
           <Spinner color="teal" speed="0.5s" />
         </Box>
       ) : (
-        <VStack spacing={4}>
-          <Box align="center" fontSize={16} fontWeight={500} color="gray.500">
+        <VStack spacing={2}>
+          <Box align="center" fontSize={14} fontWeight={500} color="gray.500">
             <ReactTimeAgo
               date={displayInfo.date}
               title={displayInfo.formatDate}
@@ -108,11 +108,11 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
             <Box
               display="flex"
               flexShrink={5}
-              p={8}
+              p={5}
               borderRadius={50}
               bg="white"
               position="relative"
-              left="-25px"
+              left="-15px"
             >
               <TxIcon txType={displayInfo.type} extra={displayInfo.extra} />
             </Box>
@@ -121,10 +121,10 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
               flexDirection="column"
               textAlign="center"
               position="relative"
-              left="-20px"
+              left="-15px"
             >
               {displayInfo.lovelace ? (
-                <Text fontSize={20}>
+                <Text fontSize={18}>
                   <UnitDisplay
                     color={txTypeColor[displayInfo.type]}
                     quantity={displayInfo.lovelace.quantity}
@@ -132,23 +132,12 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                     symbol="₳"
                   />
                 </Text>
+              ) : displayInfo.extra.length ? (
+                <TxExtra extra={displayInfo.extra} />
               ) : (
                 ''
               )}
-              {displayInfo.extra.length ? (
-                <Text
-                  fontSize={displayInfo.lovelace ? 12 : 16}
-                  fontWeight="semibold"
-                >
-                  {displayInfo.extra.map((extra, index, array) =>
-                    index < array.length - 1
-                      ? txTypeLabel[extra] + ', '
-                      : txTypeLabel[extra]
-                  )}
-                </Text>
-              ) : (
-                ''
-              )}
+
               <Text flexDirection="row" fontSize={12}>
                 Fee:{' '}
                 <UnitDisplay
@@ -186,7 +175,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                 ''
               )}
             </Box>
-            <AccordionIcon color="teal.400" mr={5} fontSize={30} />
+            <AccordionIcon color="teal.400" mr={5} fontSize={20} />
           </AccordionButton>
           <AccordionPanel wordBreak="break-word" pb={4}>
             <TxDetail displayInfo={displayInfo} />
@@ -206,7 +195,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
               w={1}
               h={8}
               bg="orange.500"
-              mb={6}
+              mb={2}
             ></Box>
           </Box>
         </VStack>
@@ -256,49 +245,74 @@ const TxIcon = ({ txType, extra }) => {
 
 const TxDetail = ({ displayInfo }) => {
   return (
-    <Box display="flex" flexDirection="horizontal">
-      <Box>
-        <Box
-          display="flex"
-          flexDirection="vertical"
-          color="gray.600"
-          fontSize="sm"
-          fontWeight="bold"
-        >
-          Transaction ID
+    <>
+      <Box display="flex" flexDirection="horizontal">
+        <Box>
+          <Box
+            display="flex"
+            flexDirection="vertical"
+            color="gray.600"
+            fontSize="sm"
+            fontWeight="bold"
+          >
+            Transaction ID
+          </Box>
+          <Box>
+            <Link
+              color="teal"
+              href={'https://cardanoscan.io/transaction/' + displayInfo.txHash}
+              isExternal
+            >
+              {displayInfo.txHash} <ExternalLinkIcon mx="2px" />
+            </Link>
+            {displayInfo.detail.metadata.length > 0 ? (
+              <Button
+                display="inline-block"
+                colorScheme="orange"
+                size="xs"
+                fontSize="10px"
+                p="2px 4px"
+                height="revert"
+                m="0 5px"
+                onClick={() => viewMetadata(displayInfo.detail.metadata)}
+              >
+                See Metadata
+              </Button>
+            ) : (
+              ''
+            )}
+          </Box>
         </Box>
         <Box>
-          <Link
-            color="teal"
-            href={'https://cardanoscan.io/transaction/' + displayInfo.txHash}
-            isExternal
+          <Box
+            display="flex"
+            flexDirection="vertical"
+            textAlign="right"
+            pl="10px"
+            color="gray.500"
+            fontSize="xs"
+            fontWeight="400"
+            minWidth="75px"
           >
-            {displayInfo.txHash} <ExternalLinkIcon mx="2px" />
-          </Link>
+            {displayInfo.timestamp}
+          </Box>
         </Box>
-        {displayInfo.detail.metadata.length > 0 ? (
-          <Button
-            colorScheme="orange"
-            size="sm"
-            mt="5px"
-            onClick={() => viewMetadata(displayInfo.detail.metadata)}
-          >
-            See metadata
-          </Button>
-        ) : (
-          ''
-        )}
       </Box>
-      <Box
-        textAlign="right"
-        pl="10px"
-        color="gray.500"
-        fontSize="sm"
-        fontWeight="400"
-      >
-        {displayInfo.timestamp}
-      </Box>
-    </Box>
+      {displayInfo.extra.length > 0 ? (
+        <Box display="flex" flexDirection="vertical" mt="10px">
+          <Box>
+            <Box color="gray.600" fontSize="sm" fontWeight="bold">
+              Transaction Extra
+            </Box>
+            <Box>
+              <TxExtra extra={displayInfo.extra} />
+            </Box>
+          </Box>
+        </Box>
+      ) : (
+        ''
+      )}
+    </>
   );
 };
 
@@ -369,8 +383,8 @@ const getExtra = (info, txType) => {
     extra.push('withdrawal');
   if (info.delegation_count) extra.push('delegation');
   if (info.stake_cert_count) extra.push('stake');
-  if (info.pool_update_count) extra.push('poolUpdate');
   if (info.pool_retire_count) extra.push('poolRetire');
+  if (info.pool_update_count) extra.push('poolUpdate');
 
   return extra;
 };
@@ -396,5 +410,13 @@ const viewMetadata = (metadata) => {
   newTab.document.write(ReactDOMServer.renderToString(<HighlightJson />));
   newTab.document.close();
 };
+
+const TxExtra = ({ extra }) => (
+  <Text fontSize={12} fontWeight="semibold" color="teal.600">
+    {extra.map((item, index, array) =>
+      index < array.length - 1 ? txTypeLabel[item] + ', ' : txTypeLabel[item]
+    )}
+  </Text>
+);
 
 export default Transaction;
