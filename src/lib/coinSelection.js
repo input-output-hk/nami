@@ -227,7 +227,7 @@
  * CoinSelection Module.
  * @module src/lib/CoinSelection
  */
-export default {
+const CoinSelection = {
   /**
    * Random-Improve coin selection algorithm
    * @param {UTxOList} inputsAvailable - The set of inputs available for selection.
@@ -302,6 +302,7 @@ export default {
       change: utxoSelection.change,
     };
   },
+  compileOutputs: compileOutputs,
 };
 
 /**
@@ -589,3 +590,5 @@ function isQtyFulfilled(compiledOutput, compiledAmount, minUTxOValue) {
 function abs(big) {
   return big < 0 ? big * BigInt(-1) : big;
 }
+
+export default CoinSelection;
