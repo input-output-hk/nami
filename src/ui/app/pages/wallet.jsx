@@ -504,6 +504,8 @@ const Wallet = () => {
         </Box>
         <Box height="8" />
         <Tabs
+          isLazy={true}
+          lazyBehavior="keepMounted"
           width="full"
           alignItems="center"
           display="flex"
