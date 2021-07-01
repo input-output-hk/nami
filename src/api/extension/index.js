@@ -177,15 +177,40 @@ export const getTxMetadata = async (txHash) => {
   return result;
 };
 
-export const updateTxInfo = async (txHash, detail) => {
-  const info = getTxInfo(txHash);
-  const uTxOs = getTxUTxOs(txHash);
-  const metadata = getTxMetadata(txHash);
+export const updateTxInfo = async (txHash) => {
+  let currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
+  const accounts = await getAccounts();
 
-  detail.info = await info;
-  if (info) detail.block = await getBlock(detail.info.block_height);
-  detail.utxos = await uTxOs;
-  detail.metadata = await metadata;
+  let detail = await currentAccount[network.id].history.details[txHash];
+
+  if (typeof detail !== 'object' || Object.keys(detail).length < 4) {
+    console.log(
+      'NEEDED UPDATE',
+      txHash,
+      detail,
+      currentAccount[network.id].history.details
+    );
+    detail = {};
+    const info = getTxInfo(txHash);
+    const uTxOs = getTxUTxOs(txHash);
+    const metadata = getTxMetadata(txHash);
+
+    detail.info = await info;
+    if (info) detail.block = await getBlock(detail.info.block_height);
+    detail.utxos = await uTxOs;
+    detail.metadata = await metadata;
+
+    currentAccount[network.id].history.details[txHash] = detail;
+    await setStorage({
+      [STORAGE.accounts]: {
+        ...accounts,
+        ...{ [currentAccount.index]: currentAccount },
+      },
+    });
+  }
+
+  return detail;
 };
 
 /**
