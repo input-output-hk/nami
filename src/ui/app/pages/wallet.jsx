@@ -522,7 +522,6 @@ const Wallet = () => {
             <TabPanel>
               <HistoryViewer
                 history={state.account && state.account.history}
-                assets={state.account && state.account.assets}
                 currentAddr={state.account && state.account.paymentAddr}
                 addresses={
                   state.accounts &&

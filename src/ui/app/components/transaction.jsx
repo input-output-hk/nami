@@ -35,6 +35,9 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import ReactDOMServer from 'react-dom/server';
 import AssetsPopover from './assetPopoverDiff';
+import AssetFingerprint from '@emurgo/cip14-js';
+import { hexToAscii } from '../../../api/util';
+
 TimeAgo.addDefaultLocale(en);
 
 const txTypeColor = {
@@ -67,10 +70,11 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
+const Transaction = ({ txHash, detail, currentAddr, addresses }) => {
   const isMounted = useIsMounted();
-  let detail = details[txHash];
-  const [displayInfo, setDisplayInfo] = React.useState({});
+  const [displayInfo, setDisplayInfo] = React.useState(
+    genDisplayInfo(txHash, detail, currentAddr, addresses)
+  );
 
   const colorMode = {
     iconBg: useColorModeValue('white', 'gray.800'),
@@ -80,26 +84,23 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
   };
 
   const getTxDetail = async () => {
-    if (!details) {
-      return;
-    }
-
-    if (!detail) {
-      detail = details[txHash] = {};
-      await updateTxInfo(txHash, detail);
+    if (!displayInfo) {
+      let txDetail = await updateTxInfo(txHash);
       if (!isMounted.current) return;
-      setDisplayInfo(
-        genDisplayInfo(txHash, detail, currentAddr, addresses, assets)
-      );
+      setDisplayInfo(genDisplayInfo(txHash, txDetail, currentAddr, addresses));
     }
   };
 
-  React.useEffect(() => getTxDetail(), [displayInfo]);
-
+  React.useEffect(() => getTxDetail());
   return (
     <AccordionItem borderTop="none" _last={{ borderBottom: 'none' }}>
-      {Object.keys(displayInfo).length < 1 ? (
-        <Box mt="28" display="flex" alignItems="center" justifyContent="center">
+      {!displayInfo ? (
+        <Box
+          m="100px"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
           <Spinner color="teal" speed="0.5s" />
         </Box>
       ) : (
@@ -162,16 +163,16 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                 Fee:{' '}
                 <UnitDisplay
                   display="inline-block"
-                  quantity={detail.info.fees}
+                  quantity={displayInfo.detail.info.fees}
                   decimals={6}
                   symbol="₳"
                 />
-                {parseInt(detail.info.deposit) ? (
+                {parseInt(displayInfo.detail.info.deposit) ? (
                   <>
                     {' & Deposit: '}
                     <UnitDisplay
                       display="inline-block"
-                      quantity={detail.info.deposit}
+                      quantity={displayInfo.detail.info.deposit}
                       decimals={6}
                       symbol="₳"
                     />
@@ -188,7 +189,12 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                     _hover={{ backgroundColor: colorMode.assetsBtnHover }}
                     borderRadius="md"
                   >
-                    <AssetsPopover assets={displayInfo.assets} />
+                    <AssetsPopover
+                      assets={displayInfo.assets}
+                      isDifference={['internalOut', 'externalOut'].includes(
+                        displayInfo.type
+                      )}
+                    />
                   </Text>
                 </Box>
               ) : (
@@ -346,12 +352,15 @@ const TxDetail = ({ displayInfo }) => {
   );
 };
 
-const genDisplayInfo = (txHash, detail, currentAddr, addresses, assets) => {
-  if (!detail.info || !detail.utxos) return;
+const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
+  if (!detail || !detail.info || !detail.utxos || !detail.block) {
+    return null;
+  }
 
   const type = getTxType(currentAddr, addresses, detail.utxos);
   const date = dateFromUnix(detail.block.time);
   const amounts = calculateAmount(type, currentAddr, detail.utxos);
+  const assets = amounts.filter((amount) => amount.unit !== 'lovelace');
 
   return {
     txHash: txHash,
@@ -362,9 +371,22 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses, assets) => {
     extra: getExtra(detail.info),
     amounts: amounts,
     lovelace: amounts.find((amount) => amount.unit === 'lovelace'),
-    assets: assets.filter((asset) =>
-      amounts.some((amount) => amount.unit === asset.unit)
-    ),
+    assets: assets.map((asset) => {
+      const _policy = asset.unit.slice(0, 56);
+      const _name = asset.unit.slice(56);
+      const fingerprint = new AssetFingerprint(
+        Buffer.from(_policy, 'hex'),
+        Buffer.from(_name, 'hex')
+      ).fingerprint();
+
+      return {
+        unit: asset.unit,
+        quantity: asset.quantity,
+        policy: _policy,
+        name: hexToAscii(_name),
+        fingerprint,
+      };
+    }),
   };
 };
 
