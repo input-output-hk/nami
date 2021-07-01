@@ -5,7 +5,7 @@ import { POPUP_WINDOW } from '../config/config';
 import { Scrollbars } from 'react-custom-scrollbars';
 
 import './app/components/styles.css';
-import SettingsProvider from './app/components/SettingsProvider';
+import SettingsProvider from './app/components/settingsProvider';
 
 const theme = extendTheme({
   styles: {

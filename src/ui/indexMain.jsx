@@ -13,7 +13,7 @@ import CreateWallet from './app/pages/createWallet';
 import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
-import { useSettings } from './app/components/SettingsProvider';
+import { useSettings } from './app/components/settingsProvider';
 
 const App = () => {
   const history = useHistory();
