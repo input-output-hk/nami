@@ -4,35 +4,68 @@ import { Accordion, Button } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import React from 'react';
 import { File } from 'react-kawaii';
-import { getTransactions } from '../../../api/extension';
+import {
+  getTransactions,
+  setTransactions,
+  setTxDetail,
+} from '../../../api/extension';
 import Transaction from './transaction';
 
-const HistoryViewer = ({ history, currentAddr, addresses }) => {
+const BATCH = 5;
+
+let slice = [];
+
+let txObject = {};
+
+const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
   const [historySlice, setHistorySlice] = React.useState(null);
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
   const getTxs = async () => {
     if (!history) {
+      slice = [];
+      setHistorySlice(null);
+      setPage(1);
+      setFinal(false);
       return;
     }
+    slice = slice.concat(
+      history.confirmed.slice((page - 1) * BATCH, page * BATCH)
+    );
 
-    let slice = history.confirmed.slice(0, page * 10);
-
-    if (slice.length < page * 10) {
-      const txs = await getTransactions(page);
+    if (slice.length < page * BATCH) {
+      const txs = await getTransactions(page, BATCH);
 
       if (txs.length <= 0) {
         setFinal(true);
       } else {
         slice = Array.from(new Set(slice.concat(txs.map((tx) => tx.txHash))));
+        await setTransactions(slice);
       }
     }
+    if (slice.length < page * BATCH) setFinal(true);
     setHistorySlice(slice);
   };
 
   React.useEffect(() => {
     getTxs();
   }, [history, page]);
+
+  React.useEffect(() => {
+    const storeTx = setInterval(() => {
+      if (Object.keys(txObject).length <= 0) return;
+      setTxDetail(txObject);
+    }, 2000);
+    return () => {
+      console.log('RESET');
+      slice = [];
+      setHistorySlice(null);
+      setPage(1);
+      setFinal(false);
+      clearInterval(storeTx);
+    };
+  }, []);
+
   return (
     <Box position="relative">
       {!(history && historySlice) ? (
@@ -55,21 +88,23 @@ const HistoryViewer = ({ history, currentAddr, addresses }) => {
       ) : (
         <>
           <Accordion allowToggle borderBottom="none">
-            {historySlice.map((txHash) => {
+            {historySlice.map((txHash, index) => {
               if (!history.details[txHash]) history.details[txHash] = {};
 
               return (
                 <Transaction
-                  key={txHash}
+                  onLoad={(txHash, txDetail) => (txObject[txHash] = txDetail)}
+                  key={index}
                   txHash={txHash}
                   detail={history.details[txHash]}
                   currentAddr={currentAddr}
                   addresses={addresses}
+                  network={network}
                 />
               );
             })}
           </Accordion>
-          {historySlice.length % 10 !== 0 || final ? (
+          {final ? (
             <Box
               textAlign="center"
               // mt={18}

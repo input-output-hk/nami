@@ -140,10 +140,10 @@ export const getBalance = async () => {
   return value;
 };
 
-export const getTransactions = async (paginate = 1) => {
+export const getTransactions = async (paginate = 1, count = 10) => {
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
-    `/addresses/${currentAccount.paymentAddr}/transactions?page=${paginate}&order=desc&count=10`
+    `/addresses/${currentAccount.paymentAddr}/transactions?page=${paginate}&order=desc&count=${count}`
   );
   if (!result || result.error) return [];
   return result.map((tx) => ({
@@ -178,19 +178,12 @@ export const getTxMetadata = async (txHash) => {
 };
 
 export const updateTxInfo = async (txHash) => {
-  let currentAccount = await getCurrentAccount();
+  const currentAccount = await getCurrentAccount();
   const network = await getNetwork();
-  const accounts = await getAccounts();
 
   let detail = await currentAccount[network.id].history.details[txHash];
 
   if (typeof detail !== 'object' || Object.keys(detail).length < 4) {
-    console.log(
-      'NEEDED UPDATE',
-      txHash,
-      detail,
-      currentAccount[network.id].history.details
-    );
     detail = {};
     const info = getTxInfo(txHash);
     const uTxOs = getTxUTxOs(txHash);
@@ -200,17 +193,27 @@ export const updateTxInfo = async (txHash) => {
     if (info) detail.block = await getBlock(detail.info.block_height);
     detail.utxos = await uTxOs;
     detail.metadata = await metadata;
+  }
 
-    currentAccount[network.id].history.details[txHash] = detail;
+  return detail;
+};
+
+export const setTxDetail = async (txObject) => {
+  const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
+  const accounts = await getAccounts();
+  for (const txHash of Object.keys(txObject)) {
+    const txDetail = txObject[txHash];
+    currentAccount[network.id].history.details[txHash] = txDetail;
     await setStorage({
       [STORAGE.accounts]: {
         ...accounts,
         ...{ [currentAccount.index]: currentAccount },
       },
     });
+    delete txObject[txHash];
   }
-
-  return detail;
+  return true;
 };
 
 /**
@@ -631,7 +634,6 @@ export const submitTx = async (tx) => {
     { 'Content-Type': 'application/cbor' },
     Buffer.from(tx, 'hex')
   );
-  console.log(result);
   if (result.error) {
     if (result.status_code === 400) throw TxSendError.Failure;
     else if (result.status_code === 500) throw APIError.InternalError;

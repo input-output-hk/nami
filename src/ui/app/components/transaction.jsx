@@ -11,6 +11,7 @@ import {
   VStack,
   Icon,
   useColorModeValue,
+  Skeleton,
 } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import CoinSelection from '../../../lib/coinSelection';
@@ -37,6 +38,7 @@ import ReactDOMServer from 'react-dom/server';
 import AssetsPopover from './assetPopoverDiff';
 import AssetFingerprint from '@emurgo/cip14-js';
 import { hexToAscii } from '../../../api/util';
+import { NETWORK_ID } from '../../../config/config';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -70,7 +72,14 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const Transaction = ({ txHash, detail, currentAddr, addresses }) => {
+const Transaction = ({
+  txHash,
+  detail,
+  currentAddr,
+  addresses,
+  network,
+  onLoad,
+}) => {
   const isMounted = useIsMounted();
   const [displayInfo, setDisplayInfo] = React.useState(
     genDisplayInfo(txHash, detail, currentAddr, addresses)
@@ -86,6 +95,7 @@ const Transaction = ({ txHash, detail, currentAddr, addresses }) => {
   const getTxDetail = async () => {
     if (!displayInfo) {
       let txDetail = await updateTxInfo(txHash);
+      onLoad(txHash, txDetail);
       if (!isMounted.current) return;
       setDisplayInfo(genDisplayInfo(txHash, txDetail, currentAddr, addresses));
     }
@@ -94,17 +104,8 @@ const Transaction = ({ txHash, detail, currentAddr, addresses }) => {
   React.useEffect(() => getTxDetail());
   return (
     <AccordionItem borderTop="none" _last={{ borderBottom: 'none' }}>
-      {!displayInfo ? (
-        <Box
-          m="100px"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Spinner color="teal" speed="0.5s" />
-        </Box>
-      ) : (
-        <VStack spacing={2}>
+      <VStack spacing={2}>
+        {displayInfo ? (
           <Box align="center" fontSize={14} fontWeight={500} color="gray.500">
             <ReactTimeAgo
               date={displayInfo.date}
@@ -113,6 +114,10 @@ const Transaction = ({ txHash, detail, currentAddr, addresses }) => {
               timeStyle="round-minute"
             />
           </Box>
+        ) : (
+          <Skeleton width="34%" height="22px" rounded="md" />
+        )}
+        {displayInfo ? (
           <AccordionButton
             display="flex"
             wordBreak="break-word"
@@ -203,29 +208,33 @@ const Transaction = ({ txHash, detail, currentAddr, addresses }) => {
             </Box>
             <AccordionIcon color="teal.400" mr={5} fontSize={20} />
           </AccordionButton>
-          <AccordionPanel wordBreak="break-word" pb={4}>
-            <TxDetail displayInfo={displayInfo} />
-          </AccordionPanel>
-          <Box display="flex" flexDirection="column" alignItems="center">
-            <Box
-              _before={{ content: '" "' }}
-              w={5}
-              h={5}
-              mb={1}
-              borderColor="teal.400"
-              borderWidth={5}
-              borderRadius={50}
-            ></Box>
-            <Box
-              _before={{ content: '" "' }}
-              w={1}
-              h={8}
-              bg="orange.500"
-              mb={2}
-            ></Box>
-          </Box>
-        </VStack>
-      )}
+        ) : (
+          <Skeleton width="100%" height="72px" rounded="md" />
+        )}
+        <AccordionPanel wordBreak="break-word" pb={4}>
+          {displayInfo && (
+            <TxDetail displayInfo={displayInfo} network={network} />
+          )}
+        </AccordionPanel>
+        <Box display="flex" flexDirection="column" alignItems="center">
+          <Box
+            _before={{ content: '" "' }}
+            w={5}
+            h={5}
+            mb={1}
+            borderColor="teal.400"
+            borderWidth={5}
+            borderRadius={50}
+          ></Box>
+          <Box
+            _before={{ content: '" "' }}
+            w={1}
+            h={8}
+            bg="orange.500"
+            mb={2}
+          ></Box>
+        </Box>
+      </VStack>
     </AccordionItem>
   );
 };
@@ -269,7 +278,7 @@ const TxIcon = ({ txType, extra }) => {
   );
 };
 
-const TxDetail = ({ displayInfo }) => {
+const TxDetail = ({ displayInfo, network }) => {
   const colorMode = {
     extraDetail: useColorModeValue('black', 'white'),
   };
@@ -290,7 +299,12 @@ const TxDetail = ({ displayInfo }) => {
           <Box>
             <Link
               color="teal"
-              href={'https://cardanoscan.io/transaction/' + displayInfo.txHash}
+              href={
+                (network.id === NETWORK_ID.mainnet
+                  ? 'https://cardanoscan.io/transaction/'
+                  : 'https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=') +
+                displayInfo.txHash
+              }
               isExternal
             >
               {displayInfo.txHash} <ExternalLinkIcon mx="2px" />
@@ -414,7 +428,7 @@ const dateFromUnix = (unixTimestamp) => {
 const getTimestamp = (date) => {
   const zeroLead = (str) => ('0' + str).slice(-2);
 
-  return `${date.getFullYear()}-${zeroLead(date.getMonth())}-${zeroLead(
+  return `${date.getFullYear()}-${zeroLead(date.getMonth() + 1)}-${zeroLead(
     date.getDate()
   )} ${zeroLead(date.getHours())}:${zeroLead(date.getMinutes())}:${zeroLead(
     date.getSeconds()
