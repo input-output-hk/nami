@@ -64,7 +64,7 @@ const About = React.forwardRef((props, ref) => {
               flexDirection="column"
             >
               <Text fontSize="xs">
-                Created by
+                Created by{' '}
                 <span
                   onClick={() => window.open('https://pipool.online')}
                   style={{ textDecoration: 'underline', cursor: 'pointer' }}

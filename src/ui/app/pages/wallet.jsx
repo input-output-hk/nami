@@ -523,6 +523,7 @@ const Wallet = () => {
             </TabPanel>
             <TabPanel>
               <HistoryViewer
+                network={state.network}
                 history={state.account && state.account.history}
                 currentAddr={state.account && state.account.paymentAddr}
                 addresses={

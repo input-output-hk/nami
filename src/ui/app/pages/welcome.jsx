@@ -186,7 +186,13 @@ const ImportModal = React.forwardRef((props, ref) => {
               will not track all addresses associated with your imported wallet,
               and might result in partial reflection of assets. To accurately
               reflect your balance, please transfer all assets into your new
-              Nami wallet. <Link textDecoration="underline">More info</Link>
+              Nami wallet.{' '}
+              <Link
+                textDecoration="underline"
+                onClick={() => window.open('https://namiwallet.io')}
+              >
+                More info
+              </Link>
             </Text>
             <Spacer height="4" />
             <Text fontSize="sm">
