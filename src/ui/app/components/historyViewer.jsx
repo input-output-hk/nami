@@ -7,7 +7,7 @@ import { File } from 'react-kawaii';
 import { getTransactions } from '../../../api/extension';
 import Transaction from './transaction';
 
-const HistoryViewer = ({ history, assets, currentAddr, addresses }) => {
+const HistoryViewer = ({ history, currentAddr, addresses }) => {
   const [historySlice, setHistorySlice] = React.useState([]);
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
@@ -55,16 +55,19 @@ const HistoryViewer = ({ history, assets, currentAddr, addresses }) => {
       ) : (
         <>
           <Accordion allowToggle borderBottom="none">
-            {historySlice.map((txHash) => (
-              <Transaction
-                key={txHash}
-                txHash={txHash}
-                details={history && history.details}
-                currentAddr={currentAddr}
-                addresses={addresses}
-                assets={assets}
-              />
-            ))}
+            {historySlice.map((txHash) => {
+              if (!history.details[txHash]) history.details[txHash] = {};
+
+              return (
+                <Transaction
+                  key={txHash}
+                  txHash={txHash}
+                  detail={history.details[txHash]}
+                  currentAddr={currentAddr}
+                  addresses={addresses}
+                />
+              );
+            })}
           </Accordion>
           {historySlice.length % 10 !== 0 || final ? (
             <Box
