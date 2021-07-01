@@ -8,7 +8,7 @@ import { getTransactions } from '../../../api/extension';
 import Transaction from './transaction';
 
 const HistoryViewer = ({ history, currentAddr, addresses }) => {
-  const [historySlice, setHistorySlice] = React.useState([]);
+  const [historySlice, setHistorySlice] = React.useState(null);
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
   const getTxs = async () => {
@@ -35,7 +35,7 @@ const HistoryViewer = ({ history, currentAddr, addresses }) => {
   }, [history, page]);
   return (
     <Box position="relative">
-      {!history ? (
+      {!(history && historySlice) ? (
         <HistorySpinner />
       ) : historySlice.length <= 0 ? (
         <Box
