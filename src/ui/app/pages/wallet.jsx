@@ -123,7 +123,10 @@ const Wallet = () => {
   const checkTransactions = async () => {
     const currentAccount = await getCurrentAccount();
     const transactions = await getTransactions();
-    if (!currentAccount.history.confirmed.includes(transactions[0].txHash)) {
+    if (
+      transactions.length &&
+      !currentAccount.history.confirmed.includes(transactions[0].txHash)
+    ) {
       await getData();
     }
     return setTimeout(() => checkTransactions(), 10000);
@@ -519,7 +522,6 @@ const Wallet = () => {
             <TabPanel>
               <HistoryViewer
                 history={state.account && state.account.history}
-                assets={state.account && state.account.assets}
                 currentAddr={state.account && state.account.paymentAddr}
                 addresses={
                   state.accounts &&
