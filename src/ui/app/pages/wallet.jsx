@@ -77,7 +77,7 @@ import AssetsViewer from '../components/assetsViewer';
 import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
 import About from '../components/about';
-import { useSettings } from '../components/SettingsProvider';
+import { useSettings } from '../components/settingsProvider';
 import ConfirmModal from '../components/confirmModal';
 import AvatarLoader from '../components/avatarLoader';
 import { currencyToSymbol } from '../../../api/util';
@@ -88,7 +88,17 @@ import Berry from '../../../assets/img/berry.svg';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID } from '../../../config/config';
 
-const Wallet = ({ data }) => {
+const useIsMounted = () => {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  return isMounted;
+};
+
+const Wallet = () => {
+  const isMounted = useIsMounted();
   const history = useHistory();
   const { settings } = useSettings();
   const avatarBg = useColorModeValue('white', 'gray.800');
@@ -124,6 +134,7 @@ const Wallet = ({ data }) => {
 
   const getData = async () => {
     const { avatar, name, index } = await getCurrentAccount();
+    if (!isMounted.current) return;
     setInfo({ avatar, name, currentIndex: index });
     setState((s) => ({
       ...s,
@@ -136,6 +147,7 @@ const Wallet = ({ data }) => {
     const fiatPrice = await provider.api.price(settings.currency);
     const network = await getNetwork();
     const delegation = await getDelegation();
+    if (!isMounted.current) return;
     // setState((s) => ({
     //   ...s,
     //   account: currentAccount,
@@ -282,15 +294,11 @@ const Wallet = ({ data }) => {
                                 >
                                   {account.name}
                                 </Text>
-                                <Text>
-                                  <UnitDisplay
-                                    quantity={
-                                      account[state.network.id].lovelace
-                                    }
-                                    decimals={6}
-                                    symbol="₳"
-                                  />
-                                </Text>
+                                <UnitDisplay
+                                  quantity={account[state.network.id].lovelace}
+                                  decimals={6}
+                                  symbol="₳"
+                                />
                               </Box>
                               {info.currentIndex === account.index && (
                                 <>
@@ -381,17 +389,14 @@ const Wallet = ({ data }) => {
             alignItems="center"
             justifyContent="center"
           >
-            <Text color="white" fontSize="2xl" fontWeight="bold">
-              {state.account ? (
-                <UnitDisplay
-                  quantity={state.account.lovelace}
-                  decimals={6}
-                  symbol="₳"
-                />
-              ) : (
-                '... ₳'
-              )}
-            </Text>
+            <UnitDisplay
+              color="white"
+              fontSize="2xl"
+              fontWeight="bold"
+              quantity={state.account && state.account.lovelace}
+              decimals={6}
+              symbol="₳"
+            />
           </Box>
           <Box
             style={{ bottom: 66 }}
@@ -401,21 +406,21 @@ const Wallet = ({ data }) => {
             alignItems="center"
             justifyContent="center"
           >
-            <Text color="white" fontSize="md">
-              <UnitDisplay
-                fontSize="16"
-                quantity={
-                  state.account &&
-                  parseInt(
-                    displayUnit(state.account.lovelace) *
-                      state.fiatPrice *
-                      10 ** 2
-                  )
-                }
-                symbol={currencyToSymbol(settings.currency)}
-                decimals={2}
-              />
-            </Text>
+            <UnitDisplay
+              color="white"
+              fontSize="md"
+              fontSize="16"
+              quantity={
+                state.account &&
+                parseInt(
+                  displayUnit(state.account.lovelace) *
+                    state.fiatPrice *
+                    10 ** 2
+                )
+              }
+              symbol={currencyToSymbol(settings.currency)}
+              decimals={2}
+            />
           </Box>
 
           <Box

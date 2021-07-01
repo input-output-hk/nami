@@ -74,7 +74,7 @@ const HistoryViewer = ({ history, assets, currentAddr, addresses }) => {
               fontWeight="bold"
               color="gray.400"
             >
-              ... nothing more!
+              ... nothing more
             </Box>
           ) : (
             <Box textAlign="center">

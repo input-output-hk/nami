@@ -58,7 +58,17 @@ const txTypeLabel = {
   poolRetire: 'Pool Retire',
 };
 
+const useIsMounted = () => {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  return isMounted;
+};
+
 const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
+  const isMounted = useIsMounted();
   let detail = details[txHash];
   const [displayInfo, setDisplayInfo] = React.useState({});
 
@@ -77,6 +87,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
     if (!detail) {
       detail = details[txHash] = {};
       await updateTxInfo(txHash, detail);
+      if (!isMounted.current) return;
       setDisplayInfo(
         genDisplayInfo(txHash, detail, currentAddr, addresses, assets)
       );
@@ -132,14 +143,13 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
               left="-15px"
             >
               {displayInfo.lovelace ? (
-                <Text fontSize={18}>
-                  <UnitDisplay
-                    color={txTypeColor[displayInfo.type]}
-                    quantity={displayInfo.lovelace.quantity}
-                    decimals={6}
-                    symbol="₳"
-                  />
-                </Text>
+                <UnitDisplay
+                  fontSize={18}
+                  color={txTypeColor[displayInfo.type]}
+                  quantity={displayInfo.lovelace.quantity}
+                  decimals={6}
+                  symbol="₳"
+                />
               ) : displayInfo.extra.length ? (
                 <Text fontSize={12} fontWeight="semibold" color="teal.500">
                   {getTxExtra(displayInfo.extra)}
@@ -148,7 +158,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                 ''
               )}
 
-              <Text flexDirection="row" fontSize={12}>
+              <Box flexDirection="row" fontSize={12}>
                 Fee:{' '}
                 <UnitDisplay
                   display="inline-block"
@@ -169,7 +179,7 @@ const Transaction = ({ txHash, details, currentAddr, addresses, assets }) => {
                 ) : (
                   ''
                 )}
-              </Text>
+              </Box>
               {displayInfo.assets.length > 0 ? (
                 <Box flexDirection="row" fontSize={12}>
                   <Text

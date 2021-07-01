@@ -8,7 +8,7 @@ import { getAccounts } from '../api/extension';
 import { Messaging } from '../api/messaging';
 
 import { METHOD, POPUP } from '../config/config';
-import { useSettings } from './app/components/SettingsProvider';
+import { useSettings } from './app/components/settingsProvider';
 import Enable from './app/pages/enable';
 import NoWallet from './app/pages/noWallet';
 import SignData from './app/pages/signData';
