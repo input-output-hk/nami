@@ -21,6 +21,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
   const [historySlice, setHistorySlice] = React.useState(null);
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
+  const [loadNext, setLoadNext] = React.useState(false);
   const getTxs = async () => {
     if (!history) {
       slice = [];
@@ -29,6 +30,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
       setFinal(false);
       return;
     }
+    await new Promise((res, rej) => setTimeout(() => res(), 10));
     slice = slice.concat(
       history.confirmed.slice((page - 1) * BATCH, page * BATCH)
     );
@@ -54,10 +56,9 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
   React.useEffect(() => {
     const storeTx = setInterval(() => {
       if (Object.keys(txObject).length <= 0) return;
-      setTxDetail(txObject);
-    }, 2000);
+      setTimeout(() => setTxDetail(txObject));
+    }, 1000);
     return () => {
-      console.log('RESET');
       slice = [];
       setHistorySlice(null);
       setPage(1);
@@ -65,6 +66,11 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
       clearInterval(storeTx);
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!historySlice) return;
+    if (historySlice.length >= (page - 1) * BATCH) setLoadNext(false);
+  }, [historySlice]);
 
   return (
     <Box position="relative">
@@ -93,7 +99,9 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
 
               return (
                 <Transaction
-                  onLoad={(txHash, txDetail) => (txObject[txHash] = txDetail)}
+                  onLoad={(txHash, txDetail) => {
+                    txObject[txHash] = txDetail;
+                  }}
                   key={index}
                   txHash={txHash}
                   detail={history.details[txHash]}
@@ -118,7 +126,10 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
             <Box textAlign="center">
               <Button
                 variant="outline"
-                onClick={() => setPage(page + 1)}
+                onClick={() => {
+                  setLoadNext(true);
+                  setTimeout(() => setPage(page + 1));
+                }}
                 colorScheme="orange"
                 aria-label="More"
                 fontSize={20}
@@ -127,7 +138,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
                 rounded="xl"
                 shadow="md"
               >
-                <ChevronDownIcon fontSize="30px" />
+                {loadNext ? '...' : <ChevronDownIcon fontSize="30px" />}
               </Button>
             </Box>
           )}

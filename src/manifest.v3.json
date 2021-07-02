@@ -29,5 +29,5 @@
       "matches": ["http://*/*", "https://*/*", "<all_urls>"]
     }
   ],
-  "permissions": ["activeTab", "tabs", "storage"]
+  "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"]
 }

@@ -12,7 +12,17 @@ import { blockfrostRequest } from '../../../api/util';
 import provider from '../../../config/provider';
 import AssetPopover from './assetPopover';
 
-const Asset = ({ asset }) => {
+const useIsMounted = () => {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  return isMounted;
+};
+
+const Asset = ({ asset, onLoad, storedAssets }) => {
+  const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
   const linkToHttps = (link) => {
     if (link.startsWith('https://')) return link;
@@ -26,18 +36,31 @@ const Asset = ({ asset }) => {
   };
 
   const fetchMetadata = async () => {
+    if (storedAssets[asset.unit]) {
+      setToken({ ...storedAssets[asset.unit], quantity: asset.quantity });
+      return;
+    }
     const result = await blockfrostRequest(`/assets/${asset.unit}`);
     const name =
       (result.onchain_metadata && result.onchain_metadata.name) ||
       (result.metadata && result.metadata.name) ||
       asset.name;
-    const image =
+    let image =
       (result.onchain_metadata &&
         result.onchain_metadata.image &&
         linkToHttps(result.onchain_metadata.image)) ||
       (result.metadata && result.metadata.logo) ||
       '';
-
+    if (image)
+      image = await fetch(image)
+        .then((res) => res.blob())
+        .then((image) => URL.createObjectURL(image));
+    onLoad({
+      displayName: name,
+      image,
+      ...asset,
+    });
+    if (!isMounted.current) return;
     setToken({
       displayName: name,
       image,
@@ -72,28 +95,30 @@ const Asset = ({ asset }) => {
           {!token ? (
             <SkeletonCircle size="14" />
           ) : (
-            <Image
-              width="full"
-              rounded="sm"
-              src={token.image}
-              fallback={
-                token.image ? (
-                  <SkeletonCircle size="14" />
-                ) : (
-                  <Button
-                    style={{
-                      all: 'revert',
-                      background: 'none',
-                      border: 'none',
-                      outline: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
+            <Button
+              style={{
+                all: 'revert',
+                background: 'none',
+                border: 'none',
+                outline: 'none',
+                padding: 0,
+                margin: 0,
+                cursor: 'pointer',
+              }}
+            >
+              <Image
+                width="full"
+                rounded="sm"
+                src={token.image}
+                fallback={
+                  token.image ? (
+                    <SkeletonCircle size="14" />
+                  ) : (
                     <Avatar name={token.displayName} />
-                  </Button>
-                )
-              }
-            />
+                  )
+                }
+              />
+            </Button>
           )}
         </Box>
         <Box

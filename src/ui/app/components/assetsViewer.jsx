@@ -3,20 +3,20 @@ import { Spinner, Text } from '@chakra-ui/react';
 import { ChevronRightIcon, ChevronLeftIcon } from '@chakra-ui/icons';
 import React from 'react';
 import Asset from './asset';
-import Slider from 'react-slick';
 import { Planet } from 'react-kawaii';
-import AssetPopover from './assetPopover';
+import Slider from 'react-leaf-carousel';
+
+const storedAssets = {};
 
 const AssetsViewer = ({ assets }) => {
   const [assetsArray, setAssetsArray] = React.useState(null);
   const ref = React.useRef();
-  const [slideIndex, setSlideIndex] = React.useState(0);
-  React.useEffect(() => {
+  const createArray = async () => {
     if (!assets) {
       setAssetsArray(null);
-      setSlideIndex(0);
       return;
     }
+    await new Promise((res, rej) => setTimeout(() => res(), 10));
     const assetsArray = [];
     let i = 0;
     while (true) {
@@ -26,22 +26,20 @@ const AssetsViewer = ({ assets }) => {
       i += 8;
     }
     setAssetsArray(assetsArray);
+  };
+  React.useEffect(() => {
+    createArray();
   }, [assets]);
 
-  const settings = {
-    dots: false,
-    lazyLoad: true,
-    infinite: true,
-    swipeToSlide: false,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    beforeChange: (current, next) => setSlideIndex(next),
-  };
+  React.useEffect(() => {
+    return () => {
+      setAssetsArray(null);
+    };
+  }, []);
 
   return (
-    <Box position="relative">
-      {!assetsArray ? (
+    <Box position="relative" zIndex="0">
+      {!(assets && assetsArray) ? (
         <Box mt="28" display="flex" alignItems="center" justifyContent="center">
           <Spinner color="teal" speed="0.5s" />
         </Box>
@@ -63,36 +61,43 @@ const AssetsViewer = ({ assets }) => {
       ) : (
         <>
           <Slider
-            style={{
-              overflowX: 'hidden',
-            }}
-            ref={(el) => (ref.current = el)}
-            {...settings}
+            prevArrow={
+              <ChevronLeftIcon
+                zIndex="1"
+                color="GrayText"
+                position="absolute"
+                top="110"
+                left="0"
+                boxSize="6"
+                cursor="pointer"
+              />
+            }
+            nextArrow={
+              <ChevronRightIcon
+                color="GrayText"
+                position="absolute"
+                top="110"
+                right="0"
+                boxSize="6"
+                cursor="pointer"
+              />
+            }
+            sidesOpacity={0.1}
+            sideSize={0.01}
+            slidesToScroll={1}
+            slidesToShow={1}
+            showSided={false}
+            lazyLoad={true}
+            swipe={false}
+            slidesSpacing="0"
           >
             {assetsArray.map((_asset, index) => (
               <AssetsGrid key={index} assets={_asset} />
             ))}
           </Slider>
+
           {assetsArray.length >= 2 && (
             <>
-              <ChevronLeftIcon
-                onClick={() => ref.current.slickGoTo(slideIndex - 1)}
-                color="GrayText"
-                position="absolute"
-                top="100"
-                left="0"
-                boxSize="6"
-                cursor="pointer"
-              />
-              <ChevronRightIcon
-                onClick={() => ref.current.slickGoTo(slideIndex + 1)}
-                color="GrayText"
-                position="absolute"
-                top="100"
-                right="0"
-                boxSize="6"
-                cursor="pointer"
-              />
               <Box
                 width="full"
                 position="absolute"
@@ -117,7 +122,12 @@ const AssetsGrid = ({ assets }) => {
       <Box width="80%">
         <SimpleGrid columns={4} spacing={4}>
           {assets.map((asset, index) => (
-            <Asset key={index} asset={asset} />
+            <Asset
+              key={index}
+              asset={asset}
+              onLoad={(fullAsset) => (storedAssets[fullAsset.unit] = fullAsset)}
+              storedAssets={storedAssets}
+            />
           ))}
         </SimpleGrid>
       </Box>
