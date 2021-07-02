@@ -72,29 +72,29 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
     fetchMetadata();
   }, [asset]);
   return (
-    <AssetPopover asset={token}>
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      flexDirection="column"
+      width="full"
+      height="full"
+    >
       <Box
+        rounded="lg"
+        overflow="hidden"
+        width="16"
+        height="20"
         display="flex"
         alignItems="center"
         justifyContent="center"
-        flexDirection="column"
-        width="full"
-        height="full"
+        cursor="pointer"
+        userSelect="none"
       >
-        <Box
-          rounded="lg"
-          overflow="hidden"
-          width="16"
-          height="20"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          cursor="pointer"
-          userSelect="none"
-        >
-          {!token ? (
-            <SkeletonCircle size="14" />
-          ) : (
+        {!token ? (
+          <SkeletonCircle size="14" />
+        ) : (
+          <AssetPopover asset={token}>
             <Button
               style={{
                 all: 'revert',
@@ -119,43 +119,43 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
                 }
               />
             </Button>
-          )}
-        </Box>
-        <Box
-          width="74px"
-          height="40px"
-          display="flex"
-          alignItems="center"
-          flexDirection="column"
-          justifyContent="center"
-        >
-          {!token ? (
-            <Skeleton height="16px" width="80%" />
-          ) : (
-            <>
-              <Text userSelect="text" fontSize="9" textAlign="center">
-                {token.quantity}
-              </Text>
-              {/* <Box height="1" /> */}
-              <Text
-                fontSize="xs"
-                userSelect="text"
-                className="lineClamp"
-                overflow="hidden"
-                height="40px"
-                maxWidth="74px"
-                fontWeight="semibold"
-                color="GrayText"
-                lineHeight="1.1"
-                textAlign="center"
-              >
-                {token.displayName}
-              </Text>
-            </>
-          )}
-        </Box>
+          </AssetPopover>
+        )}
       </Box>
-    </AssetPopover>
+      <Box
+        width="74px"
+        height="40px"
+        display="flex"
+        alignItems="center"
+        flexDirection="column"
+        justifyContent="center"
+      >
+        {!token ? (
+          <Skeleton height="16px" width="80%" />
+        ) : (
+          <>
+            <Text userSelect="text" fontSize="9" textAlign="center">
+              {token.quantity}
+            </Text>
+            {/* <Box height="1" /> */}
+            <Text
+              fontSize="xs"
+              userSelect="text"
+              className="lineClamp"
+              overflow="hidden"
+              height="40px"
+              maxWidth="74px"
+              fontWeight="semibold"
+              color="GrayText"
+              lineHeight="1.1"
+              textAlign="center"
+            >
+              {token.displayName}
+            </Text>
+          </>
+        )}
+      </Box>
+    </Box>
   );
 };
 
