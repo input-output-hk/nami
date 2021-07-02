@@ -24,6 +24,12 @@
     "injected.bundle.js",
     "internalPopup.html"
   ],
-  "permissions": ["activeTab", "tabs", "storage", "chrome://favicon/"],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "chrome://favicon/",
+    "unlimitedStorage"
+  ],
   "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self';"
 }

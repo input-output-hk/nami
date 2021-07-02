@@ -16,7 +16,17 @@ import { blockfrostRequest } from '../../../api/util';
 import provider from '../../../config/provider';
 import AssetPopover from './assetPopover';
 
+const useIsMounted = () => {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  return isMounted;
+};
+
 const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
+  const isMounted = useIsMounted();
   const [initialWidth, setInitialWidth] = React.useState(
     BigInt(asset.quantity) <= 1 ? 60 : 85
   );
@@ -36,7 +46,6 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const fetchMetadata = async () => {
     if (asset && asset.loaded) return;
     const result = await blockfrostRequest(`/assets/${asset.unit}`);
-    console.log(result);
     const name =
       (result.onchain_metadata && result.onchain_metadata.name) ||
       (result.metadata && result.metadata.name) ||
@@ -45,6 +54,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
       (result.onchain_metadata && linkToHttps(result.onchain_metadata.image)) ||
       (result.metadata && result.metadata.logo) ||
       '';
+    if (!isMounted.current) return;
     onLoad({ displayName: name, image });
     setLoad(false);
   };

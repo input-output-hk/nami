@@ -109,6 +109,7 @@ const Wallet = () => {
     fiatPrice: 0,
     delegation: null,
     network: { id: '', node: '' },
+    mounted: true,
   });
   const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
@@ -117,6 +118,7 @@ const Wallet = () => {
   const [info, setInfo] = React.useState({
     avatar: '',
     name: '',
+    paymentAddr: '',
   }); // for quicker displaying
   const builderRef = React.useRef();
 
@@ -133,9 +135,9 @@ const Wallet = () => {
   };
 
   const getData = async () => {
-    const { avatar, name, index } = await getCurrentAccount();
+    const { avatar, name, index, paymentAddr } = await getCurrentAccount();
     if (!isMounted.current) return;
-    setInfo({ avatar, name, currentIndex: index });
+    setInfo({ avatar, name, currentIndex: index, paymentAddr });
     setState((s) => ({
       ...s,
       account: null,
@@ -455,28 +457,23 @@ const Wallet = () => {
                   flexDirection="column"
                   textAlign="center"
                 >
-                  {state.account && (
-                    <>
-                      <Box>
-                        <QrCode value={state.account.paymentAddr} />
-                      </Box>
-                      <Box height="4" />
-                      <Copy
-                        label="Copied address"
-                        copy={state.account.paymentAddr}
+                  <>
+                    <Box>
+                      <QrCode value={info.paymentAddr} />
+                    </Box>
+                    <Box height="4" />
+                    <Copy label="Copied address" copy={info.paymentAddr}>
+                      <Text
+                        fontSize="xs"
+                        lineHeight="1.2"
+                        cursor="pointer"
+                        wordBreak="break-all"
                       >
-                        <Text
-                          fontSize="xs"
-                          lineHeight="1.2"
-                          cursor="pointer"
-                          wordBreak="break-all"
-                        >
-                          {state.account.paymentAddr} <CopyIcon />
-                        </Text>
-                      </Copy>
-                      <Box height="2" />
-                    </>
-                  )}
+                        {info.paymentAddr} <CopyIcon />
+                      </Text>
+                    </Copy>
+                    <Box height="2" />
+                  </>
                 </PopoverBody>
               </PopoverContent>
             </Popover>
@@ -505,7 +502,7 @@ const Wallet = () => {
         <Box height="8" />
         <Tabs
           isLazy={true}
-          lazyBehavior="keepMounted"
+          lazyBehavior="unmount"
           width="full"
           alignItems="center"
           display="flex"
