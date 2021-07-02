@@ -7,6 +7,8 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import './app/components/styles.css';
 import SettingsProvider from './app/components/settingsProvider';
 
+import '@fontsource/ubuntu/latin.css';
+
 const theme = extendTheme({
   styles: {
     global: {
