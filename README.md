@@ -77,7 +77,7 @@ Will return the same address as the one in `cardano.getUsedAddresses()`.
 ##### cardano.getRewardAddress()
 
 ```
-cardano.getUnusedAddresses() : RewardAddress
+cardano.getRewardAddress() : RewardAddress
 ```
 
 `RewardAddress` is a hex encoded bytes string.
