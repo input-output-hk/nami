@@ -21,6 +21,20 @@ export const test = async () => {
     )
   );
 
+  let changeIndexToFindMultiasset = 1;
+  let haveMultiasset =
+    inputs[changeIndexToFindMultiasset].output().amount().multiasset() &&
+    inputs[changeIndexToFindMultiasset].output().amount().multiasset().len() >
+      0;
+
+  console.log(
+    haveMultiasset
+      ? `Index ${changeIndexToFindMultiasset} have multiassets`
+      : `Sorry, index ${changeIndexToFindMultiasset} don't have any multiassets`
+  );
+
+  outputs.add(inputs[1].output());
+
   let result3 = await CoinSelection.randomImprove(inputs, outputs, 20, 1000000);
   let requestedLovelace = (
     BigInt(result3.amount.coin().to_str()) -

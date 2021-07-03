@@ -505,12 +505,10 @@ function splitAmounts(amounts) {
  * @return {AmountList} - The sorted AmountList
  */
 function sortAmountList(amountList, sortOrder = 'ASC') {
-  return amountList.sort((a, b) =>
-    Number(
-      (getAmountValue(a) - getAmountValue(b)) *
-        BigInt(sortOrder === 'DESC' ? -1 : 1)
-    )
-  );
+  return amountList.sort((a, b) => {
+    let sortInt = sortOrder === 'DESC' ? BigInt(-1) : BigInt(1);
+    return Number((getAmountValue(a) - getAmountValue(b)) * sortInt);
+  });
 }
 
 /**
@@ -519,11 +517,18 @@ function sortAmountList(amountList, sortOrder = 'ASC') {
  * @return {bigint}
  */
 function getAmountValue(amount) {
+  let val = BigInt(0);
   let lovelace = BigInt(amount.coin().to_str());
-  let asset = amount.multiasset().get(amount.multiasset().keys().get(0));
-  return lovelace > 0
-    ? lovelace
-    : BigInt(asset.get(asset.keys().get(0)).to_str());
+
+  if (lovelace > 0) {
+    val = lovelace;
+  } else if (amount.multiasset() && amount.multiasset().len() > 0) {
+    let scriptHash = amount.multiasset().keys().get(0);
+    let assetName = amount.multiasset().get(scriptHash).keys().get(0);
+    val = BigInt(amount.multiasset().get(scriptHash).get(assetName).toString());
+  }
+
+  return val;
 }
 
 /**
