@@ -179,6 +179,7 @@ import Loader from '../api/loader';
  * @property {UTxOList} input - Accumulated UTxO set.
  * @property {OutputList} output - Requested outputs.
  * @property {UTxOList} remaining - Remaining UTxO set.
+ * @property {Value} amount - UTxO amount of each requested token
  * @property {Value} change - Accumulated change amount.
  */
 
@@ -218,7 +219,7 @@ const CoinSelection = {
 
       try {
         utxoSelection = randomSelect(
-          JSON.parse(JSON.stringify(utxoSelection)), // Deep copy in case of fallback needed
+          cloneUTxOSelection(utxoSelection), // Deep copy in case of fallback needed
           output,
           limit - utxoSelection.selection.length,
           minUTxOValue
@@ -268,10 +269,10 @@ const CoinSelection = {
       input: utxoSelection.selection,
       output: outputs,
       remaining: utxoSelection.remaining,
+      amount: utxoSelection.amount,
       change: calculateChange(utxoSelection.selection, mergedOutputs),
     };
   },
-  compileOutputs: mergeOutputsAmounts,
 };
 
 /**
@@ -577,15 +578,49 @@ function isQtyFulfilled(outputAmount, cumulatedAmount, minUTxOValue) {
 
   if (BigInt(amount.coin().to_str()) > 0) {
     let minAmount = Loader.Cardano.Value.new(
-      Loader.Cardano.BigNum.from_str(minUTxOValue.toString())
+      Loader.Cardano.min_ada_required(
+        cumulatedAmount,
+        Loader.Cardano.BigNum.from_str(minUTxOValue.toString())
+      )
     );
     amount = Loader.Cardano.Value.new(amount.coin());
     amount = amount.checked_add(minAmount);
   }
 
-  console.log('Compare', cumulatedAmount.compare(amount));
   return cumulatedAmount.compare(amount) >= 0;
 }
+
+/**
+ * Return a deep copy of UTxOSelection
+ * @param {UTxOSelection} utxoSelection
+ * @return {UTxOSelection} Clone - Deep copy
+ */
+function cloneUTxOSelection(utxoSelection) {
+  return {
+    selection: cloneUTxOList(utxoSelection.selection),
+    remaining: cloneUTxOList(utxoSelection.remaining),
+    subset: cloneUTxOList(utxoSelection.subset),
+    amount: cloneValue(utxoSelection.amount),
+    change: cloneValue(utxoSelection.change),
+  };
+}
+
+/**
+ * Return a deep copy of an UTxO List
+ * @param {UTxOList} utxoList
+ * @return {UTxOList} Cone - Deep copy
+ */
+const cloneUTxOList = (utxoList) =>
+  utxoList.map((utxo) =>
+    Loader.Cardano.TransactionUnspentOutput.from_bytes(utxo.to_bytes())
+  );
+
+/**
+ * Return a deep copy of a Value object
+ * @param {Value} value
+ * @return {Value} Cone - Deep copy
+ */
+const cloneValue = (value) => Loader.Cardano.Value.from_bytes(value.to_bytes());
 
 // Helper
 function abs(big) {
