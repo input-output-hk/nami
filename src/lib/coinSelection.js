@@ -1,3 +1,9 @@
+import {
+  TransactionUnspentOutput,
+  TransactionOutputs,
+  Value,
+} from '@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
+import Loader from '../api/loader';
 /**
  * BerryPool implementation of the __Random-Improve__ coin selection algorithm.
  *
@@ -143,61 +149,14 @@
  * small enough. But it is precisely when the UTxO set contains many small
  * entries that it is less likely for a randomly-chosen UTxO entry to push the
  * total above the upper bound.
- *
- * == UTxO BlockFrost API Format
- *
- * [
- *	{
- *		tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
- *		tx_index: 0,
- *		output_index: 0,
- *		amount: [ { unit: 'lovelace', quantity: '1000000000' } ],
- *		block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3'
- *	}
- * ]
- *
- * == Outputs Format
- *
- * [
- *  {
- *    address: 'addr_test1qpndlx95xlnn8t(...)9n7d2qlvgrpngvvsggsysr',
- *    amount: [ { unit: 'lovelace', quantity: 1000000000 } ]
- *  }
- * ]
- *
  */
 
 /**
- * @typedef {Object} Amount - Unit/Quantity pair
- * @property {string} unit - Token Type
- * @property {int} quantity - Token Amount
+ * @typedef {Value[]} AmountList - List of 'Value' object
  */
 
 /**
- * @typedef {Amount[]} AmountList - List of unit/quantity pair
- */
-
-/**
- * @typedef {Object} UTxO - UTxO Format
- * @property {string} tx_hash - Transaction Hash
- * @property {int} tx_index - Transaction Index
- * @property {int} output_index - Output Index
- * @property {AmountList} amount - Amount (lovelace & Native Token)
- * @property {string} block - Block Hash
- */
-
-/**
- * @typedef {Output[]} OutputList - List of Output
- */
-
-/**
- * @typedef {Object} Output - Outputs Format
- * @property {string} address - Address Output
- * @property {AmountList} amount - Amount (lovelace & Native Token)
- */
-
-/**
- * @typedef {UTxO[]} UTxOList - List of UTxO
+ * @typedef {TransactionUnspentOutput[]} UTxOList - List of UTxO
  */
 
 /**
@@ -205,14 +164,14 @@
  * @property {UTxOList} selection - Accumulated UTxO set.
  * @property {UTxOList} remaining - Remaining UTxO set.
  * @property {UTxOList} subset - Remaining UTxO set.
- * @property {AmountList} amount - UTxO amount of each requested token
- * @property {AmountList} change - Accumulated change amount.
+ * @property {Value} amount - UTxO amount of each requested token
+ * @property {Value} change - Accumulated change amount.
  */
 
 /**
  * @typedef {Object} ImproveRange - ImproveRange
- * @property {int} ideal - Requested amount * 2
- * @property {int} maximum - Requested amount * 3
+ * @property {Value} ideal - Requested amount * 2
+ * @property {Value} maximum - Requested amount * 3
  */
 
 /**
@@ -220,7 +179,7 @@
  * @property {UTxOList} input - Accumulated UTxO set.
  * @property {OutputList} output - Requested outputs.
  * @property {UTxOList} remaining - Remaining UTxO set.
- * @property {AmountList} change - Accumulated change amount.
+ * @property {Value} change - Accumulated change amount.
  */
 
 /**
@@ -230,34 +189,37 @@
 const CoinSelection = {
   /**
    * Random-Improve coin selection algorithm
-   * @param {UTxOList} inputsAvailable - The set of inputs available for selection.
-   * @param {OutputList} outputsRequested - The set of outputs requested for payment.
+   * @param {UTxOList} inputs - The set of inputs available for selection.
+   * @param {TransactionOutputs} outputs - The set of outputs requested for payment.
    * @param {int} limit - A limit on the number of inputs that can be selected.
    * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
    * @return {SelectionResult} - Coin Selection algorithm return
    */
-  randomImprove: (inputsAvailable, outputsRequested, limit, minUTxOValue) => {
+  randomImprove: async (inputs, outputs, limit, minUTxOValue) => {
+    await Loader.load();
     /** @type {UTxOSelection} */
     let utxoSelection = {
       selection: [],
-      remaining: [...inputsAvailable], // Shallow copy
+      remaining: [...inputs], // Shallow copy
       subset: [],
-      amount: [],
-      change: [],
+      amount: Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0')),
+      change: Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0')),
     };
 
-    let compiledOutputList = compileOutputs(outputsRequested);
+    let mergedOutputs = mergeOutputsAmounts(outputs);
+    // Explode amount in an array of unique asset amount for comparison's sake
+    let splitOutputs = splitAmounts(mergedOutputs);
 
     // Phase 1: RandomSelect
-    compiledOutputList = sortAmountList(compiledOutputList, 'DESC');
+    splitOutputs = sortAmountList(splitOutputs, 'DESC');
 
-    compiledOutputList.forEach((compiledOutput) => {
-      createSubSet(utxoSelection, compiledOutput); // Narrow down for NatToken UTxO
+    splitOutputs.forEach((output) => {
+      createSubSet(utxoSelection, output); // Narrow down for NatToken UTxO
 
       try {
         utxoSelection = randomSelect(
           JSON.parse(JSON.stringify(utxoSelection)), // Deep copy in case of fallback needed
-          compiledOutput,
+          output,
           limit - utxoSelection.selection.length,
           minUTxOValue
         );
@@ -266,7 +228,7 @@ const CoinSelection = {
           // Limit reached : Fallback on DescOrdAlgo
           utxoSelection = descSelect(
             utxoSelection,
-            compiledOutput,
+            output,
             limit - utxoSelection.selection.length,
             minUTxOValue
           );
@@ -277,38 +239,45 @@ const CoinSelection = {
     });
 
     // Phase 2: Improve
-    compiledOutputList = sortAmountList(compiledOutputList);
+    splitOutputs.reverse();
 
-    compiledOutputList.forEach((compiledOutput) => {
-      createSubSet(utxoSelection, compiledOutput); // Narrow down for NatToken UTxO
+    splitOutputs.forEach((output) => {
+      createSubSet(utxoSelection, output); // Narrow down for NatToken UTxO
+
+      let range = {};
+      range.ideal = Loader.Cardano.Value.new(
+        Loader.Cardano.BigNum.from_str('0')
+      )
+        .checked_add(output)
+        .checked_add(output);
+      range.maximum = Loader.Cardano.Value.new(
+        Loader.Cardano.BigNum.from_str('0')
+      )
+        .checked_add(range.ideal)
+        .checked_add(output);
 
       improve(
         utxoSelection,
-        compiledOutput,
+        output,
         limit - utxoSelection.selection.length,
-        {
-          ideal: BigInt(compiledOutput.quantity) * BigInt(2),
-          maximum: BigInt(compiledOutput.quantity) * BigInt(3),
-        }
+        range
       );
     });
 
-    addChangeExtra(utxoSelection, compiledOutputList);
-
     return {
       input: utxoSelection.selection,
-      output: outputsRequested,
+      output: outputs,
       remaining: utxoSelection.remaining,
-      change: utxoSelection.change,
+      change: calculateChange(utxoSelection.selection, mergedOutputs),
     };
   },
-  compileOutputs: compileOutputs,
+  compileOutputs: mergeOutputsAmounts,
 };
 
 /**
  * Randomly select enough UTxO to fulfill requested outputs
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
- * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
+ * @param {Value} outputAmount - Single compiled output qty requested for payment.
  * @param {int} limit - A limit on the number of inputs that can be selected.
  * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value.
  * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter.
@@ -316,16 +285,9 @@ const CoinSelection = {
  * @throws MIN_UTXO_ERROR if lovelace change is under 'minUTxOValue' parameter.
  * @return {UTxOSelection} - Successful random utxo selection.
  */
-function randomSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
-  let compiledAmount = utxoSelection.amount.find(
-    (amount) => amount.unit === compiledOutput.unit
-  );
-
+function randomSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
   // If quantity is met, return subset into remaining list and exit
-  if (
-    compiledAmount &&
-    isQtyFulfilled(compiledOutput, compiledAmount, minUTxOValue)
-  ) {
+  if (isQtyFulfilled(outputAmount, utxoSelection.amount, minUTxOValue)) {
     utxoSelection.remaining = [
       ...utxoSelection.remaining,
       ...utxoSelection.subset,
@@ -341,27 +303,30 @@ function randomSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
   let nbFreeUTxO = utxoSelection.subset.length;
 
   if (nbFreeUTxO <= 0) {
-    if (isQtyFulfilled(compiledOutput, compiledAmount, 0)) {
+    if (isQtyFulfilled(outputAmount, utxoSelection.amount, 0)) {
       throw new Error('MIN_UTXO_ERROR');
     }
     throw new Error('INPUTS_EXHAUSTED');
   }
 
-  /** @type {UTxO} utxo */
+  /** @type {TransactionUnspentOutput} utxo */
   let utxo = utxoSelection.subset
     .splice(Math.floor(Math.random() * nbFreeUTxO), 1)
     .pop();
 
   utxoSelection.selection.push(utxo);
-  addAmounts(utxo.amount, utxoSelection.amount);
+  utxoSelection.amount = addAmounts(
+    utxo.output().amount(),
+    utxoSelection.amount
+  );
 
-  return randomSelect(utxoSelection, compiledOutput, limit - 1, minUTxOValue);
+  return randomSelect(utxoSelection, outputAmount, limit - 1, minUTxOValue);
 }
 
 /**
  * Select enough UTxO in DESC order to fulfill requested outputs
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
- * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
+ * @param {Value} outputAmount - Single compiled output qty requested for payment.
  * @param {int} limit - A limit on the number of inputs that can be selected.
  * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value.
  * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter.
@@ -369,16 +334,10 @@ function randomSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
  * @throws MIN_UTXO_ERROR if lovelace change is under 'minUTxOValue' parameter.
  * @return {UTxOSelection} - Successful random utxo selection.
  */
-function descSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
+function descSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
   // Sort UTxO subset in DESC order for required Output unit type
-  utxoSelection.subset = utxoSelection.subset.sort((utxoA, utxoB) => {
-    let a = utxoA.amount.find((amount) => amount.unit === compiledOutput.unit);
-    let b = utxoB.amount.find((amount) => amount.unit === compiledOutput.unit);
-    return (BigInt(a.quantity) - BigInt(b.quantity)) * BigInt(-1);
-  });
-
-  let compiledAmount = utxoSelection.amount.find(
-    (amount) => amount.unit === compiledOutput.unit
+  utxoSelection.subset = utxoSelection.subset.sort((utxoA, utxoB) =>
+    utxoB.output().amount().compare(utxoA.output().amount())
   );
 
   do {
@@ -387,26 +346,23 @@ function descSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
     }
 
     if (utxoSelection.subset.length <= 0) {
-      if (isQtyFulfilled(compiledOutput, compiledAmount, 0)) {
+      if (isQtyFulfilled(outputAmount, utxoSelection.amount, 0)) {
         throw new Error('MIN_UTXO_ERROR');
       }
       throw new Error('INPUTS_EXHAUSTED');
     }
 
-    /** @type {UTxO} utxo */
+    /** @type {TransactionUnspentOutput} utxo */
     let utxo = utxoSelection.subset.splice(0, 1).pop();
 
     utxoSelection.selection.push(utxo);
-    addAmounts(utxo.amount, utxoSelection.amount);
-
-    if (!compiledAmount) {
-      compiledAmount = utxoSelection.amount.find(
-        (amount) => amount.unit === compiledOutput.unit
-      );
-    }
+    utxoSelection.amount = addAmounts(
+      utxo.output().amount(),
+      utxoSelection.amount
+    );
 
     limit--;
-  } while (!isQtyFulfilled(compiledOutput, compiledAmount, minUTxOValue));
+  } while (!isQtyFulfilled(outputAmount, utxoSelection.amount, minUTxOValue));
 
   // Quantity is met, return subset into remaining list and return selection
   utxoSelection.remaining = [
@@ -421,33 +377,18 @@ function descSelect(utxoSelection, compiledOutput, limit, minUTxOValue) {
 /**
  * Try to improve selection by increasing input amount in [2x,3x] range.
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
- * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
+ * @param {Value} outputAmount - Single compiled output qty requested for payment.
  * @param {int} limit - A limit on the number of inputs that can be selected.
  * @param {ImproveRange} range - Improvement range target values
  */
-function improve(utxoSelection, compiledOutput, limit, range) {
+function improve(utxoSelection, outputAmount, limit, range) {
   let nbFreeUTxO = utxoSelection.subset.length;
 
-  let compiledAmount = utxoSelection.amount.find(
-    (amount) => amount.unit === compiledOutput.unit
-  );
-
   if (
-    BigInt(compiledAmount.quantity) >= range.ideal ||
+    utxoSelection.amount.compare(range.ideal) >= 0 ||
     nbFreeUTxO <= 0 ||
     limit <= 0
   ) {
-    // Cannot improve further, calculate change
-    let change =
-      BigInt(compiledAmount.quantity) - BigInt(compiledOutput.quantity);
-
-    if (change) {
-      utxoSelection.change.push({
-        unit: compiledOutput.unit,
-        quantity: change.toString(),
-      });
-    }
-
     // Return subset in remaining
     utxoSelection.remaining = [
       ...utxoSelection.remaining,
@@ -458,89 +399,141 @@ function improve(utxoSelection, compiledOutput, limit, range) {
     return;
   }
 
-  /** @type {UTxO} utxo */
+  /** @type {TransactionUnspentOutput} utxo */
   const utxo = utxoSelection.subset
     .splice(Math.floor(Math.random() * nbFreeUTxO), 1)
     .pop();
 
-  const newAmount =
-    BigInt(
-      utxo.amount.find((amount) => amount.unit === compiledOutput.unit).quantity
-    ) + BigInt(compiledAmount.quantity);
+  const newAmount = Loader.Cardano.Value.new(
+    Loader.Cardano.BigNum.from_str('0')
+  )
+    .checked_add(utxo.output().amount())
+    .checked_add(outputAmount);
 
   if (
-    abs(BigInt(range.ideal) - newAmount) <
-      abs(BigInt(range.ideal) - BigInt(compiledAmount.quantity)) &&
-    newAmount <= range.maximum
+    abs(getAmountValue(range.ideal) - getAmountValue(newAmount)) <
+      abs(getAmountValue(range.ideal) - getAmountValue(outputAmount)) &&
+    newAmount.compare(range.maximum) <= 0
   ) {
     utxoSelection.selection.push(utxo);
-    addAmounts(utxo.amount, utxoSelection.amount);
+    utxoSelection.amount = addAmounts(
+      utxo.output().amount(),
+      utxoSelection.amount
+    );
     limit--;
   } else {
     utxoSelection.remaining.push(utxo);
   }
 
-  return improve(utxoSelection, compiledOutput, limit, range);
+  return improve(utxoSelection, outputAmount, limit, range);
 }
 
 /**
- * Compile all required output to a flat amount list
- * @param {OutputList} outputList - The set of outputs requested for payment.
- * @return {AmountList} - The compiled set of amounts requested for payment.
+ * Compile all required outputs to a flat amounts list
+ * @param {TransactionOutputs} outputs - The set of outputs requested for payment.
+ * @return {Value} - The compiled set of amounts requested for payment.
  */
-function compileOutputs(outputList) {
-  let compiledAmountList = [];
+function mergeOutputsAmounts(outputs) {
+  let compiledAmountList = Loader.Cardano.Value.new(
+    Loader.Cardano.BigNum.from_str('0')
+  );
+  compiledAmountList.set_multiasset(Loader.Cardano.MultiAsset.new());
 
-  outputList.forEach((output) => addAmounts(output.amount, compiledAmountList));
+  for (let i = 0; i < outputs.len(); i++) {
+    compiledAmountList = addAmounts(
+      outputs.get(i).amount(),
+      compiledAmountList
+    );
+  }
 
   return compiledAmountList;
 }
 
 /**
- * Add up an AmountList values to an other AmountList
- * @param {AmountList} amountList - Set of amounts to be added.
- * @param {AmountList} compiledAmountList - The compiled set of amounts.
+ * Add up an Amounts List values to another Amounts List
+ * @param {Value} amounts - Set of amounts to be added.
+ * @param {Value} compiledAmounts - The compiled set of amounts.
+ * @return {Value}
  */
-function addAmounts(amountList, compiledAmountList) {
-  amountList.forEach((amount) => {
-    let entry = compiledAmountList.find(
-      (compiledAmount) => compiledAmount.unit === amount.unit
-    );
-
-    // 'Add to' or 'insert' in compiledOutputList
-    const am = JSON.parse(JSON.stringify(amount)); // Deep Copy
-    entry
-      ? (entry.quantity = (
-          BigInt(entry.quantity) + BigInt(amount.quantity)
-        ).toString())
-      : compiledAmountList.push(am);
-  });
+function addAmounts(amounts, compiledAmounts) {
+  return compiledAmounts.checked_add(amounts);
 }
 
 /**
- * Sort an AmountList by AmountList[].quantity ASC/DESC
- * @param {AmountList} amountList - Set of amounts to be sorted.
+ * Split amounts contained in a single {Value} object in separate {Value} objects
+ * @param {Value} amounts - Set of amounts to be split.
+ * @throws MIN_UTXO_ERROR if lovelace change is under 'minUTxOValue' parameter.
+ * @return {AmountList}
+ */
+function splitAmounts(amounts) {
+  let splitAmounts = [];
+  if (isNaN(amounts.coin().to_str())) throw new Error('MIN_UTXO_ERROR');
+
+  splitAmounts.push(Loader.Cardano.Value.new(amounts.coin()));
+
+  if (amounts.multiasset() && amounts.multiasset().len()) {
+    for (let i = 0; i < amounts.multiasset().len(); i++) {
+      let scriptHash = amounts.multiasset().keys().get(i);
+      for (let j = 0; j < amounts.multiasset().get(scriptHash).len(); j++) {
+        let value = Loader.Cardano.Value.new(
+          Loader.Cardano.BigNum.from_str('0')
+        );
+        value.set_multiasset(Loader.Cardano.MultiAsset.new());
+
+        let assets = Loader.Cardano.Assets.new();
+        let assetName = amounts.multiasset().get(scriptHash).keys().get(j);
+        assets.insert(
+          assetName,
+          amounts.multiasset().get(scriptHash).get(assetName)
+        );
+
+        value.multiasset().insert(scriptHash, assets);
+
+        splitAmounts.push(value);
+      }
+    }
+  }
+
+  return splitAmounts;
+}
+
+/**
+ * Sort a mismatched AmountList ASC/DESC
+ * @param {AmountList} amountList - Set of mismatched amounts to be sorted.
  * @param {string} [sortOrder=ASC] - Order
  * @return {AmountList} - The sorted AmountList
  */
 function sortAmountList(amountList, sortOrder = 'ASC') {
   return amountList.sort((a, b) =>
     Number(
-      (BigInt(a.quantity) - BigInt(b.quantity)) *
+      (getAmountValue(a) - getAmountValue(b)) *
         BigInt(sortOrder === 'DESC' ? -1 : 1)
     )
   );
 }
 
 /**
+ * Return BigInt amount value
+ * @param amount
+ * @return {bigint}
+ */
+function getAmountValue(amount) {
+  let lovelace = BigInt(amount.coin().to_str());
+  let asset = amount.multiasset().get(amount.multiasset().keys().get(0));
+  return lovelace > 0
+    ? lovelace
+    : BigInt(asset.get(asset.keys().get(0)).to_str());
+}
+
+/**
  * Narrow down remaining UTxO set in case of native token, use full set for lovelace
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
- * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
+ * @param {Value} output - Single compiled output qty requested for payment.
  */
-function createSubSet(utxoSelection, compiledOutput) {
-  if (compiledOutput.unit !== 'lovelace') {
+function createSubSet(utxoSelection, output) {
+  if (BigInt(output.coin().to_str()) < 1) {
     utxoSelection.remaining.forEach((utxo, index) => {
-      if (utxo.amount.some((amount) => amount.unit === compiledOutput.unit)) {
+      if (output.compare(utxo.output().amount()) !== undefined) {
         utxoSelection.subset.push(
           utxoSelection.remaining.splice(index, 1).pop()
         );
@@ -556,34 +549,42 @@ function createSubSet(utxoSelection, compiledOutput) {
 
 /**
  * Push extra UTxO assets in change
- * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
- * @param {AmountList} compiledOutputList - Compiled output list requested for payment.
+ * @param {UTxOList} selection - The set of selected/available inputs.
+ * @param {Value} outputAmount - Compiled output amounts requested for payment.
  */
-function addChangeExtra(utxoSelection, compiledOutputList) {
-  utxoSelection.amount.forEach((amount) => {
-    if (
-      !compiledOutputList.some(
-        (compiledAmount) => compiledAmount.unit === amount.unit
-      )
-    ) {
-      utxoSelection.change.push(amount);
-    }
-  });
+function calculateChange(selection, outputAmount) {
+  const selectionAmountList = selection.map((utxo) => utxo.output().amount());
+  let selectionAmount = Loader.Cardano.Value.new(
+    Loader.Cardano.BigNum.from_str('0')
+  );
+
+  selectionAmountList.forEach(
+    (amount) => (selectionAmount = selectionAmount.checked_add(amount))
+  );
+
+  return selectionAmount.checked_sub(outputAmount);
 }
 
 /**
  * Is Quantity Fulfilled Condition - Handle 'minUTxOValue' protocol parameter.
- * @param {Amount} compiledOutput - Single compiled output qty requested for payment.
- * @param {Amount} compiledAmount - Single compiled accumulated UTxO qty.
+ * @param {Value} outputAmount - Single compiled output qty requested for payment.
+ * @param {Value} cumulatedAmount - Single compiled accumulated UTxO qty.
  * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
  * @return {boolean}
  */
-function isQtyFulfilled(compiledOutput, compiledAmount, minUTxOValue) {
-  return compiledOutput.unit === 'lovelace'
-    ? BigInt(compiledAmount.quantity) === BigInt(compiledOutput.quantity) ||
-        BigInt(compiledAmount.quantity) >
-          BigInt(compiledOutput.quantity) + BigInt(minUTxOValue)
-    : BigInt(compiledAmount.quantity) >= BigInt(compiledOutput.quantity);
+function isQtyFulfilled(outputAmount, cumulatedAmount, minUTxOValue) {
+  let amount = outputAmount;
+
+  if (BigInt(amount.coin().to_str()) > 0) {
+    let minAmount = Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_str(minUTxOValue.toString())
+    );
+    amount = Loader.Cardano.Value.new(amount.coin());
+    amount = amount.checked_add(minAmount);
+  }
+
+  console.log('Compare', cumulatedAmount.compare(amount));
+  return cumulatedAmount.compare(amount) >= 0;
 }
 
 // Helper

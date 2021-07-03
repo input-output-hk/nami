@@ -14,7 +14,7 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
-import CoinSelection from '../../../lib/coinSelection';
+import { compileOutputs } from '../../../api/util';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import ReactTimeAgo from 'react-time-ago';
@@ -440,7 +440,7 @@ const calculateAmount = (txType, currentAddr, uTxOList) => {
     ? uTxOList.outputs.filter((utxo) => utxo.address === currentAddr)
     : uTxOList.outputs.filter((utxo) => utxo.address !== currentAddr);
 
-  return CoinSelection.compileOutputs(outputs);
+  return compileOutputs(outputs);
 };
 
 const getExtra = (info, txType) => {

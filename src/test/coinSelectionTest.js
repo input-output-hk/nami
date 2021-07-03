@@ -1,12 +1,23 @@
 import CoinSelection from '../lib/coinSelection.js';
+import Loader from '../api/loader';
+import {
+  Address,
+  TransactionUnspentOutput,
+  Value,
+} from '@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
+import { utxoToStructure } from '../api/extension/wallet';
+import { getUtxos } from '../api/extension/index';
+import { assetsToValue } from '../api/extension/wallet';
 
 let reqOutputs = [
   {
-    address: 'addr_test1qpndlx95xlnn8t(...)9n7d2qlvgrpngvvsggsysr',
+    address:
+      'addr_test1qp8znjn7vn2vymnrkvlj2thfj45n7ncs9w9hahe7yj5n7fu0rg3ll6e9du5vqajcfa2y3udecptl9n7d2qlvgrpngvvsr0273w',
     amount: [{ unit: 'lovelace', quantity: '100000000' }],
   },
   {
-    address: 'addr_test1qpndlx95xlnn8t(...)9n7d2qlvgrpngvvsggsysr',
+    address:
+      'addr_test1qp8znjn7vn2vymnrkvlj2thfj45n7ncs9w9hahe7yj5n7fu0rg3ll6e9du5vqajcfa2y3udecptl9n7d2qlvgrpngvvsr0273w',
     amount: [
       { unit: 'lovelace', quantity: '50000000' },
       { unit: '09809090.SpaceBudz_00001', quantity: '1' },
@@ -17,8 +28,7 @@ let reqOutputs = [
 
 let utxoList = [
   {
-    tx_hash:
-      '(0)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: '524e441fd5d890ebcddda1ed740a6c313c4bed45853dd10035d3819d593af915',
     tx_index: 0,
     output_index: 0,
     amount: [
@@ -28,16 +38,14 @@ let utxoList = [
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(1)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [{ unit: 'lovelace', quantity: '876543' }],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(2)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [
@@ -47,16 +55,14 @@ let utxoList = [
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(3)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [{ unit: 'lovelace', quantity: '1000000000' }],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(4)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [
@@ -77,8 +83,7 @@ let utxoList = [
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(6)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [
@@ -88,24 +93,21 @@ let utxoList = [
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(7)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [{ unit: 'lovelace', quantity: '800000000' }],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(8)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [{ unit: 'lovelace', quantity: '4000000000' }],
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(9)af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbe3f7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [
@@ -116,8 +118,7 @@ let utxoList = [
     block: '94180eb052c054584ff54fbdc2f09649744c3cbe055fb7d28140b51467f33ba3',
   },
   {
-    tx_hash:
-      '(10)af84e14238ee97dbef7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
+    tx_hash: 'af84e14238ee97dbef7a3cc4dd8d0b2d23bade99a2e07e54f54f5f99f1424e5',
     tx_index: 0,
     output_index: 0,
     amount: [
@@ -315,7 +316,24 @@ const receiver = [
   },
 ];
 
-let result1 = CoinSelection.randomImprove(utxoList, reqOutputs, 20, 1000000);
-let result2 = CoinSelection.randomImprove(utxos, receiver, 20, 1000000);
+// let result1 = CoinSelection.randomImprove(utxoList, reqOutputs, 20, 1000000);
+// let result2 = CoinSelection.randomImprove(utxos, receiver, 20, 1000000);
+//
+// console.log(result1, result2);
 
-console.log(result1, result2);
+export const test = async () => {
+  // let inputs = await getUtxos(undefined, undefined, false);
+  //
+  // let outputs = Loader.Cardano.TransactionOutputs.new();
+  // outputs.add(
+  //   new Loader.Cardano.TransactionOutput(
+  //     new Loader.Cardano.Address.from_bech32(
+  //       'addr_test1qp8znjn7vn2vymnrkvlj2thfj45n7ncs9w9hahe7yj5n7fu0rg3ll6e9du5vqajcfa2y3udecptl9n7d2qlvgrpngvvsr0273w',
+  //       assetsToValue(reqOutputs.amount)
+  //     )
+  //   )
+  // );
+  //
+  // let result3 = CoinSelection.randomImprove(inputs, outputs, 20, 1000000);
+  // console.log(result3);
+};
