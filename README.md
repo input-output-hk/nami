@@ -17,10 +17,12 @@ The exposed API follows for most parts this proposed [CIP](https://github.com/ca
 
 #### Methods
 
+**All methods will return their values as `Promise`. For simplicity and easier understanding the API is explained without the Promises.**
+
 ##### cardano.enable()
 
 Will ask the user to give access to requested website. If access is given, this function will return `true`, otherwise throws an `error`.
-If the user calls this function again with already having permission to requested website, it will simply return `true`.
+If the user calls this function again with already having permission to the requested website, it will simply return `true`.
 
 ##### cardano.isEnabled()
 
@@ -41,10 +43,10 @@ cardano.getBalance() : Value
 ##### cardano.getUtxos(amount, paginate)
 
 ```
-cardano.getUtxos(amount?: Value, paginate?: {}) : Value
+cardano.getUtxos(amount?: Value, paginate?: {page: number, limit: number}) : Value
 ```
 
-TODO
+`amount` and `paginate` are optional parameters. They are meant to filter the overall utxo set of a user's wallet.
 
 ##### cardano.getUsedAddresses()
 
@@ -54,7 +56,7 @@ cardano.getUsedAddresses() : [BaseAddress]
 
 `BaseAddress` is a hex encoded bytes string.
 
-**Note** Nami Wallet doesn't utilize the concpet of multipe address per wallet. This function will return an array of length `1` and will always return the same single address. Just to follow the standards of the proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88), it will return the address in an array.
+**Note** Nami Wallet doesn't utilize the concpet of multipe addresses per wallet. This function will return an array of length `1` and will always return the same single address. Just to follow the standards of the proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88), it will return the address in an array.
 
 ##### cardano.getUnusedAddresses()
 
@@ -83,7 +85,7 @@ cardano.getUnusedAddresses() : RewardAddress
 ##### cardano.getNetworkId()
 
 ```
-cardano.getNetworkId() : Number
+cardano.getNetworkId() : number
 ```
 
 Returns `0` if on `testnet`, otherwise `1` if on `mainnet`.
@@ -94,9 +96,12 @@ Returns `0` if on `testnet`, otherwise `1` if on `mainnet`.
 cardano.signData(address: BaseAddress|RewardAddress, payload: string) : CoseSign1
 ```
 
-`paylod` is a hex encoded utf8 string.
+`payload` is a hex encoded utf8 string.
 `CoseSign1` is a hex encoded bytes string.
-TODO
+
+If address is the `BaseAddress` the signature is returned with the `Payment Credential`, otherwise if the address is the `RewardAddress` the signature is returned with the `Stake Credential`.
+
+The returned `CoseSign1` object contains the `payload`, `signature`, `public key`, `address` and `algorithm id`.
 
 ##### cardano.signTx(tx, partialSign)
 
@@ -110,14 +115,23 @@ cardano.signTx(tx: Transaction, partialSign?: boolean) : TransactionWitnessSet
 `partialSign` is by default `false` and optional. The wallet needs to provide all required signatures. If it can't an `error` is thrown, otherwise the `TransactionWitnessSet` is returned.
 
 If `partialSign` is `true`, the wallet doesn't need to provide all required signatures.
+TODO
 
 ##### cardano.submitTx(tx)
+
+```
+cardano.submitTx(tx : Transaction) : hash32
+```
+
+Return the transaction hash, if transaction was submitted successful, otherwise throws an `error`.
 
 #### Events
 
 ##### cardano.onAccountChange()
 
-#### Develop
+TODO
+
+### Develop
 
 Start development server
 
@@ -131,7 +145,7 @@ Create a build
 npm run build
 ```
 
-#### Website
+### Website
 
-Vist [namiwallet.io](https://namiwallet.io)
+Vist [namiwallet.io](https://namiwallet.io)<br/>
 Vist [Berry Pool](https://pipool.online)
