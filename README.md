@@ -123,7 +123,7 @@ TODO
 cardano.submitTx(tx : Transaction) : hash32
 ```
 
-Return the transaction hash, if transaction was submitted successful, otherwise throws an `error`.
+Returns the transaction hash, if transaction was submitted successfully, otherwise throws an `error`.
 
 #### Events
 
