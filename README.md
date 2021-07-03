@@ -69,7 +69,7 @@ cardano.getUnusedAddresses() : [BaseAddress]
 ##### cardano.getChangeAddress()
 
 ```
-cardano.getUnusedAddresses() : BaseAddress
+cardano.getChangeAddress() : BaseAddress
 ```
 
 Will return the same address as the one in `cardano.getUsedAddresses()`.
