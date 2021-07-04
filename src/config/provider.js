@@ -1,5 +1,5 @@
 import { NODE, NETWORK_ID } from './config';
-import { PROJECT_ID_MAINNET, PROJECT_ID_TESTNET } from '../../utils/env';
+import secrets from 'secrets';
 
 export default {
   api: {
@@ -8,8 +8,8 @@ export default {
     key: (network = 'mainnet') => ({
       project_id:
         network === NETWORK_ID.mainnet
-          ? PROJECT_ID_MAINNET
-          : PROJECT_ID_TESTNET,
+          ? secrets.PROJECT_ID_MAINNET
+          : secrets.PROJECT_ID_TESTNET,
     }),
     price: (currency = 'usd') =>
       fetch(
