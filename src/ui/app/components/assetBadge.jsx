@@ -127,6 +127,9 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
           rounded="lg"
           placeholder="Qty"
           onInput={(e) => {
+            if (!e.target.value.match(/^\d*[0-9]\d*$/) && e.target.value)
+              return;
+            // if (!e.target.value.match(/^\d*[0-9,.]\d*$/) && e.target.value) return; -- decimals not supported yet for assets
             setWidth(initialWidth + e.target.value.length * 4);
             onInput(e.target.value);
           }}

@@ -878,7 +878,10 @@ export const displayUnit = (quantity, decimals = 6) => {
 };
 
 export const toUnit = (amount, decimals = 6) => {
-  return parseFloat(amount.replace(/[,\s]/g, ''))
+  const result = parseFloat(amount.replace(/[,\s]/g, ''))
     .toLocaleString('en-EN', { minimumFractionDigits: decimals })
     .replace(/[.,\s]/g, '');
+  if (!result) return '0';
+  else if (result == 'NaN') return '0';
+  return result;
 };

@@ -97,14 +97,16 @@ const Send = () => {
         ],
       };
 
-      _value.assets.forEach((asset) => {
-        if (!asset.input || BigInt(asset.input || '0') < 1)
-          throw 'Balance too small';
+      for (const asset of _value.assets) {
+        if (!asset.input || BigInt(asset.input || '0') < 1) {
+          setFee({ error: 'Assets quantity not set' });
+          return;
+        }
         output.amount.push({
           unit: asset.unit,
           quantity: toUnit(asset.input, 0),
         });
-      });
+      }
 
       const outputValue = await assetsToValue(output.amount);
       const minAda = await minAdaRequired(
@@ -129,7 +131,6 @@ const Send = () => {
         }));
       }
 
-      console.log(output.amount);
       const outputs = Loader.Cardano.TransactionOutputs.new();
       outputs.add(
         Loader.Cardano.TransactionOutput.new(
@@ -149,7 +150,6 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(tx);
     } catch (e) {
-      console.log(e);
       if (!_value.ada) setFee({ fee: '0' });
       else setFee({ error: 'Transaction not possible' });
       prepareTx(v, a, count + 1);
@@ -238,7 +238,16 @@ const Send = () => {
               <InputLeftAddon
                 rounded="md"
                 children={
-                  loaded ? '₳' : <Spinner color="teal" speed="0.5s" size="xs" />
+                  loaded ? (
+                    '₳'
+                  ) : (
+                    <Spinner
+                      color="teal"
+                      speed="0.5s"
+                      boxSize="9px"
+                      size="xs"
+                    />
+                  )
                 }
               />
               <Input
@@ -254,7 +263,7 @@ const Send = () => {
                   clearTimeout(timer);
                   if (
                     e.target.value &&
-                    !e.target.value.match(/^\d*[0-9,.]\d*$/)
+                    !e.target.value.match(/^,+|(,)+|d*[0-9,.]\d*$/)
                   )
                     return;
 
@@ -318,7 +327,6 @@ const Send = () => {
                     }}
                     onInput={(val) => {
                       clearTimeout(timer);
-                      if (!val.match(/^\d*[0-9,.]\d*$/) && val) return;
                       value.assets[index].input = val;
                       const v = value;
                       setValue((v) => ({ ...v, assets: value.assets }));
