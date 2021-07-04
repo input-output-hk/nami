@@ -387,7 +387,6 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     Loader.Cardano.TransactionWitnessSet.new()
   );
 
-  console.log(transaction);
   const size = transaction.to_bytes().length * 2;
   if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 

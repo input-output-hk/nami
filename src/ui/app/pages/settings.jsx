@@ -182,7 +182,6 @@ const Whitelisted = () => {
   const [whitelisted, setWhitelisted] = React.useState(null);
   const getData = () =>
     getWhitelisted().then((whitelisted) => {
-      console.log(whitelisted);
       setWhitelisted(whitelisted);
     });
   React.useEffect(() => {
