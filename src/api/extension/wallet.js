@@ -274,14 +274,15 @@ export const signAndSubmit = async (
 export const delegationTx = async (account, delegation, protocolParameters) => {
   await Loader.load();
   const utxos = await getUtxos();
+
   const outputs = Loader.Cardano.TransactionOutputs.new();
   outputs.add(
     Loader.Cardano.TransactionOutput.new(
-      Loader.Cardano.Address.from_bech32(_address.result),
+      Loader.Cardano.Address.from_bech32(account.paymentAddr),
       Loader.Cardano.Value.new(protocolParameters.keyDeposit)
     )
   );
-  const selection = CoinSelection.randomImprove(
+  const selection = await CoinSelection.randomImprove(
     utxos,
     outputs,
     20,
@@ -386,6 +387,7 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     Loader.Cardano.TransactionWitnessSet.new()
   );
 
+  console.log(transaction);
   const size = transaction.to_bytes().length * 2;
   if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 
