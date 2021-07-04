@@ -43,8 +43,10 @@ cardano.getBalance() : Value
 ##### cardano.getUtxos(amount, paginate)
 
 ```
-cardano.getUtxos(amount?: Value, paginate?: {page: number, limit: number}) : Value
+cardano.getUtxos(amount?: Value, paginate?: {page: number, limit: number}) : [TransactionUnspentOutput]
 ```
+
+`TransactionUnspentOutput` is a hex encoded bytes string.
 
 `amount` and `paginate` are optional parameters. They are meant to filter the overall utxo set of a user's wallet.
 
