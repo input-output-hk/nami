@@ -42,6 +42,7 @@ import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
 import { LightMode, Spinner, useToast } from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
+import Loader from '../../../api/loader';
 
 let timer = null;
 
@@ -52,6 +53,7 @@ const Send = () => {
   const [account, setAccount] = React.useState(null);
   const [fee, setFee] = React.useState({ fee: '0' });
   const [address, setAddress] = React.useState({ result: '' });
+  const [loaded, setLoaded] = React.useState(false);
   const [value, setValue] = React.useState({
     ada: '',
     assets: [],
@@ -65,6 +67,7 @@ const Send = () => {
   });
   const [tx, setTx] = React.useState(null);
   const prepareTx = async (v, a, count) => {
+    await Loader.load();
     const _value = v || value;
     const _address = a || address;
     if (!_value.ada && _value.assets.length <= 0) {
@@ -82,10 +85,6 @@ const Send = () => {
 
     setFee({ fee: '' });
     setTx(null);
-    if (!txInfo.protocolParameters)
-      await new Promise((res, rej) =>
-        setInterval(() => txInfo.protocolParameters && res())
-      );
     await new Promise((res, rej) => setTimeout(() => res()));
     try {
       const output = {
@@ -129,11 +128,21 @@ const Send = () => {
           ada: minAdaDisplay,
         }));
       }
+
+      console.log(output.amount);
+      const outputs = Loader.Cardano.TransactionOutputs.new();
+      outputs.add(
+        Loader.Cardano.TransactionOutput.new(
+          Loader.Cardano.Address.from_bech32(_address.result),
+          await assetsToValue(output.amount)
+        )
+      );
+
       setValue((v) => ({ ...v, minAda }));
       const tx = await buildTx(
         account,
         txInfo.utxos,
-        [output],
+        outputs,
         txInfo.protocolParameters
       );
 
@@ -152,16 +161,14 @@ const Send = () => {
     setAccount(currentAccount);
     const utxos = await getUtxos();
     const protocolParameters = await initTx();
+    setLoaded(true);
     const utxoSum = await sumUtxos(utxos);
     let balance = await valueToAssets(utxoSum);
     balance = {
       lovelace: balance.find((v) => v.unit === 'lovelace').quantity,
       assets: balance.filter((v) => v.unit !== 'lovelace'),
     };
-    const u = await Promise.all(
-      utxos.map(async (utxo) => await structureToUtxo(utxo))
-    );
-    setTxInfo({ protocolParameters, utxos: u, balance });
+    setTxInfo({ protocolParameters, utxos, balance });
   };
 
   React.useEffect(() => {
@@ -170,7 +177,7 @@ const Send = () => {
   return (
     <>
       <Box
-        minHeight="100vh"
+        height="100vh"
         display="flex"
         alignItems="center"
         flexDirection="column"
@@ -228,8 +235,14 @@ const Send = () => {
           <Box height="4" />
           <Stack direction="row" alignItems="center" justifyContent="center">
             <InputGroup size="sm" flex={3}>
-              <InputLeftAddon rounded="md" children="₳" />
+              <InputLeftAddon
+                rounded="md"
+                children={
+                  loaded ? '₳' : <Spinner color="teal" speed="0.5s" size="xs" />
+                }
+              />
               <Input
+                isDisabled={!loaded}
                 isInvalid={
                   value.ada &&
                   (BigInt(toUnit(value.ada)) < BigInt(value.minAda) ||
@@ -257,14 +270,6 @@ const Send = () => {
                     prepareTx(v, undefined, 0);
                   }, 800);
                 }}
-                // onBlur={(e) => {
-                //   const ada = parseFloat(
-                //     e.target.value.replace(/[,\s]/g, '')
-                //   ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
-                //   if (ada != 'NaN') {
-                //     setValue((v) => ({ ...v, ada }));
-                //   } else setValue((v) => ({ ...v, ada: '' }));
-                // }}
                 placeholder="0.000000"
                 rounded="md"
               />
