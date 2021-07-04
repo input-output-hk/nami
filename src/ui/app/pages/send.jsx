@@ -43,10 +43,13 @@ import { ERROR } from '../../../config/config';
 import { LightMode, Spinner, useToast } from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
+import { useSettings } from '../components/settingsProvider';
 
 let timer = null;
 
 const Send = () => {
+  const { settings } = useSettings();
+  console.log(settings);
   const history = useHistory();
   const toast = useToast();
   const ref = React.useRef();
@@ -239,7 +242,7 @@ const Send = () => {
                 rounded="md"
                 children={
                   loaded ? (
-                    '₳'
+                    settings.adaSymbol
                   ) : (
                     <Spinner
                       color="teal"
@@ -367,7 +370,7 @@ const Send = () => {
                 <UnitDisplay
                   quantity={!address.result ? '0' : fee.fee}
                   decimals={6}
-                  symbol="₳"
+                  symbol={settings.adaSymbol}
                 />
               </>
             )}

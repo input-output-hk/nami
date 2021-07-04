@@ -299,7 +299,7 @@ const Wallet = () => {
                                 <UnitDisplay
                                   quantity={account[state.network.id].lovelace}
                                   decimals={6}
-                                  symbol="₳"
+                                  symbol={settings.adaSymbol}
                                 />
                               </Box>
                               {info.currentIndex === account.index && (
@@ -397,7 +397,7 @@ const Wallet = () => {
               fontWeight="bold"
               quantity={state.account && state.account.lovelace}
               decimals={6}
-              symbol="₳"
+              symbol={settings.adaSymbol}
             />
           </Box>
           <Box
@@ -685,6 +685,7 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
 });
 
 const DelegationPopover = ({ account, delegation, children }) => {
+  const { settings } = useSettings();
   const withdrawRef = React.useRef();
   return (
     <>
@@ -740,7 +741,7 @@ const DelegationPopover = ({ account, delegation, children }) => {
               fontSize="sm"
               quantity={delegation.rewards}
               decimals={6}
-              symbol="₳"
+              symbol={settings.adaSymbol}
             />
             <Box h="6" />
             <Button

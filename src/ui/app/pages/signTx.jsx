@@ -27,13 +27,14 @@ import { Avatar } from '@chakra-ui/avatar';
 import { FixedSizeList as List } from 'react-window';
 import { valueToAssets } from '../../../api/extension/wallet';
 import { TxSignError } from '../../../config/config';
+import { useSettings } from '../components/settingsProvider';
 
 const abs = (big) => {
   return big < 0 ? big * BigInt(-1) : big;
 };
 
 const SignTx = ({ request, controller }) => {
-  const history = useHistory();
+  const { settings } = useSettings();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [fee, setFee] = React.useState('0');
@@ -377,7 +378,7 @@ const SignTx = ({ request, controller }) => {
                     <UnitDisplay
                       quantity={abs(lovelace)}
                       decimals="6"
-                      symbol="₳"
+                      symbol={settings.adaSymbol}
                     />
                   </Stack>
                   {assets.length > 0 && (
@@ -428,7 +429,11 @@ const SignTx = ({ request, controller }) => {
                     fontSize="sm"
                   >
                     <Text fontWeight="bold">Fee:</Text>
-                    <UnitDisplay quantity={fee} decimals="6" symbol="₳" />
+                    <UnitDisplay
+                      quantity={fee}
+                      decimals="6"
+                      symbol={settings.adaSymbol}
+                    />
                   </Stack>
                 </>
               );
@@ -473,7 +478,7 @@ const SignTx = ({ request, controller }) => {
                           fontWeight="bold"
                           quantity={lovelace}
                           decimals="6"
-                          symbol="₳"
+                          symbol={settings.adaSymbol}
                         />
                         {assets.length > 0 && (
                           <Text mt="-1" fontWeight="bold">
