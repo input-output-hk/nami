@@ -34,7 +34,7 @@ const AssetPopover = ({ asset, gutter, ...props }) => {
             flexDirection="column"
             textAlign="center"
           >
-            {asset ? (
+            {asset && (
               <Box
                 width={330}
                 mt="8"
@@ -92,8 +92,6 @@ const AssetPopover = ({ asset, gutter, ...props }) => {
                   </Box>
                 </Copy>
               </Box>
-            ) : (
-              <Spinner color="teal" speed="0.5s" />
             )}
           </PopoverBody>
         </PopoverContent>
