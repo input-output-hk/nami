@@ -80,21 +80,21 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
       width="full"
       height="full"
     >
-      <Box
-        rounded="lg"
-        overflow="hidden"
-        width="16"
-        height="20"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        cursor="pointer"
-        userSelect="none"
-      >
-        {!token ? (
-          <SkeletonCircle size="14" />
-        ) : (
-          <AssetPopover asset={token}>
+      <AssetPopover asset={token}>
+        <Box
+          rounded="lg"
+          overflow="hidden"
+          width="16"
+          height="20"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          cursor="pointer"
+          userSelect="none"
+        >
+          {!token ? (
+            <SkeletonCircle size="14" />
+          ) : (
             <Button
               style={{
                 all: 'revert',
@@ -119,9 +119,10 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
                 }
               />
             </Button>
-          </AssetPopover>
-        )}
-      </Box>
+          )}
+        </Box>
+      </AssetPopover>
+
       <Box
         width="74px"
         height="40px"

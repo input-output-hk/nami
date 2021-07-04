@@ -5,7 +5,11 @@ import Loader from './loader';
 export const blockfrostRequest = async (endpoint, headers, body) => {
   const network = await getNetwork();
   return await fetch(provider.api.base(network.node) + endpoint, {
-    headers: { ...provider.api.key(network.id), ...headers },
+    headers: {
+      ...provider.api.key(network.id),
+      ...headers,
+      'User-Agent': 'nami-wallet',
+    },
     method: body ? 'POST' : 'GET',
     body,
   }).then((res) => res.json());
