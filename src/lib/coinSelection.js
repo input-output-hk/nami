@@ -208,6 +208,7 @@ const CoinSelection = {
     };
 
     let mergedOutputs = mergeOutputsAmounts(outputs);
+
     // Explode amount in an array of unique asset amount for comparison's sake
     let splitOutputs = splitAmounts(mergedOutputs);
 
@@ -438,7 +439,6 @@ function mergeOutputsAmounts(outputs) {
   let compiledAmountList = Loader.Cardano.Value.new(
     Loader.Cardano.BigNum.from_str('0')
   );
-  compiledAmountList.set_multiasset(Loader.Cardano.MultiAsset.new());
 
   for (let i = 0; i < outputs.len(); i++) {
     compiledAmountList = addAmounts(
@@ -468,29 +468,41 @@ function addAmounts(amounts, compiledAmounts) {
  */
 function splitAmounts(amounts) {
   let splitAmounts = [];
-  if (isNaN(amounts.coin().to_str())) throw new Error('MIN_UTXO_ERROR');
 
-  splitAmounts.push(Loader.Cardano.Value.new(amounts.coin()));
+  splitAmounts.push(
+    Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_bytes(amounts.coin().to_bytes())
+    )
+  );
 
-  if (amounts.multiasset() && amounts.multiasset().len()) {
-    for (let i = 0; i < amounts.multiasset().len(); i++) {
-      let scriptHash = amounts.multiasset().keys().get(i);
-      for (let j = 0; j < amounts.multiasset().get(scriptHash).len(); j++) {
-        let value = Loader.Cardano.Value.new(
+  if (amounts.multiasset()) {
+    let mA = amounts.multiasset();
+
+    for (let i = 0; i < mA.keys().len(); i++) {
+      let scriptHash = mA.keys().get(i);
+
+      for (let j = 0; j < mA.get(scriptHash).keys().len(); j++) {
+        let _assets = Loader.Cardano.Assets.new();
+        let assetName = mA.get(scriptHash).keys().get(j);
+
+        _assets.insert(
+          Loader.Cardano.AssetName.from_bytes(assetName.to_bytes()),
+          Loader.Cardano.BigNum.from_bytes(
+            mA.get(scriptHash).get(assetName).to_bytes()
+          )
+        );
+
+        let _multiasset = Loader.Cardano.MultiAsset.new();
+        _multiasset.insert(
+          Loader.Cardano.ScriptHash.from_bytes(scriptHash.to_bytes()),
+          _assets
+        );
+        let _value = Loader.Cardano.Value.new(
           Loader.Cardano.BigNum.from_str('0')
         );
-        value.set_multiasset(Loader.Cardano.MultiAsset.new());
+        _value.set_multiasset(_multiasset);
 
-        let assets = Loader.Cardano.Assets.new();
-        let assetName = amounts.multiasset().get(scriptHash).keys().get(j);
-        assets.insert(
-          assetName,
-          amounts.multiasset().get(scriptHash).get(assetName)
-        );
-
-        value.multiasset().insert(scriptHash, assets);
-
-        splitAmounts.push(value);
+        splitAmounts.push(_value);
       }
     }
   }
@@ -525,7 +537,7 @@ function getAmountValue(amount) {
   } else if (amount.multiasset() && amount.multiasset().len() > 0) {
     let scriptHash = amount.multiasset().keys().get(0);
     let assetName = amount.multiasset().get(scriptHash).keys().get(0);
-    val = BigInt(amount.multiasset().get(scriptHash).get(assetName).toString());
+    val = BigInt(amount.multiasset().get(scriptHash).get(assetName).to_str());
   }
 
   return val;
@@ -537,7 +549,7 @@ function getAmountValue(amount) {
  * @param {Value} output - Single compiled output qty requested for payment.
  */
 function createSubSet(utxoSelection, output) {
-  if (BigInt(output.coin().to_str()) < 1) {
+  if (BigInt(output.coin().to_str()) < BigInt(1)) {
     utxoSelection.remaining.forEach((utxo, index) => {
       if (output.compare(utxo.output().amount()) !== undefined) {
         utxoSelection.subset.push(
@@ -588,7 +600,9 @@ function isQtyFulfilled(outputAmount, cumulatedAmount, minUTxOValue) {
         Loader.Cardano.BigNum.from_str(minUTxOValue.toString())
       )
     );
-    amount = Loader.Cardano.Value.new(amount.coin());
+    amount = Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_bytes(amount.coin().to_bytes())
+    );
     amount = amount.checked_add(minAmount);
   }
 
