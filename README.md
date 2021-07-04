@@ -7,7 +7,7 @@ Nami Wallet is a browser based wallet extension to interact with the Cardano blo
 ### Injected API
 
 Since Nami is a browser extension, it can inject content inside the web context, which means you can connect the wallet to any website.
-The exposed API follows for most parts this proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88). The returned types are in `cbor`/`bytes` format. A helpful library for serializing and de-serializing these low-level data structures is the [serialization-lib](https://github.com/Emurgo/cardano-serialization-lib). To verify a signature returned from the `dataSign` endpoint the [message-signing](https://github.com/Emurgo/message-signing) library helps.
+The exposed API follows for most parts this proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88). The returned types are in `cbor`/`bytes` format. A helpful library for serializing and de-serializing these low-level data structures is the [serialization-lib](https://github.com/Emurgo/cardano-serialization-lib). To verify a signature returned from `cardano.dataSign(address, payload)` the [message-signing](https://github.com/Emurgo/message-signing) library helps.
 
 #### Basic Usage
 
@@ -101,7 +101,13 @@ cardano.signData(address: BaseAddress|RewardAddress, payload: string) : CoseSign
 
 If address is the `BaseAddress` the signature is returned with the `Payment Credential`, otherwise if the address is the `RewardAddress` the signature is returned with the `Stake Credential`.
 
-The returned `CoseSign1` object contains the `payload`, `signature`, `public key`, `address` and `algorithm id`.
+The returned `CoseSign1` object contains the `payload`, `signature` and the following protected headers:
+
+- `key_id` => `PublicKey`,
+- `address` => `BaseAddress | RewardAddress`
+- `algorithm_id` => EdDSA(0) (the algorithm used for Cardano addresses).
+
+Read more about message signing in [CIP-0008](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0008/CIP-0008.md).
 
 ##### cardano.signTx(tx, partialSign)
 
@@ -115,7 +121,6 @@ cardano.signTx(tx: Transaction, partialSign?: boolean) : TransactionWitnessSet
 `partialSign` is by default `false` and optional. The wallet needs to provide all required signatures. If it can't an `error` is thrown, otherwise the `TransactionWitnessSet` is returned.
 
 If `partialSign` is `true`, the wallet doesn't need to provide all required signatures.
-TODO
 
 ##### cardano.submitTx(tx)
 
@@ -127,22 +132,28 @@ Returns the transaction hash, if transaction was submitted successfully, otherwi
 
 #### Events
 
-##### cardano.onAccountChange()
+##### cardano.onAccountChange(addresses)
 
-TODO
+```
+cardano.onAccountChange((addresses : [BaseAddress]) => void)
+```
+
+**Note** To follow the standards of multiple addresses the callback will return an array, although Nami Wallet will just return an array with a single address, which is the same as the one in `cardano.getUsedAddresses()`.
 
 ### Develop
 
-Start development server
+The `project_id` can be created at [blockfrost.io](https://blockfrost.io/).
+
+##### Start development server
 
 ```
-npm start
+PROJECT_ID_MAINNET=<project_id_mainnet> PROJECT_ID_TESTNET=<project_id_testnet> npm start
 ```
 
-Create a build
+##### Create production build
 
 ```
-npm run build
+PROJECT_ID_MAINNET=<project_id_mainnet> PROJECT_ID_TESTNET=<project_id_testnet> npm run build
 ```
 
 ### Website
