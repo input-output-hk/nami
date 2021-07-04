@@ -25,8 +25,10 @@ import {
 // Assets
 import Berry from '../../../assets/img/berry.svg';
 import { ERROR } from '../../../config/config';
+import { useSettings } from './settingsProvider';
 
 const TransactionBuilder = React.forwardRef((props, ref) => {
+  const { settings } = useSettings();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [data, setData] = React.useState({
@@ -185,14 +187,18 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
                       hide
                       quantity={data.stakeRegistration}
                       decimals={6}
-                      symbol="₳"
+                      symbol={settings.adaSymbol}
                     />
                   </Box>
                 )}
                 <Box display="flex" alignItems="center" justifyContent="center">
                   <Text fontWeight="bold">+ Fee:</Text>
                   <Box w="1" />
-                  <UnitDisplay quantity={data.fee} decimals={6} symbol="₳" />
+                  <UnitDisplay
+                    quantity={data.fee}
+                    decimals={6}
+                    symbol={settings.adaSymbol}
+                  />
                 </Box>
                 <Box h="4" />
               </Box>
@@ -263,14 +269,18 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
                     hide
                     quantity={data.rewards}
                     decimals={6}
-                    symbol="₳"
+                    symbol={settings.adaSymbol}
                   />
                 </Box>
                 <Box h="3" />
                 <Box display="flex" alignItems="center" justifyContent="center">
                   <Text fontWeight="bold">+ Fee:</Text>
                   <Box w="1" />
-                  <UnitDisplay quantity={data.fee} decimals={6} symbol="₳" />
+                  <UnitDisplay
+                    quantity={data.fee}
+                    decimals={6}
+                    symbol={settings.adaSymbol}
+                  />
                 </Box>
                 <Box h="4" />
               </Box>

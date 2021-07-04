@@ -17,7 +17,11 @@ const SettingsProvider = ({ children }) => {
   const setSettings = (settings) => {
     setCurrency(settings.currency);
     setNetwork(settings.network);
-    setS(settings);
+    console.log(settings);
+    setS({
+      ...settings,
+      adaSymbol: settings.network.id === NETWORK_ID.mainnet ? '₳' : 't₳',
+    });
   };
 
   const getSettings = async () => {
@@ -26,6 +30,11 @@ const SettingsProvider = ({ children }) => {
     setS({
       currency: currency || 'usd',
       network: network || { id: NETWORK_ID.mainnet, node: NODE.mainnet },
+      adaSymbol: network
+        ? network.id === NETWORK_ID.mainnet
+          ? '₳'
+          : 't₳'
+        : '₳',
     });
   };
 

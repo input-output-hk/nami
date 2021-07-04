@@ -39,6 +39,7 @@ import AssetsPopover from './assetPopoverDiff';
 import AssetFingerprint from '@emurgo/cip14-js';
 import { hexToAscii } from '../../../api/util';
 import { NETWORK_ID } from '../../../config/config';
+import { useSettings } from './settingsProvider';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -80,6 +81,7 @@ const Transaction = ({
   network,
   onLoad,
 }) => {
+  const { settings } = useSettings();
   const isMounted = useIsMounted();
   const [displayInfo, setDisplayInfo] = React.useState(
     genDisplayInfo(txHash, detail, currentAddr, addresses)
@@ -154,7 +156,7 @@ const Transaction = ({
                   color={txTypeColor[displayInfo.type]}
                   quantity={displayInfo.lovelace.quantity}
                   decimals={6}
-                  symbol="₳"
+                  symbol={settings.adaSymbol}
                 />
               ) : displayInfo.extra.length ? (
                 <Text fontSize={12} fontWeight="semibold" color="teal.500">
@@ -170,7 +172,7 @@ const Transaction = ({
                   display="inline-block"
                   quantity={displayInfo.detail.info.fees}
                   decimals={6}
-                  symbol="₳"
+                  symbol={settings.adaSymbol}
                 />
                 {parseInt(displayInfo.detail.info.deposit) ? (
                   <>
@@ -179,7 +181,7 @@ const Transaction = ({
                       display="inline-block"
                       quantity={displayInfo.detail.info.deposit}
                       decimals={6}
-                      symbol="₳"
+                      symbol={settings.adaSymbol}
                     />
                   </>
                 ) : (
