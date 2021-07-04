@@ -224,11 +224,7 @@ export const setTxDetail = async (txObject) => {
  * @param {number} paginate.limit
  * @returns
  */
-export const getUtxos = async (
-  amount = undefined,
-  paginate = undefined,
-  internal = false
-) => {
+export const getUtxos = async (amount = undefined, paginate = undefined) => {
   const currentAccount = await getCurrentAccount();
   let result = [];
   let page = paginate && paginate.page ? paginate.page + 1 : 1;
@@ -248,12 +244,7 @@ export const getUtxos = async (
     if (pageResult.length <= 0 || paginate) break;
     page++;
   }
-  if (internal)
-    return result.map((utxo) => ({
-      txHash: utxo.tx_hash,
-      txId: utxo.output_index,
-      amount: utxo.amount,
-    }));
+
   const address = await getAddress();
   let converted = await Promise.all(
     result.map(async (utxo) => await utxoToStructure(utxo, address))
