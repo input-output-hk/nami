@@ -17,7 +17,6 @@ const SettingsProvider = ({ children }) => {
   const setSettings = (settings) => {
     setCurrency(settings.currency);
     setNetwork(settings.network);
-    console.log(settings);
     setS({
       ...settings,
       adaSymbol: settings.network.id === NETWORK_ID.mainnet ? '₳' : 't₳',
