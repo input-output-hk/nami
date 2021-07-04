@@ -35,15 +35,41 @@ export const test = async () => {
 
   outputs.add(inputs[1].output());
 
+  let assetName = [];
+  for (let i = 0; i < inputs[1].output().amount().multiasset().len(); i++) {
+    let hashscript = inputs[1].output().amount().multiasset().keys().get(i);
+    for (let j = 0; j < inputs[1].output().amount().multiasset().len(); j++) {
+      let name = Buffer.from(inputs[1].output().amount().multiasset().get(hashscript).keys().get(j).name(), 'hex').toString();
+      assetName.push(name);
+    }
+  }
+
+  console.log("Requested",assetName);
+
+
   let result3 = await CoinSelection.randomImprove(inputs, outputs, 20, 1000000);
+
+  assetName = [];
+  result3.input.forEach(input => {for (let i = 0; i < input.output().amount().multiasset().len(); i++) {
+    if (input.output().amount().multiasset()) {
+      let hashscript = input.output().amount().multiasset().keys().get(i);
+      for (let j = 0; j < input.output().amount().multiasset().len(); j++) {
+        let name = Buffer.from(input.output().amount().multiasset().get(hashscript).keys().get(j).name(), 'hex').toString();
+        assetName.push(name);
+      }
+    }
+  }});
+
   let requestedLovelace = (
     BigInt(result3.amount.coin().to_str()) -
     BigInt(result3.change.coin().to_str())
   ).toString();
   console.log(
-    result3,
-    'accumulated:' + result3.amount.coin().to_str(),
-    'change: ' + result3.change.coin().to_str(),
-    'requested lovelace: ' + requestedLovelace
+    result3, {
+      accumulated: result3.amount.coin().to_str(),
+      change: result3.change.coin().to_str(),
+      requestedLovelace: requestedLovelace,
+      allInputsAssets: assetName
+    }
   );
 };
