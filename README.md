@@ -32,7 +32,7 @@ cardano.isEnabled() : boolean
 
 Returns `true` if wallet has access to requested website, `false` otherwise.
 
-##### cardano.getBlance()
+##### cardano.getBalance()
 
 ```
 cardano.getBalance() : Value
@@ -58,7 +58,7 @@ cardano.getUsedAddresses() : [BaseAddress]
 
 `BaseAddress` is a hex encoded bytes string.
 
-**Note** Nami Wallet doesn't utilize the concpet of multipe addresses per wallet. This function will return an array of length `1` and will always return the same single address. Just to follow the standards of the proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88), it will return the address in an array.
+**Note** Nami Wallet doesn't utilize the concept of multipe addresses per wallet. This function will return an array of length `1` and will always return the same single address. Just to follow the standards of the proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88), it will return the address in an array.
 
 ##### cardano.getUnusedAddresses()
 
