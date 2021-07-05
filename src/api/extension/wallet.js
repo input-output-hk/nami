@@ -168,12 +168,16 @@ export const minAdaRequired = async (value, utxoVal) => {
 
 export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   await Loader.load();
-  const multiAssets = outputs.get(0).amount().multiasset();
-  const extraLimit = multiAssets ? multiAssets.len() : 0;
+  //estimated max multiasset size 5848
+  //estimated max value size 5860
+  //estimated max utxo size 5980
+  const MULTIASSET_SIZE = 5848;
+  const VALUE_SIZE = 5860;
+  const totalAssets = await valueLength(outputs.get(0).amount().multiasset());
   const selection = await CoinSelection.randomImprove(
     utxos,
     outputs,
-    20 + extraLimit,
+    20 + totalAssets,
     protocolParameters.minUtxo.to_str()
   );
   const inputs = selection.input;
@@ -197,30 +201,39 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
 
   const change = selection.change;
   const changeMultiAssets = change.multiasset();
-  // hard coded for now. about 300 assets fit into a single output
-  if (changeMultiAssets && (await valueLength(changeMultiAssets)) >= 300) {
+
+  // check if change value is too big for single output
+  if (changeMultiAssets && change.to_bytes().length * 2 > VALUE_SIZE) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
     );
 
     const partialMultiAssets = Loader.Cardano.MultiAsset.new();
-    let count = 0;
     const policies = changeMultiAssets.keys();
-    for (let j = 0; j < changeMultiAssets.len(); j++) {
-      const policy = policies.get(j);
-      const policyAssets = changeMultiAssets.get(policy);
-      const assetNames = policyAssets.keys();
-      const assets = Loader.Cardano.Assets.new();
-      for (let k = 0; k < assetNames.len(); k++) {
-        const policyAsset = assetNames.get(k);
-        const quantity = policyAssets.get(policyAsset);
-        assets.insert(policyAsset, quantity);
-        count++;
-        if (count >= 300) break;
+    const makeSplit = () => {
+      for (let j = 0; j < changeMultiAssets.len(); j++) {
+        const policy = policies.get(j);
+        const policyAssets = changeMultiAssets.get(policy);
+        const assetNames = policyAssets.keys();
+        const assets = Loader.Cardano.Assets.new();
+        for (let k = 0; k < assetNames.len(); k++) {
+          const policyAsset = assetNames.get(k);
+          const quantity = policyAssets.get(policyAsset);
+          assets.insert(policyAsset, quantity);
+          //check size
+          const checkMultiAssets = Loader.Cardano.MultiAsset.from_bytes(
+            partialMultiAssets.to_bytes()
+          );
+          checkMultiAssets.insert(policy, assets);
+          if (checkMultiAssets.to_bytes().length * 2 >= MULTIASSET_SIZE) {
+            partialMultiAssets.insert(policy, assets);
+            return;
+          }
+        }
+        partialMultiAssets.insert(policy, assets);
       }
-      partialMultiAssets.insert(policy, assets);
-      if (count >= 300) break;
-    }
+    };
+    makeSplit();
     partialChange.set_multiasset(partialMultiAssets);
     const minAda = Loader.Cardano.min_ada_required(
       partialChange,
@@ -274,6 +287,11 @@ export const signAndSubmit = async (
 export const delegationTx = async (account, delegation, protocolParameters) => {
   await Loader.load();
   const utxos = await getUtxos();
+  //estimated max multiasset size 5848
+  //estimated max value size 5860
+  //estimated max utxo size 5980
+  const MULTIASSET_SIZE = 5848;
+  const VALUE_SIZE = 5860;
 
   const outputs = Loader.Cardano.TransactionOutputs.new();
   outputs.add(
@@ -339,30 +357,39 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
 
   const change = selection.change;
   const changeMultiAssets = change.multiasset();
-  // hard coded for now. about 300 assets fit into a single output
-  if (changeMultiAssets && (await valueLength(changeMultiAssets)) >= 300) {
+
+  // check if change value is too big for single output
+  if (changeMultiAssets && change.to_bytes().length * 2 > VALUE_SIZE) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
     );
 
     const partialMultiAssets = Loader.Cardano.MultiAsset.new();
-    let count = 0;
     const policies = changeMultiAssets.keys();
-    for (let j = 0; j < changeMultiAssets.len(); j++) {
-      const policy = policies.get(j);
-      const policyAssets = changeMultiAssets.get(policy);
-      const assetNames = policyAssets.keys();
-      const assets = Loader.Cardano.Assets.new();
-      for (let k = 0; k < assetNames.len(); k++) {
-        const policyAsset = assetNames.get(k);
-        const quantity = policyAssets.get(policyAsset);
-        assets.insert(policyAsset, quantity);
-        count++;
-        if (count >= 300) break;
+    const makeSplit = () => {
+      for (let j = 0; j < changeMultiAssets.len(); j++) {
+        const policy = policies.get(j);
+        const policyAssets = changeMultiAssets.get(policy);
+        const assetNames = policyAssets.keys();
+        const assets = Loader.Cardano.Assets.new();
+        for (let k = 0; k < assetNames.len(); k++) {
+          const policyAsset = assetNames.get(k);
+          const quantity = policyAssets.get(policyAsset);
+          assets.insert(policyAsset, quantity);
+          //check size
+          const checkMultiAssets = Loader.Cardano.MultiAsset.from_bytes(
+            partialMultiAssets.to_bytes()
+          );
+          checkMultiAssets.insert(policy, assets);
+          if (checkMultiAssets.to_bytes().length * 2 >= MULTIASSET_SIZE) {
+            partialMultiAssets.insert(policy, assets);
+            return;
+          }
+        }
+        partialMultiAssets.insert(policy, assets);
       }
-      partialMultiAssets.insert(policy, assets);
-      if (count >= 300) break;
-    }
+    };
+    makeSplit();
     partialChange.set_multiasset(partialMultiAssets);
     const minAda = Loader.Cardano.min_ada_required(
       partialChange,
