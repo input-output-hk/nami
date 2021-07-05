@@ -152,7 +152,6 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(tx);
     } catch (e) {
-      console.log(e);
       if (!_value.ada) setFee({ fee: '0' });
       else setFee({ error: 'Transaction not possible' });
       prepareTx(v, a, count + 1);
