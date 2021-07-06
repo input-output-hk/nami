@@ -13,7 +13,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "matches": ["http://*/*", "https://*/*", "file://*/*"],
       "js": ["contentScript.bundle.js"],
       "run_at": "document_start"
     }
@@ -24,12 +24,6 @@
     "injected.bundle.js",
     "internalPopup.html"
   ],
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "storage",
-    "chrome://favicon/",
-    "unlimitedStorage"
-  ],
+  "permissions": ["storage", "chrome://favicon/", "unlimitedStorage"],
   "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self';"
 }
