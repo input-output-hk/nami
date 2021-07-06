@@ -164,5 +164,5 @@ npm run build
 
 ### Website
 
-Vist [namiwallet.io](https://namiwallet.io)<br/>
-Vist [Berry Pool](https://pipool.online)
+Visit [namiwallet.io](https://namiwallet.io)<br/>
+Visit [Berry Pool](https://pipool.online)
