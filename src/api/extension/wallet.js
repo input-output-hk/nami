@@ -422,12 +422,44 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
 
 export const withdrawalTx = async (account, delegation, protocolParameters) => {
   await Loader.load();
+
+  const utxos = await getUtxos();
+  //estimated max multiasset size 5848
+  //estimated max value size 5860
+  //estimated max utxo size 5980
+  const MULTIASSET_SIZE = 5848;
+  const VALUE_SIZE = 5860;
+
+  const outputs = Loader.Cardano.TransactionOutputs.new();
+  outputs.add(
+    Loader.Cardano.TransactionOutput.new(
+      Loader.Cardano.Address.from_bech32(account.paymentAddr),
+      Loader.Cardano.Value.new(protocolParameters.minUtxo)
+    )
+  );
+  const selection = await CoinSelection.randomImprove(
+    utxos,
+    outputs,
+    20,
+    protocolParameters.minUtxo.to_str()
+  );
+
+  const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
     protocolParameters.linearFee,
     protocolParameters.minUtxo,
     protocolParameters.poolDeposit,
     protocolParameters.keyDeposit
   );
+
+  for (let i = 0; i < inputs.length; i++) {
+    const utxo = inputs[i];
+    txBuilder.add_input(
+      utxo.output().address(),
+      utxo.input(),
+      utxo.output().amount()
+    );
+  }
 
   const withdrawals = Loader.Cardano.Withdrawals.new();
   withdrawals.insert(
@@ -438,6 +470,56 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
   );
 
   txBuilder.set_withdrawals(withdrawals);
+
+  const change = selection.change;
+  const changeMultiAssets = change.multiasset();
+
+  // check if change value is too big for single output
+  if (changeMultiAssets && change.to_bytes().length * 2 > VALUE_SIZE) {
+    const partialChange = Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_str('0')
+    );
+
+    const partialMultiAssets = Loader.Cardano.MultiAsset.new();
+    const policies = changeMultiAssets.keys();
+    const makeSplit = () => {
+      for (let j = 0; j < changeMultiAssets.len(); j++) {
+        const policy = policies.get(j);
+        const policyAssets = changeMultiAssets.get(policy);
+        const assetNames = policyAssets.keys();
+        const assets = Loader.Cardano.Assets.new();
+        for (let k = 0; k < assetNames.len(); k++) {
+          const policyAsset = assetNames.get(k);
+          const quantity = policyAssets.get(policyAsset);
+          assets.insert(policyAsset, quantity);
+          //check size
+          const checkMultiAssets = Loader.Cardano.MultiAsset.from_bytes(
+            partialMultiAssets.to_bytes()
+          );
+          checkMultiAssets.insert(policy, assets);
+          if (checkMultiAssets.to_bytes().length * 2 >= MULTIASSET_SIZE) {
+            partialMultiAssets.insert(policy, assets);
+            return;
+          }
+        }
+        partialMultiAssets.insert(policy, assets);
+      }
+    };
+    makeSplit();
+    partialChange.set_multiasset(partialMultiAssets);
+    const minAda = Loader.Cardano.min_ada_required(
+      partialChange,
+      protocolParameters.minUtxo
+    );
+    partialChange.set_coin(minAda);
+
+    txBuilder.add_output(
+      Loader.Cardano.TransactionOutput.new(
+        Loader.Cardano.Address.from_bech32(account.paymentAddr),
+        partialChange
+      )
+    );
+  }
 
   txBuilder.add_change_if_needed(
     Loader.Cardano.Address.from_bech32(account.paymentAddr)
