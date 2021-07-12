@@ -38,6 +38,8 @@ Returns `true` if wallet has access to requested website, `false` otherwise.
 cardano.getBalance() : Value
 ```
 
+**NOTE: There is a small typo in the current implementation: "cardano.getBlance". It will be fixed with an upcoming release**
+
 `Value` is a hex encoded cbor string.
 
 ##### cardano.getUtxos(amount, paginate)
