@@ -21,10 +21,13 @@ const useIsMounted = () => {
   return isMounted;
 };
 
+const base64regex =
+  /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+
 const Asset = ({ asset, onLoad, storedAssets }) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
-  const linkToHttps = (link) => {
+  const linkToSrc = (link) => {
     if (link.startsWith('https://')) return link;
     else if (link.startsWith('ipfs://'))
       return (
@@ -32,7 +35,8 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
         '/' +
         link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
       );
-    return false;
+    else if (base64regex.test(link)) return 'data:image/png;base64,' + link;
+    return null;
   };
 
   const fetchMetadata = async () => {
@@ -48,10 +52,10 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
     let image =
       (result.onchain_metadata &&
         result.onchain_metadata.image &&
-        linkToHttps(result.onchain_metadata.image)) ||
-      (result.metadata && result.metadata.logo) ||
+        linkToSrc(result.onchain_metadata.image)) ||
+      (result.metadata && linkToSrc(result.metadata.logo)) ||
       '';
-    if (image)
+    if (image && image.startsWith('https://'))
       image = await fetch(image)
         .then((res) => res.blob())
         .then((image) => URL.createObjectURL(image));
