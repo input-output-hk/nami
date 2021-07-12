@@ -35,7 +35,7 @@ import {
 window.cardano = {
   enable: () => enable(),
   isEnabled: () => isEnabled(),
-  getBlance: () => getBalance(),
+  getBalance: () => getBalance(),
   signData: (address, payload) => signData(address, payload),
   signTx: (tx, partialSign) => signTx(tx, partialSign),
   submitTx: (tx) => submitTx(tx),
