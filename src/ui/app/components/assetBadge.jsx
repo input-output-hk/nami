@@ -25,6 +25,9 @@ const useIsMounted = () => {
   return isMounted;
 };
 
+const base64regex =
+  /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+
 const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const isMounted = useIsMounted();
   const [initialWidth, setInitialWidth] = React.useState(
@@ -32,7 +35,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   );
   const [load, setLoad] = React.useState(true);
   const [width, setWidth] = React.useState(initialWidth);
-  const linkToHttps = (link) => {
+  const linkToSrc = (link) => {
     if (link.startsWith('https://')) return link;
     else if (link.startsWith('ipfs://'))
       return (
@@ -40,7 +43,8 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
         '/' +
         link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
       );
-    return false;
+    else if (base64regex.test(link)) return 'data:image/png;base64,' + link;
+    return null;
   };
 
   const fetchMetadata = async () => {
@@ -50,10 +54,13 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
       (result.onchain_metadata && result.onchain_metadata.name) ||
       (result.metadata && result.metadata.name) ||
       asset.name;
-    const image =
-      (result.onchain_metadata && linkToHttps(result.onchain_metadata.image)) ||
-      (result.metadata && result.metadata.logo) ||
+    let image =
+      (result.onchain_metadata &&
+        result.onchain_metadata.image &&
+        linkToSrc(result.onchain_metadata.image)) ||
+      (result.metadata && linkToSrc(result.metadata.logo)) ||
       '';
+    console.log(image);
     if (!isMounted.current) return;
     onLoad({ displayName: name, image });
     setLoad(false);
