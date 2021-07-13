@@ -60,7 +60,7 @@ export const BalanceWarning = () => {
             </UnorderedList>
             <Text fontWeight="medium" textAlign="center" mb="20px">
               Visit{' '}
-              <Link color="teal" href="https://namiwallet.io/">
+              <Link href="https://namiwallet.io/" target="_blank" color="teal">
                 namiwallet.io
               </Link>{' '}
               for more details.
