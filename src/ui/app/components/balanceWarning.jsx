@@ -23,7 +23,7 @@ export const BalanceWarning = () => {
   const animation = keyframes`${flash}`;
   const StyleButton = styled.button`
     animation: 2s ${animation};
-    animation-iteration-count: 8;
+    animation-iteration-count: 2;
   `;
   return (
     <>
@@ -64,7 +64,7 @@ export const BalanceWarning = () => {
               </Link>{' '}
               for more details.
             </Text>
-            <Box textAlign="center">
+            <Box textAlign="center" mb="20px">
               <Button size="sm" colorScheme="teal" onClick={onClose}>
                 Got it!
               </Button>
