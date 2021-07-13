@@ -40,18 +40,17 @@ export const BalanceWarning = () => {
           <ModalCloseButton />
           <ModalBody>
             <Text fontWeight="semibold" mb="10px">
-              We have detected that the current wallet seed as been used in
-              other wallet.
+              We have detected that the current wallet seed has been used with
+              another wallet.
             </Text>
             <Text mb="10px">
-              To avoid any issue using Nami Wallet, consider the following
-              options:
+              To remove this warning and prevent any issue using{' '}
+              <strong>Nami Wallet</strong>, consider the following options:
             </Text>
             <UnorderedList mb="20px">
               <ListItem pb="10px">
                 Internal transfer of your complete balance from your usual
-                wallet over to your <strong>Nami Wallet</strong> receive
-                address.
+                wallet to your <strong>Nami Wallet</strong> receive address.
               </ListItem>
               <ListItem>
                 Creating a brand new wallet that will be used only with this
