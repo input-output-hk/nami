@@ -140,6 +140,16 @@ export const getBalance = async () => {
   return value;
 };
 
+export const getAccountBalance = async () => {
+  await Loader.load();
+  const currentAccount = await getCurrentAccount();
+  const result = await blockfrostRequest(
+    `/accounts/${currentAccount.rewardAddr}`
+  );
+  if (result.error) return "0";
+  return (BigInt(result.controlled_amount)-BigInt(result.withdrawable_amount)).toString();
+};
+
 export const getTransactions = async (paginate = 1, count = 10) => {
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
@@ -349,6 +359,7 @@ export const getCurrentAccount = async () => {
     .to_bech32();
 
   const assets = currentAccount[network.id].assets;
+  const balance = currentAccount[network.id].balance;
   const lovelace = currentAccount[network.id].lovelace;
   const history = currentAccount[network.id].history;
 
@@ -357,6 +368,7 @@ export const getCurrentAccount = async () => {
     paymentAddr,
     rewardAddr,
     assets,
+    balance,
     lovelace,
     history,
   };
@@ -725,6 +737,7 @@ export const createAccount = async (name, password) => {
   ).toString('hex');
 
   const networkDefault = {
+    balance: 0,
     lovelace: 0,
     assets: [],
     history: { confirmed: [], details: {} },
@@ -820,8 +833,11 @@ export const avatarToImage = (avatar) => {
 };
 
 const updateBalance = async (currentAccount, network) => {
+  let balance = await getAccountBalance();
   let amount = await getBalance();
   amount = await valueToAssets(amount);
+
+  currentAccount[network.id].balance = balance;
 
   if (amount.length > 0) {
     currentAccount[network.id].lovelace = amount.find(

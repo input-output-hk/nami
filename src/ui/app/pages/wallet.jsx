@@ -87,6 +87,7 @@ import Logo from '../../../assets/img/logoWhite.svg';
 import Berry from '../../../assets/img/berry.svg';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID } from '../../../config/config';
+import { BalanceWarning } from '../components/balanceWarning';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -391,11 +392,17 @@ const Wallet = () => {
             alignItems="center"
             justifyContent="center"
           >
+            {state.account &&
+            state.account.balance !== state.account.lovelace ? (
+              <BalanceWarning />
+            ) : (
+              ''
+            )}
             <UnitDisplay
               color="white"
               fontSize="2xl"
               fontWeight="bold"
-              quantity={state.account && state.account.lovelace}
+              quantity={state.account && state.account.balance}
               decimals={6}
               symbol={settings.adaSymbol}
             />
