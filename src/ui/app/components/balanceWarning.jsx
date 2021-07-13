@@ -30,7 +30,13 @@ export const BalanceWarning = () => {
       <StyleButton onClick={onOpen}>
         <WarningTwoIcon w={6} h={6} color="orange.500" mr="5px" />
       </StyleButton>
-      <Modal size="xs" isCentered isOpen={isOpen} onClose={onClose}>
+      <Modal
+        size="xs"
+        isCentered
+        autoFocus={false}
+        isOpen={isOpen}
+        onClose={onClose}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
