@@ -39,12 +39,12 @@ export const BalanceWarning = () => {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>
+          <ModalHeader fontSize="md">
             <WarningTwoIcon w={6} h={6} color="orange.500" mr="5px" />
             Compatibility Warning
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody fontSize="sm">
             <Text fontWeight="semibold" mb="10px">
               We have detected that the current wallet seed has been used with
               another wallet.
@@ -71,7 +71,7 @@ export const BalanceWarning = () => {
               for more details.
             </Text>
             <Box textAlign="center" mb="20px">
-              <Button size="sm" colorScheme="teal" onClick={onClose}>
+              <Button colorScheme="teal" onClick={onClose}>
                 Got it!
               </Button>
             </Box>
