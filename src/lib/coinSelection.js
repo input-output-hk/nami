@@ -591,22 +591,17 @@ function calculateChange(selection, outputAmount) {
  * @return {boolean}
  */
 function isQtyFulfilled(outputAmount, cumulatedAmount, minUTxOValue) {
-  let amount = outputAmount;
-
-  if (BigInt(amount.coin().to_str()) > 0) {
+  if (minUTxOValue && BigInt(outputAmount.coin().to_str()) > 0) {
     let minAmount = Loader.Cardano.Value.new(
       Loader.Cardano.min_ada_required(
         cumulatedAmount,
         Loader.Cardano.BigNum.from_str(minUTxOValue.toString())
       )
     );
-    amount = Loader.Cardano.Value.new(
-      Loader.Cardano.BigNum.from_bytes(amount.coin().to_bytes())
-    );
-    amount = amount.checked_add(minAmount);
+    if (cumulatedAmount.compare(minAmount) < 0) return false;
   }
 
-  return cumulatedAmount.compare(amount) >= 0;
+  return cumulatedAmount.compare(outputAmount) >= 0;
 }
 
 /**
