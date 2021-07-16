@@ -198,6 +198,9 @@ const CoinSelection = {
    */
   randomImprove: async (inputs, outputs, limit, minUTxOValue) => {
     await Loader.load();
+
+    const _minUTxOValue = outputs.len() * minUTxOValue;
+
     /** @type {UTxOSelection} */
     let utxoSelection = {
       selection: [],
@@ -207,15 +210,13 @@ const CoinSelection = {
       change: Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0')),
     };
 
-    let mergedOutputs = mergeOutputsAmounts(outputs);
+    let mergedOutputsAmounts = mergeOutputsAmounts(outputs);
 
     // Explode amount in an array of unique asset amount for comparison's sake
-    let splitOutputs = splitAmounts(mergedOutputs);
+    let splitOutputsAmounts = splitAmounts(mergedOutputsAmounts);
 
     // Phase 1: RandomSelect
-    splitOutputs = sortAmountList(splitOutputs, 'DESC');
-
-    splitOutputs.forEach((output) => {
+    splitOutputsAmounts.forEach((output) => {
       createSubSet(utxoSelection, output); // Narrow down for NatToken UTxO
 
       try {
@@ -223,7 +224,7 @@ const CoinSelection = {
           cloneUTxOSelection(utxoSelection), // Deep copy in case of fallback needed
           output,
           limit - utxoSelection.selection.length,
-          minUTxOValue
+          _minUTxOValue
         );
       } catch (e) {
         if (e.message === 'INPUT_LIMIT_EXCEEDED') {
@@ -232,7 +233,7 @@ const CoinSelection = {
             utxoSelection,
             output,
             limit - utxoSelection.selection.length,
-            minUTxOValue
+            _minUTxOValue
           );
         } else {
           throw e;
@@ -241,9 +242,9 @@ const CoinSelection = {
     });
 
     // Phase 2: Improve
-    splitOutputs.reverse();
+    splitOutputsAmounts = sortAmountList(splitOutputsAmounts);
 
-    splitOutputs.forEach((output) => {
+    splitOutputsAmounts.forEach((output) => {
       createSubSet(utxoSelection, output); // Narrow down for NatToken UTxO
 
       let range = {};
@@ -271,7 +272,7 @@ const CoinSelection = {
       output: outputs,
       remaining: utxoSelection.remaining,
       amount: utxoSelection.amount,
-      change: calculateChange(utxoSelection.selection, mergedOutputs),
+      change: utxoSelection.amount.checked_sub(mergedOutputsAmounts),
     };
   },
 };
@@ -469,12 +470,6 @@ function addAmounts(amounts, compiledAmounts) {
 function splitAmounts(amounts) {
   let splitAmounts = [];
 
-  splitAmounts.push(
-    Loader.Cardano.Value.new(
-      Loader.Cardano.BigNum.from_bytes(amounts.coin().to_bytes())
-    )
-  );
-
   if (amounts.multiasset()) {
     let mA = amounts.multiasset();
 
@@ -506,6 +501,16 @@ function splitAmounts(amounts) {
       }
     }
   }
+
+  // Order assets by qty DESC
+  splitAmounts = sortAmountList(splitAmounts, 'DESC');
+
+  // Insure lovelace is last to account for min ada requirement
+  splitAmounts.push(
+    Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_bytes(amounts.coin().to_bytes())
+    )
+  );
 
   return splitAmounts;
 }
@@ -566,24 +571,6 @@ function createSubSet(utxoSelection, output) {
 }
 
 /**
- * Push extra UTxO assets in change
- * @param {UTxOList} selection - The set of selected/available inputs.
- * @param {Value} outputAmount - Compiled output amounts requested for payment.
- */
-function calculateChange(selection, outputAmount) {
-  const selectionAmountList = selection.map((utxo) => utxo.output().amount());
-  let selectionAmount = Loader.Cardano.Value.new(
-    Loader.Cardano.BigNum.from_str('0')
-  );
-
-  selectionAmountList.forEach(
-    (amount) => (selectionAmount = selectionAmount.checked_add(amount))
-  );
-
-  return selectionAmount.checked_sub(outputAmount);
-}
-
-/**
  * Is Quantity Fulfilled Condition - Handle 'minUTxOValue' protocol parameter.
  * @param {Value} outputAmount - Single compiled output qty requested for payment.
  * @param {Value} cumulatedAmount - Single compiled accumulated UTxO qty.
@@ -591,22 +578,17 @@ function calculateChange(selection, outputAmount) {
  * @return {boolean}
  */
 function isQtyFulfilled(outputAmount, cumulatedAmount, minUTxOValue) {
-  let amount = outputAmount;
-
-  if (BigInt(amount.coin().to_str()) > 0) {
+  if (minUTxOValue && BigInt(outputAmount.coin().to_str()) > 0) {
     let minAmount = Loader.Cardano.Value.new(
       Loader.Cardano.min_ada_required(
         cumulatedAmount,
         Loader.Cardano.BigNum.from_str(minUTxOValue.toString())
       )
     );
-    amount = Loader.Cardano.Value.new(
-      Loader.Cardano.BigNum.from_bytes(amount.coin().to_bytes())
-    );
-    amount = amount.checked_add(minAmount);
+    if (cumulatedAmount.compare(minAmount) < 0) return false;
   }
 
-  return cumulatedAmount.compare(amount) >= 0;
+  return cumulatedAmount.compare(outputAmount) >= 0;
 }
 
 /**
