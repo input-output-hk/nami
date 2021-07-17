@@ -98,3 +98,20 @@ function addAmounts(amountList, compiledAmountList) {
       : compiledAmountList.push(am);
   });
 }
+
+export const linkToSrc = (link, base64 = false) => {
+  const base64regex =
+    /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+  if (link.startsWith('https://')) return link;
+  else if (link.startsWith('ipfs://'))
+    return (
+      provider.api.ipfs +
+      '/' +
+      link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
+    );
+  else if (link.startsWith('Qm') && link.length === 46) {
+    return provider.api.ipfs + '/' + link;
+  } else if (base64 && base64regex.test(link))
+    return 'data:image/png;base64,' + link;
+  return null;
+};

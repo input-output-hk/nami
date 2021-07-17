@@ -8,7 +8,7 @@ import {
   Button,
 } from '@chakra-ui/react';
 import React from 'react';
-import { blockfrostRequest } from '../../../api/util';
+import { blockfrostRequest, linkToSrc } from '../../../api/util';
 import provider from '../../../config/provider';
 import AssetPopover from './assetPopover';
 
@@ -21,23 +21,9 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const base64regex =
-  /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-
 const Asset = ({ asset, onLoad, storedAssets }) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
-  const linkToSrc = (link) => {
-    if (link.startsWith('https://')) return link;
-    else if (link.startsWith('ipfs://'))
-      return (
-        provider.api.ipfs +
-        '/' +
-        link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
-      );
-    else if (base64regex.test(link)) return 'data:image/png;base64,' + link;
-    return null;
-  };
 
   const fetchMetadata = async () => {
     if (storedAssets[asset.unit]) {
@@ -53,7 +39,7 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
       (result.onchain_metadata &&
         result.onchain_metadata.image &&
         linkToSrc(result.onchain_metadata.image)) ||
-      (result.metadata && linkToSrc(result.metadata.logo)) ||
+      (result.metadata && linkToSrc(result.metadata.logo, true)) ||
       '';
     if (image && image.startsWith('https://'))
       image = await fetch(image)
@@ -118,7 +104,7 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
                   token.image ? (
                     <SkeletonCircle size="14" />
                   ) : (
-                    <Avatar name={token.displayName} />
+                    <Avatar name={token.name} />
                   )
                 }
               />

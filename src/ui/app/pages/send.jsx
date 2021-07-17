@@ -56,6 +56,7 @@ const Send = () => {
   const [fee, setFee] = React.useState({ fee: '0' });
   const [address, setAddress] = React.useState({ result: '' });
   const [loaded, setLoaded] = React.useState(false);
+  const focus = React.useRef(false);
   const [value, setValue] = React.useState({
     ada: '',
     assets: [],
@@ -121,7 +122,7 @@ const Send = () => {
           _value.personalAda.replace(/[,\s]/g, '')
         ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
         output.amount[0].quantity = toUnit(_value.personalAda || '0');
-        setValue((v) => ({ ...v, ada: displayAda }));
+        !focus.current && setValue((v) => ({ ...v, ada: displayAda }));
       } else if (_value.assets.length > 0) {
         output.amount[0].quantity = minAda;
         const minAdaDisplay = parseFloat(
@@ -260,6 +261,14 @@ const Send = () => {
                     BigInt(toUnit(value.ada)) >
                       BigInt(txInfo.balance.lovelace || '0'))
                 }
+                onFocus={() => (focus.current = true)}
+                onBlur={(e) => {
+                  const displayAda = parseFloat(
+                    e.target.value.replace(/[,\s]/g, '')
+                  ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
+                  setValue((v) => ({ ...v, ada: displayAda }));
+                  focus.current = false;
+                }}
                 value={value.ada}
                 onInput={(e) => {
                   clearTimeout(timer);
@@ -465,7 +474,8 @@ const AssetsSelector = ({ assets, setValue, value }) => {
     const filter2 = (asset) =>
       search
         ? asset.name.toLowerCase().includes(search.toLowerCase()) ||
-          asset.policy.includes(search)
+          asset.policy.includes(search) ||
+          asset.fingerprint.includes(search)
         : true;
     return assets.filter((asset) => filter1(asset) && filter2(asset));
   };
@@ -504,7 +514,8 @@ const AssetsSelector = ({ assets, setValue, value }) => {
             size="sm"
             variant="filled"
             rounded="md"
-            placeholder="Search assets"
+            placeholder="Search policy, asset, name"
+            fontSize="xs"
             onInput={(e) => {
               setSearch(e.target.value);
             }}

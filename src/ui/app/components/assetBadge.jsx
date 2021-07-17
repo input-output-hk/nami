@@ -12,8 +12,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import { toUnit } from '../../../api/extension';
-import { blockfrostRequest } from '../../../api/util';
-import provider from '../../../config/provider';
+import { blockfrostRequest, linkToSrc } from '../../../api/util';
 import AssetPopover from './assetPopover';
 
 const useIsMounted = () => {
@@ -25,9 +24,6 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const base64regex =
-  /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-
 const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const isMounted = useIsMounted();
   const [initialWidth, setInitialWidth] = React.useState(
@@ -35,17 +31,6 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   );
   const [load, setLoad] = React.useState(true);
   const [width, setWidth] = React.useState(initialWidth);
-  const linkToSrc = (link) => {
-    if (link.startsWith('https://')) return link;
-    else if (link.startsWith('ipfs://'))
-      return (
-        provider.api.ipfs +
-        '/' +
-        link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
-      );
-    else if (base64regex.test(link)) return 'data:image/png;base64,' + link;
-    return null;
-  };
 
   const fetchMetadata = async () => {
     if (asset && asset.loaded) return;
