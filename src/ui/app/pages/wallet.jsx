@@ -127,7 +127,7 @@ const Wallet = () => {
     const currentAccount = await getCurrentAccount();
     const transactions = await getTransactions();
     if (
-      transactions.length &&
+      transactions.length > 0 &&
       !currentAccount.history.confirmed.includes(transactions[0].txHash)
     ) {
       await getData();
@@ -151,20 +151,6 @@ const Wallet = () => {
     const network = await getNetwork();
     const delegation = await getDelegation();
     if (!isMounted.current) return;
-    // setState((s) => ({
-    //   ...s,
-    //   account: currentAccount,
-    //   accounts: allAccounts,
-    //   fiatPrice,
-    //   network,
-    // }));
-    // const updatedCurrentAccount = await getCurrentAccount();
-    // const updatedAllAccounts = await getAccounts();
-    // if (
-    //   currentAccount.history.confirmed[0] !==
-    //   updatedCurrentAccount.history.confirmed[0]
-    // )
-    //   setState((s) => ({ ...s, account: null, accounts: null }));
     setState((s) => ({
       ...s,
       account: currentAccount,

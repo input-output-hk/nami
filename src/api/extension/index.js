@@ -146,8 +146,10 @@ export const getAccountBalance = async () => {
   const result = await blockfrostRequest(
     `/accounts/${currentAccount.rewardAddr}`
   );
-  if (result.error) return "0";
-  return (BigInt(result.controlled_amount)-BigInt(result.withdrawable_amount)).toString();
+  if (result.error) return '0';
+  return (
+    BigInt(result.controlled_amount) - BigInt(result.withdrawable_amount)
+  ).toString();
 };
 
 export const getTransactions = async (paginate = 1, count = 10) => {
@@ -854,10 +856,16 @@ const updateBalance = async (currentAccount, network) => {
 
 const updateTransactions = async (currentAccount, network) => {
   const transactions = await getTransactions();
+  if (
+    transactions.length <= 0 ||
+    currentAccount.history.confirmed.includes(transactions[0].txHash)
+  )
+    return false;
   let txHashes = transactions.map((tx) => tx.txHash);
   txHashes = txHashes.concat(currentAccount.history.confirmed);
   const txSet = new Set(txHashes);
   currentAccount[network.id].history.confirmed = Array.from(txSet);
+  return true;
 };
 
 export const setTransactions = async (txs) => {
@@ -878,8 +886,9 @@ export const updateAccount = async () => {
   const currentAccount = await getCurrentAccount();
   const accounts = await getAccounts();
   const network = await getNetwork();
+  const needUpdate = await updateTransactions(currentAccount, network);
+  if (!needUpdate) return;
   await updateBalance(currentAccount, network);
-  await updateTransactions(currentAccount, network);
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
