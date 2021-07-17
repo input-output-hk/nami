@@ -26,6 +26,10 @@ const theme = extendTheme({
 
 const Theme = (props) => {
   React.useEffect(() => {
+    window.document.body.addEventListener(
+      'keydown',
+      (e) => e.key === 'Escape' && e.preventDefault()
+    );
     const width = POPUP_WINDOW.width + (window.outerWidth - window.innerWidth);
     const height =
       POPUP_WINDOW.height + (window.outerHeight - window.innerHeight);
