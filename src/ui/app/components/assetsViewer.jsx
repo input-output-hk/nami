@@ -148,7 +148,7 @@ const AssetsViewer = ({ assets }) => {
           </>
         )}
       </Box>
-      <Box position="absolute" left="6" top="245px">
+      <Box position="absolute" left="6" top="240px">
         <Search setSearch={setSearch} assets={assets} />
       </Box>
     </>
@@ -192,11 +192,10 @@ const Search = ({ setSearch, assets }) => {
       <PopoverTrigger>
         <IconButton
           aria-label="Search assets"
-          size="sm"
           rounded="md"
           variant="ghost"
           color="orange.400"
-          icon={<SearchIcon />}
+          icon={<SearchIcon boxSize="4" />}
         />
       </PopoverTrigger>
       <PopoverContent w="100%">
