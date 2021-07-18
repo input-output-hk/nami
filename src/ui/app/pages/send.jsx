@@ -192,7 +192,7 @@ const Send = () => {
             rounded="md"
             onClick={() => history.goBack()}
             variant="ghost"
-            icon={<ChevronLeftIcon boxSize="7" />}
+            icon={<ChevronLeftIcon boxSize="6" />}
           />
         </Box>
         <Box height="20" />
