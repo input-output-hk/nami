@@ -483,8 +483,8 @@ const AssetsSelector = ({ assets, setValue, value }) => {
   const [search, setSearch] = React.useState('');
   const select = React.useRef(false);
   const [choice, setChoice] = React.useState({});
-  const hoverColor = useColorModeValue('teal.100', 'teal.800');
-  const selectColor = useColorModeValue('orange.300', 'orange.700');
+  const hoverColor = useColorModeValue('gray.100', 'gray.600');
+  // const selectColor = useColorModeValue('orange.200', 'gray.700');
 
   const filterAssets = () => {
     const filter1 = (asset) =>
@@ -566,7 +566,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
 
                 <Box w="3" />
                 <IconButton
-                  colorScheme="green"
+                  colorScheme="teal"
                   size="xs"
                   rounded="md"
                   onClick={() => {
@@ -615,7 +615,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                         justifyContent="center"
                       >
                         <Button
-                          background={choice[asset.unit] && selectColor}
+                          background={choice[asset.unit] && hoverColor}
                           _hover={{
                             bgBlendMode: false,
                             bg: !choice[asset.unit] && hoverColor,
@@ -743,6 +743,7 @@ const Selection = ({ select, asset, choice, setChoice }) => {
           display="flex"
           alignItems="center"
           justifyContent="center"
+          color="white"
           onClick={(e) => {
             delete choice[asset.unit];
             setChoice({ ...choice });
