@@ -45,7 +45,6 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
         linkToSrc(result.onchain_metadata.image)) ||
       (result.metadata && linkToSrc(result.metadata.logo)) ||
       '';
-    console.log(image);
     if (!isMounted.current) return;
     onLoad({ displayName: name, image });
     setLoad(false);

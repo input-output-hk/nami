@@ -194,7 +194,7 @@ const Search = ({ setSearch, assets }) => {
           aria-label="Search assets"
           rounded="md"
           variant="ghost"
-          color="orange.400"
+          colorScheme="orange"
           icon={<SearchIcon boxSize="4" />}
         />
       </PopoverTrigger>
