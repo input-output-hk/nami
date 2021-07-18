@@ -12,7 +12,14 @@ import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
 import { Button, IconButton } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
-import { ChevronDownIcon, ChevronLeftIcon, Icon } from '@chakra-ui/icons';
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  CloseIcon,
+  Icon,
+  SmallCloseIcon,
+} from '@chakra-ui/icons';
 import { BsArrowUpRight } from 'react-icons/bs';
 import { Input, InputGroup, InputLeftAddon } from '@chakra-ui/input';
 import {
@@ -40,7 +47,14 @@ import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
-import { LightMode, Spinner, useToast } from '@chakra-ui/react';
+import {
+  background,
+  InputRightElement,
+  LightMode,
+  Spinner,
+  useColorModeValue,
+  useToast,
+} from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
 import { useSettings } from '../components/settingsProvider';
@@ -467,6 +481,10 @@ let clicked = false;
 const AssetsSelector = ({ assets, setValue, value }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [search, setSearch] = React.useState('');
+  const select = React.useRef(false);
+  const [choice, setChoice] = React.useState({});
+  const hoverColor = useColorModeValue('teal.100', 'teal.800');
+  const selectColor = useColorModeValue('orange.300', 'orange.700');
 
   const filterAssets = () => {
     const filter1 = (asset) =>
@@ -479,10 +497,6 @@ const AssetsSelector = ({ assets, setValue, value }) => {
         : true;
     return assets.filter((asset) => filter1(asset) && filter2(asset));
   };
-
-  React.useEffect(() => {
-    setSearch('');
-  }, [isOpen]);
 
   return (
     <Popover
@@ -508,18 +522,70 @@ const AssetsSelector = ({ assets, setValue, value }) => {
           alignItems="center"
           justifyContent="center"
         >
-          <Input
-            value={search}
-            width="90%"
+          <InputGroup
+            width={Object.keys(choice).length <= 0 && '90%'}
+            flex={Object.keys(choice).length > 0 && 3}
             size="sm"
-            variant="filled"
-            rounded="md"
-            placeholder="Search policy, asset, name"
-            fontSize="xs"
-            onInput={(e) => {
-              setSearch(e.target.value);
-            }}
-          />
+          >
+            <Input
+              value={search}
+              size="sm"
+              variant="filled"
+              rounded="md"
+              placeholder="Search policy, asset, name"
+              fontSize="xs"
+              onInput={(e) => {
+                setSearch(e.target.value);
+              }}
+            />
+            <InputRightElement
+              children={
+                <SmallCloseIcon
+                  cursor="pointer"
+                  onClick={() => setSearch('')}
+                />
+              }
+            />
+          </InputGroup>
+          {Object.keys(choice).length > 0 && (
+            <>
+              <Box w="2" />
+              <Box
+                width="100%"
+                flex={1}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <IconButton
+                  size="xs"
+                  rounded="md"
+                  onClick={() => setChoice({})}
+                  icon={<CloseIcon />}
+                />
+
+                <Box w="3" />
+                <IconButton
+                  colorScheme="green"
+                  size="xs"
+                  rounded="md"
+                  onClick={() => {
+                    onClose();
+                    setTimeout(() => {
+                      setValue((v) => ({
+                        ...v,
+                        assets: v.assets.concat(
+                          assets.filter((asset) => choice[asset.unit])
+                        ),
+                      }));
+                      setChoice({});
+                    }, 100);
+                  }}
+                  icon={<CheckIcon />}
+                />
+              </Box>
+            </>
+          )}
         </PopoverHeader>
         <PopoverBody p="-2">
           <Box
@@ -549,9 +615,18 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                         justifyContent="center"
                       >
                         <Button
+                          background={choice[asset.unit] && selectColor}
+                          _hover={{
+                            bgBlendMode: false,
+                            bg: !choice[asset.unit] && hoverColor,
+                          }}
                           width="96%"
                           onClick={() => {
                             if (clicked) return;
+                            if (select.current) {
+                              select.current = false;
+                              return;
+                            }
                             clicked = true;
                             onClose();
                             setTimeout(
@@ -579,10 +654,11 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                             alignItems="center"
                             justifyContent="start"
                           >
-                            <Avatar
-                              userSelect="none"
-                              size="xs"
-                              name={asset.name}
+                            <Selection
+                              asset={asset}
+                              select={select}
+                              choice={choice}
+                              setChoice={setChoice}
                             />
 
                             <Box
@@ -647,6 +723,45 @@ const AssetsSelector = ({ assets, setValue, value }) => {
         </PopoverBody>
       </PopoverContent>
     </Popover>
+  );
+};
+
+const Selection = ({ select, asset, choice, setChoice }) => {
+  return (
+    <Box
+      rounded="full"
+      width="6"
+      height="6"
+      overflow="hidden"
+      onClick={() => (select.current = true)}
+    >
+      {choice[asset.unit] ? (
+        <Box
+          width="100%"
+          height="100%"
+          background="orange.400"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          onClick={(e) => {
+            delete choice[asset.unit];
+            setChoice({ ...choice });
+          }}
+        >
+          <CheckIcon />
+        </Box>
+      ) : (
+        <Avatar
+          onClick={(e) => {
+            choice[asset.unit] = true;
+            setChoice({ ...choice });
+          }}
+          userSelect="none"
+          size="xs"
+          name={asset.name}
+        />
+      )}
+    </Box>
   );
 };
 
