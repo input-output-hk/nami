@@ -169,7 +169,7 @@ const Wallet = () => {
   };
 
   React.useEffect(() => {
-    init().then(() => onAccountChange(async () => init()));
+    init().then(() => onAccountChange(async () => getData()));
   }, []);
 
   return (
