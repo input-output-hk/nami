@@ -10,6 +10,7 @@ import {
   getDelegation,
   getNetwork,
   getTransactions,
+  setBalanceWarning,
   switchAccount,
   updateAccount,
 } from '../../../api/extension';
@@ -161,10 +162,23 @@ const Wallet = () => {
     }));
   };
 
+  const balanceWarning = async () => {
+    if (!isMounted.current) return;
+    const warning = await setBalanceWarning();
+    setState((s) => ({
+      ...s,
+      warning: warning
+    }));
+  };
+
   React.useEffect(() => {
     getData();
     checkTransactions();
-    onAccountChange(() => getData());
+    onAccountChange(() => {
+      getData();
+      balanceWarning();
+    });
+    balanceWarning();
   }, []);
 
   return (
@@ -378,9 +392,9 @@ const Wallet = () => {
             alignItems="center"
             justifyContent="center"
           >
-            {state.account &&
-            state.account.balance !== state.account.lovelace ? (
-              <BalanceWarning />
+            {state.warning &&
+            state.warning.active ? (
+              <BalanceWarning fullBalance={state.warning.fullBalance} symbol={settings.adaSymbol}/>
             ) : (
               ''
             )}
@@ -388,7 +402,7 @@ const Wallet = () => {
               color="white"
               fontSize="2xl"
               fontWeight="bold"
-              quantity={state.account && state.account.balance}
+              quantity={state.account && state.account.lovelace}
               decimals={6}
               symbol={settings.adaSymbol}
             />
