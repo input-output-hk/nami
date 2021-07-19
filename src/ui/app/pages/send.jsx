@@ -8,6 +8,7 @@ import {
   getUtxos,
   isValidAddress,
   toUnit,
+  updateRecentSentToAddress,
 } from '../../../api/extension';
 import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
@@ -93,6 +94,7 @@ const Send = () => {
     if (!_value.ada && _value.assets.length <= 0) {
       setFee({ fee: '0' });
       setTx(null);
+      return;
     }
     if (
       _address.error ||
@@ -423,13 +425,14 @@ const Send = () => {
           )
         }
         onConfirm={async (status, signedTx) => {
-          if (status === true)
+          if (status === true) {
             toast({
               title: 'Transaction submitted',
               status: 'success',
               duration: 5000,
             });
-          else
+            await updateRecentSentToAddress(address.result);
+          } else
             toast({
               title: 'Transaction failed',
               status: 'error',
@@ -450,11 +453,15 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
   const [state, setState] = React.useState({
     currentAccount: null,
     accounts: {},
+    recentAddress: null,
   });
   const init = async () => {
     const currentAccount = await getCurrentAccount();
     const accounts = await getAccounts();
-    setState({ currentAccount, accounts });
+    const recentAddress =
+      currentAccount.recentSendToAddresses &&
+      currentAccount.recentSendToAddresses[0];
+    setState({ currentAccount, accounts, recentAddress });
   };
   React.useEffect(() => {
     init();
@@ -466,7 +473,6 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
       autoFocus={false}
       onClose={async () => {
         await new Promise((res, rej) => setTimeout(() => res()));
-        console.log(ref.current);
         if (ref.current) {
           ref.current = false;
           return;
@@ -480,7 +486,6 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
           value={address.result}
           onBlur={async (e) => {
             await new Promise((res, rej) => setTimeout(() => res()));
-            console.log(ref.current);
             if (ref.current) {
               ref.current = false;
               return;
@@ -530,45 +535,42 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
               justifyContent="center"
               marginRight="4"
             >
-              {state.currentAccount &&
-                state.currentAccount.recentSendToAddress && (
-                  <Button
-                    ml="2"
-                    my="1"
-                    variant="ghost"
-                    width="full"
-                    onClick={() => {
-                      clearTimeout(timer);
-                      const address = state.currentAccount.recentSendToAddress;
-                      setAddress({
-                        result: address,
-                      });
-                      onClose();
-                      timer = setTimeout(() => {
-                        prepareTx(undefined, { result: address }, 0);
-                      }, 300);
-                    }}
-                  >
-                    <Box display="flex" flexDirection="column" width="full">
-                      <Text fontWeight="bold" fontSize="13" textAlign="left">
-                        Recent
-                      </Text>
-                      <Box h="0.5" />
-                      <Box
-                        fontSize="11"
-                        textAlign="left"
-                        whiteSpace="nowrap"
-                        fontWeight="normal"
-                      >
-                        <MiddleEllipsis>
-                          <span>
-                            {state.currentAccount.recentSendToAddress}
-                          </span>
-                        </MiddleEllipsis>
-                      </Box>
+              {state.recentAddress && (
+                <Button
+                  ml="2"
+                  my="1"
+                  variant="ghost"
+                  width="full"
+                  onClick={() => {
+                    clearTimeout(timer);
+                    const address = state.recentAddress;
+                    setAddress({
+                      result: address,
+                    });
+                    onClose();
+                    timer = setTimeout(() => {
+                      prepareTx(undefined, { result: address }, 0);
+                    }, 300);
+                  }}
+                >
+                  <Box display="flex" flexDirection="column" width="full">
+                    <Text fontWeight="bold" fontSize="13" textAlign="left">
+                      Recent
+                    </Text>
+                    <Box h="0.5" />
+                    <Box
+                      fontSize="11"
+                      textAlign="left"
+                      whiteSpace="nowrap"
+                      fontWeight="normal"
+                    >
+                      <MiddleEllipsis>
+                        <span>{state.recentAddress}</span>
+                      </MiddleEllipsis>
                     </Box>
-                  </Button>
-                )}
+                  </Box>
+                </Button>
+              )}
               {Object.keys(state.accounts).filter(
                 (index) => index != state.currentAccount.index
               ).length >= 0 && (

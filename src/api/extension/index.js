@@ -383,7 +383,8 @@ export const getCurrentAccount = async () => {
   const assets = currentAccount[network.id].assets;
   const lovelace = currentAccount[network.id].lovelace;
   const history = currentAccount[network.id].history;
-  const recentSendToAddress = currentAccount[network.id].recentSendToAddress;
+  const recentSendToAddresses =
+    currentAccount[network.id].recentSendToAddresses;
 
   return {
     ...currentAccount,
@@ -392,7 +393,7 @@ export const getCurrentAccount = async () => {
     assets,
     lovelace,
     history,
-    recentSendToAddress,
+    recentSendToAddresses,
   };
 };
 
@@ -918,7 +919,7 @@ export const updateRecentSentToAddress = async (address) => {
   const currentAccount = await getCurrentAccount();
   const accounts = await getAccounts();
   const network = await getNetwork();
-  currentAccount[network.id].recentSendToAddress = [address];
+  currentAccount[network.id].recentSendToAddresses = [address]; // Update in the future to add mulitple addresses
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
