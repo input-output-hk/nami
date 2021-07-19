@@ -321,7 +321,7 @@ const Send = () => {
               height: '150px',
             }}
           >
-            <Box display="flex" width="full" flexWrap="wrap">
+            <Box display="flex" width="full" flexWrap="wrap" paddingRight="2">
               {value.assets.map((asset, index) => (
                 <Box key={index}>
                   <AssetBadge
