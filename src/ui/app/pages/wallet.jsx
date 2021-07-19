@@ -120,6 +120,7 @@ const Wallet = () => {
     avatar: '',
     name: '',
     paymentAddr: '',
+    accounts: {},
   }); // for quicker displaying
   const builderRef = React.useRef();
 
@@ -137,8 +138,9 @@ const Wallet = () => {
 
   const getData = async () => {
     const { avatar, name, index, paymentAddr } = await getCurrentAccount();
+    const accounts = await getAccounts();
     if (!isMounted.current) return;
-    setInfo({ avatar, name, currentIndex: index, paymentAddr });
+    setInfo({ avatar, name, currentIndex: index, paymentAddr, accounts });
     setState((s) => ({
       ...s,
       account: null,
@@ -214,20 +216,22 @@ const Wallet = () => {
                   </DelegationPopover>
                 ) : (
                   state.network.id === NETWORK_ID.mainnet && (
-                    <Button
-                      onClick={() =>
-                        builderRef.current.initDelegation(
-                          state.account,
-                          state.delegation
-                        )
-                      }
-                      size="xs"
-                      background="white"
-                      color="orange.400"
-                      rounded="lg"
-                    >
-                      Delegate
-                    </Button>
+                    <LightMode>
+                      <Button
+                        onClick={() =>
+                          builderRef.current.initDelegation(
+                            state.account,
+                            state.delegation
+                          )
+                        }
+                        size="xs"
+                        background="white"
+                        color="orange.400"
+                        rounded="lg"
+                      >
+                        Delegate
+                      </Button>
+                    </LightMode>
                   )
                 )}
               </>
@@ -259,56 +263,59 @@ const Wallet = () => {
                     autoHeight
                     autoHeightMax={240}
                   >
-                    {state.accounts &&
-                      Object.keys(state.accounts).map((accountIndex) => {
-                        const account = state.accounts[accountIndex];
-                        return (
-                          <MenuItem
-                            isDisabled={!state.account}
-                            position="relative"
-                            key={accountIndex}
-                            onClick={async (e) => {
-                              if (
-                                info.currentIndex === account.index ||
-                                !state.account
-                              ) {
-                                return;
-                              }
-                              await switchAccount(accountIndex);
-                            }}
-                          >
-                            <Stack direction="row" alignItems="center">
-                              <Box boxSize="2rem" mr="12px">
-                                <AvatarLoader avatar={account.avatar} />
-                              </Box>
+                    {Object.keys(info.accounts).map((accountIndex) => {
+                      const accountInfo = info.accounts[accountIndex];
+                      const account =
+                        state.accounts && state.accounts[accountIndex];
+                      return (
+                        <MenuItem
+                          isDisabled={!state.account}
+                          position="relative"
+                          key={accountIndex}
+                          onClick={async (e) => {
+                            if (
+                              info.currentIndex === accountInfo.index ||
+                              !state.account
+                            ) {
+                              return;
+                            }
+                            await switchAccount(accountIndex);
+                          }}
+                        >
+                          <Stack direction="row" alignItems="center">
+                            <Box boxSize="2rem" mr="12px">
+                              <AvatarLoader avatar={accountInfo.avatar} />
+                            </Box>
 
-                              <Box display="flex" flexDirection="column">
-                                <Box height="1.5" />
-                                <Text
-                                  mb="-1"
-                                  fontWeight="bold"
-                                  fontSize="14px"
-                                  isTruncated={true}
-                                  maxWidth="210px"
-                                >
-                                  {account.name}
-                                </Text>
-                                <UnitDisplay
-                                  quantity={account[state.network.id].lovelace}
-                                  decimals={6}
-                                  symbol={settings.adaSymbol}
-                                />
-                              </Box>
-                              {info.currentIndex === account.index && (
-                                <>
-                                  <Box width="2" />
-                                  <StarIcon />
-                                </>
-                              )}
-                            </Stack>
-                          </MenuItem>
-                        );
-                      })}
+                            <Box display="flex" flexDirection="column">
+                              <Box height="1.5" />
+                              <Text
+                                mb="-1"
+                                fontWeight="bold"
+                                fontSize="14px"
+                                isTruncated={true}
+                                maxWidth="210px"
+                              >
+                                {accountInfo.name}
+                              </Text>
+                              <UnitDisplay
+                                quantity={
+                                  account && account[state.network.id].lovelace
+                                }
+                                decimals={6}
+                                symbol={settings.adaSymbol}
+                              />
+                            </Box>
+                            {info.currentIndex === accountInfo.index && (
+                              <>
+                                <Box width="2" />
+                                <StarIcon />
+                              </>
+                            )}
+                          </Stack>
+                        </MenuItem>
+                      );
+                    })}
                   </Scrollbars>
                 </MenuGroup>
                 <MenuDivider />
