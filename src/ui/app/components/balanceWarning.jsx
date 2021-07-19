@@ -17,14 +17,17 @@ import {
   ListItem,
 } from '@chakra-ui/react';
 import { useDisclosure } from '@chakra-ui/hooks';
+import UnitDisplay from './unitDisplay';
 
-export const BalanceWarning = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const animation = keyframes`${flash}`;
-  const StyleButton = styled.button`
+const animation = keyframes`${flash}`;
+const StyleButton = styled.button`
     animation: 2s ${animation};
     animation-iteration-count: 2;
   `;
+
+export const BalanceWarning = ({fullBalance, symbol}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   return (
     <>
       <StyleButton onClick={onOpen}>
@@ -45,10 +48,23 @@ export const BalanceWarning = () => {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody fontSize="sm">
-            <Text fontWeight="semibold" mb="10px">
+            <Text fontWeight="semibold">
               We have detected that the current wallet seed has been used with
               another wallet.
             </Text>
+            <Text textAlign="center" fontWeight="bold" >
+              Real balance
+            </Text>
+            <Box textAlign="center" mb="10px">
+              <UnitDisplay
+                color="orange.500"
+                fontSize="sm"
+                fontWeight="bold"
+                quantity={fullBalance}
+                decimals={6}
+                symbol={symbol}
+              />
+            </Box>
             <Text mb="10px">
               To remove this warning and prevent any issue using{' '}
               <strong>Nami Wallet</strong>, consider the following options:
