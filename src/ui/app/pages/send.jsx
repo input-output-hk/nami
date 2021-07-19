@@ -468,7 +468,14 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
   }, []);
   return (
     <Popover
-      isOpen={isOpen}
+      isOpen={
+        state.currentAccount &&
+        (state.recentAddress ||
+          Object.keys(state.accounts).filter(
+            (index) => index != state.currentAccount.index
+          ).length > 0) &&
+        isOpen
+      }
       onOpen={() => !address.result && !address.error && onOpen()}
       autoFocus={false}
       onClose={async () => {
