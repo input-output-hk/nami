@@ -140,7 +140,7 @@ export const getBalance = async () => {
   return value;
 };
 
-export const getAccountBalance = async () => {
+export const getFullBalance = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
@@ -151,6 +151,26 @@ export const getAccountBalance = async () => {
     BigInt(result.controlled_amount) - BigInt(result.withdrawable_amount)
   ).toString();
 };
+
+export const setBalanceWarning = async () => {
+  const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
+  let warning = {active: false, fullBalance: "0"}
+
+  const result = await blockfrostRequest(
+    `/accounts/${currentAccount.rewardAddr}/addresses?count=2`
+  );
+
+  if (!result.error || result.length > 1) {
+    const fullBalance = await getFullBalance();
+    if (fullBalance !== currentAccount[network.id].lovelace) {
+      warning.active = true;
+      warning.fullBalance = fullBalance;
+    }
+  }
+
+  return warning;
+}
 
 export const getTransactions = async (paginate = 1, count = 10) => {
   const currentAccount = await getCurrentAccount();
@@ -361,7 +381,6 @@ export const getCurrentAccount = async () => {
     .to_bech32();
 
   const assets = currentAccount[network.id].assets;
-  const balance = currentAccount[network.id].balance;
   const lovelace = currentAccount[network.id].lovelace;
   const history = currentAccount[network.id].history;
 
@@ -370,7 +389,6 @@ export const getCurrentAccount = async () => {
     paymentAddr,
     rewardAddr,
     assets,
-    balance,
     lovelace,
     history,
   };
@@ -739,10 +757,9 @@ export const createAccount = async (name, password) => {
   ).toString('hex');
 
   const networkDefault = {
-    balance: 0,
     lovelace: 0,
     assets: [],
-    history: { confirmed: [], details: {} },
+    history: { confirmed: [], details: {} }
   };
 
   const newAccount = {
@@ -835,11 +852,8 @@ export const avatarToImage = (avatar) => {
 };
 
 const updateBalance = async (currentAccount, network) => {
-  let balance = await getAccountBalance();
   let amount = await getBalance();
   amount = await valueToAssets(amount);
-
-  currentAccount[network.id].balance = balance;
 
   if (amount.length > 0) {
     currentAccount[network.id].lovelace = amount.find(
