@@ -43,8 +43,6 @@ export const initTx = async () => {
     poolDeposit: Loader.Cardano.BigNum.from_str(p.pool_deposit),
     keyDeposit: Loader.Cardano.BigNum.from_str(p.key_deposit),
     maxTxSize: p.max_tx_size,
-    minFeeA: Loader.Cardano.BigNum.from_str(p.min_fee_a.toString()),
-    minFeeB: Loader.Cardano.BigNum.from_str(p.min_fee_b.toString()),
   };
 };
 
@@ -178,8 +176,8 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   const totalAssets = await valueLength(outputs.get(0).amount().multiasset());
   CoinSelection.setProtocolParameters(
     protocolParameters.minUtxo.to_str(),
-    protocolParameters.minFeeA.to_str(),
-    protocolParameters.minFeeB.to_str(),
+    protocolParameters.linearFee.coefficient().to_str(),
+    protocolParameters.linearFee.constant().to_str(),
     protocolParameters.maxTxSize.toString()
   );
   const selection = await CoinSelection.randomImprove(
