@@ -184,22 +184,55 @@ import Loader from '../api/loader';
  */
 
 /**
+ * @typedef {Object} ProtocolParameters
+ * @property {int} minUTxO
+ * @property {int} minFeeA
+ * @property {int} minFeeB
+ * @property {int} maxTxSize
+ */
+
+/**
+ * @type {ProtocolParameters}
+ */
+let protocolParameters = null;
+
+/**
  * CoinSelection Module.
  * @module src/lib/CoinSelection
  */
 const CoinSelection = {
   /**
+   * Set protocol parameters required by the algorithm
+   * @param {string} minUTxO
+   * @param {string} minFeeA
+   * @param {string} minFeeB
+   * @param {string} maxTxSize
+   */
+  setProtocolParameters: (minUTxO, minFeeA, minFeeB, maxTxSize) => {
+    protocolParameters = {
+      minUTxO: minUTxO,
+      minFeeA: minFeeA,
+      minFeeB: minFeeB,
+      maxTxSize: maxTxSize,
+    };
+  },
+  /**
    * Random-Improve coin selection algorithm
    * @param {UTxOList} inputs - The set of inputs available for selection.
    * @param {TransactionOutputs} outputs - The set of outputs requested for payment.
    * @param {int} limit - A limit on the number of inputs that can be selected.
-   * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
    * @return {SelectionResult} - Coin Selection algorithm return
    */
-  randomImprove: async (inputs, outputs, limit, minUTxOValue) => {
+  randomImprove: async (inputs, outputs, limit) => {
+    if (!protocolParameters)
+      throw new Error(
+        'Protocol parameters not set. Use setProtocolParameters().'
+      );
+
     await Loader.load();
 
-    const _minUTxOValue = outputs.len() * minUTxOValue;
+    const _minUTxOValue =
+      BigInt(outputs.len()) * BigInt(protocolParameters.minUTxO);
 
     /** @type {UTxOSelection} */
     let utxoSelection = {
@@ -289,8 +322,11 @@ const CoinSelection = {
  * @return {UTxOSelection} - Successful random utxo selection.
  */
 function randomSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
+  let nbFreeUTxO = utxoSelection.subset.length;
   // If quantity is met, return subset into remaining list and exit
-  if (isQtyFulfilled(outputAmount, utxoSelection.amount, minUTxOValue)) {
+  if (
+    isQtyFulfilled(outputAmount, utxoSelection.amount, minUTxOValue, nbFreeUTxO)
+  ) {
     utxoSelection.remaining = [
       ...utxoSelection.remaining,
       ...utxoSelection.subset,
@@ -303,10 +339,8 @@ function randomSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
     throw new Error('INPUT_LIMIT_EXCEEDED');
   }
 
-  let nbFreeUTxO = utxoSelection.subset.length;
-
   if (nbFreeUTxO <= 0) {
-    if (isQtyFulfilled(outputAmount, utxoSelection.amount, 0)) {
+    if (isQtyFulfilled(outputAmount, utxoSelection.amount, 0, 0)) {
       throw new Error('MIN_UTXO_ERROR');
     }
     throw new Error('INPUTS_EXHAUSTED');
@@ -349,7 +383,7 @@ function descSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
     }
 
     if (utxoSelection.subset.length <= 0) {
-      if (isQtyFulfilled(outputAmount, utxoSelection.amount, 0)) {
+      if (isQtyFulfilled(outputAmount, utxoSelection.amount, 0, 0)) {
         throw new Error('MIN_UTXO_ERROR');
       }
       throw new Error('INPUTS_EXHAUSTED');
@@ -365,7 +399,14 @@ function descSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
     );
 
     limit--;
-  } while (!isQtyFulfilled(outputAmount, utxoSelection.amount, minUTxOValue));
+  } while (
+    !isQtyFulfilled(
+      outputAmount,
+      utxoSelection.amount,
+      minUTxOValue,
+      utxoSelection.subset.length - 1
+    )
+  );
 
   // Quantity is met, return subset into remaining list and return selection
   utxoSelection.remaining = [
@@ -574,10 +615,18 @@ function createSubSet(utxoSelection, output) {
  * Is Quantity Fulfilled Condition - Handle 'minUTxOValue' protocol parameter.
  * @param {Value} outputAmount - Single compiled output qty requested for payment.
  * @param {Value} cumulatedAmount - Single compiled accumulated UTxO qty.
- * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value
+ * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value.
+ * @param {int} nbFreeUTxO - Number of free UTxO available.
  * @return {boolean}
  */
-function isQtyFulfilled(outputAmount, cumulatedAmount, minUTxOValue) {
+function isQtyFulfilled(
+  outputAmount,
+  cumulatedAmount,
+  minUTxOValue,
+  nbFreeUTxO
+) {
+  let amount = outputAmount;
+
   if (minUTxOValue && BigInt(outputAmount.coin().to_str()) > 0) {
     let minAmount = Loader.Cardano.Value.new(
       Loader.Cardano.min_ada_required(
@@ -585,10 +634,31 @@ function isQtyFulfilled(outputAmount, cumulatedAmount, minUTxOValue) {
         Loader.Cardano.BigNum.from_str(minUTxOValue.toString())
       )
     );
+
+    // Try covering the max fees and change as long as there's available UTxOs
+    if (nbFreeUTxO > 0) {
+      let changeWithMaxFee =
+        BigInt(protocolParameters.minFeeA) *
+          BigInt(protocolParameters.maxTxSize) +
+        BigInt(protocolParameters.minFeeB) +
+        BigInt(protocolParameters.minUTxO);
+
+      amount = Loader.Cardano.Value.new(
+        Loader.Cardano.BigNum.from_bytes(amount.coin().to_bytes())
+      );
+
+      changeWithMaxFee = Loader.Cardano.Value.new(
+        Loader.Cardano.BigNum.from_str(changeWithMaxFee.toString())
+      );
+
+      amount = amount.checked_add(changeWithMaxFee);
+    }
+
+    // Lovelace min amount to cover assets and number of output need to be met
     if (cumulatedAmount.compare(minAmount) < 0) return false;
   }
 
-  return cumulatedAmount.compare(outputAmount) >= 0;
+  return cumulatedAmount.compare(amount) >= 0;
 }
 
 /**

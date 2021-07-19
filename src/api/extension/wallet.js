@@ -174,11 +174,16 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   const MULTIASSET_SIZE = 5848;
   const VALUE_SIZE = 5860;
   const totalAssets = await valueLength(outputs.get(0).amount().multiasset());
+  CoinSelection.setProtocolParameters(
+    protocolParameters.minUtxo.to_str(),
+    protocolParameters.linearFee.coefficient().to_str(),
+    protocolParameters.linearFee.constant().to_str(),
+    protocolParameters.maxTxSize.toString()
+  );
   const selection = await CoinSelection.randomImprove(
     utxos,
     outputs,
-    20 + totalAssets,
-    protocolParameters.minUtxo.to_str()
+    20 + totalAssets
   );
   const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
