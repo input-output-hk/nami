@@ -155,7 +155,7 @@ export const getFullBalance = async () => {
 export const setBalanceWarning = async () => {
   const currentAccount = await getCurrentAccount();
   const network = await getNetwork();
-  let warning = {active: false, fullBalance: "0"}
+  let warning = { active: false, fullBalance: '0' };
 
   const result = await blockfrostRequest(
     `/accounts/${currentAccount.rewardAddr}/addresses?count=2`
@@ -170,7 +170,7 @@ export const setBalanceWarning = async () => {
   }
 
   return warning;
-}
+};
 
 export const getTransactions = async (paginate = 1, count = 10) => {
   const currentAccount = await getCurrentAccount();
@@ -759,7 +759,7 @@ export const createAccount = async (name, password) => {
   const networkDefault = {
     lovelace: 0,
     assets: [],
-    history: { confirmed: [], details: {} }
+    history: { confirmed: [], details: {} },
   };
 
   const newAccount = {
