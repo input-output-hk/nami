@@ -383,6 +383,7 @@ export const getCurrentAccount = async () => {
   const assets = currentAccount[network.id].assets;
   const lovelace = currentAccount[network.id].lovelace;
   const history = currentAccount[network.id].history;
+  const recentSendToAddress = currentAccount[network.id].recentSendToAddress;
 
   return {
     ...currentAccount,
@@ -391,6 +392,7 @@ export const getCurrentAccount = async () => {
     assets,
     lovelace,
     history,
+    recentSendToAddress,
   };
 };
 
@@ -903,6 +905,20 @@ export const updateAccount = async () => {
   const needUpdate = await updateTransactions(currentAccount, network);
   if (!needUpdate) return;
   await updateBalance(currentAccount, network);
+  await setStorage({
+    [STORAGE.accounts]: {
+      ...accounts,
+      ...{ [currentAccount.index]: currentAccount },
+    },
+  });
+  return true;
+};
+
+export const updateRecentSentToAddress = async (address) => {
+  const currentAccount = await getCurrentAccount();
+  const accounts = await getAccounts();
+  const network = await getNetwork();
+  currentAccount[network.id].recentSendToAddress = [address];
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,

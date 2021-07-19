@@ -2,7 +2,9 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 import {
   displayUnit,
+  getAccounts,
   getCurrentAccount,
+  getCurrentAccountIndex,
   getUtxos,
   isValidAddress,
   toUnit,
@@ -58,6 +60,7 @@ import {
 import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
 import { useSettings } from '../components/settingsProvider';
+import AvatarLoader from '../components/avatarLoader';
 
 let timer = null;
 
@@ -96,6 +99,8 @@ const Send = () => {
       !_address.result ||
       (!_value.ada && _value.assets.length <= 0)
     ) {
+      setFee({ fee: '0' });
+      setTx(null);
       return;
     }
     if (count >= 5) throw ERROR.txNotPossible;
@@ -221,28 +226,10 @@ const Send = () => {
           justifyContent="center"
           width="80%"
         >
-          <Input
-            fontSize="xs"
-            placeholder="Receiver"
-            onInput={async (e) => {
-              clearTimeout(timer);
-              let addr;
-              if (!e.target.value) {
-                addr = { result: '' };
-                setAddress(addr);
-              } else if (await isValidAddress(e.target.value)) {
-                addr = { result: e.target.value };
-                setAddress(addr);
-              } else {
-                addr = { error: 'Address is invalid' };
-                setAddress(addr);
-              }
-
-              timer = setTimeout(() => {
-                prepareTx(undefined, addr, 0);
-              }, 300);
-            }}
-            isInvalid={address.error}
+          <AddressPopup
+            setAddress={setAddress}
+            address={address}
+            prepareTx={prepareTx}
           />
           {address.error && (
             <Text width="full" textAlign="left" color="red.300">
@@ -277,6 +264,11 @@ const Send = () => {
                 }
                 onFocus={() => (focus.current = true)}
                 onBlur={(e) => {
+                  if (
+                    !e.target.value ||
+                    !e.target.value.match(/^,+|(,)+|d*[0-9,.]\d*$/)
+                  )
+                    return;
                   const displayAda = parseFloat(
                     e.target.value.replace(/[,\s]/g, '')
                   ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
@@ -448,6 +440,214 @@ const Send = () => {
         }}
       />
     </>
+  );
+};
+
+// Address Popup
+const AddressPopup = ({ setAddress, address, prepareTx }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const ref = React.useRef(false);
+  const [state, setState] = React.useState({
+    currentAccount: null,
+    accounts: {},
+  });
+  const init = async () => {
+    const currentAccount = await getCurrentAccount();
+    const accounts = await getAccounts();
+    setState({ currentAccount, accounts });
+  };
+  React.useEffect(() => {
+    init();
+  }, []);
+  return (
+    <Popover
+      isOpen={isOpen}
+      onOpen={() => !address.result && !address.error && onOpen()}
+      autoFocus={false}
+      onClose={async () => {
+        await new Promise((res, rej) => setTimeout(() => res()));
+        console.log(ref.current);
+        if (ref.current) {
+          ref.current = false;
+          return;
+        }
+        onClose();
+      }}
+      gutter={0}
+    >
+      <PopoverTrigger>
+        <Input
+          value={address.result}
+          onBlur={async (e) => {
+            await new Promise((res, rej) => setTimeout(() => res()));
+            console.log(ref.current);
+            if (ref.current) {
+              ref.current = false;
+              return;
+            }
+            onClose();
+            setTimeout(() => e.target.blur());
+          }}
+          fontSize="xs"
+          placeholder="Receiver"
+          onInput={async (e) => {
+            clearTimeout(timer);
+            const val = e.target.value;
+            let addr;
+            addr = { result: val };
+            if (!e.target.value) {
+              addr = { result: '' };
+            } else if (await isValidAddress(val)) {
+              addr = { result: val };
+            } else {
+              addr = { result: val, error: 'Address is invalid' };
+            }
+            setAddress(addr);
+            onClose();
+
+            timer = setTimeout(() => {
+              prepareTx(undefined, addr, 0);
+            }, 300);
+          }}
+          isInvalid={address.error}
+        />
+      </PopoverTrigger>
+      <PopoverContent
+        onClick={() => {
+          ref.current = false;
+        }}
+        onFocus={() => {
+          ref.current = true;
+        }}
+        _focus={{}}
+      >
+        <PopoverBody pr="-2">
+          <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={240}>
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              marginRight="4"
+            >
+              {state.currentAccount &&
+                state.currentAccount.recentSendToAddress && (
+                  <Button
+                    ml="2"
+                    my="1"
+                    variant="ghost"
+                    width="full"
+                    onClick={() => {
+                      clearTimeout(timer);
+                      const address = state.currentAccount.recentSendToAddress;
+                      setAddress({
+                        result: address,
+                      });
+                      onClose();
+                      timer = setTimeout(() => {
+                        prepareTx(undefined, { result: address }, 0);
+                      }, 300);
+                    }}
+                  >
+                    <Box display="flex" flexDirection="column" width="full">
+                      <Text fontWeight="bold" fontSize="13" textAlign="left">
+                        Recent
+                      </Text>
+                      <Box h="0.5" />
+                      <Box
+                        fontSize="11"
+                        textAlign="left"
+                        whiteSpace="nowrap"
+                        fontWeight="normal"
+                      >
+                        <MiddleEllipsis>
+                          <span>
+                            {state.currentAccount.recentSendToAddress}
+                          </span>
+                        </MiddleEllipsis>
+                      </Box>
+                    </Box>
+                  </Button>
+                )}
+              {Object.keys(state.accounts).filter(
+                (index) => index != state.currentAccount.index
+              ).length >= 0 && (
+                <>
+                  {' '}
+                  <Text
+                    width="full"
+                    mt="3"
+                    mb="2"
+                    fontWeight="bold"
+                    fontSize="13"
+                    textAlign="left"
+                  >
+                    Accounts
+                  </Text>
+                  {Object.keys(state.accounts)
+                    .filter((index) => index != state.currentAccount.index)
+                    .map((index) => {
+                      const account = state.accounts[index];
+                      return (
+                        <Button
+                          key={index}
+                          ml="2"
+                          my="1"
+                          width="full"
+                          variant="ghost"
+                          onClick={() => {
+                            clearTimeout(timer);
+                            setAddress({
+                              result: account.paymentAddr,
+                            });
+                            onClose();
+                            timer = setTimeout(() => {
+                              prepareTx(
+                                undefined,
+                                { result: account.paymentAddr },
+                                0
+                              );
+                            }, 300);
+                          }}
+                        >
+                          <Box width="full" display="flex">
+                            <Box ml="-1">
+                              <AvatarLoader
+                                width="30px"
+                                avatar={account.avatar}
+                              />
+                            </Box>
+                            <Box ml="4" display="flex" flexDirection="column">
+                              <Text
+                                fontWeight="bold"
+                                fontSize="13"
+                                textAlign="left"
+                              >
+                                {account.name}
+                              </Text>
+                              <Box
+                                width="220px"
+                                fontSize="11"
+                                textAlign="left"
+                                whiteSpace="nowrap"
+                                fontWeight="normal"
+                              >
+                                <MiddleEllipsis>
+                                  <span>{account.paymentAddr}</span>
+                                </MiddleEllipsis>
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Button>
+                      );
+                    })}{' '}
+                </>
+              )}
+            </Box>
+          </Scrollbars>
+        </PopoverBody>
+      </PopoverContent>
+    </Popover>
   );
 };
 
