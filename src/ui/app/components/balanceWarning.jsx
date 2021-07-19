@@ -21,11 +21,11 @@ import UnitDisplay from './unitDisplay';
 
 const animation = keyframes`${flash}`;
 const StyleButton = styled.button`
-    animation: 2s ${animation};
-    animation-iteration-count: 2;
-  `;
+  animation: 2s ${animation};
+  animation-iteration-count: 2;
+`;
 
-export const BalanceWarning = ({fullBalance, symbol}) => {
+export const BalanceWarning = ({ fullBalance, symbol }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
@@ -52,7 +52,7 @@ export const BalanceWarning = ({fullBalance, symbol}) => {
               We have detected that the current wallet seed has been used with
               another wallet.
             </Text>
-            <Text textAlign="center" fontWeight="bold" >
+            <Text textAlign="center" fontWeight="bold">
               Real balance
             </Text>
             <Box textAlign="center" mb="10px">
@@ -65,11 +65,11 @@ export const BalanceWarning = ({fullBalance, symbol}) => {
                 symbol={symbol}
               />
             </Box>
-            <Text mb="10px">
+            <Text mb="5px">
               To remove this warning and prevent any issue using{' '}
               <strong>Nami Wallet</strong>, consider the following options:
             </Text>
-            <UnorderedList mb="20px">
+            <UnorderedList mb="15px">
               <ListItem pb="10px">
                 Internal transfer of your complete balance from your usual
                 wallet to your <strong>Nami Wallet</strong> receive address.
@@ -79,14 +79,14 @@ export const BalanceWarning = ({fullBalance, symbol}) => {
                 wallet.
               </ListItem>
             </UnorderedList>
-            <Text fontWeight="medium" textAlign="center" mb="20px">
+            <Text fontWeight="medium" textAlign="center" mb="15px">
               Visit{' '}
               <Link href="https://namiwallet.io/" target="_blank" color="teal">
                 namiwallet.io
               </Link>{' '}
               for more details.
             </Text>
-            <Box textAlign="center" mb="20px">
+            <Box textAlign="center" mb="15px">
               <Button colorScheme="teal" onClick={onClose}>
                 Got it!
               </Button>

@@ -111,7 +111,6 @@ const Wallet = () => {
     fiatPrice: 0,
     delegation: null,
     network: { id: '', node: '' },
-    mounted: true,
   });
   const [menu, setMenu] = React.useState(false);
   const newAccountRef = React.useRef();
@@ -151,6 +150,7 @@ const Wallet = () => {
     const fiatPrice = await provider.api.price(settings.currency);
     const network = await getNetwork();
     const delegation = await getDelegation();
+    const warning = await setBalanceWarning();
     if (!isMounted.current) return;
     setState((s) => ({
       ...s,
@@ -159,26 +159,17 @@ const Wallet = () => {
       fiatPrice,
       network,
       delegation,
+      warning: warning,
     }));
   };
 
-  const balanceWarning = async () => {
-    if (!isMounted.current) return;
-    const warning = await setBalanceWarning();
-    setState((s) => ({
-      ...s,
-      warning: warning
-    }));
+  const init = async () => {
+    await getData();
+    checkTransactions();
   };
 
   React.useEffect(() => {
-    getData();
-    checkTransactions();
-    onAccountChange(() => {
-      getData();
-      balanceWarning();
-    });
-    balanceWarning();
+    init().then(() => onAccountChange(async () => init()));
   }, []);
 
   return (
@@ -273,11 +264,16 @@ const Wallet = () => {
                         const account = state.accounts[accountIndex];
                         return (
                           <MenuItem
+                            isDisabled={!state.account}
                             position="relative"
                             key={accountIndex}
-                            onClick={async () => {
-                              if (info.currentIndex === account.index) return;
-                              setMenu(false);
+                            onClick={async (e) => {
+                              if (
+                                info.currentIndex === account.index ||
+                                !state.account
+                              ) {
+                                return;
+                              }
                               await switchAccount(accountIndex);
                             }}
                           >
@@ -392,11 +388,11 @@ const Wallet = () => {
             alignItems="center"
             justifyContent="center"
           >
-            {state.warning &&
-            state.warning.active ? (
-              <BalanceWarning fullBalance={state.warning.fullBalance} symbol={settings.adaSymbol}/>
-            ) : (
-              ''
+            {state.warning && state.warning.active && (
+              <BalanceWarning
+                fullBalance={state.warning.fullBalance}
+                symbol={settings.adaSymbol}
+              />
             )}
             <UnitDisplay
               color="white"
