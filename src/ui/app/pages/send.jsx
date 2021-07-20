@@ -580,7 +580,7 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
               )}
               {Object.keys(state.accounts).filter(
                 (index) => index != state.currentAccount.index
-              ).length >= 0 && (
+              ).length > 0 && (
                 <>
                   {' '}
                   <Text

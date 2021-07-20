@@ -305,12 +305,13 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
       Loader.Cardano.Value.new(protocolParameters.keyDeposit)
     )
   );
-  const selection = await CoinSelection.randomImprove(
-    utxos,
-    outputs,
-    20,
-    protocolParameters.minUtxo.to_str()
+  CoinSelection.setProtocolParameters(
+    protocolParameters.minUtxo.to_str(),
+    protocolParameters.linearFee.coefficient().to_str(),
+    protocolParameters.linearFee.constant().to_str(),
+    protocolParameters.maxTxSize.toString()
   );
+  const selection = await CoinSelection.randomImprove(utxos, outputs, 20);
 
   const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
@@ -442,12 +443,13 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
       Loader.Cardano.Value.new(protocolParameters.minUtxo)
     )
   );
-  const selection = await CoinSelection.randomImprove(
-    utxos,
-    outputs,
-    20,
-    protocolParameters.minUtxo.to_str()
+  CoinSelection.setProtocolParameters(
+    protocolParameters.minUtxo.to_str(),
+    protocolParameters.linearFee.coefficient().to_str(),
+    protocolParameters.linearFee.constant().to_str(),
+    protocolParameters.maxTxSize.toString()
   );
+  const selection = await CoinSelection.randomImprove(utxos, outputs, 20);
 
   const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(

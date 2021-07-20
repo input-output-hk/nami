@@ -7,6 +7,7 @@ import {
   displayUnit,
   getAccounts,
   getCurrentAccount,
+  getCurrentAccountIndex,
   getDelegation,
   getNetwork,
   getTransactions,
@@ -137,8 +138,9 @@ const Wallet = () => {
   };
 
   const getData = async () => {
-    const { avatar, name, index, paymentAddr } = await getCurrentAccount();
+    const currentIndex = await getCurrentAccountIndex();
     const accounts = await getAccounts();
+    const { avatar, name, index, paymentAddr } = accounts[currentIndex];
     if (!isMounted.current) return;
     setInfo({ avatar, name, currentIndex: index, paymentAddr, accounts });
     setState((s) => ({
@@ -147,8 +149,8 @@ const Wallet = () => {
       delegation: null,
     }));
     await updateAccount();
-    const currentAccount = await getCurrentAccount();
     const allAccounts = await getAccounts();
+    const currentAccount = allAccounts[currentIndex];
     const fiatPrice = await provider.api.price(settings.currency);
     const network = await getNetwork();
     const delegation = await getDelegation();

@@ -231,16 +231,15 @@ export const updateTxInfo = async (txHash) => {
 };
 
 export const setTxDetail = async (txObject) => {
-  const currentAccount = await getCurrentAccount();
+  const currentIndex = await getCurrentAccountIndex();
   const network = await getNetwork();
-  const accounts = await getAccounts();
+  const accounts = await getAccounts(false);
   for (const txHash of Object.keys(txObject)) {
     const txDetail = txObject[txHash];
-    currentAccount[network.id].history.details[txHash] = txDetail;
+    accounts[currentIndex][network.id].history.details[txHash] = txDetail;
     await setStorage({
       [STORAGE.accounts]: {
         ...accounts,
-        ...{ [currentAccount.index]: currentAccount },
       },
     });
     delete txObject[txHash];
@@ -349,17 +348,14 @@ export const setNetwork = async (network) => {
   return true;
 };
 
-export const getCurrentAccount = async () => {
+const accountToNetworkSpecific = async (account) => {
   await Loader.load();
-  const currentAccountIndex = await getCurrentAccountIndex();
-  const accounts = await getAccounts();
   const network = await getNetwork();
-  const currentAccount = await accounts[currentAccountIndex];
   const paymentKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
-    Buffer.from(currentAccount.paymentKeyHash, 'hex')
+    Buffer.from(account.paymentKeyHash, 'hex')
   );
   const stakeKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
-    Buffer.from(currentAccount.stakeKeyHash, 'hex')
+    Buffer.from(account.stakeKeyHash, 'hex')
   );
   const paymentAddr = Loader.Cardano.BaseAddress.new(
     network.id === NETWORK_ID.mainnet
@@ -380,14 +376,13 @@ export const getCurrentAccount = async () => {
     .to_address()
     .to_bech32();
 
-  const assets = currentAccount[network.id].assets;
-  const lovelace = currentAccount[network.id].lovelace;
-  const history = currentAccount[network.id].history;
-  const recentSendToAddresses =
-    currentAccount[network.id].recentSendToAddresses;
+  const assets = account[network.id].assets;
+  const lovelace = account[network.id].lovelace;
+  const history = account[network.id].history;
+  const recentSendToAddresses = account[network.id].recentSendToAddresses;
 
   return {
-    ...currentAccount,
+    ...account,
     paymentAddr,
     rewardAddr,
     assets,
@@ -397,10 +392,21 @@ export const getCurrentAccount = async () => {
   };
 };
 
-export const getAccounts = async () => {
-  return await getStorage(STORAGE.accounts).then(
+export const getCurrentAccount = async (networkSpecific = true) => {
+  const currentAccountIndex = await getCurrentAccountIndex();
+  const accounts = await getAccounts(networkSpecific);
+  return await accounts[currentAccountIndex];
+};
+
+export const getAccounts = async (networkSpecific = true) => {
+  const accounts = await getStorage(STORAGE.accounts).then(
     (store) => store[STORAGE.accounts]
   );
+  if (networkSpecific === false) return accounts;
+  for (const index in accounts) {
+    accounts[index] = await accountToNetworkSpecific(accounts[index]);
+  }
+  return accounts;
 };
 
 export const createPopup = (popup) =>
@@ -731,7 +737,7 @@ export const resetStorage = async (password) => {
 export const createAccount = async (name, password) => {
   await Loader.load();
 
-  const existingAccounts = await getAccounts();
+  const existingAccounts = await getAccounts(false);
 
   const accountIndex = existingAccounts
     ? Object.keys(existingAccounts).length
@@ -785,7 +791,7 @@ export const createAccount = async (name, password) => {
 };
 
 export const deleteAccount = async () => {
-  const accounts = await getAccounts();
+  const accounts = await getAccounts(false);
   if (Object.keys(accounts).length <= 1) throw new Error(ERROR.onlyOneAccount);
   delete accounts[Object.keys(accounts).length - 1];
   await setStorage({ [STORAGE.accounts]: accounts });
@@ -875,55 +881,57 @@ const updateTransactions = async (currentAccount, network) => {
   const transactions = await getTransactions();
   if (
     transactions.length <= 0 ||
-    currentAccount.history.confirmed.includes(transactions[0].txHash)
+    currentAccount[network.id].history.confirmed.includes(
+      transactions[0].txHash
+    )
   )
     return false;
   let txHashes = transactions.map((tx) => tx.txHash);
-  txHashes = txHashes.concat(currentAccount.history.confirmed);
+  txHashes = txHashes.concat(currentAccount[network.id].history.confirmed);
   const txSet = new Set(txHashes);
   currentAccount[network.id].history.confirmed = Array.from(txSet);
   return true;
 };
 
 export const setTransactions = async (txs) => {
-  const currentAccount = await getCurrentAccount();
+  const currentIndex = await getCurrentAccountIndex();
   const network = await getNetwork();
-  const accounts = await getAccounts();
-  currentAccount[network.id].history.confirmed = txs;
+  const accounts = await getAccounts(false);
+  accounts[currentIndex][network.id].history.confirmed = txs;
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
-      ...{ [currentAccount.index]: currentAccount },
     },
   });
   return true;
 };
 
 export const updateAccount = async () => {
-  const currentAccount = await getCurrentAccount();
-  const accounts = await getAccounts();
+  const currentIndex = await getCurrentAccountIndex();
+  const accounts = await getAccounts(false);
+  const currentAccount = accounts[currentIndex];
   const network = await getNetwork();
   const needUpdate = await updateTransactions(currentAccount, network);
-  if (!needUpdate) return;
+  if (!needUpdate) {
+    return;
+  }
   await updateBalance(currentAccount, network);
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
-      ...{ [currentAccount.index]: currentAccount },
     },
   });
   return true;
 };
 
 export const updateRecentSentToAddress = async (address) => {
-  const currentAccount = await getCurrentAccount();
-  const accounts = await getAccounts();
+  const currentIndex = await getCurrentAccountIndex();
+  const accounts = await getAccounts(false);
   const network = await getNetwork();
-  currentAccount[network.id].recentSendToAddresses = [address]; // Update in the future to add mulitple addresses
+  accounts[currentIndex][network.id].recentSendToAddresses = [address]; // Update in the future to add mulitple addresses
   await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
-      ...{ [currentAccount.index]: currentAccount },
     },
   });
   return true;
