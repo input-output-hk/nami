@@ -165,7 +165,6 @@ import Loader from '../api/loader';
  * @property {UTxOList} remaining - Remaining UTxO set.
  * @property {UTxOList} subset - Remaining UTxO set.
  * @property {Value} amount - UTxO amount of each requested token
- * @property {Value} change - Accumulated change amount.
  */
 
 /**
@@ -240,7 +239,6 @@ const CoinSelection = {
       remaining: [...inputs], // Shallow copy
       subset: [],
       amount: Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0')),
-      change: Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0')),
     };
 
     let mergedOutputsAmounts = mergeOutputsAmounts(outputs);
@@ -635,27 +633,31 @@ function isQtyFulfilled(
       )
     );
 
-    // Try covering the max fees and change as long as there's available UTxOs
-    if (nbFreeUTxO > 0) {
-      let changeWithMaxFee =
-        BigInt(protocolParameters.minFeeA) *
-          BigInt(protocolParameters.maxTxSize) +
-        BigInt(protocolParameters.minFeeB) +
-        BigInt(protocolParameters.minUTxO);
-
-      amount = Loader.Cardano.Value.new(
-        Loader.Cardano.BigNum.from_bytes(amount.coin().to_bytes())
-      );
-
-      changeWithMaxFee = Loader.Cardano.Value.new(
-        Loader.Cardano.BigNum.from_str(changeWithMaxFee.toString())
-      );
-
-      amount = amount.checked_add(changeWithMaxFee);
-    }
-
     // Lovelace min amount to cover assets and number of output need to be met
     if (cumulatedAmount.compare(minAmount) < 0) return false;
+
+    // If requested Lovelace lower than minAmount, plan for change
+    if (outputAmount.compare(minAmount) < 0) {
+      amount = minAmount.checked_add(
+        Loader.Cardano.Value.new(
+          Loader.Cardano.BigNum.from_str(protocolParameters.minUTxO)
+        )
+      );
+    }
+
+    // Try covering the max fees
+    if (nbFreeUTxO > 0) {
+      let maxFee =
+        BigInt(protocolParameters.minFeeA) *
+          BigInt(protocolParameters.maxTxSize) +
+        BigInt(protocolParameters.minFeeB);
+
+      maxFee = Loader.Cardano.Value.new(
+        Loader.Cardano.BigNum.from_str(maxFee.toString())
+      );
+
+      amount = amount.checked_add(maxFee);
+    }
   }
 
   return cumulatedAmount.compare(amount) >= 0;
@@ -672,7 +674,6 @@ function cloneUTxOSelection(utxoSelection) {
     remaining: cloneUTxOList(utxoSelection.remaining),
     subset: cloneUTxOList(utxoSelection.subset),
     amount: cloneValue(utxoSelection.amount),
-    change: cloneValue(utxoSelection.change),
   };
 }
 
