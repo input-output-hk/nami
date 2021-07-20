@@ -464,7 +464,7 @@ export const isValidAddress = async (address) => {
       (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
       (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
     )
-      return true;
+      return addr.to_bytes();
     return false;
   } catch (e) {}
   try {
@@ -473,7 +473,7 @@ export const isValidAddress = async (address) => {
       (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
       (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
     )
-      return true;
+      return addr.to_address().to_bytes();
     return false;
   } catch (e) {}
   return false;

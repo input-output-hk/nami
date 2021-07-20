@@ -158,7 +158,9 @@ const Send = () => {
       const outputs = Loader.Cardano.TransactionOutputs.new();
       outputs.add(
         Loader.Cardano.TransactionOutput.new(
-          Loader.Cardano.Address.from_bech32(_address.result),
+          Loader.Cardano.Address.from_bytes(
+            await isValidAddress(_address.result)
+          ),
           await assetsToValue(output.amount)
         )
       );
