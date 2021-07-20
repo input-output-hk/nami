@@ -492,6 +492,7 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
     >
       <PopoverTrigger>
         <Input
+          autoComplete="off"
           value={address.result}
           onBlur={async (e) => {
             await new Promise((res, rej) => setTimeout(() => res()));
