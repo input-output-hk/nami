@@ -125,17 +125,17 @@ const Wallet = () => {
   }); // for quicker displaying
   const builderRef = React.useRef();
 
-  const checkTransactions = async () => {
-    const currentAccount = await getCurrentAccount();
-    const transactions = await getTransactions();
-    if (
-      transactions.length > 0 &&
-      !currentAccount.history.confirmed.includes(transactions[0].txHash)
-    ) {
-      await getData();
-    }
-    return setTimeout(() => checkTransactions(), 10000);
-  };
+  const checkTransactions = () =>
+    setInterval(async () => {
+      const currentAccount = await getCurrentAccount();
+      const transactions = await getTransactions();
+      if (
+        transactions.length > 0 &&
+        !currentAccount.history.confirmed.includes(transactions[0].txHash)
+      ) {
+        await getData();
+      }
+    }, 10000);
 
   const getData = async () => {
     const currentIndex = await getCurrentAccountIndex();
@@ -167,13 +167,17 @@ const Wallet = () => {
     }));
   };
 
-  const init = async () => {
-    await getData();
-    checkTransactions();
-  };
-
   React.useEffect(() => {
-    init().then(() => onAccountChange(async () => getData()));
+    let accountChangeHandler;
+    let txInterval;
+    getData().then(() => {
+      txInterval = checkTransactions();
+      accountChangeHandler = onAccountChange(getData);
+    });
+    return () => {
+      clearInterval(txInterval);
+      window.removeEventListener('message', accountChangeHandler);
+    };
   }, []);
 
   return (

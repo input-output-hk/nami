@@ -12,7 +12,7 @@ import AssetFingerprint from '@emurgo/cip14-js';
 import { hexToAscii } from '../util';
 
 export const onAccountChange = (callback) => {
-  window.addEventListener('message', function responseHandler(e) {
+  function responseHandler(e) {
     const response = e.data;
     if (
       typeof response !== 'object' ||
@@ -26,7 +26,9 @@ export const onAccountChange = (callback) => {
     )
       return;
     callback(response.data);
-  });
+  }
+  window.addEventListener('message', responseHandler);
+  return responseHandler;
 };
 
 export const initTx = async () => {
