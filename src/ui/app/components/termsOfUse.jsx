@@ -86,7 +86,7 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                 PASSWORD(S), USER ACKNOWLEDGES AND AGREES THAT ANY ADA OR ANY
                 OTHER CRYPTOCURRENCIES USER HAS ASSOCIATED WITH THAT
                 CRYPTOCURRENCY WALLET WILL BECOME INACCESSIBLE. All transaction
-                requests are irreversible. The Berry and its shareholders,
+                requests are irreversible. Berry and its shareholders,
                 directors, officers, employees, affiliates and agents cannot
                 guarantee transaction confirmation or retrieve User's private
                 keys or passwords if User loses or forgets them.
@@ -96,9 +96,9 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                 &nbsp;User agrees that from time to time the Software may be
                 inaccessible or inoperable for any reason, including, without
                 limitation: (i) equipment malfunctions; (ii) periodic
-                maintenance procedures or repairs which the Berry may undertake
-                from time to time; or (iii) causes beyond the control of the
-                Berry or which are not reasonably foreseeable by the Berry.
+                maintenance procedures or repairs which Berry may undertake from
+                time to time; or (iii) causes beyond the control of the Berry or
+                which are not reasonably foreseeable by Berry.
               </p>
               <p>
                 <span style={{ fontSize: 15 }}>c. Equipment.</span>&nbsp;User
@@ -122,17 +122,17 @@ const TermsOfUse = React.forwardRef((props, ref) => {
               </p>
               <p>
                 <span style={{ fontSize: 15 }}>e. Privacy.</span>&nbsp;When
-                reasonably practicable, the Berry will attempt to respect User's
-                privacy. The Berry will not monitor, edit, or disclose any
-                personal information about User or User's account, including its
-                contents or User's use of the Software, without User's prior
-                consent unless the Berry believes in good faith that such action
-                is necessary to: (i) comply with legal process or other legal
+                reasonably practicable, Berry will attempt to respect User's
+                privacy. Berry will not monitor, edit, or disclose any personal
+                information about User or User's account, including its contents
+                or User's use of the Software, without User's prior consent
+                unless Berry believes in good faith that such action is
+                necessary to: (i) comply with legal process or other legal
                 requirements of any governmental authority; (ii) protect and
                 defend the rights or property Berry; (iii) enforce this
                 Agreement; (iv) protect the interests of users of the Software
                 other than User or any other person; or (v) operate or conduct
-                maintenance and repair of the Berry's services or equipment,
+                maintenance and repair of Berry's services or equipment,
                 including the Software as authorized by law. User has no
                 expectation of privacy with respect to the Internet generally.
                 User's IP address is transmitted and recorded with each message
