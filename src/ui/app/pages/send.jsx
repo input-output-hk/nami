@@ -534,7 +534,7 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
         onFocus={() => {
           ref.current = true;
         }}
-        _focus={{}}
+        _focus={{ outline: 'none' }}
       >
         <PopoverBody pr="-2">
           <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={240}>
