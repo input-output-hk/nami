@@ -9,7 +9,12 @@ import SettingsProvider from './app/components/settingsProvider';
 
 import '@fontsource/ubuntu/latin.css';
 
+const colorMode = localStorage['chakra-ui-color-mode'];
+
 const theme = extendTheme({
+  config: {
+    useSystemColorMode: colorMode ? false : true,
+  },
   styles: {
     global: {
       body: {
