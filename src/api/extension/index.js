@@ -161,7 +161,7 @@ export const setBalanceWarning = async () => {
     `/accounts/${currentAccount.rewardAddr}/addresses?count=2`
   );
 
-  if (!result.error || result.length > 1) {
+  if (result.length > 1) {
     const fullBalance = await getFullBalance();
     if (fullBalance !== currentAccount[network.id].lovelace) {
       warning.active = true;
