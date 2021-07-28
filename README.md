@@ -140,7 +140,7 @@ Returns the transaction hash, if transaction was submitted successfully, otherwi
 cardano.onAccountChange((addresses : [BaseAddress]) => void)
 ```
 
-##### cardano.onNetworkChange(addresses)
+##### cardano.onNetworkChange(network)
 
 ```
 cardano.onNetworkChange((network : number) => void)
