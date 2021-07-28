@@ -92,6 +92,7 @@ export const EVENT = {
   txSubmit: 'txSubmit',
   txConfirmation: 'txConfirmation',
   accountChange: 'accountChange',
+  networkChange: 'networkChange',
 };
 
 // Errors dApp Connector

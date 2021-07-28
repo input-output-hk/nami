@@ -70,7 +70,7 @@ export const submitTx = async (tx) => {
 };
 
 export const onAccountChange = (callback) => {
-  window.addEventListener('message', function responseHandler(e) {
+  function responseHandler(e) {
     const response = e.data;
     if (
       typeof response !== 'object' ||
@@ -85,5 +85,36 @@ export const onAccountChange = (callback) => {
       return;
     // window.removeEventListener('message', responseHandler);
     callback(response.data);
-  });
+  }
+  window.addEventListener('message', responseHandler);
+  return {
+    remove: () => {
+      window.removeEventListener('message', responseHandler);
+    },
+  };
+};
+
+export const onNetworkChange = (callback) => {
+  function responseHandler(e) {
+    const response = e.data;
+    if (
+      typeof response !== 'object' ||
+      response === null ||
+      !response.target ||
+      response.target !== TARGET ||
+      !response.event ||
+      response.event !== EVENT.networkChange ||
+      !response.sender ||
+      response.sender !== SENDER.extension
+    )
+      return;
+    // window.removeEventListener('message', responseHandler);
+    callback(response.data);
+  }
+  window.addEventListener('message', responseHandler);
+  return {
+    remove: () => {
+      window.removeEventListener('message', responseHandler);
+    },
+  };
 };

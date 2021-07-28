@@ -7,6 +7,7 @@ import {
   getUtxos,
   isEnabled,
   onAccountChange,
+  onNetworkChange,
   signData,
   signTx,
   submitTx,
@@ -46,4 +47,5 @@ window.cardano = {
   getRewardAddress: () => getRewardAddress(),
   getNetworkId: () => getNetworkId(),
   onAccountChange: (callback) => onAccountChange(callback),
+  onNetworkChange: (callback) => onNetworkChange(callback),
 };

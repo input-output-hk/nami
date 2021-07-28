@@ -176,7 +176,7 @@ const Wallet = () => {
     });
     return () => {
       clearInterval(txInterval);
-      window.removeEventListener('message', accountChangeHandler);
+      accountChangeHandler.remove();
     };
   }, []);
 
