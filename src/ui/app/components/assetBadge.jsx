@@ -24,13 +24,31 @@ const useIsMounted = () => {
   return isMounted;
 };
 
+function timeout(ms, promise) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('TIMEOUT'));
+    }, ms);
+
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((reason) => {
+        clearTimeout(timer);
+        reject(reason);
+      });
+  });
+}
+
 const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const isMounted = useIsMounted();
   const [initialWidth, setInitialWidth] = React.useState(
     BigInt(asset.quantity) <= 1 ? 60 : 85
   );
-  const [load, setLoad] = React.useState(true);
   const [width, setWidth] = React.useState(initialWidth);
+  const [token, setToken] = React.useState(null);
 
   const fetchMetadata = async () => {
     if (asset && asset.loaded) return;
@@ -45,9 +63,28 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
         linkToSrc(result.onchain_metadata.image)) ||
       (result.metadata && linkToSrc(result.metadata.logo)) ||
       '';
+
+    if (image && image.startsWith('https://')) {
+      if (!isMounted.current) return;
+      setToken({ displayName: name, ...asset, image: 'LOADING' });
+      try {
+        console.log(image);
+        image = await timeout(
+          6000,
+          fetch(image)
+            .then((res) => res.blob())
+            .then((image) => URL.createObjectURL(image))
+        );
+      } catch (e) {
+        image = 'FAILED';
+      }
+    }
     if (!isMounted.current) return;
-    onLoad({ displayName: name, image });
-    setLoad(false);
+    setToken({
+      displayName: name,
+      image,
+      ...asset,
+    });
   };
 
   React.useEffect(() => {
@@ -73,10 +110,10 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
               alignItems="center"
               justifyContent="center"
             >
-              {load ? (
+              {!token ? (
                 <SkeletonCircle size="5" />
               ) : (
-                <AssetPopover asset={asset}>
+                <AssetPopover asset={token}>
                   <Button
                     style={{
                       all: 'revert',
@@ -93,16 +130,16 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
                       justifyContent: 'center',
                     }}
                   >
-                    <Image
-                      src={asset.image}
-                      fallback={
-                        asset.image ? (
-                          <SkeletonCircle size="5" />
-                        ) : (
-                          <Avatar size="xs" name={asset.name} />
-                        )
-                      }
-                    />
+                    {token.image === 'LOADING' ? (
+                      <SkeletonCircle size="5" />
+                    ) : (
+                      <Image
+                        width="full"
+                        rounded="sm"
+                        src={token.image}
+                        fallback={<Fallback name={token.name} />}
+                      />
+                    )}
                   </Button>
                 </AssetPopover>
               )}
@@ -139,6 +176,14 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
       </InputGroup>
     </Box>
   );
+};
+
+const Fallback = ({ name }) => {
+  const [wait, setWait] = React.useState(true);
+  React.useEffect(() => {
+    setTimeout(() => setWait(false), 100);
+  });
+  return !wait && <Avatar size="xs" name={name} />;
 };
 
 export default AssetBadge;

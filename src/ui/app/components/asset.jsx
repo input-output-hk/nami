@@ -21,6 +21,24 @@ const useIsMounted = () => {
   return isMounted;
 };
 
+function timeout(ms, promise) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('TIMEOUT'));
+    }, ms);
+
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((reason) => {
+        clearTimeout(timer);
+        reject(reason);
+      });
+  });
+}
+
 const Asset = ({ asset, onLoad, storedAssets }) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
@@ -41,10 +59,21 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
         linkToSrc(result.onchain_metadata.image)) ||
       (result.metadata && linkToSrc(result.metadata.logo, true)) ||
       '';
-    if (image && image.startsWith('https://'))
-      image = await fetch(image)
-        .then((res) => res.blob())
-        .then((image) => URL.createObjectURL(image));
+
+    if (image && image.startsWith('https://')) {
+      if (!isMounted.current) return;
+      setToken({ displayName: name, ...asset, image: 'LOADING' });
+      try {
+        image = await timeout(
+          6000,
+          fetch(image)
+            .then((res) => res.blob())
+            .then((image) => URL.createObjectURL(image))
+        );
+      } catch (e) {
+        image = 'FAILED';
+      }
+    }
     onLoad({
       displayName: name,
       image,
@@ -96,18 +125,16 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
                 cursor: 'pointer',
               }}
             >
-              <Image
-                width="full"
-                rounded="sm"
-                src={token.image}
-                fallback={
-                  token.image ? (
-                    <SkeletonCircle size="14" />
-                  ) : (
-                    <Avatar name={token.name} />
-                  )
-                }
-              />
+              {token.image === 'LOADING' ? (
+                <SkeletonCircle size="14" />
+              ) : (
+                <Image
+                  width="full"
+                  rounded="sm"
+                  src={token.image}
+                  fallback={<Fallback name={token.name} />}
+                />
+              )}
             </Button>
           )}
         </Box>
@@ -148,6 +175,14 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
       </Box>
     </Box>
   );
+};
+
+const Fallback = ({ name }) => {
+  const [wait, setWait] = React.useState(true);
+  React.useEffect(() => {
+    setTimeout(() => setWait(false), 100);
+  });
+  return !wait && <Avatar name={name} />;
 };
 
 export default Asset;
