@@ -20,7 +20,7 @@ import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
 import { assetsToValue, utxoToStructure, valueToAssets } from './wallet';
-import { blockfrostRequest } from '../util';
+import { blockfrostRequest, networkNameToId } from '../util';
 
 const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -332,6 +332,7 @@ export const getNetwork = async () => {
 };
 
 export const setNetwork = async (network) => {
+  const currentNetwork = await getNetwork();
   let id;
   let node;
   if (network.id === NETWORK_ID.mainnet) {
@@ -341,7 +342,8 @@ export const setNetwork = async (network) => {
     id = NETWORK_ID.testnet;
     node = NODE.testnet;
   }
-  if (network.node) node = node;
+  if (network.node) node = network.node;
+  if (currentNetwork.id !== id) emitNetworkChange(networkNameToId(id));
   await setStorage({
     [STORAGE.network]: { id, node },
   });
@@ -673,6 +675,20 @@ export const submitTx = async (tx) => {
     else throw APIError.InvalidRequest;
   }
   return result;
+};
+
+const emitNetworkChange = async (networkId) => {
+  //to webpage
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach((tab) =>
+      chrome.tabs.sendMessage(tab.id, {
+        data: networkId,
+        target: TARGET,
+        sender: SENDER.extension,
+        event: EVENT.networkChange,
+      })
+    );
+  });
 };
 
 const emitAccountChange = async (addresses) => {

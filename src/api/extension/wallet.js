@@ -28,7 +28,11 @@ export const onAccountChange = (callback) => {
     callback(response.data);
   }
   window.addEventListener('message', responseHandler);
-  return responseHandler;
+  return {
+    remove: () => {
+      window.removeEventListener('message', responseHandler);
+    },
+  };
 };
 
 export const initTx = async () => {

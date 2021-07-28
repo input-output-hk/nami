@@ -1,6 +1,7 @@
 import { getNetwork } from './extension';
 import provider from '../config/provider';
 import Loader from './loader';
+import { NETWORK_ID } from '../config/config';
 
 export const blockfrostRequest = async (endpoint, headers, body) => {
   const network = await getNetwork();
@@ -26,6 +27,11 @@ export const hexToAscii = (hex) => {
   for (var i = 0; i < _hex.length && _hex.substr(i, 2) !== '00'; i += 2)
     str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
   return str;
+};
+
+export const networkNameToId = (name) => {
+  const names = { [NETWORK_ID.mainnet]: 1, [NETWORK_ID.testnet]: 0 };
+  return names[name];
 };
 
 //returns the total amount of assets included in Value (excluding ADA)
