@@ -7,9 +7,9 @@ import {
   Text,
   Button,
 } from '@chakra-ui/react';
+import { isIPFS } from 'ipfs';
 import React from 'react';
 import { blockfrostRequest, linkToSrc } from '../../../api/util';
-import provider from '../../../config/provider';
 import AssetPopover from './assetPopover';
 
 const useIsMounted = () => {
@@ -21,25 +21,7 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-function timeout(ms, promise) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error('TIMEOUT'));
-    }, ms);
-
-    promise
-      .then((value) => {
-        clearTimeout(timer);
-        resolve(value);
-      })
-      .catch((reason) => {
-        clearTimeout(timer);
-        reject(reason);
-      });
-  });
-}
-
-const Asset = ({ asset, onLoad, storedAssets }) => {
+const Asset = ({ asset, onLoad, storedAssets, port }) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
 
@@ -59,20 +41,26 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
         linkToSrc(result.onchain_metadata.image)) ||
       (result.metadata && linkToSrc(result.metadata.logo, true)) ||
       '';
+    setToken({ displayName: name, ...asset, image: 'loading' });
 
-    if (image && image.startsWith('https://')) {
-      if (!isMounted.current) return;
-      setToken({ displayName: name, ...asset, image: 'LOADING' });
-      try {
-        image = await timeout(
-          6000,
-          fetch(image)
-            .then((res) => res.blob())
-            .then((image) => URL.createObjectURL(image))
-        );
-      } catch (e) {
-        image = 'FAILED';
-      }
+    if (image && isIPFS.multihash(image)) {
+      const port = chrome.runtime.connect({
+        name: 'IPFS-' + asset.unit,
+      });
+      port.postMessage({
+        hash: image,
+      });
+      image = await new Promise((res, rej) =>
+        port.onMessage.addListener(function listener(url) {
+          port.onMessage.removeListener(listener);
+          res(url);
+          return;
+        })
+      );
+    } else if (image && image.startsWith('http')) {
+      image = await fetch(image)
+        .then((res) => res.blob())
+        .then((image) => URL.createObjectURL(image));
     }
     onLoad({
       displayName: name,
@@ -80,11 +68,10 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
       ...asset,
     });
     if (!isMounted.current) return;
-    setToken({
-      displayName: name,
+    setToken((t) => ({
+      ...t,
       image,
-      ...asset,
-    });
+    }));
   };
 
   React.useEffect(() => {
@@ -125,16 +112,18 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
                 cursor: 'pointer',
               }}
             >
-              {token.image === 'LOADING' ? (
-                <SkeletonCircle size="14" />
-              ) : (
-                <Image
-                  width="full"
-                  rounded="sm"
-                  src={token.image}
-                  fallback={<Fallback name={token.name} />}
-                />
-              )}
+              <Image
+                width="full"
+                rounded="sm"
+                src={token.image}
+                fallback={
+                  !token.image ? (
+                    <Avatar name={token.name} />
+                  ) : (
+                    <Fallback name={token.name} />
+                  )
+                }
+              />
             </Button>
           )}
         </Box>
@@ -178,11 +167,12 @@ const Asset = ({ asset, onLoad, storedAssets }) => {
 };
 
 const Fallback = ({ name }) => {
-  const [wait, setWait] = React.useState(true);
+  const [timedOut, setTimedOut] = React.useState(false);
   React.useEffect(() => {
-    setTimeout(() => setWait(false), 100);
-  });
-  return !wait && <Avatar name={name} />;
+    setTimeout(() => setTimedOut(true), 30000);
+  }, []);
+  if (timedOut) return <Avatar name={name} />;
+  return <SkeletonCircle size="14" />;
 };
 
 export default Asset;
