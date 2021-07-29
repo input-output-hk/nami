@@ -10,6 +10,7 @@ import {
   InputRightElement,
   SkeletonCircle,
 } from '@chakra-ui/react';
+import { isIPFS } from 'ipfs';
 import React from 'react';
 import { toUnit } from '../../../api/extension';
 import { blockfrostRequest, linkToSrc } from '../../../api/util';
@@ -23,24 +24,6 @@ const useIsMounted = () => {
   }, []);
   return isMounted;
 };
-
-function timeout(ms, promise) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error('TIMEOUT'));
-    }, ms);
-
-    promise
-      .then((value) => {
-        clearTimeout(timer);
-        resolve(value);
-      })
-      .catch((reason) => {
-        clearTimeout(timer);
-        reject(reason);
-      });
-  });
-}
 
 const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const isMounted = useIsMounted();
@@ -64,27 +47,32 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
       (result.metadata && linkToSrc(result.metadata.logo)) ||
       '';
 
-    if (image && image.startsWith('https://')) {
-      if (!isMounted.current) return;
-      setToken({ displayName: name, ...asset, image: 'LOADING' });
-      try {
-        console.log(image);
-        image = await timeout(
-          6000,
-          fetch(image)
-            .then((res) => res.blob())
-            .then((image) => URL.createObjectURL(image))
-        );
-      } catch (e) {
-        image = 'FAILED';
-      }
+    setToken({ displayName: name, ...asset, image: 'loading' });
+
+    if (image && isIPFS.multihash(image)) {
+      const port = chrome.runtime.connect({
+        name: 'IPFS-' + asset.unit,
+      });
+      port.postMessage({
+        hash: image,
+      });
+      image = await new Promise((res, rej) =>
+        port.onMessage.addListener(function listener(url) {
+          port.onMessage.removeListener(listener);
+          res(url);
+          return;
+        })
+      );
+    } else if (image && image.startsWith('http')) {
+      image = await fetch(image)
+        .then((res) => res.blob())
+        .then((image) => URL.createObjectURL(image));
     }
     if (!isMounted.current) return;
-    setToken({
-      displayName: name,
+    setToken((t) => ({
+      ...t,
       image,
-      ...asset,
-    });
+    }));
   };
 
   React.useEffect(() => {
@@ -130,16 +118,18 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
                       justifyContent: 'center',
                     }}
                   >
-                    {token.image === 'LOADING' ? (
-                      <SkeletonCircle size="5" />
-                    ) : (
-                      <Image
-                        width="full"
-                        rounded="sm"
-                        src={token.image}
-                        fallback={<Fallback name={token.name} />}
-                      />
-                    )}
+                    <Image
+                      width="full"
+                      rounded="sm"
+                      src={token.image}
+                      fallback={
+                        !token.image ? (
+                          <Avatar size="xs" name={token.name} />
+                        ) : (
+                          <Fallback name={token.name} />
+                        )
+                      }
+                    />
                   </Button>
                 </AssetPopover>
               )}
@@ -179,11 +169,12 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
 };
 
 const Fallback = ({ name }) => {
-  const [wait, setWait] = React.useState(true);
+  const [timedOut, setTimedOut] = React.useState(false);
   React.useEffect(() => {
-    setTimeout(() => setWait(false), 100);
-  });
-  return !wait && <Avatar size="xs" name={name} />;
+    setTimeout(() => setTimedOut(true), 30000);
+  }, []);
+  if (timedOut) return <Avatar size="xs" name={name} />;
+  return <SkeletonCircle size="5" />;
 };
 
 export default AssetBadge;

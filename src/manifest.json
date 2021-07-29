@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "A wallet to experience Cardano to the fullest",
   "name": "Nami Wallet",
-  "background": { "scripts": ["background.bundle.js"], "persistent": false },
+  "background": { "scripts": ["background.bundle.js"], "persistent": true },
   "browser_action": {
     "default_popup": "mainPopup.html",
     "default_icon": "icon-34.png"
