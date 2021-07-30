@@ -4,7 +4,6 @@ import {
   displayUnit,
   getAccounts,
   getCurrentAccount,
-  getCurrentAccountIndex,
   getUtxos,
   isValidAddress,
   toUnit,
@@ -51,7 +50,6 @@ import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
 import {
-  background,
   InputRightElement,
   LightMode,
   Spinner,
@@ -196,6 +194,7 @@ const Send = () => {
     };
     setTxInfo({ protocolParameters, utxos, balance });
   };
+  const inputColor = useColorModeValue('gray.100', 'gray.700');
 
   React.useEffect(() => {
     getInfo();
@@ -218,11 +217,11 @@ const Send = () => {
             icon={<ChevronLeftIcon boxSize="6" />}
           />
         </Box>
-        <Box height="20" />
+        <Box height="10" />
         <Text fontSize="lg" fontWeight="bold">
-          Send To
+          Send
         </Text>
-        <Box height="6" />
+        <Box height="10" />
         <Box
           display="flex"
           alignItems="center"
@@ -240,10 +239,11 @@ const Send = () => {
               Address is invalid
             </Text>
           )}
-          <Box height="4" />
+          <Box height="6" />
           <Stack direction="row" alignItems="center" justifyContent="center">
             <InputGroup size="sm" flex={3}>
               <InputLeftAddon
+                border="none"
                 rounded="md"
                 children={
                   loaded ? (
@@ -259,6 +259,8 @@ const Send = () => {
                 }
               />
               <Input
+                focusBorderColor={inputColor}
+                variant="filled"
                 isDisabled={!loaded}
                 isInvalid={
                   value.ada &&
@@ -314,7 +316,7 @@ const Send = () => {
           <Scrollbars
             style={{
               width: '100%',
-              height: '150px',
+              height: '170px',
             }}
           >
             <Box display="flex" width="full" flexWrap="wrap" paddingRight="2">
@@ -450,6 +452,7 @@ const Send = () => {
 
 // Address Popup
 const AddressPopup = ({ setAddress, address, prepareTx }) => {
+  const inputColor = useColorModeValue('gray.100', 'gray.700');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const ref = React.useRef(false);
   const [state, setState] = React.useState({
@@ -488,10 +491,13 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
         }
         onClose();
       }}
-      gutter={0}
+      gutter={1}
     >
       <PopoverTrigger>
         <Input
+          focusBorderColor={inputColor}
+          rounded="lg"
+          variant="filled"
           autoComplete="off"
           value={address.result}
           onBlur={async (e) => {
@@ -537,7 +543,11 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
         _focus={{ outline: 'none' }}
       >
         <PopoverBody pr="-2">
-          <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={240}>
+          <Scrollbars
+            style={{ width: '100%', overflowX: 'hidden' }}
+            autoHeight
+            autoHeightMax={240}
+          >
             <Box
               display="flex"
               flexDirection="column"
@@ -691,6 +701,7 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
 
 let clicked = false;
 const AssetsSelector = ({ assets, setValue, value }) => {
+  const inputColor = useColorModeValue('gray.200', 'gray.600');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [search, setSearch] = React.useState('');
   const select = React.useRef(false);
@@ -742,6 +753,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
             <Input
               value={search}
               size="sm"
+              focusBorderColor={inputColor}
               variant="filled"
               rounded="md"
               placeholder="Search policy, asset, name"

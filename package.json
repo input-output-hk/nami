@@ -13,6 +13,7 @@
     "prettier": "prettier --write '**/*.{js,jsx,css,html}'"
   },
   "dependencies": {
+    "@chakra-ui/css-reset": "^1.0.0",
     "@chakra-ui/icons": "^1.0.13",
     "@chakra-ui/react": "^1.6.4",
     "@dicebear/avatars": "^4.6.4",
@@ -31,6 +32,7 @@
     "crypto-random-string": "^4.0.0",
     "easy-peasy": "^5.0.3",
     "file-type": "^16.5.2",
+    "focus-visible": "^5.2.0",
     "framer-motion": "^4.1.16",
     "ipfs": "^0.56.0",
     "is-svg": "^4.3.1",

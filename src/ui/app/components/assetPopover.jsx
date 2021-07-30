@@ -27,7 +27,8 @@ const AssetPopover = ({ asset, gutter, ...props }) => {
           <PopoverArrow ml="4px" />
           <PopoverCloseButton />
           <PopoverBody
-            p="-2"
+            py="-2"
+            px="2"
             alignItems="center"
             justifyContent="center"
             display="flex"
