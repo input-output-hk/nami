@@ -49,6 +49,7 @@ const ConfirmModal = React.forwardRef((props, ref) => {
           {props.info}
           <InputGroup size="md">
             <Input
+              focusBorderColor="teal.400"
               variant="filled"
               isInvalid={state.wrongPassword === true}
               pr="4.5rem"

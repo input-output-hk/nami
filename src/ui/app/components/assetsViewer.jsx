@@ -185,6 +185,7 @@ const Search = ({ setSearch, assets }) => {
   }, [input, assets]);
   return (
     <Popover
+      returnFocusOnClose={false}
       matchWidth={true}
       placement="bottom-start"
       onOpen={() => setTimeout(() => ref.current.focus())}
@@ -194,8 +195,7 @@ const Search = ({ setSearch, assets }) => {
           aria-label="Search assets"
           rounded="md"
           variant="ghost"
-          colorScheme="orange"
-          icon={<SearchIcon boxSize="4" />}
+          icon={<SearchIcon color="orange.400" boxSize="4" />}
         />
       </PopoverTrigger>
       <PopoverContent w="100%">
@@ -209,6 +209,7 @@ const Search = ({ setSearch, assets }) => {
         >
           <InputGroup size="sm">
             <Input
+              focusBorderColor="teal.400"
               ref={ref}
               value={input}
               width={290}

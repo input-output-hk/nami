@@ -137,6 +137,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
           }
         />
         <Input
+          focusBorderColor="teal.400"
           width={`${width}px`}
           maxWidth="130px"
           isReadOnly={BigInt(asset.quantity) <= 1}

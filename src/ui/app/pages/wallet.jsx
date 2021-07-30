@@ -464,9 +464,8 @@ const Wallet = () => {
               </LightMode>
               <PopoverContent width="60">
                 <PopoverArrow />
-                <PopoverCloseButton />
                 <PopoverBody
-                  mt="6"
+                  mt="5"
                   alignItems="center"
                   justifyContent="center"
                   display="flex"
@@ -480,6 +479,7 @@ const Wallet = () => {
                     <Box height="4" />
                     <Copy label="Copied address" copy={info.paymentAddr}>
                       <Text
+                        maxWidth="200px"
                         fontSize="xs"
                         lineHeight="1.2"
                         cursor="pointer"
