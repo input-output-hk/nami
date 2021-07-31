@@ -16,7 +16,6 @@ export const startIpfs = () => {
   chrome.runtime.onConnect.addListener(function (port) {
     if (!port.name.startsWith('IPFS')) return;
     port.onMessage.addListener(async function (msg) {
-      await initIpfs();
       for await (const file of ipfs.get(msg.hash)) {
         const content = [];
         for await (const chunk of file.content) {
