@@ -10,7 +10,7 @@ const MS = require('./message-signing/rust/pkg/emurgo_message_signing'); //messa
  * @param {string} payload - hex encoded
  * @param {string} coseSign1Hex - hex encoded
  */
-const verfiy = (address, payload, coseSign1Hex) => {
+const verify = (address, payload, coseSign1Hex) => {
   const coseSign1 = MS.COSESign1.from_bytes(Buffer.from(coseSign1Hex, 'hex'));
   const payloadCose = coseSign1.payload();
 
