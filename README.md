@@ -140,13 +140,13 @@ Returns the transaction hash, if transaction was submitted successfully, otherwi
 cardano.onAccountChange((addresses : [BaseAddress]) => void)
 ```
 
+**Note** To follow the standards of multiple addresses the callback will return an array, although Nami Wallet will just return an array with a single address, which is the same as the one in `cardano.getUsedAddresses()`.
+
 ##### cardano.onNetworkChange(network)
 
 ```
 cardano.onNetworkChange((network : number) => void)
 ```
-
-**Note** To follow the standards of multiple addresses the callback will return an array, although Nami Wallet will just return an array with a single address, which is the same as the one in `cardano.getUsedAddresses()`.
 
 ### Develop
 
