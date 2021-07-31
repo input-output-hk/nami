@@ -64,6 +64,7 @@ const txTypeLabel = {
   stake: 'Stake Registration',
   poolUpdate: 'Pool Update',
   poolRetire: 'Pool Retire',
+  mint: 'Asset(s) Minted/Burnt',
 };
 
 const useIsMounted = () => {
