@@ -337,7 +337,7 @@ const Wallet = () => {
                     Object.keys(state.accounts).length - 1 &&
                   Object.keys(state.accounts).length > 1 && (
                     <MenuItem
-                      color="red.500"
+                      color="red.300"
                       icon={<DeleteIcon />}
                       onClick={() => deletAccountRef.current.openModal()}
                     >
