@@ -20,7 +20,6 @@ import {
   PopoverHeader,
   PopoverTrigger,
 } from '@chakra-ui/popover';
-import { LightMode } from '@chakra-ui/react';
 import Copy from '../components/copy';
 import { Portal } from '@chakra-ui/portal';
 import { Avatar } from '@chakra-ui/avatar';
@@ -563,15 +562,13 @@ const SignTx = ({ request, controller }) => {
           >
             Cancel
           </Button>
-          <LightMode>
-            <Button
-              isDisabled={!keyHashes.kind || keyHashes.kind.length <= 0}
-              colorScheme="orange"
-              onClick={() => ref.current.openModal()}
-            >
-              Sign
-            </Button>
-          </LightMode>
+          <Button
+            isDisabled={!keyHashes.kind || keyHashes.kind.length <= 0}
+            colorScheme="orange"
+            onClick={() => ref.current.openModal()}
+          >
+            Sign
+          </Button>
         </Box>
       </Box>
       <ConfirmModal

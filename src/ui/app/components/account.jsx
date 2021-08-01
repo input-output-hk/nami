@@ -8,7 +8,7 @@ import AvatarLoader from './avatarLoader';
 
 const Account = () => {
   const avatarBg = useColorModeValue('white', 'gray.800');
-  const panelBg = useColorModeValue('teal.400', 'teal.900');
+  const panelBg = useColorModeValue('teal.400', 'gray.800');
   const [account, setAccount] = React.useState(null);
 
   React.useEffect(() => {

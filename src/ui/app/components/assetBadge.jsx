@@ -137,13 +137,13 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
           }
         />
         <Input
-          focusBorderColor="teal.400"
           width={`${width}px`}
           maxWidth="130px"
           isReadOnly={BigInt(asset.quantity) <= 1}
           value={asset.input || ''}
+          rounded="xl"
+          variant="filled"
           fontSize="xs"
-          rounded="lg"
           placeholder="Qty"
           onInput={(e) => {
             if (!e.target.value.match(/^\d*[0-9]\d*$/) && e.target.value)
