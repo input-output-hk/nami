@@ -321,7 +321,6 @@ const Send = () => {
                   <AssetBadge
                     onRemove={() => {
                       clearTimeout(timer);
-                      let hasInput = value.assets[index].input;
                       delete value.assets[index].input;
                       delete value.assets[index].loaded;
                       value.assets = value.assets.filter(
@@ -503,7 +502,7 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
             setTimeout(() => e.target.blur());
           }}
           fontSize="xs"
-          placeholder="Receiver"
+          placeholder="Recipient"
           onInput={async (e) => {
             clearTimeout(timer);
             const val = e.target.value;

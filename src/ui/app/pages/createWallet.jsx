@@ -333,8 +333,9 @@ const MakeAccount = (props) => {
       display="flex"
       alignItems="center"
       justifyContent="center"
+      width="100%"
     >
-      <Box width="85%">
+      <Box width="70%">
         <Text fontWeight="bold" fontSize="xl">
           Create Account
         </Text>
@@ -345,7 +346,7 @@ const MakeAccount = (props) => {
         ></Input>
         <Spacer height="6" />
 
-        <InputGroup size="md">
+        <InputGroup size="md" width="100%">
           <Input
             isInvalid={state.regularPassword === false}
             pr="4.5rem"

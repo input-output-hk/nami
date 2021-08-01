@@ -79,7 +79,7 @@ const SignData = ({ request, controller }) => {
           height="200px"
           rounded="lg"
           border="solid 2px"
-          borderColor="teal.400"
+          borderColor="teal.500"
           padding="2.5"
           wordBreak="break-all"
         >

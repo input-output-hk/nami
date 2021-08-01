@@ -68,6 +68,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
         .then((res) => res.blob())
         .then((image) => URL.createObjectURL(image));
     }
+    onLoad({ displayName: name, image, ...asset });
     if (!isMounted.current) return;
     setToken((t) => ({
       ...t,

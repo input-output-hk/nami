@@ -33,7 +33,7 @@ const Input = {
     },
   },
   defaultProps: {
-    focusBorderColor: 'teal.400',
+    focusBorderColor: 'teal.500',
   },
 };
 
@@ -45,7 +45,7 @@ const Checkbox = {
 
 const Select = {
   defaultProps: {
-    focusBorderColor: 'teal.400',
+    focusBorderColor: 'teal.500',
   },
 };
 

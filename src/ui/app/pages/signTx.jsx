@@ -8,7 +8,11 @@ import { Button } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import UnitDisplay from '../components/unitDisplay';
-import { ArrowRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import {
+  ArrowRightIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+} from '@chakra-ui/icons';
 import MiddleEllipsis from 'react-middle-ellipsis';
 import AssetFingerprint from '@emurgo/cip14-js';
 import {
@@ -27,6 +31,7 @@ import { FixedSizeList as List } from 'react-window';
 import { valueToAssets } from '../../../api/extension/wallet';
 import { TxSignError } from '../../../config/config';
 import { useSettings } from '../components/settingsProvider';
+import { useColorModeValue } from '@chakra-ui/react';
 
 const abs = (big) => {
   return big < 0 ? big * BigInt(-1) : big;
@@ -324,6 +329,7 @@ const SignTx = ({ request, controller }) => {
     getKeyHashes(tx, utxos, currentAccount);
     getProperties(tx);
   };
+  const valueBgColor = useColorModeValue('gray.100', 'gray.700');
 
   React.useEffect(() => {
     getInfo();
@@ -352,8 +358,8 @@ const SignTx = ({ request, controller }) => {
           alignItems="center"
           justifyContent="center"
           flexDirection="column"
-          rounded="lg"
-          shadow="md"
+          background={valueBgColor}
+          width="100%"
           padding="5"
         >
           {value.ownValue ? (
@@ -414,13 +420,7 @@ const SignTx = ({ request, controller }) => {
                       <AssetsPopover assets={assets} isDifference />
                     </Stack>
                   )}
-                  <Box
-                    height="1px"
-                    mt="3"
-                    mb="2"
-                    width="50%"
-                    background="GrayText"
-                  />
+                  <Box mt="1" mb="2" />
                   <Stack
                     direction="row"
                     alignItems="center"
@@ -446,8 +446,8 @@ const SignTx = ({ request, controller }) => {
         {value.externalValue && Object.keys(value.externalValue).length > 0 && (
           <Box fontSize="xs" mt="6">
             <Text textAlign="center" fontSize="16" fontWeight="bold">
-              Sending To
-              <ArrowRightIcon ml="4" />
+              Recipient
+              <ChevronRightIcon ml="2" />
             </Text>
             <Box height="2" />
             <Scrollbars style={{ width: '100%' }} autoHeight autoHeightMax={80}>
