@@ -12,7 +12,63 @@ import 'focus-visible/dist/focus-visible';
 
 const colorMode = localStorage['chakra-ui-color-mode'];
 
+const inputSizes = {
+  sm: {
+    borderRadius: 'lg',
+  },
+  md: {
+    borderRadius: 'lg',
+  },
+};
+
+const Input = {
+  sizes: {
+    sm: {
+      field: inputSizes.sm,
+      addon: inputSizes.sm,
+    },
+    md: {
+      field: inputSizes.md,
+      addon: inputSizes.md,
+    },
+  },
+  defaultProps: {
+    focusBorderColor: 'teal.400',
+  },
+};
+
+const Checkbox = {
+  defaultProps: {
+    colorScheme: 'teal',
+  },
+};
+
+const Select = {
+  defaultProps: {
+    focusBorderColor: 'teal.400',
+  },
+};
+
+const Button = {
+  baseStyle: {
+    borderRadius: 'lg',
+  },
+};
+
+const Switch = {
+  defaultProps: {
+    colorScheme: 'teal',
+  },
+};
+
 const theme = extendTheme({
+  components: {
+    Checkbox,
+    Input,
+    Select,
+    Button,
+    Switch,
+  },
   config: {
     useSystemColorMode: colorMode ? false : true,
   },

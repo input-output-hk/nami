@@ -194,7 +194,6 @@ const Send = () => {
     };
     setTxInfo({ protocolParameters, utxos, balance });
   };
-  const inputColor = useColorModeValue('gray.100', 'gray.700');
 
   React.useEffect(() => {
     getInfo();
@@ -221,7 +220,7 @@ const Send = () => {
         <Text fontSize="lg" fontWeight="bold">
           Send
         </Text>
-        <Box height="10" />
+        <Box height="12" />
         <Box
           display="flex"
           alignItems="center"
@@ -239,12 +238,11 @@ const Send = () => {
               Address is invalid
             </Text>
           )}
-          <Box height="6" />
+          <Box height="5" />
           <Stack direction="row" alignItems="center" justifyContent="center">
             <InputGroup size="sm" flex={3}>
               <InputLeftAddon
                 border="none"
-                rounded="md"
                 children={
                   loaded ? (
                     settings.adaSymbol
@@ -259,7 +257,6 @@ const Send = () => {
                 }
               />
               <Input
-                focusBorderColor={inputColor}
                 variant="filled"
                 isDisabled={!loaded}
                 isInvalid={
@@ -303,7 +300,6 @@ const Send = () => {
                   }, 800);
                 }}
                 placeholder="0.000000"
-                rounded="md"
               />
             </InputGroup>
             <AssetsSelector
@@ -404,16 +400,14 @@ const Send = () => {
           alignItems="center"
           justifyContent="center"
         >
-          <LightMode>
-            <Button
-              isDisabled={!tx || fee.error}
-              colorScheme="orange"
-              onClick={() => ref.current.openModal()}
-              rightIcon={<Icon as={BsArrowUpRight} />}
-            >
-              Send
-            </Button>
-          </LightMode>
+          <Button
+            isDisabled={!tx || fee.error}
+            colorScheme="orange"
+            onClick={() => ref.current.openModal()}
+            rightIcon={<Icon as={BsArrowUpRight} />}
+          >
+            Send
+          </Button>
         </Box>
       </Box>
       <ConfirmModal
@@ -452,7 +446,7 @@ const Send = () => {
 
 // Address Popup
 const AddressPopup = ({ setAddress, address, prepareTx }) => {
-  const inputColor = useColorModeValue('gray.100', 'gray.700');
+  const inputColor = useColorModeValue('teal.400', 'teal.600');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const ref = React.useRef(false);
   const [state, setState] = React.useState({
@@ -495,8 +489,7 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
     >
       <PopoverTrigger>
         <Input
-          focusBorderColor={inputColor}
-          rounded="lg"
+          // focusBorderColor={inputColor}
           variant="filled"
           autoComplete="off"
           value={address.result}
@@ -701,13 +694,11 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
 
 let clicked = false;
 const AssetsSelector = ({ assets, setValue, value }) => {
-  const inputColor = useColorModeValue('gray.200', 'gray.600');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [search, setSearch] = React.useState('');
   const select = React.useRef(false);
   const [choice, setChoice] = React.useState({});
   const hoverColor = useColorModeValue('gray.100', 'gray.600');
-  // const selectColor = useColorModeValue('orange.200', 'gray.700');
 
   const filterAssets = () => {
     const filter1 = (asset) =>
@@ -753,9 +744,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
             <Input
               value={search}
               size="sm"
-              focusBorderColor={inputColor}
               variant="filled"
-              rounded="md"
               placeholder="Search policy, asset, name"
               fontSize="xs"
               onInput={(e) => {
@@ -951,6 +940,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
 };
 
 const Selection = ({ select, asset, choice, setChoice }) => {
+  const selectColor = useColorModeValue('orange.500', 'orange.200');
   return (
     <Box
       rounded="full"
@@ -963,11 +953,11 @@ const Selection = ({ select, asset, choice, setChoice }) => {
         <Box
           width="100%"
           height="100%"
-          background="orange.400"
+          background={selectColor}
           display="flex"
           alignItems="center"
           justifyContent="center"
-          color="white"
+          color={selectColor === 'orange.200' ? 'black' : 'white'}
           onClick={(e) => {
             delete choice[asset.unit];
             setChoice({ ...choice });

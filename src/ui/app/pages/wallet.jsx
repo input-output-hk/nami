@@ -105,7 +105,7 @@ const Wallet = () => {
   const history = useHistory();
   const { settings } = useSettings();
   const avatarBg = useColorModeValue('white', 'gray.800');
-  const panelBg = useColorModeValue('teal.400', 'teal.900');
+  const panelBg = useColorModeValue('teal.400', 'gray.800');
   const [state, setState] = React.useState({
     account: null,
     accounts: null,
@@ -222,22 +222,20 @@ const Wallet = () => {
                   </DelegationPopover>
                 ) : (
                   state.network.id === NETWORK_ID.mainnet && (
-                    <LightMode>
-                      <Button
-                        onClick={() =>
-                          builderRef.current.initDelegation(
-                            state.account,
-                            state.delegation
-                          )
-                        }
-                        size="xs"
-                        background="white"
-                        color="orange.400"
-                        rounded="lg"
-                      >
-                        Delegate
-                      </Button>
-                    </LightMode>
+                    <Button
+                      onClick={() =>
+                        builderRef.current.initDelegation(
+                          state.account,
+                          state.delegation
+                        )
+                      }
+                      variant="solid"
+                      size="xs"
+                      colorScheme="whiteAlpha"
+                      rounded="lg"
+                    >
+                      Delegate
+                    </Button>
                   )
                 )}
               </>
@@ -448,20 +446,17 @@ const Wallet = () => {
             height="8"
           >
             <Popover matchWidth={true}>
-              <LightMode>
-                <PopoverTrigger>
-                  <Button
-                    rightIcon={<Icon as={BsArrowDownRight} />}
-                    background="white"
-                    color="orange.400"
-                    rounded="xl"
-                    size="sm"
-                    shadow="md"
-                  >
-                    Receive
-                  </Button>
-                </PopoverTrigger>
-              </LightMode>
+              <PopoverTrigger>
+                <Button
+                  rightIcon={<Icon as={BsArrowDownRight} />}
+                  colorScheme="teal"
+                  size="sm"
+                  rounded="xl"
+                  shadow="md"
+                >
+                  Receive
+                </Button>
+              </PopoverTrigger>
               <PopoverContent width="60">
                 <PopoverArrow />
                 <PopoverBody
@@ -501,18 +496,16 @@ const Wallet = () => {
             width="20"
             height="8"
           >
-            <LightMode>
-              <Button
-                onClick={() => history.push('/send')}
-                size="sm"
-                rightIcon={<Icon as={BsArrowUpRight} />}
-                colorScheme="orange"
-                rounded="xl"
-                shadow="md"
-              >
-                Send
-              </Button>
-            </LightMode>
+            <Button
+              onClick={() => history.push('/send')}
+              size="sm"
+              rounded="xl"
+              rightIcon={<Icon as={BsArrowUpRight} />}
+              colorScheme="orange"
+              shadow="md"
+            >
+              Send
+            </Button>
           </Box>
         </Box>
         <Box height="8" />
@@ -589,12 +582,9 @@ const NewAccountModal = React.forwardRef((props, ref) => {
       <ModalContent>
         <ModalHeader fontSize="md">Create new account</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
-          <Box display="flex" alignItems="center" justifyContent="center">
-            <Icon as={BsFillPersonPlusFill} w={6} h={6} />
-          </Box>
-          <Spacer height="4" />
+        <ModalBody px="10">
           <Input
+            autoFocus={true}
             onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
             placeholder="Enter account name"
           />
