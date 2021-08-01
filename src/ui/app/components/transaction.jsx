@@ -31,6 +31,7 @@ import {
   FaRegEdit,
   FaUserCheck,
 } from 'react-icons/fa';
+import { GiAnvilImpact } from 'react-icons/gi';
 import { Button } from '@chakra-ui/button';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -54,6 +55,7 @@ const txTypeColor = {
   stake: 'cyan.700',
   poolUpdate: 'green.400',
   poolRetire: 'red.500',
+  mint: 'cyan.500',
 };
 
 const txTypeLabel = {
@@ -62,6 +64,7 @@ const txTypeLabel = {
   stake: 'Stake Registration',
   poolUpdate: 'Pool Update',
   poolRetire: 'Pool Retire',
+  mint: 'Asset(s) Minted/Burnt',
 };
 
 const useIsMounted = () => {
@@ -253,6 +256,7 @@ const TxIcon = ({ txType, extra }) => {
     stake: FaUserCheck,
     poolUpdate: FaRegEdit,
     poolRetire: FaTrashAlt,
+    mint: GiAnvilImpact,
   };
 
   if (extra.length) txType = extra[0];
@@ -450,6 +454,7 @@ const getExtra = (info, txType) => {
   if (info.withdrawal_count && txType === 'internalIn')
     extra.push('withdrawal');
   if (info.delegation_count) extra.push('delegation');
+  if (info.asset_mint_or_burn_count) extra.push('mint');
   if (info.stake_cert_count) extra.push('stake');
   if (info.pool_retire_count) extra.push('poolRetire');
   if (info.pool_update_count) extra.push('poolUpdate');
