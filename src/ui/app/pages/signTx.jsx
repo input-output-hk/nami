@@ -329,7 +329,10 @@ const SignTx = ({ request, controller }) => {
     getKeyHashes(tx, utxos, currentAccount);
     getProperties(tx);
   };
-  const valueBgColor = useColorModeValue('gray.100', 'gray.700');
+  const valueBgColor = useColorModeValue(
+    { bg: 'gray.50', shadow: '#E2E8F0;' },
+    { bg: 'gray.700', shadow: '#1A202C' }
+  );
 
   React.useEffect(() => {
     getInfo();
@@ -358,9 +361,11 @@ const SignTx = ({ request, controller }) => {
           alignItems="center"
           justifyContent="center"
           flexDirection="column"
-          background={valueBgColor}
+          background={valueBgColor.bg}
+          rounded="xs"
           width="100%"
           padding="5"
+          boxShadow={`inset 0 0 8px ${valueBgColor.shadow};`}
         >
           {value.ownValue ? (
             (() => {
