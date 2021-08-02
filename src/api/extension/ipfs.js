@@ -7,15 +7,34 @@ export const startIpfs = () => {
   let ipfs;
   const initIpfs = async () => {
     if (ipfs) return;
-    console.time('IPFS Started');
-    ipfs = await Ipfs.create();
-    console.timeEnd('IPFS Started');
+    try {
+      console.time('IPFS Started');
+      const result = await Ipfs.create();
+      ipfs = result;
+      console.timeEnd('IPFS Started');
+    } catch (e) {
+      console.log(e);
+      return initIpfs();
+    }
   };
+
+  const awaitIpfs = () =>
+    new Promise((res, rej) => {
+      const interval = setInterval(() => {
+        if (ipfs) {
+          clearInterval(interval);
+          res();
+          return;
+        }
+      });
+    });
+
   initIpfs();
 
   chrome.runtime.onConnect.addListener(function (port) {
     if (!port.name.startsWith('IPFS')) return;
     port.onMessage.addListener(async function (msg) {
+      await awaitIpfs();
       for await (const file of ipfs.get(msg.hash)) {
         const content = [];
         for await (const chunk of file.content) {
