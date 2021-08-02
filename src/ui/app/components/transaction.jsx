@@ -442,9 +442,23 @@ const getTimestamp = (date) => {
 };
 
 const calculateAmount = (txType, currentAddr, uTxOList) => {
-  const outputs = ['internalIn', 'externalIn'].includes(txType)
-    ? uTxOList.outputs.filter((utxo) => utxo.address === currentAddr)
-    : uTxOList.outputs.filter((utxo) => utxo.address !== currentAddr);
+  let outputs;
+
+  switch (txType) {
+    case 'internalIn':
+    case 'externalIn':
+      outputs = uTxOList.outputs.filter((utxo) => utxo.address === currentAddr);
+      break;
+    case 'self':
+      let input = compileOutputs(uTxOList.inputs);
+      let output = compileOutputs(uTxOList.outputs);
+      output = output.filter(
+        (oAmount) => !input.some((iAmount) => iAmount.unit === oAmount.unit)
+      );
+      return output;
+    default:
+      outputs = uTxOList.outputs.filter((utxo) => utxo.address !== currentAddr);
+  }
 
   return compileOutputs(outputs);
 };
