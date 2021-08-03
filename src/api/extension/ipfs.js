@@ -2,6 +2,8 @@ import Ipfs from 'ipfs';
 import FileType from 'file-type/browser';
 import isSvg from 'is-svg';
 
+// currently not in use, because of some issues with keeping ipfs-js alive
+
 // Start IPFS Node
 export const startIpfs = () => {
   let ipfs;

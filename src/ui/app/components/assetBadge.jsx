@@ -49,21 +49,23 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
 
     setToken({ displayName: name, ...asset, image: 'loading' });
 
-    if (image && isIPFS.multihash(image)) {
-      const port = chrome.runtime.connect({
-        name: 'IPFS-' + asset.unit,
-      });
-      port.postMessage({
-        hash: image,
-      });
-      image = await new Promise((res, rej) =>
-        port.onMessage.addListener(function listener(url) {
-          port.onMessage.removeListener(listener);
-          res(url);
-          return;
-        })
-      );
-    } else if (image && image.startsWith('http')) {
+    // Will be enabled again when ipfs-js is more reliable to use
+    // if (image && isIPFS.multihash(image)) {
+    //   const port = chrome.runtime.connect({
+    //     name: 'IPFS-' + asset.unit,
+    //   });
+    //   port.postMessage({
+    //     hash: image,
+    //   });
+    //   image = await new Promise((res, rej) =>
+    //     port.onMessage.addListener(function listener(url) {
+    //       port.onMessage.removeListener(listener);
+    //       res(url);
+    //       return;
+    //     })
+    //   );
+    // }
+    if (image && image.startsWith('http')) {
       image = await fetch(image)
         .then((res) => res.blob())
         .then((image) => URL.createObjectURL(image));

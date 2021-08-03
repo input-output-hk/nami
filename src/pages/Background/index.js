@@ -11,7 +11,6 @@ import {
   verifyPayload,
   verifyTx,
 } from '../../api/extension';
-import { startIpfs } from '../../api/extension/ipfs';
 import { Messaging } from '../../api/messaging';
 import { APIError, METHOD, POPUP, SENDER, TARGET } from '../../config/config';
 
@@ -307,4 +306,3 @@ app.add(METHOD.signTx, async (request, sendResponse) => {
 });
 
 app.listen();
-startIpfs();
