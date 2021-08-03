@@ -853,7 +853,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                             setTimeout(() => (clicked = false), 500); // Prevent user from selecting multiple at once
                           }}
                           mr="3"
-                          ml="3"
+                          ml="4"
                           display="flex"
                           alignItems="center"
                           justifyContent="start"
