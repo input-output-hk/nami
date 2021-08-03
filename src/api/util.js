@@ -111,8 +111,8 @@ export const linkToSrc = (link, base64 = false) => {
   if (link.startsWith('https://')) return link;
   else if (link.startsWith('ipfs://'))
     return (
-      // provider.api.ipfs +
-      // '/' +
+      provider.api.ipfs +
+      '/' +
       link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
     );
   else if (link.startsWith('Qm') && link.length === 46) {
