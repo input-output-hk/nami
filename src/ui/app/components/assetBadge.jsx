@@ -34,7 +34,10 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const [token, setToken] = React.useState(null);
 
   const fetchMetadata = async () => {
-    if (asset && asset.loaded) return;
+    if (asset && asset.loaded) {
+      setToken({ ...asset });
+      return;
+    }
     const result = await blockfrostRequest(`/assets/${asset.unit}`);
     const name =
       (result.onchain_metadata && result.onchain_metadata.name) ||
@@ -70,7 +73,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
         .then((res) => res.blob())
         .then((image) => URL.createObjectURL(image));
     }
-    onLoad({ displayName: name, image, ...asset });
+    onLoad({ displayName: name, image });
     if (!isMounted.current) return;
     setToken((t) => ({
       ...t,

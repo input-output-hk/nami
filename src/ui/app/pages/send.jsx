@@ -62,6 +62,7 @@ import { useSettings } from '../components/settingsProvider';
 import AvatarLoader from '../components/avatarLoader';
 
 let timer = null;
+const assets = {};
 
 const Send = () => {
   const { settings } = useSettings();
@@ -195,8 +196,29 @@ const Send = () => {
     setTxInfo({ protocolParameters, utxos, balance });
   };
 
+  const objectToArray = (obj) => Object.keys(obj).map((key) => obj[key]);
+
+  const addAssets = (_assets) => {
+    _assets.forEach((asset) => {
+      assets[asset.unit] = asset;
+    });
+    const assetsList = objectToArray(assets);
+    setValue((v) => ({ ...v, assets: assetsList }));
+  };
+
+  const removeAsset = (asset) => {
+    delete assets[asset.unit];
+    const assetsList = objectToArray(assets);
+    setValue((v) => ({ ...v, assets: assetsList }));
+  };
+
   React.useEffect(() => {
     getInfo();
+    return () => {
+      Object.keys(assets).forEach((unit) => {
+        delete assets[unit];
+      });
+    };
   }, []);
   return (
     <>
@@ -303,6 +325,7 @@ const Send = () => {
               />
             </InputGroup>
             <AssetsSelector
+              addAssets={addAssets}
               assets={txInfo.balance.assets}
               setValue={setValue}
               value={value}
@@ -321,24 +344,22 @@ const Send = () => {
                   <AssetBadge
                     onRemove={() => {
                       clearTimeout(timer);
-                      delete value.assets[index].input;
-                      delete value.assets[index].loaded;
-                      value.assets = value.assets.filter(
-                        (a) => a.unit != asset.unit
-                      );
+                      removeAsset(asset);
                       const v = value;
-                      setValue((v) => ({ ...v, assets: value.assets }));
+                      v.assets = objectToArray(assets);
                       timer = setTimeout(() => {
                         prepareTx(v, undefined, 0);
                       }, 300);
                     }}
                     onLoad={({ displayName, image }) => {
                       clearTimeout(timer);
-                      value.assets[index].loaded = true;
-                      value.assets[index].displayName = displayName;
-                      value.assets[index].image = image;
+                      assets[asset.unit].loaded = true;
+                      assets[asset.unit].displayName = displayName;
+                      assets[asset.unit].image = image;
+
                       const v = value;
-                      setValue((v) => ({ ...v, assets: value.assets }));
+                      v.assets = objectToArray(assets);
+
                       timer = setTimeout(() => {
                         prepareTx(v, undefined, 0);
                       }, 300);
@@ -692,7 +713,7 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
 ));
 
 let clicked = false;
-const AssetsSelector = ({ assets, setValue, value }) => {
+const AssetsSelector = ({ assets, addAssets, value }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [search, setSearch] = React.useState('');
   const select = React.useRef(false);
@@ -784,12 +805,7 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                   onClick={() => {
                     onClose();
                     setTimeout(() => {
-                      setValue((v) => ({
-                        ...v,
-                        assets: v.assets.concat(
-                          assets.filter((asset) => choice[asset.unit])
-                        ),
-                      }));
+                      addAssets(assets.filter((asset) => choice[asset.unit]));
                       setChoice({});
                     }, 100);
                   }}
@@ -842,11 +858,8 @@ const AssetsSelector = ({ assets, setValue, value }) => {
                             clicked = true;
                             onClose();
                             setTimeout(
-                              () =>
-                                setValue((v) => ({
-                                  ...v,
-                                  assets: v.assets.concat(asset),
-                                })),
+                              () => addAssets([asset]),
+
                               100
                             );
 
