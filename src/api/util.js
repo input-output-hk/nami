@@ -115,7 +115,8 @@ export const linkToSrc = (link, base64 = false) => {
       // '/' +
       link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
     );
-  else if (link.startsWith('Qm') && link.length === 46) {
+  else if ((link.startsWith('Qm') && link.length === 46) ||
+          (link.startsWith('baf') && link.length === 59)) {
     return link;
   } else if (base64 && base64regex.test(link))
     return 'data:image/png;base64,' + link;
