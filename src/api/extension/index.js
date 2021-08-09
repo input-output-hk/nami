@@ -19,7 +19,12 @@ import randomColor from 'randomcolor';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
-import { assetsToValue, utxoToStructure, valueToAssets } from './wallet';
+import {
+  assetsToValue,
+  utxoToStructure,
+  valueToAssets,
+  initTx,
+} from './wallet';
 import { blockfrostRequest, networkNameToId } from '../util';
 
 const getStorage = (key) =>
@@ -80,7 +85,7 @@ export const isWhitelisted = async (_origin) => {
 };
 
 export const setWhitelisted = async (origin) => {
-  const whitelisted = await getWhitelisted();
+  let whitelisted = await getWhitelisted();
   whitelisted ? whitelisted.push(origin) : (whitelisted = [origin]);
   return await setStorage({ [STORAGE.whitelisted]: whitelisted });
 };
@@ -381,6 +386,7 @@ const accountToNetworkSpecific = async (account) => {
   const assets = account[network.id].assets;
   const lovelace = account[network.id].lovelace;
   const history = account[network.id].history;
+  const minAda = account[network.id].minAda;
   const recentSendToAddresses = account[network.id].recentSendToAddresses;
 
   return {
@@ -389,6 +395,7 @@ const accountToNetworkSpecific = async (account) => {
     rewardAddr,
     assets,
     lovelace,
+    minAda,
     history,
     recentSendToAddresses,
   };
@@ -784,6 +791,7 @@ export const createAccount = async (name, password) => {
   const networkDefault = {
     lovelace: 0,
     assets: [],
+    minAda: 0,
     history: { confirmed: [], details: {} },
   };
 
@@ -878,6 +886,12 @@ export const avatarToImage = (avatar) => {
 
 const updateBalance = async (currentAccount, network) => {
   let amount = await getBalance();
+  let protocolParameters = await initTx();
+  let minAda = Loader.Cardano.min_ada_required(
+    amount,
+    protocolParameters.minUtxo
+  ).to_str();
+
   amount = await valueToAssets(amount);
 
   if (amount.length > 0) {
@@ -887,9 +901,11 @@ const updateBalance = async (currentAccount, network) => {
     currentAccount[network.id].assets = amount.filter(
       (am) => am.unit !== 'lovelace'
     );
+    currentAccount[network.id].minAda = minAda;
   } else {
     currentAccount[network.id].lovelace = 0;
     currentAccount[network.id].assets = [];
+    currentAccount[network.id].minAda = 0;
   }
 };
 
