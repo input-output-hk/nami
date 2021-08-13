@@ -121,3 +121,18 @@ export const linkToSrc = (link, base64 = false) => {
     return 'data:image/png;base64,' + link;
   return null;
 };
+
+export const getStorage = (key) =>
+  new Promise((res, rej) =>
+    chrome.storage.local.get(key, (result) => {
+      if (chrome.runtime.lastError) rej(undefined);
+      res(result);
+    })
+  );
+export const setStorage = (item) =>
+  new Promise((res, rej) =>
+    chrome.storage.local.set(item, () => {
+      if (chrome.runtime.lastError) rej(chrome.runtime.lastError);
+      res(true);
+    })
+  );
