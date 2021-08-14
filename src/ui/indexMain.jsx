@@ -14,12 +14,14 @@ import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
 import { useSettings } from './app/components/settingsProvider';
+import { checkStorage } from '../migrations/migration';
 
 const App = () => {
   const history = useHistory();
   const { settings } = useSettings();
   const [loading, setLoading] = React.useState(true);
   const init = async () => {
+    checkStorage();
     const hasWallet = await getAccounts();
     setLoading(false);
     if (hasWallet) history.push('/wallet');

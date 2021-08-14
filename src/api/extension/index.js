@@ -19,28 +19,13 @@ import randomColor from 'randomcolor';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
+import { assetsToValue, utxoToStructure, valueToAssets } from './wallet';
 import {
-  assetsToValue,
-  utxoToStructure,
-  valueToAssets,
-  initTx,
-} from './wallet';
-import { blockfrostRequest, networkNameToId } from '../util';
-
-const getStorage = (key) =>
-  new Promise((res, rej) =>
-    chrome.storage.local.get(key, (result) => {
-      if (chrome.runtime.lastError) rej(undefined);
-      res(result);
-    })
-  );
-const setStorage = (item) =>
-  new Promise((res, rej) =>
-    chrome.storage.local.set(item, () => {
-      if (chrome.runtime.lastError) rej(chrome.runtime.lastError);
-      res(true);
-    })
-  );
+  blockfrostRequest,
+  networkNameToId,
+  getStorage,
+  setStorage,
+} from '../util';
 
 const encryptWithPassword = async (password, rootKeyBytes) => {
   await Loader.load();
