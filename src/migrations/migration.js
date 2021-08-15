@@ -22,7 +22,7 @@ export async function checkStorage() {
     storage.migration.version !== version ||
     !storage.migration.completed.includes(version)
   )
-    migrate();
+    await migrate();
 }
 
 export async function migrate() {
@@ -48,17 +48,18 @@ export async function migrate() {
         migrations =
           end > -1 ? migrations.slice(start, end) : migrations.slice(start);
 
-        migrations.forEach((migration) => {
+        for (let i = 0; i < migrations.length; i++) {
+          const migration = migrations[i];
           let indexToRemove = storage.migration.completed.findIndex(
             (version) => version === migration.version
           );
 
           if (indexToRemove >= 0) {
-            migration.down();
+            await migration.down();
             storage.migration.completed.splice(indexToRemove, 1);
             console.log(`Storage migration applied: ${migration.version} DOWN`);
           }
-        });
+        }
       }
 
       break;
@@ -79,13 +80,14 @@ export async function migrate() {
         migrations =
           end > -1 ? migrations.slice(start, end) : migrations.slice(start);
 
-        migrations.forEach((migration) => {
+        for (let i = 0; i < migrations.length; i++) {
+          const migration = migrations[i];
           if (!storage.migration.completed.includes(migration.version)) {
-            migration.up();
+            await migration.up();
             storage.migration.completed.push(migration.version);
             console.log(`Storage migration applied: ${migration.version} UP`);
           }
-        });
+        }
       }
   }
 
@@ -96,7 +98,7 @@ export async function migrate() {
 async function init() {
   return await setStorage({
     [STORAGE.migration]: {
-      version: '0',
+      version: version,
       completed: [],
     },
   });
