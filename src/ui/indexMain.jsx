@@ -21,7 +21,7 @@ const App = () => {
   const { settings } = useSettings();
   const [loading, setLoading] = React.useState(true);
   const init = async () => {
-    checkStorage();
+    await checkStorage();
     const hasWallet = await getAccounts();
     setLoading(false);
     if (hasWallet) history.push('/wallet');
