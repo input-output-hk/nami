@@ -19,7 +19,12 @@ import randomColor from 'randomcolor';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
-import { assetsToValue, utxoToStructure, valueToAssets } from './wallet';
+import {
+  assetsToValue,
+  utxoToStructure,
+  valueToAssets,
+  initTx,
+} from './wallet';
 import {
   blockfrostRequest,
   networkNameToId,
