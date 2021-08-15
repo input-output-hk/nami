@@ -1,12 +1,40 @@
-import { STORAGE } from '../config/config';
+import { STORAGE, NETWORK_ID } from '../config/config';
 import { getStorage, setStorage } from '../api/util';
 const { version } = require('../../package.json');
 
 let migrations = [
   {
-    version: '1.0.0',
-    up: () => {},
-    down: () => {},
+    version: '1.1.3',
+    up: async () => {
+      const networks = Object.keys(NETWORK_ID);
+      let storage = await getStorage(STORAGE.accounts);
+      const accounts = Object.keys(storage.accounts);
+      for (let i = 0; i < accounts.length; i++) {
+        for (let j = 0; j < networks.length; j++) {
+          if (storage.accounts[accounts[i]][networks[j]]) {
+            storage.accounts[accounts[i]][networks[j]].minAda = '0';
+            await setStorage(storage);
+          }
+        }
+      }
+    },
+    down: async () => {
+      const networks = Object.keys(NETWORK_ID);
+      let storage = await getStorage(STORAGE.accounts);
+      const accounts = Object.keys(storage.accounts);
+
+      for (let i = 0; i < accounts.length; i++) {
+        for (let j = 0; j < networks.length; j++) {
+          if (
+            storage.accounts[accounts[i]][networks[j]] &&
+            storage.accounts[accounts[i]][networks[j]].minAda
+          ) {
+            delete storage.accounts[accounts[i]][networks[j]].minAda;
+            await setStorage(storage);
+          }
+        }
+      }
+    },
   },
 ];
 
@@ -22,7 +50,7 @@ export async function checkStorage() {
     storage.migration.version !== version ||
     !storage.migration.completed.includes(version)
   )
-    migrate();
+    await migrate();
 }
 
 export async function migrate() {
@@ -48,17 +76,18 @@ export async function migrate() {
         migrations =
           end > -1 ? migrations.slice(start, end) : migrations.slice(start);
 
-        migrations.forEach((migration) => {
+        for (let i = 0; i < migrations.length; i++) {
+          const migration = migrations[i];
           let indexToRemove = storage.migration.completed.findIndex(
             (version) => version === migration.version
           );
 
           if (indexToRemove >= 0) {
-            migration.down();
+            await migration.down();
             storage.migration.completed.splice(indexToRemove, 1);
             console.log(`Storage migration applied: ${migration.version} DOWN`);
           }
-        });
+        }
       }
 
       break;
@@ -79,13 +108,14 @@ export async function migrate() {
         migrations =
           end > -1 ? migrations.slice(start, end) : migrations.slice(start);
 
-        migrations.forEach((migration) => {
+        for (let i = 0; i < migrations.length; i++) {
+          const migration = migrations[i];
           if (!storage.migration.completed.includes(migration.version)) {
-            migration.up();
+            await migration.up();
             storage.migration.completed.push(migration.version);
             console.log(`Storage migration applied: ${migration.version} UP`);
           }
-        });
+        }
       }
   }
 
@@ -96,7 +126,7 @@ export async function migrate() {
 async function init() {
   return await setStorage({
     [STORAGE.migration]: {
-      version: '0',
+      version: version,
       completed: [],
     },
   });
