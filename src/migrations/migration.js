@@ -46,11 +46,7 @@ export async function checkStorage() {
     return checkStorage();
   }
 
-  if (
-    storage.migration.version !== version ||
-    !storage.migration.completed.includes(version)
-  )
-    await migrate();
+  if (storage.migration.version !== version) await migrate();
 }
 
 export async function migrate() {
