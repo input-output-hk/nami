@@ -867,6 +867,7 @@ const updateBalance = async (currentAccount, network) => {
     currentAccount[network.id].lovelace = 0;
     currentAccount[network.id].assets = [];
   }
+  return true;
 };
 
 const updateTransactions = async (currentAccount, network) => {
@@ -906,7 +907,22 @@ export const updateAccount = async () => {
   if (!needUpdate) {
     return;
   }
-  await updateBalance(currentAccount, network);
+
+  // fetching the balance in a loop in case blockfrost throws an internal server error
+  await new Promise(async (res, rej) => {
+    if (await updateBalance(currentAccount, network)) {
+      res(true);
+      return;
+    }
+    const interval = setInterval(async () => {
+      if (await updateBalance(currentAccount, network)) {
+        clearInterval(interval);
+        res(true);
+        return;
+      }
+    }, 100);
+  });
+
   return await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
