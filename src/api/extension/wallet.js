@@ -1,6 +1,5 @@
 import { getNetwork, getUtxos, signTx, submitTx } from '.';
 import { ERROR, EVENT, SENDER, TARGET } from '../../config/config';
-import provider from '../../config/provider';
 import Loader from '../loader';
 import CoinSelection from '../../lib/coinSelection';
 import {
