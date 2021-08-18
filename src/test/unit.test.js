@@ -10,6 +10,9 @@ test('should encrypt/decrypt root key correctly', async () => {
   const password = 'test123';
   const rootKeyBytes = rootKey.to_raw_key().as_bytes();
   const encryptedKey = await encryptWithPassword(password, rootKeyBytes);
+  expect(Buffer.from(rootKeyBytes, 'hex').toString('hex')).not.toBe(
+    encryptedKey
+  );
   const decryptedKey = await decryptWithPassword(password, encryptedKey);
   expect(Buffer.from(rootKeyBytes, 'hex').toString('hex')).toBe(decryptedKey);
 });
