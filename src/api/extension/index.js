@@ -20,14 +20,14 @@ import * as style from '@dicebear/avatars-bottts-sprites';
 import { assetsToValue, utxoToStructure, valueToAssets } from './wallet';
 import { blockfrostRequest, networkNameToId } from '../util';
 
-const getStorage = (key) =>
+export const getStorage = (key) =>
   new Promise((res, rej) =>
     chrome.storage.local.get(key, (result) => {
       if (chrome.runtime.lastError) rej(undefined);
       res(result[key]);
     })
   );
-const setStorage = (item) =>
+export const setStorage = (item) =>
   new Promise((res, rej) =>
     chrome.storage.local.set(item, () => {
       if (chrome.runtime.lastError) rej(chrome.runtime.lastError);
@@ -35,7 +35,7 @@ const setStorage = (item) =>
     })
   );
 
-const encryptWithPassword = async (password, rootKeyBytes) => {
+export const encryptWithPassword = async (password, rootKeyBytes) => {
   await Loader.load();
   const rootKeyHex = Buffer.from(rootKeyBytes, 'hex').toString('hex');
   const passwordHex = Buffer.from(password).toString('hex');
@@ -49,7 +49,7 @@ const encryptWithPassword = async (password, rootKeyBytes) => {
   );
 };
 
-const decryptWithPassword = async (password, encryptedKeyHex) => {
+export const decryptWithPassword = async (password, encryptedKeyHex) => {
   await Loader.load();
   const passwordHex = Buffer.from(password).toString('hex');
   let decryptedHex;
