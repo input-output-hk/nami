@@ -168,6 +168,12 @@ npm start
 npm run build
 ```
 
+##### Run tests
+
+```
+npm test
+```
+
 ### Website
 
 Visit [namiwallet.io](https://namiwallet.io)<br/>
