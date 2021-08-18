@@ -3,7 +3,7 @@ module.exports = {
   plugins: ['react-hot-loader/babel', '@babel/transform-runtime'],
   env: {
     test: {
-      presets: ['@babel/preset-env'],
+      presets: [['@babel/preset-env', { loose: true }]],
     },
   },
 };
