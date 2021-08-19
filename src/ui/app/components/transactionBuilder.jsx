@@ -25,10 +25,10 @@ import {
 // Assets
 import Berry from '../../../assets/img/berry.svg';
 import { ERROR } from '../../../config/config';
-import { useSettings } from './settingsProvider';
+import { useStoreState } from 'easy-peasy';
 
 const TransactionBuilder = React.forwardRef((props, ref) => {
-  const { settings } = useSettings();
+  const settings = useStoreState((state) => state.settings.settings);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [data, setData] = React.useState({

@@ -15,13 +15,9 @@ import {
   switchAccount,
   updateAccount,
 } from '../../../api/extension';
-import { Box, Link, Spacer, Stack, Text } from '@chakra-ui/layout';
+import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
 
-import {
-  BsArrowDownRight,
-  BsArrowUpRight,
-  BsFillPersonPlusFill,
-} from 'react-icons/bs';
+import { BsArrowDownRight, BsArrowUpRight } from 'react-icons/bs';
 import {
   Icon,
   Image,
@@ -59,7 +55,6 @@ import {
   Tab,
   TabPanels,
   TabPanel,
-  LightMode,
   useColorModeValue,
 } from '@chakra-ui/react';
 import {
@@ -74,19 +69,17 @@ import Scrollbars from 'react-custom-scrollbars';
 import QrCode from '../components/qrCode';
 import provider from '../../../config/provider';
 import UnitDisplay from '../components/unitDisplay';
-import { delegationTx, onAccountChange } from '../../../api/extension/wallet';
+import { onAccountChange } from '../../../api/extension/wallet';
 import AssetsViewer from '../components/assetsViewer';
 import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
 import About from '../components/about';
-import { useSettings } from '../components/settingsProvider';
-import ConfirmModal from '../components/confirmModal';
+import { useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
 import { currencyToSymbol } from '../../../api/util';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
-import Berry from '../../../assets/img/berry.svg';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID } from '../../../config/config';
 import { BalanceWarning } from '../components/balanceWarning';
@@ -103,7 +96,7 @@ const useIsMounted = () => {
 const Wallet = () => {
   const isMounted = useIsMounted();
   const history = useHistory();
-  const { settings } = useSettings();
+  const settings = useStoreState((state) => state.settings.settings);
   const avatarBg = useColorModeValue('white', 'gray.700');
   const panelBg = useColorModeValue('teal.400', 'gray.800');
   const [state, setState] = React.useState({
@@ -691,7 +684,7 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
 });
 
 const DelegationPopover = ({ account, delegation, children }) => {
-  const { settings } = useSettings();
+  const settings = useStoreState((state) => state.settings.settings);
   const withdrawRef = React.useRef();
   return (
     <>
