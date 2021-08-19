@@ -1,3 +1,7 @@
+/**
+ * indexInternal is the entry point for the popup windows (e.g. data signing, tx signing)
+ */
+
 import { Box } from '@chakra-ui/layout';
 import { Spinner } from '@chakra-ui/spinner';
 import React from 'react';
@@ -8,23 +12,21 @@ import { getAccounts } from '../api/extension';
 import { Messaging } from '../api/messaging';
 
 import { METHOD, POPUP } from '../config/config';
-import { useSettings } from './app/components/settingsProvider';
 import Enable from './app/pages/enable';
 import NoWallet from './app/pages/noWallet';
 import SignData from './app/pages/signData';
 import SignTx from './app/pages/signTx';
-import Theme from './theme';
+import Main from './index';
 
 const App = () => {
   const controller = Messaging.createInternalController();
   const history = useHistory();
-  const { settings } = useSettings();
-  const [response, setResponse] = React.useState(null);
+  const [request, setRequest] = React.useState(null);
 
   const init = async () => {
-    const resp = await controller.requestData();
+    const request = await controller.requestData();
     const hasWallet = await getAccounts();
-    setResponse(resp);
+    setRequest(request);
     if (!hasWallet) history.push('/noWallet');
     else if (resp.method === METHOD.enable) history.push('/enable');
     else if (resp.method === METHOD.signData) history.push('/signData');
@@ -35,7 +37,7 @@ const App = () => {
     init();
   }, []);
 
-  return !response || !settings ? (
+  return !request ? (
     <Box
       height="full"
       width="full"
@@ -49,13 +51,13 @@ const App = () => {
     <div style={{ overflowX: 'hidden' }}>
       <Switch>
         <Route exact path="/signData">
-          <SignData request={response} controller={controller} />
+          <SignData request={request} controller={controller} />
         </Route>
         <Route exact path="/signTx">
-          <SignTx request={response} controller={controller} />
+          <SignTx request={request} controller={controller} />
         </Route>
         <Route exact path="/enable">
-          <Enable request={response} controller={controller} />
+          <Enable request={request} controller={controller} />
         </Route>
         <Route exact path="/noWallet">
           <NoWallet />
@@ -66,11 +68,11 @@ const App = () => {
 };
 
 render(
-  <Theme>
+  <Main>
     <Router>
       <App />
     </Router>
-  </Theme>,
+  </Main>,
   window.document.querySelector(`#${POPUP.internal}`)
 );
 

@@ -17,20 +17,17 @@ import {
   SunIcon,
   SmallCloseIcon,
 } from '@chakra-ui/icons';
-import { Select } from '@chakra-ui/select';
 import React from 'react';
 import {
-  getCurrency,
   getWhitelisted,
   removeWhitelisted,
   resetStorage,
-  setCurrency,
 } from '../../../api/extension';
 import Account from '../components/account';
 import { Route, Switch, useHistory } from 'react-router-dom';
-import { useSettings } from '../components/settingsProvider';
 import { NETWORK_ID, NODE } from '../../../config/config';
 import ConfirmModal from '../components/confirmModal';
+import { useStoreState, useStoreActions } from 'easy-peasy';
 
 const Settings = () => {
   const history = useHistory();
@@ -114,7 +111,10 @@ const Overview = () => {
 };
 
 const GeneralSettings = () => {
-  const { settings, setSettings } = useSettings();
+  const settings = useStoreState((state) => state.settings.settings);
+  const setSettings = useStoreActions(
+    (actions) => actions.settings.setSettings
+  );
   const { toggleColorMode } = useColorMode();
   const ref = React.useRef();
   return (
@@ -260,7 +260,10 @@ const Whitelisted = () => {
 };
 
 const Network = () => {
-  const { settings, setSettings } = useSettings();
+  const settings = useStoreState((state) => state.settings.settings);
+  const setSettings = useStoreActions(
+    (actions) => actions.settings.setSettings
+  );
   return (
     <>
       <Box height="10" />
