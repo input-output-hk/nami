@@ -24,7 +24,7 @@ export const getStorage = (key) =>
   new Promise((res, rej) =>
     chrome.storage.local.get(key, (result) => {
       if (chrome.runtime.lastError) rej(undefined);
-      res(result[key]);
+      res(key ? result[key] : result);
     })
   );
 export const setStorage = (item) =>
