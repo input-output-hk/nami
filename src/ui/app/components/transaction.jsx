@@ -130,7 +130,6 @@ const Transaction = ({
             bg={colorMode.txBg}
             borderRadius={10}
             borderLeftRadius={30}
-            shadow="base"
             p={0}
             _hover={{ backgroundColor: colorMode.txBgHover }}
             _focus={{ border: 'none' }}

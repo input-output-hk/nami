@@ -1,4 +1,7 @@
+const fetch = require('node-fetch');
 Object.assign(global, require('jest-chrome'));
+
+global.fetch = fetch;
 
 // mocking the chrome.storage.local API
 global.mockStore = {};
