@@ -16,6 +16,7 @@ import {
 import { Box, Text } from '@chakra-ui/layout';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
 import { Spinner } from '@chakra-ui/react';
+import { checkStorage } from '../migrations/migration';
 
 const settings = {
   settings: null,
@@ -46,6 +47,7 @@ const store = createStore({
 
 // sets the initial store state
 const initStore = async (state, actions) => {
+  await checkStorage();
   await initSettings(actions.settings.setSettings);
 };
 

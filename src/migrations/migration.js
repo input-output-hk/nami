@@ -1,29 +1,30 @@
 import { STORAGE } from '../config/config';
-import { getStorage, setStorage } from '../api/util';
+import { getStorage, setStorage } from '../api/extension/index';
+import v1_0_0 from './1.0.0.js';
+const MIGRATIONS = [v1_0_0];
 const { version } = require('../../package.json');
 
-let migrations = [
-  {
-    version: '1.0.0',
-    up: () => {},
-    down: () => {},
-  },
-];
+let migrations = MIGRATIONS.map((migration) => ({
+  version: migration.version,
+  up: migration.up,
+  down: migration.down,
+  info: migration.info,
+  decrypt: migration.decrypt,
+}));
 
 export async function checkStorage() {
   const storage = await getStorage(STORAGE.migration);
 
-  if (!storage.migration) {
-    init();
-    return checkStorage();
+  if (!storage.version) {
+    return init();
   }
 
-  if (storage.migration.version !== version) await migrate();
+  if (storage.version !== version) await migrate();
 }
 
 export async function migrate() {
   let storage = await getStorage(STORAGE.migration);
-  const storageState = compareVersion(storage.migration.version, version);
+  const storageState = compareVersion(storage.version, version);
 
   let start, end;
 
@@ -32,8 +33,7 @@ export async function migrate() {
       migrations.sort((a, b) => compareVersion(b.version, a.version));
 
       start = migrations.findIndex(
-        (migration) =>
-          compareVersion(migration.version, storage.migration.version) <= 0
+        (migration) => compareVersion(migration.version, storage.version) <= 0
       );
 
       end = migrations.findIndex(
@@ -46,13 +46,13 @@ export async function migrate() {
 
         for (let i = 0; i < migrations.length; i++) {
           const migration = migrations[i];
-          let indexToRemove = storage.migration.completed.findIndex(
+          let indexToRemove = storage.completed.findIndex(
             (version) => version === migration.version
           );
 
           if (indexToRemove >= 0) {
             await migration.down();
-            storage.migration.completed.splice(indexToRemove, 1);
+            storage.completed.splice(indexToRemove, 1);
             console.log(`Storage migration applied: ${migration.version} DOWN`);
           }
         }
@@ -64,8 +64,7 @@ export async function migrate() {
       migrations.sort((a, b) => compareVersion(a.version, b.version));
 
       start = migrations.findIndex(
-        (migration) =>
-          compareVersion(migration.version, storage.migration.version) >= 0
+        (migration) => compareVersion(migration.version, storage.version) >= 0
       );
 
       end = migrations.findIndex(
@@ -78,26 +77,27 @@ export async function migrate() {
 
         for (let i = 0; i < migrations.length; i++) {
           const migration = migrations[i];
-          if (!storage.migration.completed.includes(migration.version)) {
+          if (!storage.completed.includes(migration.version)) {
             await migration.up();
-            storage.migration.completed.push(migration.version);
+            storage.completed.push(migration.version);
             console.log(`Storage migration applied: ${migration.version} UP`);
           }
         }
       }
   }
 
-  storage.migration.version = version;
-  setStorage(storage);
+  storage.version = version;
+  setStorage({ [STORAGE.migration]: storage });
 }
 
 async function init() {
-  return await setStorage({
+  await setStorage({
     [STORAGE.migration]: {
       version: version,
       completed: [],
     },
   });
+  await migrate();
 }
 
 function compareVersion(v1, v2) {

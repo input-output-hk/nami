@@ -115,25 +115,12 @@ export const linkToSrc = (link, base64 = false) => {
       '/' +
       link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
     );
-  else if ((link.startsWith('Qm') && link.length === 46) ||
-          (link.startsWith('baf') && link.length === 59)) {
+  else if (
+    (link.startsWith('Qm') && link.length === 46) ||
+    (link.startsWith('baf') && link.length === 59)
+  ) {
     return link;
   } else if (base64 && base64regex.test(link))
     return 'data:image/png;base64,' + link;
   return null;
 };
-
-export const getStorage = (key) =>
-  new Promise((res, rej) =>
-    chrome.storage.local.get(key, (result) => {
-      if (chrome.runtime.lastError) rej(undefined);
-      res(result);
-    })
-  );
-export const setStorage = (item) =>
-  new Promise((res, rej) =>
-    chrome.storage.local.set(item, () => {
-      if (chrome.runtime.lastError) rej(chrome.runtime.lastError);
-      res(true);
-    })
-  );
