@@ -28,9 +28,9 @@ const App = () => {
     const hasWallet = await getAccounts();
     setRequest(request);
     if (!hasWallet) history.push('/noWallet');
-    else if (resp.method === METHOD.enable) history.push('/enable');
-    else if (resp.method === METHOD.signData) history.push('/signData');
-    else if (resp.method === METHOD.signTx) history.push('/signTx');
+    else if (request.method === METHOD.enable) history.push('/enable');
+    else if (request.method === METHOD.signData) history.push('/signData');
+    else if (request.method === METHOD.signTx) history.push('/signTx');
   };
 
   React.useEffect(() => {

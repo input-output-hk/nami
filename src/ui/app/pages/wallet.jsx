@@ -69,7 +69,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import QrCode from '../components/qrCode';
 import provider from '../../../config/provider';
 import UnitDisplay from '../components/unitDisplay';
-import { onAccountChange } from '../../../api/extension/wallet';
+import { onAccountChange } from '../../../api/extension';
 import AssetsViewer from '../components/assetsViewer';
 import HistoryViewer from '../components/historyViewer';
 import Copy from '../components/copy';
@@ -77,12 +77,12 @@ import About from '../components/about';
 import { useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
 import { currencyToSymbol } from '../../../api/util';
-
-// Assets
-import Logo from '../../../assets/img/logoWhite.svg';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID } from '../../../config/config';
 import { BalanceWarning } from '../components/balanceWarning';
+
+// Assets
+import Logo from '../../../assets/img/logoWhite.svg';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);

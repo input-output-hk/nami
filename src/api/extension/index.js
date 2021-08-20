@@ -17,8 +17,13 @@ import cryptoRandomString from 'crypto-random-string';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
-import { assetsToValue, utxoToStructure, valueToAssets } from './wallet';
-import { blockfrostRequest, networkNameToId } from '../util';
+import {
+  blockfrostRequest,
+  networkNameToId,
+  utxoFromJson,
+  assetsToValue,
+  valueToAssets,
+} from '../util';
 
 export const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -267,7 +272,7 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
 
   const address = await getAddress();
   let converted = await Promise.all(
-    result.map(async (utxo) => await utxoToStructure(utxo, address))
+    result.map(async (utxo) => await utxoFromJson(utxo, address))
   );
   // filter utxos
   if (amount) {
@@ -693,6 +698,30 @@ const emitAccountChange = async (addresses) => {
       })
     );
   });
+};
+
+export const onAccountChange = (callback) => {
+  function responseHandler(e) {
+    const response = e.data;
+    if (
+      typeof response !== 'object' ||
+      response === null ||
+      !response.target ||
+      response.target !== TARGET ||
+      !response.event ||
+      response.event !== EVENT.accountChange ||
+      !response.sender ||
+      response.sender !== SENDER.extension
+    )
+      return;
+    callback(response.data);
+  }
+  window.addEventListener('message', responseHandler);
+  return {
+    remove: () => {
+      window.removeEventListener('message', responseHandler);
+    },
+  };
 };
 
 export const switchAccount = async (accountIndex) => {

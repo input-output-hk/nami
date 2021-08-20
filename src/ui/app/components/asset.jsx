@@ -7,7 +7,6 @@ import {
   Text,
   Button,
 } from '@chakra-ui/react';
-import { isIPFS } from 'ipfs';
 import React from 'react';
 import { blockfrostRequest, linkToSrc } from '../../../api/util';
 import AssetPopover from './assetPopover';
