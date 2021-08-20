@@ -1,6 +1,5 @@
 import { getNetwork, getUtxos, signTx, submitTx } from '.';
-import { ERROR, EVENT, SENDER, TARGET } from '../../config/config';
-import provider from '../../config/provider';
+import { ERROR, EVENT, SENDER, TARGET, TX } from '../../config/config';
 import Loader from '../loader';
 import CoinSelection from '../../lib/coinSelection';
 import {
@@ -49,6 +48,7 @@ export const initTx = async () => {
     poolDeposit: Loader.Cardano.BigNum.from_str(p.pool_deposit),
     keyDeposit: Loader.Cardano.BigNum.from_str(p.key_deposit),
     maxTxSize: p.max_tx_size,
+    slot: parseInt(latest_block.slot),
   };
 };
 
@@ -260,6 +260,8 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     );
   }
 
+  txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
+
   txBuilder.add_change_if_needed(
     Loader.Cardano.Address.from_bech32(account.paymentAddr)
   );
@@ -417,6 +419,7 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     );
   }
 
+  txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
   txBuilder.add_change_if_needed(
     Loader.Cardano.Address.from_bech32(account.paymentAddr)
   );
@@ -534,6 +537,7 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     );
   }
 
+  txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
   txBuilder.add_change_if_needed(
     Loader.Cardano.Address.from_bech32(account.paymentAddr)
   );

@@ -40,7 +40,7 @@ import AssetsPopover from './assetPopoverDiff';
 import AssetFingerprint from '@emurgo/cip14-js';
 import { hexToAscii } from '../../../api/util';
 import { NETWORK_ID } from '../../../config/config';
-import { useSettings } from './settingsProvider';
+import { useStoreState } from 'easy-peasy';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -84,7 +84,7 @@ const Transaction = ({
   network,
   onLoad,
 }) => {
-  const { settings } = useSettings();
+  const settings = useStoreState((state) => state.settings.settings);
   const isMounted = useIsMounted();
   const [displayInfo, setDisplayInfo] = React.useState(
     genDisplayInfo(txHash, detail, currentAddr, addresses)
