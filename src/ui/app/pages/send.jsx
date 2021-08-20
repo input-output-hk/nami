@@ -41,7 +41,6 @@ import {
   initTx,
   minAdaRequired,
   signAndSubmit,
-  structureToUtxo,
   sumUtxos,
   valueToAssets,
 } from '../../../api/extension/wallet';
@@ -51,21 +50,20 @@ import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
 import {
   InputRightElement,
-  LightMode,
   Spinner,
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
-import { useSettings } from '../components/settingsProvider';
+import { useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
 
 let timer = null;
 const assets = {};
 
 const Send = () => {
-  const { settings } = useSettings();
+  const settings = useStoreState((state) => state.settings.settings);
   const history = useHistory();
   const toast = useToast();
   const ref = React.useRef();
