@@ -1,4 +1,9 @@
-import { assetsToValue, linkToSrc, valueToAssets } from '../../../api/util';
+import {
+  assetsToValue,
+  convertMetadataPropToString,
+  linkToSrc,
+  valueToAssets,
+} from '../../../api/util';
 import Loader from '../../../api/loader';
 import provider from '../../../config/provider';
 
@@ -74,7 +79,7 @@ test('expect correct value to assets conversion', async () => {
   });
 });
 
-describe('test different links in linkToSrc', () => {
+describe('test linkToSrc', () => {
   test('expect right source from ipfs link', () => {
     const testLink = 'ipfs://QmVSameQt9i37hdrLwMSfoAg1aVKrjtBtuDHeQTgyVhUXC';
     const testLink1 =
@@ -113,5 +118,14 @@ describe('test different links in linkToSrc', () => {
     FTkSuQmCC';
     const testLink = linkToSrc(link);
     expect(testLink).toEqual(link);
+  });
+  test('expect correct array to string conversion', () => {
+    const normalString = 'metadatateststring';
+    const array = ['meta', 'data', 'teststring'];
+
+    const convertedString = convertMetadataPropToString(normalString);
+    const convertedArray = convertMetadataPropToString(array);
+    expect(convertedArray).toEqual(normalString);
+    expect(convertedArray).toEqual(convertedString);
   });
 });
