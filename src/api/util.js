@@ -126,6 +126,13 @@ function addAmounts(amountList, compiledAmountList) {
   });
 }
 
+/** Cardano metadata properties can hold a max of 64 bytes. The alternative is to use an array of strings. */
+export const convertMetadataPropToString = (src) => {
+  if (typeof src === 'string') return src;
+  else if (Array.isArray(src)) return src.join('');
+  return null;
+};
+
 export const linkToSrc = (link, base64 = false) => {
   const base64regex =
     /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;

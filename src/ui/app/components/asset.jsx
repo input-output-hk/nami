@@ -8,7 +8,11 @@ import {
   Button,
 } from '@chakra-ui/react';
 import React from 'react';
-import { blockfrostRequest, linkToSrc } from '../../../api/util';
+import {
+  blockfrostRequest,
+  convertMetadataPropToString,
+  linkToSrc,
+} from '../../../api/util';
 import AssetPopover from './assetPopover';
 
 const useIsMounted = () => {
@@ -37,7 +41,9 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
     let image =
       (result.onchain_metadata &&
         result.onchain_metadata.image &&
-        linkToSrc(result.onchain_metadata.image)) ||
+        linkToSrc(
+          convertMetadataPropToString(result.onchain_metadata.image)
+        )) ||
       (result.metadata && linkToSrc(result.metadata.logo, true)) ||
       '';
     setToken({ displayName: name, ...asset, image: 'loading' });
