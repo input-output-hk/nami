@@ -487,7 +487,11 @@ const viewMetadata = (metadata) => {
           style={a11yDark}
           customStyle={{ fontSize: '14px', lineHeight: '20px' }}
         >
-          {JSON.stringify(metadata, null, 2)}
+          {JSON.stringify(
+            metadata.map((m) => ({ [m.label]: m.json_metadata })),
+            null,
+            2
+          )}
         </SyntaxHighlighter>
       </body>
     </html>
