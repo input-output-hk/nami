@@ -5,7 +5,7 @@ import {
   setCurrency,
   setNetwork,
 } from '../api/extension';
-import { NETWORK_ID } from '../config/config';
+import { NETWORK_ID, NODE } from '../config/config';
 import {
   createStore,
   action,
