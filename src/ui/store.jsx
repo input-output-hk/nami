@@ -2,8 +2,10 @@ import React from 'react';
 import {
   getCurrency,
   getNetwork,
+  requestAccountKey,
   setCurrency,
   setNetwork,
+  signData,
 } from '../api/extension';
 import { NETWORK_ID } from '../config/config';
 import {
@@ -16,7 +18,15 @@ import {
 import { Box, Text } from '@chakra-ui/layout';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
 import { Spinner } from '@chakra-ui/react';
-import { checkStorage } from '../migrations/migration';
+import {
+  needUpgrade,
+  needPWD,
+  migrate,
+  setPWD,
+  isUpgrade,
+} from '../lib/migration';
+import ConfirmModal from './app/components/confirmModal';
+import { UpgradeModal } from './app/components/UpgradeModal';
 
 const settings = {
   settings: null,
@@ -47,7 +57,6 @@ const store = createStore({
 
 // sets the initial store state
 const initStore = async (state, actions) => {
-  await checkStorage();
   await initSettings(actions.settings.setSettings);
 };
 
@@ -57,30 +66,73 @@ const StoreInit = ({ children }) => {
   const state = useStoreState((state) => state);
   const settings = state.settings.settings;
   const [loading, setLoading] = React.useState(true);
+  const [info, setInfo] = React.useState(null);
+  const [password, setPassword] = React.useState(false);
+  const refA = React.useRef();
+  const refB = React.useRef();
 
   const init = async () => {
-    await initStore(state, actions);
-    setLoading(false);
+    if (await needUpgrade()) {
+      await upgrade();
+    } else {
+      await initStore(state, actions);
+      setLoading(false);
+      if (info) {
+        refB.current.openModal();
+      }
+    }
+  };
+
+  const upgrade = async () => {
+    let pwdReq = await needPWD();
+    if (pwdReq) {
+      refA.current.openModal();
+      return;
+    }
+    let isUp = await isUpgrade();
+    let info = await migrate();
+    setInfo(isUp ? info : false);
   };
 
   React.useEffect(() => {
     init();
-  }, []);
+  }, [password, info, loading]);
   return (
     <>
       {loading ? (
-        <Box
-          height="100vh"
-          width="full"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Spinner color="teal" speed="0.5s" />
-        </Box>
+        <>
+          <Box
+            height="100vh"
+            width="full"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Spinner color="teal" speed="0.5s" />
+          </Box>
+
+          <ConfirmModal
+            ref={refA}
+            title="Upgrades requires password"
+            sign={async (pwd) => {
+              await requestAccountKey(pwd, 0);
+              setPWD(pwd);
+            }}
+            onConfirm={async (status) => {
+              if (status === true) {
+                setPassword(true);
+                refA.current.closeModal();
+              }
+            }}
+            onCloseBtn={() => {
+              window.close();
+            }}
+          />
+        </>
       ) : (
         <>
           {children}
+          {info ? <UpgradeModal info={info} ref={refB} /> : ''}
           {/* Settings Overlay */}
           {settings.network.id === NETWORK_ID.testnet && (
             <Box
