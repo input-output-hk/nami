@@ -19,9 +19,7 @@ let migrations = MIG_SCRIPTS.map((migration) => ({
 export async function needUpgrade() {
   const storage = await getStorage(STORAGE.migration);
 
-  if (storage === undefined) return false;
-
-  if (!storage.version) {
+  if (!storage) {
     await init();
     return false;
   }
