@@ -1,3 +1,7 @@
+/**
+ * Loads the WASM modules
+ */
+
 class Loader {
   async load() {
     if (this._wasm && this._wasm2) return;

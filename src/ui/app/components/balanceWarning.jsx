@@ -1,5 +1,5 @@
 import React from 'react';
-import { WarningTwoIcon } from '@chakra-ui/icons';
+import { InfoIcon, InfoOutlineIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import { flash } from 'react-animations';
 import styled, { keyframes } from 'styled-components';
 import {
@@ -31,7 +31,7 @@ export const BalanceWarning = ({ fullBalance, symbol }) => {
   return (
     <>
       <StyleButton onClick={onOpen}>
-        <WarningTwoIcon w={6} h={6} color="orange.500" mr="5px" />
+        <InfoIcon w={6} h={6} color="orange.300" mr="6px" />
       </StyleButton>
       <Modal
         size="xs"
@@ -43,8 +43,8 @@ export const BalanceWarning = ({ fullBalance, symbol }) => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="md">
-            <WarningTwoIcon w={6} h={6} color="orange.500" mr="5px" />
-            Compatibility Warning
+            <InfoIcon w={6} h={6} color="orange.300" mr="8px" />
+            Compatibility hint
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody fontSize="sm">

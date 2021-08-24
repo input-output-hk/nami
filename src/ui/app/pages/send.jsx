@@ -35,15 +35,13 @@ import {
 import MiddleEllipsis from 'react-middle-ellipsis';
 import { Avatar } from '@chakra-ui/avatar';
 import UnitDisplay from '../components/unitDisplay';
+import { buildTx, initTx, signAndSubmit } from '../../../api/extension/wallet';
 import {
-  assetsToValue,
-  buildTx,
-  initTx,
-  minAdaRequired,
-  signAndSubmit,
   sumUtxos,
   valueToAssets,
-} from '../../../api/extension/wallet';
+  assetsToValue,
+  minAdaRequired,
+} from '../../../api/util';
 import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
@@ -102,7 +100,10 @@ const Send = () => {
       setTx(null);
       return;
     }
-    if (count >= 5) throw ERROR.txNotPossible;
+    if (count >= 5) {
+      console.log('JOOO 5555');
+      throw ERROR.txNotPossible;
+    }
 
     setFee({ fee: '' });
     setTx(null);
@@ -173,8 +174,7 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(tx);
     } catch (e) {
-      if (!_value.ada) setFee({ fee: '0' });
-      else setFee({ error: 'Transaction not possible' });
+      setFee({ error: 'Transaction not possible' });
       prepareTx(v, a, count + 1);
     }
   };
