@@ -329,7 +329,8 @@ export const setNetwork = async (network) => {
     node = NODE.testnet;
   }
   if (network.node) node = network.node;
-  if (currentNetwork.id !== id) emitNetworkChange(networkNameToId(id));
+  if (currentNetwork && currentNetwork.id !== id)
+    emitNetworkChange(networkNameToId(id));
   await setStorage({
     [STORAGE.network]: { id, node },
   });
