@@ -702,7 +702,7 @@ export const switchAccount = async (accountIndex) => {
   return true;
 };
 
-const requestAccountKey = async (password, accountIndex) => {
+export const requestAccountKey = async (password, accountIndex) => {
   await Loader.load();
   const encryptedRootKey = await getStorage(STORAGE.encryptedKey);
   let accountKey;
