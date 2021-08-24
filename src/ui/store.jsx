@@ -5,7 +5,6 @@ import {
   requestAccountKey,
   setCurrency,
   setNetwork,
-  signData,
 } from '../api/extension';
 import { NETWORK_ID, NODE } from '../config/config';
 import {
