@@ -23,7 +23,7 @@ import Copy from '../components/copy';
 import { Portal } from '@chakra-ui/portal';
 import { Avatar } from '@chakra-ui/avatar';
 import { FixedSizeList as List } from 'react-window';
-import { valueToAssets } from '../../../api/extension/wallet';
+import { valueToAssets } from '../../../api/util';
 import { TxSignError } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
 import { useColorModeValue } from '@chakra-ui/react';

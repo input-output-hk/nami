@@ -13,7 +13,11 @@ import {
 import { isIPFS } from 'ipfs';
 import React from 'react';
 import { toUnit } from '../../../api/extension';
-import { blockfrostRequest, linkToSrc } from '../../../api/util';
+import {
+  blockfrostRequest,
+  convertMetadataPropToString,
+  linkToSrc,
+} from '../../../api/util';
 import AssetPopover from './assetPopover';
 
 const useIsMounted = () => {
@@ -46,7 +50,9 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
     let image =
       (result.onchain_metadata &&
         result.onchain_metadata.image &&
-        linkToSrc(result.onchain_metadata.image)) ||
+        linkToSrc(
+          convertMetadataPropToString(result.onchain_metadata.image)
+        )) ||
       (result.metadata && linkToSrc(result.metadata.logo)) ||
       '';
 

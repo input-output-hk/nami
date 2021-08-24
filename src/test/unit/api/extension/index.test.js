@@ -1,3 +1,4 @@
+import { TransactionUnspentOutput } from '@emurgo/cardano-serialization-lib-browser';
 import {
   getStorage,
   encryptWithPassword,
@@ -8,15 +9,20 @@ import {
   createAccount,
   setWhitelisted,
   getWhitelisted,
-} from '../../../api/extension';
-import Loader from '../../../api/loader';
-import { ERROR, STORAGE } from '../../../config/config';
+  getNetwork,
+  setNetwork,
+  getCurrentAccount,
+  getUtxos,
+} from '../../../../api/extension';
+import Loader from '../../../../api/loader';
+import { ERROR, NODE, STORAGE } from '../../../../config/config';
 
 beforeAll(() => {
   const seed =
     'midnight draft salt dirt woman tragic cause immense dad later jaguar finger nerve nerve sign job erase citizen cube neglect token bracket orient narrow';
   const name = 'Wallet 1';
   const password = 'password123';
+  Loader.load();
   createWallet(name, seed, password);
 });
 
@@ -81,8 +87,25 @@ test('expect error because of wrong password', async () => {
   }
 });
 
+test('expect mainnet', async () => {
+  const network = await getNetwork();
+  expect(network.id).toBe('mainnet');
+});
+
+test('expect testnet address', async () => {
+  await setNetwork({ id: 'testnet', node: NODE.testnet });
+  const account = await getCurrentAccount();
+  expect(account.paymentAddr).toContain('addr_');
+});
+
+test('expect TransactionUnspentOutput array', async () => {
+  const utxos = await getUtxos();
+  expect(utxos).toBeInstanceOf(Array);
+  if (utxos.length > 0)
+    expect(utxos[0]).toBeInstanceOf(TransactionUnspentOutput);
+});
+
 test('should encrypt/decrypt root key correctly', async () => {
-  await Loader.load();
   const rootKey = Loader.Cardano.Bip32PrivateKey.generate_ed25519_bip32();
   const password = 'test123';
   const rootKeyBytes = rootKey.to_raw_key().as_bytes();
