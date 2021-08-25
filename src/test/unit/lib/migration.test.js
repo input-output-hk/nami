@@ -24,7 +24,7 @@ beforeAll(() => {
 });
 
 describe('make migration from 1.1.3 to 1.2.0', () => {
-  test('accounts are initilized correctly in 1.1.2', async () => {
+  test('accounts are initilized correctly in 1.1.3', async () => {
     const store = await getStorage();
     const account = store.accounts[store.currentAccount];
     expect(account).toHaveProperty('avatar');
@@ -36,7 +36,7 @@ describe('make migration from 1.1.3 to 1.2.0', () => {
     expect(account).toHaveProperty('testnet');
     expect(Object.keys(account).length).toBe(7);
   });
-  test('should migrate correctly to 1.1.3', async () => {
+  test('should migrate correctly to 1.2.0', async () => {
     await createAccount('Wallet 2', 'password123');
     await createAccount('Wallet 3', 'password123');
     const store = await getStorage();
