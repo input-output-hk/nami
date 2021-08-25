@@ -132,6 +132,8 @@ const Send = () => {
   const utxos = React.useRef(null);
   const assets = React.useRef({});
   const account = React.useRef(null);
+  // this flag makes sure that in case something is in the store, the prepareTx is not triggered multiple times; refactoring may help with having prepareTX in a useEffect call
+  const usesStore = React.useRef(false);
   const resetState = useStoreActions(
     (actions) => actions.globalModel.sendStore.reset
   );
@@ -253,6 +255,7 @@ const Send = () => {
     const currentAccount = await getCurrentAccount();
     account.current = currentAccount;
     if (txInfo.protocolParameters) {
+      usesStore.current = true;
       const _utxos = txInfo.utxos.map((utxo) =>
         Loader.Cardano.TransactionUnspentOutput.from_bytes(
           Buffer.from(utxo, 'hex')
@@ -296,7 +299,6 @@ const Send = () => {
   React.useEffect(() => {
     init();
     return () => {
-      assets.current = {};
       resetState();
     };
   }, []);
@@ -466,8 +468,12 @@ const Send = () => {
                           const v = value;
                           v.assets = objectToArray(assets.current);
                           setValue({ ...v, assets: v.assets });
-                          if (isLoading) return;
+
                           timer = setTimeout(() => {
+                            if (usesStore.current) {
+                              usesStore.current = false;
+                              return;
+                            }
                             prepareTx(v, undefined, 0);
                           }, 300);
                         }}
@@ -477,8 +483,16 @@ const Send = () => {
                           const v = value;
                           v.assets = objectToArray(assets.current);
                           setValue({ ...v, assets: v.assets });
-                          if (isLoading) return;
+                          console.log(
+                            'onInput',
+                            JSON.stringify(usesStore.current)
+                          );
+
                           timer = setTimeout(() => {
+                            if (usesStore.current) {
+                              usesStore.current = false;
+                              return;
+                            }
                             prepareTx(v, undefined, 0);
                           }, 500);
                         }}
