@@ -115,7 +115,7 @@ const StoreInit = ({ children }) => {
 
   React.useEffect(() => {
     init();
-  }, [password, info, isLoading]); //TODO: isLoading really required here?
+  }, [password, info]);
   return (
     <>
       {isLoading || !isRehydrated ? (
