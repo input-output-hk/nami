@@ -39,6 +39,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
 
   const fetchMetadata = async () => {
     if (asset && asset.loaded) {
+      onLoad({ ...asset });
       setToken({ ...asset });
       return;
     }
@@ -74,11 +75,6 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
     //     })
     //   );
     // }
-    if (image && image.startsWith('http')) {
-      image = await fetch(image)
-        .then((res) => res.blob())
-        .then((image) => URL.createObjectURL(image));
-    }
     onLoad({ displayName: name, image });
     if (!isMounted.current) return;
     setToken((t) => ({
