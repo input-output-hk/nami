@@ -483,11 +483,6 @@ const Send = () => {
                           const v = value;
                           v.assets = objectToArray(assets.current);
                           setValue({ ...v, assets: v.assets });
-                          console.log(
-                            'onInput',
-                            JSON.stringify(usesStore.current)
-                          );
-
                           timer = setTimeout(() => {
                             if (usesStore.current) {
                               usesStore.current = false;
