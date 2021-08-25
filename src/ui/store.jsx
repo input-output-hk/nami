@@ -95,7 +95,7 @@ const StoreInit = ({ children }) => {
       await upgrade();
     } else {
       await initStore(state, actions);
-      setLoading(false);
+      setIsLoading(false);
       if (info) {
         refB.current.openModal();
       }
@@ -115,7 +115,7 @@ const StoreInit = ({ children }) => {
 
   React.useEffect(() => {
     init();
-  }, [password, info, isLoading]);
+  }, [password, info, isLoading]); //TODO: isLoading really required here?
   return (
     <>
       {isLoading || !isRehydrated ? (
