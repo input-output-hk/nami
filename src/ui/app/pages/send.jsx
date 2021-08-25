@@ -142,7 +142,6 @@ const Send = () => {
   const focus = React.useRef(false);
 
   const prepareTx = async (v, a, count) => {
-    console.log('STARTTT');
     if (!isMounted.current) return;
     await Loader.load();
     await new Promise((res, rej) => {
