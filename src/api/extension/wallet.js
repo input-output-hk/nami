@@ -1,4 +1,4 @@
-import { getUtxos, signTx, submitTx } from '.';
+import { getCurrentAccount, getUtxos, signTx, submitTx } from '.';
 import { ERROR, EVENT, SENDER, TARGET, TX } from '../../config/config';
 import Loader from '../loader';
 import CoinSelection from '../../lib/coinSelection';
@@ -9,13 +9,13 @@ export const initTx = async () => {
   const p = await blockfrostRequest(`/epochs/${latest_block.epoch}/parameters`);
 
   return {
-    linearFee: Loader.Cardano.LinearFee.new(
-      Loader.Cardano.BigNum.from_str(p.min_fee_a.toString()),
-      Loader.Cardano.BigNum.from_str(p.min_fee_b.toString())
-    ),
-    minUtxo: Loader.Cardano.BigNum.from_str(p.min_utxo),
-    poolDeposit: Loader.Cardano.BigNum.from_str(p.pool_deposit),
-    keyDeposit: Loader.Cardano.BigNum.from_str(p.key_deposit),
+    linearFee: {
+      minFeeA: p.min_fee_a.toString(),
+      minFeeB: p.min_fee_b.toString(),
+    },
+    minUtxo: p.min_utxo,
+    poolDeposit: p.pool_deposit,
+    keyDeposit: p.key_deposit,
     maxTxSize: parseInt(p.max_tx_size),
     slot: parseInt(latest_block.slot),
   };
@@ -32,9 +32,9 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     outputs.get(0).amount().multiasset()
   );
   CoinSelection.setProtocolParameters(
-    protocolParameters.minUtxo.to_str(),
-    protocolParameters.linearFee.coefficient().to_str(),
-    protocolParameters.linearFee.constant().to_str(),
+    protocolParameters.minUtxo,
+    protocolParameters.linearFee.minFeeA,
+    protocolParameters.linearFee.minFeeB,
     protocolParameters.maxTxSize.toString()
   );
   const selection = await CoinSelection.randomImprove(
@@ -44,10 +44,13 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   );
   const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
-    protocolParameters.linearFee,
-    protocolParameters.minUtxo,
-    protocolParameters.poolDeposit,
-    protocolParameters.keyDeposit
+    Loader.Cardano.LinearFee.new(
+      Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeA),
+      Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeB)
+    ),
+    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
+    Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
+    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit)
   );
 
   for (let i = 0; i < inputs.length; i++) {
@@ -165,21 +168,23 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     )
   );
   CoinSelection.setProtocolParameters(
-    protocolParameters.minUtxo.to_str(),
-    protocolParameters.linearFee.coefficient().to_str(),
-    protocolParameters.linearFee.constant().to_str(),
+    protocolParameters.minUtxo,
+    protocolParameters.linearFee.minFeeA,
+    protocolParameters.linearFee.minFeeB,
     protocolParameters.maxTxSize.toString()
   );
   const selection = await CoinSelection.randomImprove(utxos, outputs, 20);
 
   const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
-    protocolParameters.linearFee,
-    protocolParameters.minUtxo,
-    protocolParameters.poolDeposit,
-    protocolParameters.keyDeposit
+    Loader.Cardano.LinearFee.new(
+      Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeA),
+      Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeB)
+    ),
+    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
+    Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
+    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit)
   );
-
   for (let i = 0; i < inputs.length; i++) {
     const utxo = inputs[i];
     txBuilder.add_input(
@@ -304,19 +309,22 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     )
   );
   CoinSelection.setProtocolParameters(
-    protocolParameters.minUtxo.to_str(),
-    protocolParameters.linearFee.coefficient().to_str(),
-    protocolParameters.linearFee.constant().to_str(),
+    protocolParameters.minUtxo,
+    protocolParameters.linearFee.minFeeA,
+    protocolParameters.linearFee.minFeeB,
     protocolParameters.maxTxSize.toString()
   );
   const selection = await CoinSelection.randomImprove(utxos, outputs, 20);
 
   const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
-    protocolParameters.linearFee,
-    protocolParameters.minUtxo,
-    protocolParameters.poolDeposit,
-    protocolParameters.keyDeposit
+    Loader.Cardano.LinearFee.new(
+      Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeA),
+      Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeB)
+    ),
+    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
+    Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
+    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit)
   );
 
   for (let i = 0; i < inputs.length; i++) {

@@ -46,7 +46,7 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
         )) ||
       (result.metadata && linkToSrc(result.metadata.logo, true)) ||
       '';
-    setToken({ displayName: name, ...asset, image: 'loading' });
+    setToken({ displayName: name, ...asset, image });
 
     // Will be enabled again when ipfs-js is more reliable to use
     // if (image && isIPFS.multihash(image)) {
@@ -64,12 +64,6 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
     //     })
     //   );
     // }
-
-    if (image && image.startsWith('http')) {
-      image = await fetch(image)
-        .then((res) => res.blob())
-        .then((image) => URL.createObjectURL(image));
-    }
     onLoad({
       displayName: name,
       image,

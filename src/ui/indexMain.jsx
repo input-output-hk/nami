@@ -6,7 +6,6 @@ import React from 'react';
 import { render } from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
-
 import { POPUP } from '../config/config';
 import Main from './index';
 import { Spinner } from '@chakra-ui/spinner';
@@ -17,21 +16,41 @@ import CreateWallet from './app/pages/createWallet';
 import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
+import { useStoreActions, useStoreState } from 'easy-peasy';
 
 const App = () => {
+  const route = useStoreState((state) => state.globalModel.routeStore.route);
+  const setRoute = useStoreActions(
+    (actions) => actions.globalModel.routeStore.setRoute
+  );
   const history = useHistory();
-  const [loading, setLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(true);
   const init = async () => {
     const hasWallet = await getAccounts();
-    setLoading(false);
-    if (hasWallet) history.push('/wallet');
-    else history.push('/welcome');
+    if (hasWallet) {
+      history.push('/wallet');
+      // Set route from localStorage if available
+      if (route && route !== '/wallet') {
+        route
+          .slice(1)
+          .split('/')
+          .reduce((acc, r) => {
+            const fullRoute = acc + `/${r}`;
+            history.push(fullRoute);
+            return fullRoute;
+          }, '');
+      }
+    } else history.push('/welcome');
+    setIsLoading(false);
   };
   React.useEffect(() => {
     init();
+    history.listen(() => {
+      setRoute(history.location.pathname);
+    });
   }, []);
 
-  return loading ? (
+  return isLoading ? (
     <Box
       height="full"
       width="full"

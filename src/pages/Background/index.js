@@ -306,3 +306,7 @@ app.add(METHOD.signTx, async (request, sendResponse) => {
 });
 
 app.listen();
+
+//delete localStorage namiState
+const entry = Object.keys(localStorage).find((l) => l.includes('globalModel'));
+window.localStorage.removeItem(entry);
