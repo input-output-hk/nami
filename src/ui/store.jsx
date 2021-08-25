@@ -13,6 +13,8 @@ import {
   useStoreActions,
   StoreProvider,
   useStoreState,
+  persist,
+  useStoreRehydrated,
 } from 'easy-peasy';
 import { Box, Text } from '@chakra-ui/layout';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
@@ -26,6 +28,7 @@ import {
 } from '../lib/migration';
 import ConfirmModal from './app/components/confirmModal';
 import { UpgradeModal } from './app/components/UpgradeModal';
+import { sendStore } from './app/pages/send';
 
 const settings = {
   settings: null,
@@ -39,6 +42,21 @@ const settings = {
   }),
 };
 
+const routeStore = {
+  route: null,
+  setRoute: action((state, route) => {
+    state.route = route;
+  }),
+};
+
+const globalModel = persist(
+  {
+    routeStore,
+    sendStore,
+  },
+  { storage: 'localStorage' }
+);
+
 const initSettings = async (setSettings) => {
   const currency = await getCurrency();
   const network = await getNetwork();
@@ -51,6 +69,7 @@ const initSettings = async (setSettings) => {
 
 // create the global store object
 const store = createStore({
+  globalModel,
   settings,
 });
 
@@ -64,7 +83,8 @@ const StoreInit = ({ children }) => {
   const actions = useStoreActions((actions) => actions);
   const state = useStoreState((state) => state);
   const settings = state.settings.settings;
-  const [loading, setLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const isRehydrated = useStoreRehydrated();
   const [info, setInfo] = React.useState(null);
   const [password, setPassword] = React.useState(false);
   const refA = React.useRef();
@@ -95,10 +115,10 @@ const StoreInit = ({ children }) => {
 
   React.useEffect(() => {
     init();
-  }, [password, info, loading]);
+  }, [password, info, isLoading]);
   return (
     <>
-      {loading ? (
+      {isLoading || !isRehydrated ? (
         <>
           <Box
             height="100vh"

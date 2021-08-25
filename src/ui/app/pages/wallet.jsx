@@ -164,12 +164,13 @@ const Wallet = () => {
     let accountChangeHandler;
     let txInterval;
     getData().then(() => {
+      if (!isMounted.current) return;
       txInterval = checkTransactions();
       accountChangeHandler = onAccountChange(getData);
     });
     return () => {
       clearInterval(txInterval);
-      accountChangeHandler.remove();
+      accountChangeHandler && accountChangeHandler.remove();
     };
   }, []);
 
