@@ -142,6 +142,7 @@ const Send = () => {
   const focus = React.useRef(false);
 
   const prepareTx = async (v, a, count) => {
+    console.log('STARTTT');
     if (!isMounted.current) return;
     await Loader.load();
     await new Promise((res, rej) => {
@@ -259,6 +260,7 @@ const Send = () => {
         )
       );
       utxos.current = _utxos;
+      await prepareTx(null, null, 0);
       setIsLoading(false);
       return;
     }
@@ -465,6 +467,7 @@ const Send = () => {
                           const v = value;
                           v.assets = objectToArray(assets.current);
                           setValue({ ...v, assets: v.assets });
+                          if (isLoading) return;
                           timer = setTimeout(() => {
                             prepareTx(v, undefined, 0);
                           }, 300);
@@ -475,6 +478,7 @@ const Send = () => {
                           const v = value;
                           v.assets = objectToArray(assets.current);
                           setValue({ ...v, assets: v.assets });
+                          if (isLoading) return;
                           timer = setTimeout(() => {
                             prepareTx(v, undefined, 0);
                           }, 500);
