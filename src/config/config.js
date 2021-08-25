@@ -55,6 +55,7 @@ export const STORAGE = {
   currentAccount: 'currentAccount',
   network: 'network',
   currency: 'currency',
+  migration: 'migration',
 };
 
 export const NODE = {

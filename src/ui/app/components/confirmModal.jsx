@@ -75,7 +75,11 @@ const ConfirmModal = React.forwardRef((props, ref) => {
         </ModalBody>
 
         <ModalFooter>
-          <Button mr={3} variant="ghost" onClick={onClose}>
+          <Button
+            mr={3}
+            variant="ghost"
+            onClick={props.onCloseBtn ? props.onCloseBtn : onClose}
+          >
             Close
           </Button>
           <Button

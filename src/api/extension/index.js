@@ -329,7 +329,8 @@ export const setNetwork = async (network) => {
     node = NODE.testnet;
   }
   if (network.node) node = network.node;
-  if (currentNetwork.id !== id) emitNetworkChange(networkNameToId(id));
+  if (currentNetwork && currentNetwork.id !== id)
+    emitNetworkChange(networkNameToId(id));
   await setStorage({
     [STORAGE.network]: { id, node },
   });
@@ -731,7 +732,7 @@ export const switchAccount = async (accountIndex) => {
   return true;
 };
 
-const requestAccountKey = async (password, accountIndex) => {
+export const requestAccountKey = async (password, accountIndex) => {
   await Loader.load();
   const encryptedRootKey = await getStorage(STORAGE.encryptedKey);
   let accountKey;
