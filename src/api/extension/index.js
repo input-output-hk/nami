@@ -11,28 +11,39 @@ import {
   TxSendError,
   TxSignError,
 } from '../../config/config';
-import provider from '../../config/provider';
 import { POPUP_WINDOW } from '../../config/config';
 import { mnemonicToEntropy } from 'bip39';
 import cryptoRandomString from 'crypto-random-string';
-import randomColor from 'randomcolor';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
 import {
-  assetsToValue,
-  utxoToStructure,
-  valueToAssets,
   initTx,
 } from './wallet';
 import {
   blockfrostRequest,
   networkNameToId,
-  getStorage,
-  setStorage,
+  utxoFromJson,
+  assetsToValue,
+  valueToAssets,
 } from '../util';
 
-const encryptWithPassword = async (password, rootKeyBytes) => {
+export const getStorage = (key) =>
+  new Promise((res, rej) =>
+    chrome.storage.local.get(key, (result) => {
+      if (chrome.runtime.lastError) rej(undefined);
+      res(key ? result[key] : result);
+    })
+  );
+export const setStorage = (item) =>
+  new Promise((res, rej) =>
+    chrome.storage.local.set(item, () => {
+      if (chrome.runtime.lastError) rej(chrome.runtime.lastError);
+      res(true);
+    })
+  );
+
+export const encryptWithPassword = async (password, rootKeyBytes) => {
   await Loader.load();
   const rootKeyHex = Buffer.from(rootKeyBytes, 'hex').toString('hex');
   const passwordHex = Buffer.from(password).toString('hex');
@@ -46,7 +57,7 @@ const encryptWithPassword = async (password, rootKeyBytes) => {
   );
 };
 
-const decryptWithPassword = async (password, encryptedKeyHex) => {
+export const decryptWithPassword = async (password, encryptedKeyHex) => {
   await Loader.load();
   const passwordHex = Buffer.from(password).toString('hex');
   let decryptedHex;
@@ -62,8 +73,7 @@ const decryptWithPassword = async (password, encryptedKeyHex) => {
 };
 
 export const getWhitelisted = async () => {
-  const store = await getStorage(STORAGE.whitelisted);
-  const result = store[STORAGE.whitelisted];
+  const result = await getStorage(STORAGE.whitelisted);
   return result ? result : [];
 };
 
@@ -87,17 +97,10 @@ export const removeWhitelisted = async (origin) => {
   return await setStorage({ [STORAGE.whitelisted]: whitelisted });
 };
 
-export const getCurrency = async () => {
-  const currency = await getStorage(STORAGE.currency).then(
-    (store) => store[STORAGE.currency]
-  );
-  return currency;
-};
+export const getCurrency = () => getStorage(STORAGE.currency);
 
-export const setCurrency = async (currency) => {
-  await setStorage({ [STORAGE.currency]: currency });
-  return true;
-};
+export const setCurrency = (currency) =>
+  setStorage({ [STORAGE.currency]: currency });
 
 export const getDelegation = async () => {
   const currentAccount = await getCurrentAccount();
@@ -136,7 +139,6 @@ export const getBalance = async () => {
 };
 
 export const getFullBalance = async () => {
-  await Loader.load();
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
     `/accounts/${currentAccount.rewardAddr}`
@@ -228,7 +230,7 @@ export const updateTxInfo = async (txHash) => {
 export const setTxDetail = async (txObject) => {
   const currentIndex = await getCurrentAccountIndex();
   const network = await getNetwork();
-  const accounts = await getAccounts(false);
+  const accounts = await getStorage(STORAGE.accounts);
   for (const txHash of Object.keys(txObject)) {
     const txDetail = txObject[txHash];
     accounts[currentIndex][network.id].history.details[txHash] = txDetail;
@@ -273,7 +275,7 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
 
   const address = await getAddress();
   let converted = await Promise.all(
-    result.map(async (utxo) => await utxoToStructure(utxo, address))
+    result.map(async (utxo) => await utxoFromJson(utxo, address))
   );
   // filter utxos
   if (amount) {
@@ -314,17 +316,9 @@ export const getRewardAddress = async () => {
   return rewardAddr;
 };
 
-export const getCurrentAccountIndex = async () => {
-  return await getStorage(STORAGE.currentAccount).then(
-    (store) => store[STORAGE.currentAccount]
-  );
-};
+export const getCurrentAccountIndex = () => getStorage(STORAGE.currentAccount);
 
-export const getNetwork = async () => {
-  return await getStorage(STORAGE.network).then(
-    (store) => store[STORAGE.network]
-  );
-};
+export const getNetwork = () => getStorage(STORAGE.network);
 
 export const setNetwork = async (network) => {
   const currentNetwork = await getNetwork();
@@ -338,16 +332,16 @@ export const setNetwork = async (network) => {
     node = NODE.testnet;
   }
   if (network.node) node = network.node;
-  if (currentNetwork.id !== id) emitNetworkChange(networkNameToId(id));
+  if (currentNetwork && currentNetwork.id !== id)
+    emitNetworkChange(networkNameToId(id));
   await setStorage({
     [STORAGE.network]: { id, node },
   });
   return true;
 };
 
-const accountToNetworkSpecific = async (account) => {
+const accountToNetworkSpecific = async (account, network) => {
   await Loader.load();
-  const network = await getNetwork();
   const paymentKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
     Buffer.from(account.paymentKeyHash, 'hex')
   );
@@ -391,19 +385,20 @@ const accountToNetworkSpecific = async (account) => {
   };
 };
 
-export const getCurrentAccount = async (networkSpecific = true) => {
+/** Returns account with network specific settings (e.g. address, reward address, etc.) */
+export const getCurrentAccount = async () => {
   const currentAccountIndex = await getCurrentAccountIndex();
-  const accounts = await getAccounts(networkSpecific);
-  return await accounts[currentAccountIndex];
+  const accounts = await getStorage(STORAGE.accounts);
+  const network = await getNetwork();
+  return await accountToNetworkSpecific(accounts[currentAccountIndex], network);
 };
 
-export const getAccounts = async (networkSpecific = true) => {
-  const accounts = await getStorage(STORAGE.accounts).then(
-    (store) => store[STORAGE.accounts]
-  );
-  if (networkSpecific === false) return accounts;
+/** Returns accounts with network specific settings (e.g. address, reward address, etc.) */
+export const getAccounts = async () => {
+  const accounts = await getStorage(STORAGE.accounts);
+  const network = await getNetwork();
   for (const index in accounts) {
-    accounts[index] = await accountToNetworkSpecific(accounts[index]);
+    accounts[index] = await accountToNetworkSpecific(accounts[index], network);
   }
   return accounts;
 };
@@ -711,6 +706,30 @@ const emitAccountChange = async (addresses) => {
   });
 };
 
+export const onAccountChange = (callback) => {
+  function responseHandler(e) {
+    const response = e.data;
+    if (
+      typeof response !== 'object' ||
+      response === null ||
+      !response.target ||
+      response.target !== TARGET ||
+      !response.event ||
+      response.event !== EVENT.accountChange ||
+      !response.sender ||
+      response.sender !== SENDER.extension
+    )
+      return;
+    callback(response.data);
+  }
+  window.addEventListener('message', responseHandler);
+  return {
+    remove: () => {
+      window.removeEventListener('message', responseHandler);
+    },
+  };
+};
+
 export const switchAccount = async (accountIndex) => {
   await setStorage({ [STORAGE.currentAccount]: accountIndex });
   const address = await getAddress();
@@ -718,11 +737,9 @@ export const switchAccount = async (accountIndex) => {
   return true;
 };
 
-const requestAccountKey = async (password, accountIndex) => {
+export const requestAccountKey = async (password, accountIndex) => {
   await Loader.load();
-  const encryptedRootKey = await getStorage(STORAGE.encryptedKey).then(
-    (store) => store[STORAGE.encryptedKey]
-  );
+  const encryptedRootKey = await getStorage(STORAGE.encryptedKey);
   let accountKey;
   try {
     accountKey = Loader.Cardano.Bip32PrivateKey.from_bytes(
@@ -750,7 +767,7 @@ export const resetStorage = async (password) => {
 export const createAccount = async (name, password) => {
   await Loader.load();
 
-  const existingAccounts = await getAccounts(false);
+  const existingAccounts = await getStorage(STORAGE.accounts);
 
   const accountIndex = existingAccounts
     ? Object.keys(existingAccounts).length
@@ -781,7 +798,6 @@ export const createAccount = async (name, password) => {
   const networkDefault = {
     lovelace: 0,
     assets: [],
-    minAda: 0,
     history: { confirmed: [], details: {} },
   };
 
@@ -805,11 +821,10 @@ export const createAccount = async (name, password) => {
 };
 
 export const deleteAccount = async () => {
-  const accounts = await getAccounts(false);
+  const accounts = await getStorage(STORAGE.accounts);
   if (Object.keys(accounts).length <= 1) throw new Error(ERROR.onlyOneAccount);
   delete accounts[Object.keys(accounts).length - 1];
-  await setStorage({ [STORAGE.accounts]: accounts });
-  return true;
+  return await setStorage({ [STORAGE.accounts]: accounts });
 };
 
 export const createWallet = async (name, seedPhrase, password) => {
@@ -830,9 +845,7 @@ export const createWallet = async (name, seedPhrase, password) => {
   rootKey.free();
   rootKey = null;
 
-  const checkStore = await getStorage(STORAGE.encryptedKey).then(
-    (store) => store[STORAGE.encryptedKey]
-  );
+  const checkStore = await getStorage(STORAGE.encryptedKey);
   if (checkStore) throw new Error(ERROR.storeNotEmpty);
   await setStorage({ [STORAGE.encryptedKey]: encryptedRootKey });
   await setStorage({
@@ -876,12 +889,6 @@ export const avatarToImage = (avatar) => {
 
 const updateBalance = async (currentAccount, network) => {
   let amount = await getBalance();
-  let protocolParameters = await initTx();
-  let minAda = Loader.Cardano.min_ada_required(
-    amount,
-    protocolParameters.minUtxo
-  ).to_str();
-
   amount = await valueToAssets(amount);
 
   if (amount.length > 0) {
@@ -897,6 +904,7 @@ const updateBalance = async (currentAccount, network) => {
     currentAccount[network.id].assets = [];
     currentAccount[network.id].minAda = 0;
   }
+  return true;
 };
 
 const updateTransactions = async (currentAccount, network) => {
@@ -918,45 +926,57 @@ const updateTransactions = async (currentAccount, network) => {
 export const setTransactions = async (txs) => {
   const currentIndex = await getCurrentAccountIndex();
   const network = await getNetwork();
-  const accounts = await getAccounts(false);
+  const accounts = await getStorage(STORAGE.accounts);
   accounts[currentIndex][network.id].history.confirmed = txs;
-  await setStorage({
+  return await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
     },
   });
-  return true;
 };
 
 export const updateAccount = async () => {
   const currentIndex = await getCurrentAccountIndex();
-  const accounts = await getAccounts(false);
+  const accounts = await getStorage(STORAGE.accounts);
   const currentAccount = accounts[currentIndex];
   const network = await getNetwork();
   const needUpdate = await updateTransactions(currentAccount, network);
   if (!needUpdate) {
     return;
   }
-  await updateBalance(currentAccount, network);
-  await setStorage({
+
+  // fetching the balance in a loop in case blockfrost throws an internal server error
+  await new Promise(async (res, rej) => {
+    if (await updateBalance(currentAccount, network)) {
+      res(true);
+      return;
+    }
+    const interval = setInterval(async () => {
+      if (await updateBalance(currentAccount, network)) {
+        clearInterval(interval);
+        res(true);
+        return;
+      }
+    }, 100);
+  });
+
+  return await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
     },
   });
-  return true;
 };
 
 export const updateRecentSentToAddress = async (address) => {
   const currentIndex = await getCurrentAccountIndex();
-  const accounts = await getAccounts(false);
+  const accounts = await getStorage(STORAGE.accounts);
   const network = await getNetwork();
   accounts[currentIndex][network.id].recentSendToAddresses = [address]; // Update in the future to add mulitple addresses
-  await setStorage({
+  return await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
     },
   });
-  return true;
 };
 
 export const displayUnit = (quantity, decimals = 6) => {

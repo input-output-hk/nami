@@ -1,10 +1,13 @@
+/**
+ * indexMain is the entry point for the extension panel you open at the top right in the browser
+ */
+
 import React from 'react';
 import { render } from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
-
 import { POPUP } from '../config/config';
-import Theme from './theme';
+import Main from './index';
 import { Spinner } from '@chakra-ui/spinner';
 import Welcome from './app/pages/welcome';
 import Wallet from './app/pages/wallet';
@@ -13,25 +16,41 @@ import CreateWallet from './app/pages/createWallet';
 import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
-import { useSettings } from './app/components/settingsProvider';
-import { checkStorage } from '../migrations/migration';
+import { useStoreActions, useStoreState } from 'easy-peasy';
 
 const App = () => {
+  const route = useStoreState((state) => state.globalModel.routeStore.route);
+  const setRoute = useStoreActions(
+    (actions) => actions.globalModel.routeStore.setRoute
+  );
   const history = useHistory();
-  const { settings } = useSettings();
-  const [loading, setLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(true);
   const init = async () => {
-    await checkStorage();
     const hasWallet = await getAccounts();
-    setLoading(false);
-    if (hasWallet) history.push('/wallet');
-    else history.push('/welcome');
+    if (hasWallet) {
+      history.push('/wallet');
+      // Set route from localStorage if available
+      if (route && route !== '/wallet') {
+        route
+          .slice(1)
+          .split('/')
+          .reduce((acc, r) => {
+            const fullRoute = acc + `/${r}`;
+            history.push(fullRoute);
+            return fullRoute;
+          }, '');
+      }
+    } else history.push('/welcome');
+    setIsLoading(false);
   };
   React.useEffect(() => {
     init();
+    history.listen(() => {
+      setRoute(history.location.pathname);
+    });
   }, []);
 
-  return loading || !settings ? (
+  return isLoading ? (
     <Box
       height="full"
       width="full"
@@ -65,11 +84,11 @@ const App = () => {
 };
 
 render(
-  <Theme>
+  <Main>
     <Router>
       <App />
     </Router>
-  </Theme>,
+  </Main>,
   window.document.querySelector(`#${POPUP.main}`)
 );
 

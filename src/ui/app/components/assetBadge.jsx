@@ -13,7 +13,11 @@ import {
 import { isIPFS } from 'ipfs';
 import React from 'react';
 import { toUnit } from '../../../api/extension';
-import { blockfrostRequest, linkToSrc } from '../../../api/util';
+import {
+  blockfrostRequest,
+  convertMetadataPropToString,
+  linkToSrc,
+} from '../../../api/util';
 import AssetPopover from './assetPopover';
 
 const useIsMounted = () => {
@@ -35,6 +39,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
 
   const fetchMetadata = async () => {
     if (asset && asset.loaded) {
+      onLoad({ ...asset });
       setToken({ ...asset });
       return;
     }
@@ -46,7 +51,9 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
     let image =
       (result.onchain_metadata &&
         result.onchain_metadata.image &&
-        linkToSrc(result.onchain_metadata.image)) ||
+        linkToSrc(
+          convertMetadataPropToString(result.onchain_metadata.image)
+        )) ||
       (result.metadata && linkToSrc(result.metadata.logo)) ||
       '';
 
@@ -68,11 +75,6 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
     //     })
     //   );
     // }
-    if (image && image.startsWith('http')) {
-      image = await fetch(image)
-        .then((res) => res.blob())
-        .then((image) => URL.createObjectURL(image));
-    }
     onLoad({ displayName: name, image });
     if (!isMounted.current) return;
     setToken((t) => ({

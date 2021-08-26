@@ -1,5 +1,4 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 import { getCurrentAccount, getUtxos, signTx } from '../../../api/extension';
 import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
@@ -8,11 +7,7 @@ import { Button } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import UnitDisplay from '../components/unitDisplay';
-import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-} from '@chakra-ui/icons';
+import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import MiddleEllipsis from 'react-middle-ellipsis';
 import AssetFingerprint from '@emurgo/cip14-js';
 import {
@@ -28,9 +23,9 @@ import Copy from '../components/copy';
 import { Portal } from '@chakra-ui/portal';
 import { Avatar } from '@chakra-ui/avatar';
 import { FixedSizeList as List } from 'react-window';
-import { valueToAssets } from '../../../api/extension/wallet';
+import { valueToAssets } from '../../../api/util';
 import { TxSignError } from '../../../config/config';
-import { useSettings } from '../components/settingsProvider';
+import { useStoreState } from 'easy-peasy';
 import { useColorModeValue } from '@chakra-ui/react';
 
 const abs = (big) => {
@@ -38,7 +33,7 @@ const abs = (big) => {
 };
 
 const SignTx = ({ request, controller }) => {
-  const { settings } = useSettings();
+  const settings = useStoreState((state) => state.settings.settings);
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [fee, setFee] = React.useState('0');

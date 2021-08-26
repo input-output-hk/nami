@@ -35,59 +35,126 @@ import {
 import MiddleEllipsis from 'react-middle-ellipsis';
 import { Avatar } from '@chakra-ui/avatar';
 import UnitDisplay from '../components/unitDisplay';
+import { buildTx, initTx, signAndSubmit } from '../../../api/extension/wallet';
 import {
-  assetsToValue,
-  buildTx,
-  initTx,
-  minAdaRequired,
-  signAndSubmit,
-  structureToUtxo,
   sumUtxos,
   valueToAssets,
-} from '../../../api/extension/wallet';
+  assetsToValue,
+  minAdaRequired,
+} from '../../../api/util';
 import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
 import {
   InputRightElement,
-  LightMode,
   Spinner,
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
-import { useSettings } from '../components/settingsProvider';
+import { action, useStoreActions, useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
 
-let timer = null;
-const assets = {};
+const useIsMounted = () => {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  return isMounted;
+};
 
-const Send = () => {
-  const { settings } = useSettings();
-  const history = useHistory();
-  const toast = useToast();
-  const ref = React.useRef();
-  const [account, setAccount] = React.useState(null);
-  const [fee, setFee] = React.useState({ fee: '0' });
-  const [address, setAddress] = React.useState({ result: '' });
-  const [loaded, setLoaded] = React.useState(false);
-  const focus = React.useRef(false);
-  const [value, setValue] = React.useState({
-    ada: '',
-    assets: [],
-    personalAda: '',
-    minAda: '0',
-  });
-  const [txInfo, setTxInfo] = React.useState({
+let timer = null;
+
+const initialState = {
+  fee: { fee: '0' },
+  value: { ada: '', assets: [], personalAda: '', minAda: '0' },
+  address: { result: '' },
+  tx: null,
+  txInfo: {
     protocolParameters: null,
     utxos: [],
     balance: { lovelace: '0', assets: null },
-  });
-  const [tx, setTx] = React.useState(null);
+  },
+};
+
+export const sendStore = {
+  ...initialState,
+  setFee: action((state, fee) => {
+    state.fee = fee;
+  }),
+  setValue: action((state, value) => {
+    state.value = value;
+  }),
+  setTx: action((state, tx) => {
+    state.tx = tx;
+  }),
+  setAddress: action((state, address) => {
+    state.address = address;
+  }),
+  setTxInfo: action((state, txInfo) => {
+    state.txInfo = txInfo;
+  }),
+  reset: action((state) => {
+    state.fee = initialState.fee;
+    state.value = initialState.value;
+    state.address = initialState.address;
+    state.tx = initialState.tx;
+    state.txInfo = initialState.txInfo;
+  }),
+};
+
+const Send = () => {
+  const isMounted = useIsMounted();
+  const settings = useStoreState((state) => state.settings.settings);
+  const [address, setAddress] = [
+    useStoreState((state) => state.globalModel.sendStore.address),
+    useStoreActions((actions) => actions.globalModel.sendStore.setAddress),
+  ];
+  const [value, setValue] = [
+    useStoreState((state) => state.globalModel.sendStore.value),
+    useStoreActions((actions) => actions.globalModel.sendStore.setValue),
+  ];
+  const [txInfo, setTxInfo] = [
+    useStoreState((state) => state.globalModel.sendStore.txInfo),
+    useStoreActions((actions) => actions.globalModel.sendStore.setTxInfo),
+  ];
+  const [fee, setFee] = [
+    useStoreState((state) => state.globalModel.sendStore.fee),
+    useStoreActions((actions) => actions.globalModel.sendStore.setFee),
+  ];
+  const [tx, setTx] = [
+    useStoreState((state) => state.globalModel.sendStore.tx),
+    useStoreActions((actions) => actions.globalModel.sendStore.setTx),
+  ];
+  const utxos = React.useRef(null);
+  const assets = React.useRef({});
+  const account = React.useRef(null);
+  // this flag makes sure that in case something is in the store, the prepareTx is not triggered multiple times; refactoring may help with having prepareTX in a useEffect call
+  const usesStore = React.useRef(false);
+  const resetState = useStoreActions(
+    (actions) => actions.globalModel.sendStore.reset
+  );
+  const history = useHistory();
+  const toast = useToast();
+  const ref = React.useRef();
+  const [isLoading, setIsLoading] = React.useState(true);
+  const focus = React.useRef(false);
+
   const prepareTx = async (v, a, count) => {
+    if (!isMounted.current) return;
     await Loader.load();
+    await new Promise((res, rej) => {
+      const interval = setInterval(() => {
+        if (utxos.current) {
+          clearInterval(interval);
+          res();
+          return;
+        }
+      });
+    });
     const _value = v || value;
     const _address = a || address;
     if (!_value.ada && _value.assets.length <= 0) {
@@ -104,7 +171,10 @@ const Send = () => {
       setTx(null);
       return;
     }
-    if (count >= 5) throw ERROR.txNotPossible;
+    if (count >= 5) {
+      setFee({ error: 'Transaction not possible' });
+      throw ERROR.txNotPossible;
+    }
 
     setFee({ fee: '' });
     setTx(null);
@@ -122,7 +192,7 @@ const Send = () => {
 
       for (const asset of _value.assets) {
         if (!asset.input || BigInt(asset.input || '0') < 1) {
-          setFee({ error: 'Assets quantity not set' });
+          setFee({ error: 'Asset quantity not set' });
           return;
         }
         output.amount.push({
@@ -134,7 +204,7 @@ const Send = () => {
       const outputValue = await assetsToValue(output.amount);
       const minAda = await minAdaRequired(
         outputValue,
-        txInfo.protocolParameters.minUtxo
+        Loader.Cardano.BigNum.from_str(txInfo.protocolParameters.minUtxo)
       );
 
       if (BigInt(minAda) <= BigInt(toUnit(_value.personalAda || '0'))) {
@@ -142,16 +212,16 @@ const Send = () => {
           _value.personalAda.replace(/[,\s]/g, '')
         ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
         output.amount[0].quantity = toUnit(_value.personalAda || '0');
-        !focus.current && setValue((v) => ({ ...v, ada: displayAda }));
+        !focus.current && setValue({ ...value, ada: displayAda });
       } else if (_value.assets.length > 0) {
         output.amount[0].quantity = minAda;
         const minAdaDisplay = parseFloat(
           displayUnit(minAda).toString().replace(/[,\s]/g, '')
         ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
-        setValue((v) => ({
-          ...v,
+        setValue({
+          ...value,
           ada: minAdaDisplay,
-        }));
+        });
       }
 
       const outputs = Loader.Cardano.TransactionOutputs.new();
@@ -164,60 +234,72 @@ const Send = () => {
         )
       );
 
-      setValue((v) => ({ ...v, minAda }));
       const tx = await buildTx(
-        account,
-        txInfo.utxos,
+        account.current,
+        utxos.current,
         outputs,
         txInfo.protocolParameters
       );
 
       setFee({ fee: tx.body().fee().to_str() });
-      setTx(tx);
+      setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
-      if (!_value.ada) setFee({ fee: '0' });
-      else setFee({ error: 'Transaction not possible' });
       prepareTx(v, a, count + 1);
     }
   };
 
-  const getInfo = async () => {
+  const init = async () => {
+    if (!isMounted.current) return;
+    addAssets(value.assets);
+    await Loader.load();
     const currentAccount = await getCurrentAccount();
-    setAccount(currentAccount);
-    const utxos = await getUtxos();
+    account.current = currentAccount;
+    if (txInfo.protocolParameters) {
+      usesStore.current = true;
+      const _utxos = txInfo.utxos.map((utxo) =>
+        Loader.Cardano.TransactionUnspentOutput.from_bytes(
+          Buffer.from(utxo, 'hex')
+        )
+      );
+      utxos.current = _utxos;
+      await prepareTx(null, null, 0);
+      setIsLoading(false);
+      return;
+    }
+    let _utxos = await getUtxos();
     const protocolParameters = await initTx();
-    setLoaded(true);
-    const utxoSum = await sumUtxos(utxos);
+    const utxoSum = await sumUtxos(_utxos);
     let balance = await valueToAssets(utxoSum);
     balance = {
       lovelace: balance.find((v) => v.unit === 'lovelace').quantity,
       assets: balance.filter((v) => v.unit !== 'lovelace'),
     };
-    setTxInfo({ protocolParameters, utxos, balance });
+    utxos.current = _utxos;
+    _utxos = _utxos.map((utxo) => Buffer.from(utxo.to_bytes()).toString('hex'));
+    setIsLoading(false);
+    setTxInfo({ protocolParameters, utxos: _utxos, balance });
   };
 
   const objectToArray = (obj) => Object.keys(obj).map((key) => obj[key]);
 
   const addAssets = (_assets) => {
     _assets.forEach((asset) => {
-      assets[asset.unit] = asset;
+      assets.current[asset.unit] = { ...asset };
     });
-    const assetsList = objectToArray(assets);
-    setValue((v) => ({ ...v, assets: assetsList }));
+    const assetsList = objectToArray(assets.current);
+    setValue({ ...value, assets: assetsList });
   };
 
   const removeAsset = (asset) => {
-    delete assets[asset.unit];
-    const assetsList = objectToArray(assets);
-    setValue((v) => ({ ...v, assets: assetsList }));
+    delete assets.current[asset.unit];
+    const assetsList = objectToArray(assets.current);
+    setValue({ ...value, assets: assetsList });
   };
 
   React.useEffect(() => {
-    getInfo();
+    init();
     return () => {
-      Object.keys(assets).forEach((unit) => {
-        delete assets[unit];
-      });
+      resetState();
     };
   }, []);
   return (
@@ -229,219 +311,261 @@ const Send = () => {
         flexDirection="column"
         position="relative"
       >
-        <Account />
-        <Box position="absolute" top="24" left="6">
-          <IconButton
-            rounded="md"
-            onClick={() => history.goBack()}
-            variant="ghost"
-            icon={<ChevronLeftIcon boxSize="6" />}
-          />
-        </Box>
-        <Box height="10" />
-        <Text fontSize="lg" fontWeight="bold">
-          Send
-        </Text>
-        <Box height="12" />
-        <Box
-          display="flex"
-          alignItems="center"
-          flexDirection="column"
-          justifyContent="center"
-          width="80%"
-        >
-          <AddressPopup
-            setAddress={setAddress}
-            address={address}
-            prepareTx={prepareTx}
-          />
-          {address.error && (
-            <Text width="full" textAlign="left" color="red.300">
-              Address is invalid
-            </Text>
-          )}
-          <Box height="5" />
-          <Stack direction="row" alignItems="center" justifyContent="center">
-            <InputGroup size="sm" flex={3}>
-              <InputLeftAddon
-                border="none"
-                children={
-                  loaded ? (
-                    settings.adaSymbol
-                  ) : (
-                    <Spinner
-                      color="teal"
-                      speed="0.5s"
-                      boxSize="9px"
-                      size="xs"
-                    />
-                  )
-                }
-              />
-              <Input
-                variant="filled"
-                isDisabled={!loaded}
-                isInvalid={
-                  value.ada &&
-                  (BigInt(toUnit(value.ada)) < BigInt(value.minAda) ||
-                    BigInt(toUnit(value.ada)) >
-                      BigInt(txInfo.balance.lovelace || '0'))
-                }
-                onFocus={() => (focus.current = true)}
-                onBlur={(e) => {
-                  if (
-                    !e.target.value ||
-                    !e.target.value.match(/^,+|(,)+|d*[0-9,.]\d*$/)
-                  )
-                    return;
-                  const displayAda = parseFloat(
-                    e.target.value.replace(/[,\s]/g, '')
-                  ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
-                  setValue((v) => ({ ...v, ada: displayAda }));
-                  focus.current = false;
-                }}
-                value={value.ada}
-                onInput={(e) => {
-                  clearTimeout(timer);
-                  if (
-                    e.target.value &&
-                    !e.target.value.match(/^,+|(,)+|d*[0-9,.]\d*$/)
-                  )
-                    return;
-
-                  value.ada = e.target.value;
-                  value.personalAda = e.target.value;
-                  const v = value;
-                  setValue((v) => ({
-                    ...v,
-                    ada: e.target.value,
-                    personalAda: e.target.value,
-                  }));
-                  timer = setTimeout(() => {
-                    prepareTx(v, undefined, 0);
-                  }, 800);
-                }}
-                placeholder="0.000000"
-              />
-            </InputGroup>
-            <AssetsSelector
-              addAssets={addAssets}
-              assets={txInfo.balance.assets}
-              setValue={setValue}
-              value={value}
-            />
-          </Stack>
-          <Box height="6" />
-          <Scrollbars
-            style={{
-              width: '100%',
-              height: '170px',
-            }}
-          >
-            <Box display="flex" width="full" flexWrap="wrap" paddingRight="2">
-              {value.assets.map((asset, index) => (
-                <Box key={index}>
-                  <AssetBadge
-                    onRemove={() => {
-                      clearTimeout(timer);
-                      removeAsset(asset);
-                      const v = value;
-                      v.assets = objectToArray(assets);
-                      timer = setTimeout(() => {
-                        prepareTx(v, undefined, 0);
-                      }, 300);
-                    }}
-                    onLoad={({ displayName, image }) => {
-                      clearTimeout(timer);
-                      assets[asset.unit].loaded = true;
-                      assets[asset.unit].displayName = displayName;
-                      assets[asset.unit].image = image;
-
-                      const v = value;
-                      v.assets = objectToArray(assets);
-
-                      timer = setTimeout(() => {
-                        prepareTx(v, undefined, 0);
-                      }, 300);
-                    }}
-                    onInput={(val) => {
-                      clearTimeout(timer);
-                      value.assets[index].input = val;
-                      const v = value;
-                      setValue((v) => ({ ...v, assets: value.assets }));
-                      timer = setTimeout(() => {
-                        prepareTx(v, undefined, 0);
-                      }, 500);
-                    }}
-                    asset={asset}
-                  />
-                </Box>
-              ))}
-            </Box>
-          </Scrollbars>
-        </Box>
-
-        <Box
-          position="absolute"
-          width="full"
-          bottom="24"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Stack
-            direction="row"
+        {txInfo.protocolParameters && isLoading ? (
+          <Box
+            height="100vh"
+            width="full"
+            display="flex"
             alignItems="center"
             justifyContent="center"
-            fontSize="sm"
           >
-            {fee.error ? (
-              <Text fontSize="xs" color="red.300">
-                {fee.error}
-              </Text>
-            ) : (
-              <>
-                {' '}
-                <Text fontWeight="bold">+ Fee: </Text>
-                <UnitDisplay
-                  quantity={!address.result ? '0' : fee.fee}
-                  decimals={6}
-                  symbol={settings.adaSymbol}
+            <Spinner color="teal" speed="0.5s" />
+          </Box>
+        ) : (
+          <>
+            <Account />
+            <Box position="absolute" top="24" left="6">
+              <IconButton
+                rounded="md"
+                onClick={() => {
+                  history.goBack();
+                }}
+                variant="ghost"
+                icon={<ChevronLeftIcon boxSize="6" />}
+              />
+            </Box>
+            <Box height="10" />
+            <Text fontSize="lg" fontWeight="bold">
+              Send
+            </Text>
+            <Box height="12" />
+            <Box
+              display="flex"
+              alignItems="center"
+              flexDirection="column"
+              justifyContent="center"
+              width="80%"
+            >
+              <AddressPopup
+                setAddress={setAddress}
+                address={address}
+                prepareTx={prepareTx}
+              />
+              {address.error && (
+                <Text width="full" textAlign="left" color="red.300">
+                  Address is invalid
+                </Text>
+              )}
+              <Box height="5" />
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <InputGroup size="sm" flex={3}>
+                  <InputLeftAddon
+                    border="none"
+                    children={
+                      !isLoading ? (
+                        settings.adaSymbol
+                      ) : (
+                        <Spinner
+                          color="teal"
+                          speed="0.5s"
+                          boxSize="9px"
+                          size="xs"
+                        />
+                      )
+                    }
+                  />
+                  <Input
+                    variant="filled"
+                    isDisabled={isLoading}
+                    isInvalid={
+                      value.ada &&
+                      (BigInt(toUnit(value.ada)) < BigInt(value.minAda) ||
+                        BigInt(toUnit(value.ada)) >
+                          BigInt(txInfo.balance.lovelace || '0'))
+                    }
+                    onFocus={() => (focus.current = true)}
+                    onBlur={(e) => {
+                      if (
+                        !e.target.value ||
+                        !e.target.value.match(/^,+|(,)+|d*[0-9,.]\d*$/)
+                      )
+                        return;
+                      const displayAda = parseFloat(
+                        e.target.value.replace(/[,\s]/g, '')
+                      ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
+                      setValue({ ...value, ada: displayAda });
+                      focus.current = false;
+                    }}
+                    value={value.ada}
+                    onInput={(e) => {
+                      clearTimeout(timer);
+                      if (
+                        e.target.value &&
+                        !e.target.value.match(/^,+|(,)+|d*[0-9,.]\d*$/)
+                      )
+                        return;
+
+                      value.ada = e.target.value;
+                      value.personalAda = e.target.value;
+                      const v = value;
+                      setValue({
+                        ...v,
+                        ada: e.target.value,
+                        personalAda: e.target.value,
+                      });
+                      timer = setTimeout(() => {
+                        prepareTx(v, undefined, 0);
+                      }, 800);
+                    }}
+                    placeholder="0.000000"
+                  />
+                </InputGroup>
+                <AssetsSelector
+                  addAssets={addAssets}
+                  assets={txInfo.balance.assets}
+                  setValue={setValue}
+                  value={value}
                 />
-              </>
-            )}
-          </Stack>
-        </Box>
-        <Box
-          position="absolute"
-          width="full"
-          bottom="8"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Button
-            isDisabled={!tx || fee.error}
-            colorScheme="orange"
-            onClick={() => ref.current.openModal()}
-            rightIcon={<Icon as={BsArrowUpRight} />}
-          >
-            Send
-          </Button>
-        </Box>
+              </Stack>
+              <Box height="6" />
+              <Scrollbars
+                style={{
+                  width: '100%',
+                  height: '170px',
+                }}
+              >
+                <Box
+                  display="flex"
+                  width="full"
+                  flexWrap="wrap"
+                  paddingRight="2"
+                >
+                  {value.assets.map((asset, index) => (
+                    <Box key={index}>
+                      <AssetBadge
+                        onRemove={() => {
+                          clearTimeout(timer);
+                          removeAsset(asset);
+                          const v = value;
+                          v.assets = objectToArray(assets.current);
+
+                          timer = setTimeout(() => {
+                            prepareTx(v, undefined, 0);
+                          }, 300);
+                        }}
+                        onLoad={({ displayName, image }) => {
+                          clearTimeout(timer);
+                          if (!assets.current[asset.unit].loaded) {
+                            assets.current[asset.unit].loaded = true;
+                            assets.current[asset.unit].displayName =
+                              displayName;
+                            assets.current[asset.unit].image = image;
+                          }
+                          const v = value;
+                          v.assets = objectToArray(assets.current);
+                          setValue({ ...v, assets: v.assets });
+
+                          timer = setTimeout(() => {
+                            if (usesStore.current) {
+                              usesStore.current = false;
+                              return;
+                            }
+                            prepareTx(v, undefined, 0);
+                          }, 300);
+                        }}
+                        onInput={(val) => {
+                          clearTimeout(timer);
+                          assets.current[asset.unit].input = val;
+                          const v = value;
+                          v.assets = objectToArray(assets.current);
+                          setValue({ ...v, assets: v.assets });
+                          timer = setTimeout(() => {
+                            if (usesStore.current) {
+                              usesStore.current = false;
+                              return;
+                            }
+                            prepareTx(v, undefined, 0);
+                          }, 500);
+                        }}
+                        asset={asset}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              </Scrollbars>
+            </Box>
+
+            <Box
+              position="absolute"
+              width="full"
+              bottom="24"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="center"
+                fontSize="sm"
+              >
+                {fee.error ? (
+                  <Text fontSize="xs" color="red.300">
+                    {fee.error}
+                  </Text>
+                ) : (
+                  <>
+                    {' '}
+                    <Text fontWeight="bold">+ Fee: </Text>
+                    <UnitDisplay
+                      quantity={!address.result ? '0' : fee.fee}
+                      decimals={6}
+                      symbol={settings.adaSymbol}
+                    />
+                  </>
+                )}
+              </Stack>
+            </Box>
+            <Box
+              position="absolute"
+              width="full"
+              bottom="8"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Button
+                isDisabled={!tx || fee.error}
+                colorScheme="orange"
+                onClick={() => ref.current.openModal()}
+                rightIcon={<Icon as={BsArrowUpRight} />}
+              >
+                Send
+              </Button>
+            </Box>
+          </>
+        )}
       </Box>
       <ConfirmModal
         ref={ref}
-        sign={(password) =>
-          signAndSubmit(
-            tx,
+        sign={async (password) => {
+          await Loader.load();
+          const txDes = Loader.Cardano.Transaction.from_bytes(
+            Buffer.from(tx, 'hex')
+          );
+          return await signAndSubmit(
+            txDes,
             {
-              accountIndex: account.index,
-              keyHashes: [account.paymentKeyHash],
+              accountIndex: account.current.index,
+              keyHashes: [account.current.paymentKeyHash],
             },
             password
-          )
-        }
+          );
+        }}
         onConfirm={async (status, signedTx) => {
           if (status === true) {
             toast({
@@ -457,7 +581,9 @@ const Send = () => {
               duration: 5000,
             });
           ref.current.closeModal();
-          setTimeout(() => history.goBack(), 200);
+          setTimeout(() => {
+            history.goBack();
+          }, 200);
         }}
       />
     </>
@@ -466,7 +592,6 @@ const Send = () => {
 
 // Address Popup
 const AddressPopup = ({ setAddress, address, prepareTx }) => {
-  const inputColor = useColorModeValue('teal.400', 'teal.600');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const ref = React.useRef(false);
   const [state, setState] = React.useState({
@@ -712,7 +837,6 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
   <CustomScrollbars {...props} forwardedRef={ref} />
 ));
 
-let clicked = false;
 const AssetsSelector = ({ assets, addAssets, value }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [search, setSearch] = React.useState('');
@@ -850,20 +974,12 @@ const AssetsSelector = ({ assets, addAssets, value }) => {
                           }}
                           width="96%"
                           onClick={() => {
-                            if (clicked) return;
                             if (select.current) {
                               select.current = false;
                               return;
                             }
-                            clicked = true;
                             onClose();
-                            setTimeout(
-                              () => addAssets([asset]),
-
-                              100
-                            );
-
-                            setTimeout(() => (clicked = false), 500); // Prevent user from selecting multiple at once
+                            addAssets([asset]);
                           }}
                           mr="3"
                           ml="4"
