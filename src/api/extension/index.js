@@ -17,9 +17,7 @@ import cryptoRandomString from 'crypto-random-string';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
-import {
-  initTx,
-} from './wallet';
+import { initTx } from './wallet';
 import {
   blockfrostRequest,
   networkNameToId,
@@ -887,8 +885,14 @@ export const avatarToImage = (avatar) => {
   return URL.createObjectURL(blob);
 };
 
-const updateBalance = async (currentAccount, network) => {
+export const updateBalance = async (currentAccount, network) => {
   let amount = await getBalance();
+  let protocolParameters = await initTx();
+  let minAda = Loader.Cardano.min_ada_required(
+    amount,
+    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo.toString())
+  ).to_str();
+
   amount = await valueToAssets(amount);
 
   if (amount.length > 0) {
