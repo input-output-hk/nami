@@ -39,7 +39,7 @@ export const UpgradeModal = React.forwardRef((props, ref) => {
       <ModalContent>
         <ModalHeader fontSize="md">
           <Icon as={IoRocketSharp} w={6} h={6} color="cyan.300" mr="10px" />
-          What's new in Nami Wallet ?
+          What's new in Nami ?
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody fontSize="xs">
