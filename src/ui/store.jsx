@@ -96,7 +96,7 @@ const StoreInit = ({ children }) => {
     } else {
       await initStore(state, actions);
       setIsLoading(false);
-      if (info) {
+      if (info && info.length) {
         refB.current.openModal();
       }
     }
@@ -151,7 +151,7 @@ const StoreInit = ({ children }) => {
       ) : (
         <>
           {children}
-          {info ? <UpgradeModal info={info} ref={refB} /> : ''}
+          {info && info.length ? <UpgradeModal info={info} ref={refB} /> : ''}
           {/* Settings Overlay */}
           {settings.network.id === NETWORK_ID.testnet && (
             <Box
