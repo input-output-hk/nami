@@ -89,9 +89,11 @@ export const ERROR = {
   onlyOneAccount: 'Only one account exist in the wallet',
 };
 
+export const TX = {
+  invalid_hereafter: 3600, //2h from current slot
+};
+
 export const EVENT = {
-  txSubmit: 'txSubmit',
-  txConfirmation: 'txConfirmation',
   accountChange: 'accountChange',
   networkChange: 'networkChange',
 };

@@ -2,6 +2,13 @@ import { getNetwork } from './extension';
 import provider from '../config/provider';
 import Loader from './loader';
 import { NETWORK_ID } from '../config/config';
+import {
+  BaseAddress,
+  TransactionUnspentOutput,
+  Value,
+  MultiAsset,
+} from '@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
+import AssetFingerprint from '@emurgo/cip14-js';
 
 export const blockfrostRequest = async (endpoint, headers, body) => {
   const network = await getNetwork();
@@ -16,11 +23,21 @@ export const blockfrostRequest = async (endpoint, headers, body) => {
   }).then((res) => res.json());
 };
 
+/**
+ *
+ * @param {string} currency - eg. usd
+ * @returns
+ */
 export const currencyToSymbol = (currency) => {
   const currencyMap = { usd: '$', ada: '₳', eur: '€' };
   return currencyMap[currency];
 };
 
+/**
+ *
+ * @param {string} hex
+ * @returns
+ */
 export const hexToAscii = (hex) => {
   var _hex = hex.toString();
   var str = '';
@@ -34,15 +51,19 @@ export const networkNameToId = (name) => {
   return names[name];
 };
 
-//returns the total amount of assets included in Value (excluding ADA)
-export const valueLength = async (multiAssets) => {
+/**
+ *
+ * @param {MultiAsset} multiAsset
+ * @returns
+ */
+export const multiAssetCount = async (multiAsset) => {
   await Loader.load();
-  if (!multiAssets) return 0;
+  if (!multiAsset) return 0;
   let count = 0;
-  const policies = multiAssets.keys();
-  for (let j = 0; j < multiAssets.len(); j++) {
+  const policies = multiAsset.keys();
+  for (let j = 0; j < multiAsset.len(); j++) {
     const policy = policies.get(j);
-    const policyAssets = multiAssets.get(policy);
+    const policyAssets = multiAsset.get(policy);
     const assetNames = policyAssets.keys();
     for (let k = 0; k < assetNames.len(); k++) {
       count++;
@@ -105,6 +126,13 @@ function addAmounts(amountList, compiledAmountList) {
   });
 }
 
+/** Cardano metadata properties can hold a max of 64 bytes. The alternative is to use an array of strings. */
+export const convertMetadataPropToString = (src) => {
+  if (typeof src === 'string') return src;
+  else if (Array.isArray(src)) return src.join('');
+  return null;
+};
+
 export const linkToSrc = (link, base64 = false) => {
   const base64regex =
     /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
@@ -115,24 +143,145 @@ export const linkToSrc = (link, base64 = false) => {
       '/' +
       link.split('ipfs://')[1].split('ipfs/').slice(-1)[0]
     );
-  else if (link.startsWith('Qm') && link.length === 46) {
-    return link;
+  else if (
+    (link.startsWith('Qm') && link.length === 46) ||
+    (link.startsWith('baf') && link.length === 59)
+  ) {
+    return provider.api.ipfs + '/' + link;
   } else if (base64 && base64regex.test(link))
     return 'data:image/png;base64,' + link;
+  else if (link.startsWith('data:image')) return link;
   return null;
 };
 
-export const getStorage = (key) =>
-  new Promise((res, rej) =>
-    chrome.storage.local.get(key, (result) => {
-      if (chrome.runtime.lastError) rej(undefined);
-      res(result);
-    })
+/**
+ *
+ * @param {JSON} output
+ * @param {BaseAddress} address
+ * @returns
+ */
+export const utxoFromJson = async (output, address) => {
+  await Loader.load();
+  return Loader.Cardano.TransactionUnspentOutput.new(
+    Loader.Cardano.TransactionInput.new(
+      Loader.Cardano.TransactionHash.from_bytes(
+        Buffer.from(output.tx_hash || output.txHash, 'hex')
+      ),
+      output.output_index || output.txId
+    ),
+    Loader.Cardano.TransactionOutput.new(
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex')),
+      await assetsToValue(output.amount)
+    )
   );
-export const setStorage = (item) =>
-  new Promise((res, rej) =>
-    chrome.storage.local.set(item, () => {
-      if (chrome.runtime.lastError) rej(chrome.runtime.lastError);
-      res(true);
-    })
+};
+
+/**
+ *
+ * @param {TransactionUnspentOutput[]} utxos
+ * @returns
+ */
+export const sumUtxos = async (utxos) => {
+  await Loader.load();
+  let value = Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
+  utxos.forEach((utxo) => (value = value.checked_add(utxo.output().amount())));
+  return value;
+};
+
+/**
+ *
+ *
+ *
+ * @param {TransactionUnspentOutput} utxo
+ * @returns
+ */
+export const utxoToJson = async (utxo) => {
+  await Loader.load();
+  const assets = await valueToAssets(utxo.output().amount());
+  return {
+    txHash: Buffer.from(
+      utxo.input().transaction_id().to_bytes(),
+      'hex'
+    ).toString('hex'),
+    txId: utxo.input().index(),
+    amount: assets,
+  };
+};
+
+export const assetsToValue = async (assets) => {
+  await Loader.load();
+  const multiAsset = Loader.Cardano.MultiAsset.new();
+  const lovelace = assets.find((asset) => asset.unit === 'lovelace');
+  const policies = [
+    ...new Set(
+      assets
+        .filter((asset) => asset.unit !== 'lovelace')
+        .map((asset) => asset.unit.slice(0, 56))
+    ),
+  ];
+  policies.forEach((policy) => {
+    const policyAssets = assets.filter(
+      (asset) => asset.unit.slice(0, 56) === policy
+    );
+    const assetsValue = Loader.Cardano.Assets.new();
+    policyAssets.forEach((asset) => {
+      assetsValue.insert(
+        Loader.Cardano.AssetName.new(Buffer.from(asset.unit.slice(56), 'hex')),
+        Loader.Cardano.BigNum.from_str(asset.quantity)
+      );
+    });
+    multiAsset.insert(
+      Loader.Cardano.ScriptHash.from_bytes(Buffer.from(policy, 'hex')),
+      assetsValue
+    );
+  });
+  const value = Loader.Cardano.Value.new(
+    Loader.Cardano.BigNum.from_str(lovelace ? lovelace.quantity : '0')
   );
+  if (assets.length > 1 || !lovelace) value.set_multiasset(multiAsset);
+  return value;
+};
+
+/**
+ *
+ * @param {Value} value
+ */
+export const valueToAssets = async (value) => {
+  await Loader.load();
+  const assets = [];
+  assets.push({ unit: 'lovelace', quantity: value.coin().to_str() });
+  if (value.multiasset()) {
+    const multiAssets = value.multiasset().keys();
+    for (let j = 0; j < multiAssets.len(); j++) {
+      const policy = multiAssets.get(j);
+      const policyAssets = value.multiasset().get(policy);
+      const assetNames = policyAssets.keys();
+      for (let k = 0; k < assetNames.len(); k++) {
+        const policyAsset = assetNames.get(k);
+        const quantity = policyAssets.get(policyAsset);
+        const asset =
+          Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
+          Buffer.from(policyAsset.name(), 'hex').toString('hex');
+        const _policy = asset.slice(0, 56);
+        const _name = asset.slice(56);
+        const fingerprint = new AssetFingerprint(
+          Buffer.from(_policy, 'hex'),
+          Buffer.from(_name, 'hex')
+        ).fingerprint();
+        assets.push({
+          unit: asset,
+          quantity: quantity.to_str(),
+          policy: _policy,
+          name: hexToAscii(_name),
+          fingerprint,
+        });
+      }
+    }
+  }
+  return assets;
+};
+
+export const minAdaRequired = async (value, utxoVal) => {
+  await Loader.load();
+  return Loader.Cardano.min_ada_required(value, utxoVal).to_str();
+};

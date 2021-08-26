@@ -83,7 +83,6 @@ export const onAccountChange = (callback) => {
       response.sender !== SENDER.extension
     )
       return;
-    // window.removeEventListener('message', responseHandler);
     callback(response.data);
   }
   window.addEventListener('message', responseHandler);
@@ -108,7 +107,6 @@ export const onNetworkChange = (callback) => {
       response.sender !== SENDER.extension
     )
       return;
-    // window.removeEventListener('message', responseHandler);
     callback(response.data);
   }
   window.addEventListener('message', responseHandler);
