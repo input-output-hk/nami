@@ -255,7 +255,10 @@ const Send = () => {
     const currentAccount = await getCurrentAccount();
     account.current = currentAccount;
     if (txInfo.protocolParameters) {
-      usesStore.current = true;
+      // if there are no assets, the onLoad and onInput functions are not triggered. No need to set usesStore to true then
+      if (value.assets.length > 0) {
+        usesStore.current = true;
+      }
       const _utxos = txInfo.utxos.map((utxo) =>
         Loader.Cardano.TransactionUnspentOutput.from_bytes(
           Buffer.from(utxo, 'hex')
