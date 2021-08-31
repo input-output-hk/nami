@@ -78,7 +78,7 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
             tx,
             account,
             stakeRegistration:
-              !delegation.active && protocolParameters.keyDeposit.to_str(),
+              !delegation.active && protocolParameters.keyDeposit,
             ready: true,
           });
         } catch (e) {
