@@ -26,7 +26,7 @@ import { FixedSizeList as List } from 'react-window';
 import { valueToAssets } from '../../../api/util';
 import { TxSignError } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
-import { useColorModeValue } from '@chakra-ui/react';
+import { Tooltip, useColorModeValue } from '@chakra-ui/react';
 
 const abs = (big) => {
   return big < 0 ? big * BigInt(-1) : big;
@@ -42,10 +42,12 @@ const SignTx = ({ request, controller }) => {
     externalValue: null,
   });
   const [property, setProperty] = React.useState({
-    metadata: null,
-    certificate: null,
-    withdrawal: null,
-    minting: null,
+    metadata: false,
+    certificate: false,
+    withdrawal: false,
+    minting: false,
+    script: false, //NEW; needs to be implemented
+    contract: false, //NEW; needs to be implemented
   });
   const [keyHashes, setKeyHashes] = React.useState({ kind: null, key: [] });
 
@@ -192,18 +194,6 @@ const SignTx = ({ request, controller }) => {
       }
     }
 
-    // const check = (keyHash) => {
-    //   const tempKeyHashes = [...requiredKeyHashes];
-    //   if (keyHash === paymentKeyHash || keyHash === stakeKeyHash) {
-    //     tempKeyHashes.push(keyHash);
-    //     if (new Set(tempKeyHashes).size >= 2) {
-    //       requiredKeyHashes = tempKeyHashes;
-    //       return true;
-    //     }
-    //   }
-    //   return false;
-    // };
-
     //get key hashes from certificates
     const txBody = tx.body();
     const keyHashFromCert = (txBody) => {
@@ -216,7 +206,6 @@ const SignTx = ({ request, controller }) => {
               credential.to_keyhash().to_bytes(),
               'hex'
             ).toString('hex');
-            // if (check(keyHash)) return;
             requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 1) {
@@ -226,7 +215,6 @@ const SignTx = ({ request, controller }) => {
               credential.to_keyhash().to_bytes(),
               'hex'
             ).toString('hex');
-            // if (check(keyHash)) return;
             requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 2) {
@@ -236,7 +224,6 @@ const SignTx = ({ request, controller }) => {
               credential.to_keyhash().to_bytes(),
               'hex'
             ).toString('hex');
-            // if (check(keyHash)) return;
             requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 3) {
@@ -254,7 +241,6 @@ const SignTx = ({ request, controller }) => {
               owners.get(i).to_bytes(),
               'hex'
             ).toString('hex');
-            // if (check(keyHash)) return;
             requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 6) {
@@ -270,7 +256,6 @@ const SignTx = ({ request, controller }) => {
                 credential.to_keyhash().to_bytes(),
                 'hex'
               ).toString('hex');
-              // if (check(keyHash)) return;
               requiredKeyHashes.push(keyHash);
             }
           }
@@ -289,7 +274,6 @@ const SignTx = ({ request, controller }) => {
             script.as_script_pubkey().addr_keyhash().to_bytes(),
             'hex'
           ).toString('hex');
-          // if (check(keyHash)) return;
           requiredKeyHashes.push(keyHash);
         }
         if (script.kind() === 1) {
@@ -342,7 +326,7 @@ const SignTx = ({ request, controller }) => {
         position="relative"
       >
         <Account />
-        <Box mt="10" textAlign="center">
+        <Box mt="6" textAlign="center">
           <Text fontSize="2xl" fontWeight="bold">
             TRANSACTION SIGN
           </Text>
@@ -446,7 +430,9 @@ const SignTx = ({ request, controller }) => {
         {value.externalValue && Object.keys(value.externalValue).length > 0 && (
           <Box fontSize="xs" mt="6">
             <Text textAlign="center" fontSize="16" fontWeight="bold">
-              Recipient
+              {Object.keys(value.externalValue).length > 1
+                ? 'Recipients'
+                : 'Recipient'}
               <ChevronRightIcon ml="2" />
             </Text>
             <Box height="2" />
@@ -495,35 +481,59 @@ const SignTx = ({ request, controller }) => {
           </Box>
         )}
         <Box
-          bottom="24"
+          bottom="95px"
           position="absolute"
           maxWidth="90%"
           wordBreak="break-all"
           textAlign="center"
           fontSize="xs"
         >
-          <Stack direction="row" alignItems="center" justifyContent="center">
-            {property.minting && (
-              <Text>
-                <b>+ Minting</b>
-              </Text>
-            )}
-            {property.certificate && (
-              <Text>
-                <b>+ Certificate</b>
-              </Text>
-            )}
-            {property.withdrawal && (
-              <Text>
-                <b>+ Withdrawal</b>
-              </Text>
-            )}
-            {property.metadata && (
-              <Text>
-                <b>+ Metadata</b>
-              </Text>
-            )}
-          </Stack>
+          {Object.keys(property).some((key) => property[key]) && (
+            <Box mb="1.5">
+              <Tooltip
+                placement="top"
+                hasArrow
+                label={
+                  <>
+                    {property.minting && (
+                      <Text>
+                        <b>Minting</b>
+                      </Text>
+                    )}
+                    {property.certificate && (
+                      <Text>
+                        <b>Certificate</b>
+                      </Text>
+                    )}
+                    {property.withdrawal && (
+                      <Text>
+                        <b>Withdrawal</b>
+                      </Text>
+                    )}
+                    {property.metadata && (
+                      <Text>
+                        <b>Metadata</b>
+                      </Text>
+                    )}
+                    {property.contract && (
+                      <Text>
+                        <b>Contract</b>
+                      </Text>
+                    )}
+                    {property.script && (
+                      <Text>
+                        <b>Script</b>
+                      </Text>
+                    )}
+                  </>
+                }
+              >
+                <b style={{ cursor: 'pointer' }}>
+                  Extras <ChevronDownIcon />
+                </b>
+              </Tooltip>
+            </Box>
+          )}
           {keyHashes.kind ? (
             keyHashes.kind.length <= 0 ? (
               <span style={{ color: '#FC8181' }}>Signature not possible</span>

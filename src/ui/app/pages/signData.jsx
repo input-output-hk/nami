@@ -65,7 +65,7 @@ const SignData = ({ request, controller }) => {
         position="relative"
       >
         <Account />
-        <Box mt="10" textAlign="center">
+        <Box mt="6" textAlign="center">
           <Text fontSize="2xl" fontWeight="bold">
             DATA SIGN
           </Text>
