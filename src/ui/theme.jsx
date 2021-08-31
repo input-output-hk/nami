@@ -70,8 +70,8 @@ const theme = extendTheme({
   styles: {
     global: {
       body: {
-        width: POPUP_WINDOW.width + 'px',
-        height: POPUP_WINDOW.height + 'px',
+        // width: POPUP_WINDOW.width + 'px',
+        // height: POPUP_WINDOW.height + 'px',
         overflow: 'hidden',
       },
     },
