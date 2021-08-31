@@ -2,7 +2,7 @@ import { STORAGE, NETWORK_ID } from '../config/config';
 import { getStorage, setStorage, updateBalance } from '../api/extension/index';
 
 const migration = {
-  version: '1.1.4',
+  version: '1.1.5',
   up: async (pwd) => {
     const networks = Object.keys(NETWORK_ID);
     let storage = await getStorage(STORAGE.accounts);
