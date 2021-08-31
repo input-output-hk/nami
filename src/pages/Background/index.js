@@ -307,6 +307,10 @@ app.add(METHOD.signTx, async (request, sendResponse) => {
 
 app.listen();
 
-//delete localStorage namiState
-const entry = Object.keys(localStorage).find((l) => l.includes('globalModel'));
-window.localStorage.removeItem(entry);
+chrome.runtime.onStartup.addListener(function () {
+  //delete localStorage globalModel
+  const entry = Object.keys(localStorage).find((l) =>
+    l.includes('globalModel')
+  );
+  window.localStorage.removeItem(entry);
+});
