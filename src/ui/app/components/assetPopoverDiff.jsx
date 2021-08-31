@@ -153,15 +153,15 @@ const AssetsPopover = ({ assets, isDifference }) => {
                                 color={
                                   isDifference
                                     ? asset.quantity <= 0
-                                      ? 'green.500'
-                                      : 'red.500'
+                                      ? 'red.500'
+                                      : 'green.500'
                                     : 'inherit'
                                 }
                               >
                                 {isDifference
                                   ? asset.quantity <= 0
-                                    ? '+'
-                                    : '-'
+                                    ? '-'
+                                    : '+'
                                   : '+'}{' '}
                                 {abs(asset.quantity).toString()}
                               </Text>
