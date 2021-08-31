@@ -102,7 +102,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     partialChange.set_multiasset(partialMultiAssets);
     const minAda = Loader.Cardano.min_ada_required(
       partialChange,
-      protocolParameters.minUtxo
+      Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
     );
     partialChange.set_coin(minAda);
 
@@ -164,7 +164,9 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
   outputs.add(
     Loader.Cardano.TransactionOutput.new(
       Loader.Cardano.Address.from_bech32(account.paymentAddr),
-      Loader.Cardano.Value.new(protocolParameters.keyDeposit)
+      Loader.Cardano.Value.new(
+        Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit)
+      )
     )
   );
   CoinSelection.setProtocolParameters(
@@ -263,7 +265,7 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     partialChange.set_multiasset(partialMultiAssets);
     const minAda = Loader.Cardano.min_ada_required(
       partialChange,
-      protocolParameters.minUtxo
+      Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
     );
     partialChange.set_coin(minAda);
 
@@ -305,7 +307,9 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
   outputs.add(
     Loader.Cardano.TransactionOutput.new(
       Loader.Cardano.Address.from_bech32(account.paymentAddr),
-      Loader.Cardano.Value.new(protocolParameters.minUtxo)
+      Loader.Cardano.Value.new(
+        Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
+      )
     )
   );
   CoinSelection.setProtocolParameters(
@@ -315,7 +319,6 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     protocolParameters.maxTxSize.toString()
   );
   const selection = await CoinSelection.randomImprove(utxos, outputs, 20);
-
   const inputs = selection.input;
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
     Loader.Cardano.LinearFee.new(
@@ -384,7 +387,7 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     partialChange.set_multiasset(partialMultiAssets);
     const minAda = Loader.Cardano.min_ada_required(
       partialChange,
-      protocolParameters.minUtxo
+      Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
     );
     partialChange.set_coin(minAda);
 
