@@ -795,6 +795,7 @@ export const createAccount = async (name, password) => {
 
   const networkDefault = {
     lovelace: 0,
+    minAda: 0,
     assets: [],
     history: { confirmed: [], details: {} },
   };
@@ -886,23 +887,28 @@ export const avatarToImage = (avatar) => {
 };
 
 export const updateBalance = async (currentAccount, network) => {
-  let amount = await getBalance();
-  let protocolParameters = await initTx();
-  let minAda = Loader.Cardano.min_ada_required(
-    amount,
-    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo.toString())
-  ).to_str();
+  await Loader.load();
+  const amount = await getBalance();
 
-  amount = await valueToAssets(amount);
+  const assets = await valueToAssets(amount);
 
-  if (amount.length > 0) {
-    currentAccount[network.id].lovelace = amount.find(
+  if (assets.length > 0) {
+    currentAccount[network.id].lovelace = assets.find(
       (am) => am.unit === 'lovelace'
     ).quantity;
-    currentAccount[network.id].assets = amount.filter(
+    currentAccount[network.id].assets = assets.filter(
       (am) => am.unit !== 'lovelace'
     );
-    currentAccount[network.id].minAda = minAda;
+    if (currentAccount[network.id].assets.length > 0) {
+      const protocolParameters = await initTx();
+      const minAda = Loader.Cardano.min_ada_required(
+        amount,
+        Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
+      ).to_str();
+      currentAccount[network.id].minAda = minAda;
+    } else {
+      currentAccount[network.id].minAda = 0;
+    }
   } else {
     currentAccount[network.id].lovelace = 0;
     currentAccount[network.id].assets = [];
