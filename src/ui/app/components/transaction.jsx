@@ -13,7 +13,6 @@ import {
   useColorModeValue,
   Skeleton,
 } from '@chakra-ui/react';
-import { Spinner } from '@chakra-ui/spinner';
 import { compileOutputs } from '../../../api/util';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
@@ -30,6 +29,7 @@ import {
   FaTrashAlt,
   FaRegEdit,
   FaUserCheck,
+  FaUsers,
 } from 'react-icons/fa';
 import { GiAnvilImpact } from 'react-icons/gi';
 import { Button } from '@chakra-ui/button';
@@ -56,6 +56,7 @@ const txTypeColor = {
   poolUpdate: 'green.400',
   poolRetire: 'red.500',
   mint: 'cyan.500',
+  multisig: 'pink.400',
 };
 
 const txTypeLabel = {
@@ -65,6 +66,7 @@ const txTypeLabel = {
   poolUpdate: 'Pool Update',
   poolRetire: 'Pool Retire',
   mint: 'Asset(s) Minted/Burnt',
+  multisig: 'Multi-signatures',
 };
 
 const useIsMounted = () => {
@@ -155,8 +157,12 @@ const Transaction = ({
               {displayInfo.lovelace ? (
                 <UnitDisplay
                   fontSize={18}
-                  color={txTypeColor[displayInfo.type]}
-                  quantity={displayInfo.lovelace.quantity}
+                  color={
+                    displayInfo.lovelace >= 0
+                      ? txTypeColor.externalIn
+                      : txTypeColor.externalOut
+                  }
+                  quantity={displayInfo.lovelace}
                   decimals={6}
                   symbol={settings.adaSymbol}
                 />
@@ -167,29 +173,33 @@ const Transaction = ({
               ) : (
                 ''
               )}
+              {!['internalIn', 'externalIn'].includes(displayInfo.type) ? (
+                <Box flexDirection="row" fontSize={12}>
+                  Fee:{' '}
+                  <UnitDisplay
+                    display="inline-block"
+                    quantity={displayInfo.detail.info.fees}
+                    decimals={6}
+                    symbol={settings.adaSymbol}
+                  />
+                  {parseInt(displayInfo.detail.info.deposit) ? (
+                    <>
+                      {' & Deposit: '}
+                      <UnitDisplay
+                        display="inline-block"
+                        quantity={displayInfo.detail.info.deposit}
+                        decimals={6}
+                        symbol={settings.adaSymbol}
+                      />
+                    </>
+                  ) : (
+                    ''
+                  )}
+                </Box>
+              ) : (
+                ''
+              )}
 
-              <Box flexDirection="row" fontSize={12}>
-                Fee:{' '}
-                <UnitDisplay
-                  display="inline-block"
-                  quantity={displayInfo.detail.info.fees}
-                  decimals={6}
-                  symbol={settings.adaSymbol}
-                />
-                {parseInt(displayInfo.detail.info.deposit) ? (
-                  <>
-                    {' & Deposit: '}
-                    <UnitDisplay
-                      display="inline-block"
-                      quantity={displayInfo.detail.info.deposit}
-                      decimals={6}
-                      symbol={settings.adaSymbol}
-                    />
-                  </>
-                ) : (
-                  ''
-                )}
-              </Box>
               {displayInfo.assets.length > 0 ? (
                 <Box flexDirection="row" fontSize={12}>
                   <Text
@@ -198,12 +208,7 @@ const Transaction = ({
                     _hover={{ backgroundColor: colorMode.assetsBtnHover }}
                     borderRadius="md"
                   >
-                    <AssetsPopover
-                      assets={displayInfo.assets}
-                      isDifference={['internalOut', 'externalOut'].includes(
-                        displayInfo.type
-                      )}
-                    />
+                    <AssetsPopover assets={displayInfo.assets} isDifference />
                   </Text>
                 </Box>
               ) : (
@@ -256,6 +261,7 @@ const TxIcon = ({ txType, extra }) => {
     poolUpdate: FaRegEdit,
     poolRetire: FaTrashAlt,
     mint: GiAnvilImpact,
+    multisig: FaUsers,
   };
 
   if (extra.length) txType = extra[0];
@@ -378,8 +384,11 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
 
   const type = getTxType(currentAddr, addresses, detail.utxos);
   const date = dateFromUnix(detail.block.time);
-  const amounts = calculateAmount(type, currentAddr, detail.utxos);
+  const amounts = calculateAmount(currentAddr, detail.utxos);
   const assets = amounts.filter((amount) => amount.unit !== 'lovelace');
+  const lovelace = BigInt(
+    amounts.find((amount) => amount.unit === 'lovelace').quantity
+  );
 
   return {
     txHash: txHash,
@@ -387,9 +396,11 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
     date: date,
     timestamp: getTimestamp(date),
     type: type,
-    extra: getExtra(detail.info),
+    extra: getExtra(detail.info, type),
     amounts: amounts,
-    lovelace: amounts.find((amount) => amount.unit === 'lovelace'),
+    lovelace: ['internalIn', 'externalIn', 'multisig'].includes(type)
+      ? lovelace
+      : lovelace + BigInt(detail.info.fees) + BigInt(detail.info.deposit),
     assets: assets.map((asset) => {
       const _policy = asset.unit.slice(0, 56);
       const _name = asset.unit.slice(56);
@@ -413,17 +424,23 @@ const getTxType = (currentAddr, addresses, uTxOList) => {
   let inputsAddr = uTxOList.inputs.map((utxo) => utxo.address);
   let outputsAddr = uTxOList.outputs.map((utxo) => utxo.address);
 
-  return inputsAddr.includes(currentAddr)
-    ? outputsAddr.every((addr) => addr === currentAddr)
+  if (inputsAddr.every((addr) => addr === currentAddr)) {
+    // sender
+    return outputsAddr.every((addr) => addr === currentAddr)
       ? 'self'
       : outputsAddr.some(
           (addr) => addresses.includes(addr) && addr !== currentAddr
         )
       ? 'internalOut'
-      : 'externalOut'
-    : inputsAddr.some((addr) => addresses.includes(addr))
-    ? 'internalIn'
-    : 'externalIn';
+      : 'externalOut';
+  } else if (inputsAddr.every((addr) => addr !== currentAddr)) {
+    // receiver
+    return inputsAddr.some((addr) => addresses.includes(addr))
+      ? 'internalIn'
+      : 'externalIn';
+  }
+  // multisig
+  return 'multisig';
 };
 
 const dateFromUnix = (unixTimestamp) => {
@@ -440,30 +457,42 @@ const getTimestamp = (date) => {
   )}`;
 };
 
-const calculateAmount = (txType, currentAddr, uTxOList) => {
-  let outputs;
+const calculateAmount = (currentAddr, uTxOList) => {
+  let inputs = compileOutputs(
+    uTxOList.inputs.filter((input) => input.address === currentAddr)
+  );
+  let outputs = compileOutputs(
+    uTxOList.outputs.filter((output) => output.address === currentAddr)
+  );
+  let amounts = [];
 
-  switch (txType) {
-    case 'internalIn':
-    case 'externalIn':
-      outputs = uTxOList.outputs.filter((utxo) => utxo.address === currentAddr);
-      break;
-    case 'self':
-      let input = compileOutputs(uTxOList.inputs);
-      let output = compileOutputs(uTxOList.outputs);
-      output = output.filter(
-        (oAmount) => !input.some((iAmount) => iAmount.unit === oAmount.unit)
-      );
-      return output;
-    default:
-      outputs = uTxOList.outputs.filter((utxo) => utxo.address !== currentAddr);
+  while (inputs.length) {
+    let input = inputs.pop();
+    let outputIndex = outputs.findIndex((amount) => amount.unit === input.unit);
+    let qty;
+
+    if (outputIndex > -1) {
+      qty =
+        (BigInt(input.quantity) - BigInt(outputs[outputIndex].quantity)) *
+        BigInt(-1);
+      outputs.splice(outputIndex, 1);
+    } else {
+      qty = BigInt(input.quantity) * BigInt(-1);
+    }
+
+    if (qty !== BigInt(0))
+      amounts.push({
+        unit: input.unit,
+        quantity: qty,
+      });
   }
 
-  return compileOutputs(outputs);
+  return amounts.concat(outputs);
 };
 
 const getExtra = (info, txType) => {
   let extra = [];
+  if (txType === 'multisig') extra.push('multisig');
   if (info.withdrawal_count && txType === 'internalIn')
     extra.push('withdrawal');
   if (info.delegation_count) extra.push('delegation');
