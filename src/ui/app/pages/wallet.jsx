@@ -55,6 +55,7 @@ import {
   Tab,
   TabPanels,
   TabPanel,
+  Tooltip,
   useColorModeValue,
 } from '@chakra-ui/react';
 import {
@@ -64,6 +65,7 @@ import {
   DeleteIcon,
   CopyIcon,
   ChevronDownIcon,
+  InfoOutlineIcon,
 } from '@chakra-ui/icons';
 import Scrollbars from 'react-custom-scrollbars';
 import QrCode from '../components/qrCode';
@@ -298,7 +300,9 @@ const Wallet = () => {
                               </Text>
                               <UnitDisplay
                                 quantity={
-                                  account && account[state.network.id].lovelace
+                                  account &&
+                                  account[state.network.id].lovelace -
+                                    account[state.network.id].minAda
                                 }
                                 decimals={6}
                                 symbol={settings.adaSymbol}
@@ -403,10 +407,36 @@ const Wallet = () => {
               color="white"
               fontSize="2xl"
               fontWeight="bold"
-              quantity={state.account && state.account.lovelace}
+              quantity={
+                state.account && state.account.lovelace - state.account.minAda
+              }
               decimals={6}
               symbol={settings.adaSymbol}
             />
+            {state.account && state.account.assets.length ? (
+              <Tooltip
+                label={
+                  '+ ' +
+                  displayUnit(state.account.minAda, 6) +
+                  settings.adaSymbol +
+                  ' locked with assets'
+                }
+                fontSize="sm"
+                hasArrow
+                placement="top"
+              >
+                <InfoOutlineIcon
+                  cursor="help"
+                  color="white"
+                  ml="10px"
+                  width="20px"
+                  height="20px"
+                  display="inline-block"
+                />
+              </Tooltip>
+            ) : (
+              ''
+            )}
           </Box>
           <Box
             style={{ bottom: 66 }}
@@ -419,11 +449,10 @@ const Wallet = () => {
             <UnitDisplay
               color="white"
               fontSize="md"
-              fontSize="16"
               quantity={
                 state.account &&
                 parseInt(
-                  displayUnit(state.account.lovelace) *
+                  displayUnit(state.account.lovelace - state.account.minAda) *
                     state.fiatPrice *
                     10 ** 2
                 )

@@ -17,6 +17,7 @@ import cryptoRandomString from 'crypto-random-string';
 import Loader from '../loader';
 import { createAvatar } from '@dicebear/avatars';
 import * as style from '@dicebear/avatars-bottts-sprites';
+import { initTx } from './wallet';
 import {
   blockfrostRequest,
   networkNameToId,
@@ -367,6 +368,7 @@ const accountToNetworkSpecific = async (account, network) => {
   const assets = account[network.id].assets;
   const lovelace = account[network.id].lovelace;
   const history = account[network.id].history;
+  const minAda = account[network.id].minAda;
   const recentSendToAddresses = account[network.id].recentSendToAddresses;
 
   return {
@@ -375,6 +377,7 @@ const accountToNetworkSpecific = async (account, network) => {
     rewardAddr,
     assets,
     lovelace,
+    minAda,
     history,
     recentSendToAddresses,
   };
@@ -882,8 +885,14 @@ export const avatarToImage = (avatar) => {
   return URL.createObjectURL(blob);
 };
 
-const updateBalance = async (currentAccount, network) => {
+export const updateBalance = async (currentAccount, network) => {
   let amount = await getBalance();
+  let protocolParameters = await initTx();
+  let minAda = Loader.Cardano.min_ada_required(
+    amount,
+    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo.toString())
+  ).to_str();
+
   amount = await valueToAssets(amount);
 
   if (amount.length > 0) {
@@ -893,9 +902,11 @@ const updateBalance = async (currentAccount, network) => {
     currentAccount[network.id].assets = amount.filter(
       (am) => am.unit !== 'lovelace'
     );
+    currentAccount[network.id].minAda = minAda;
   } else {
     currentAccount[network.id].lovelace = 0;
     currentAccount[network.id].assets = [];
+    currentAccount[network.id].minAda = 0;
   }
   return true;
 };

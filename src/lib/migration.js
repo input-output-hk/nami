@@ -1,7 +1,7 @@
 import { STORAGE } from '../config/config';
 import { getStorage, setStorage } from '../api/extension';
-import v1_0_0 from '../migrations/1.0.0';
-const MIG_SCRIPTS = [v1_0_0];
+import v1_1_5 from '../migrations/1.1.5';
+const MIG_SCRIPTS = [v1_1_5];
 const { version } = require('../../package.json');
 let pwd = null;
 let migrations = MIG_SCRIPTS.map((migration) => ({
