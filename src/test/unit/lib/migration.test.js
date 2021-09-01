@@ -57,7 +57,7 @@ describe('make migration from 1.1.3 to 1.2.0', () => {
     expect(Object.keys(account).length).toBe(7);
   });
 
-  test('should migrate correctly to 1.1.5', async () => {
+  test('should migrate correctly to 1.1.5 - adding minAda', async () => {
     const protocolParameters = await initTx();
     const networks = Object.keys(NETWORK_ID);
     const storage = await getStorage(STORAGE.accounts);
@@ -101,7 +101,7 @@ describe('make migration from 1.1.3 to 1.2.0', () => {
     }
   });
 
-  test('should migrate correctly to 1.2.0', async () => {
+  test('should migrate correctly to 1.1.5 - adding publicKey', async () => {
     await createAccount('Wallet 2', 'password123');
     await createAccount('Wallet 3', 'password123');
     const store = await getStorage();
