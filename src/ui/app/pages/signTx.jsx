@@ -309,7 +309,6 @@ const SignTx = ({ request, controller }) => {
     const tx = Loader.Cardano.Transaction.from_bytes(
       Buffer.from(request.data.tx, 'hex')
     );
-    console.log(Buffer.from(tx.to_bytes()).toString('hex'));
     getFee(tx);
     getValue(tx, utxos, currentAccount);
     getKeyHashes(tx, utxos, currentAccount);
