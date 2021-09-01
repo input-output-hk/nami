@@ -416,21 +416,26 @@ const Wallet = () => {
             {state.account && state.account.assets.length ? (
               <Tooltip
                 label={
-                  '+ ' +
-                  displayUnit(state.account.minAda, 6) +
-                  settings.adaSymbol +
-                  ' locked with assets'
+                  <Box display="flex">
+                    <Text mr="0.5">+</Text>
+                    <UnitDisplay
+                      quantity={state.account.minAda}
+                      symbol={settings.adaSymbol}
+                      decimals={6}
+                    />
+                    <Text ml="1">locked with assets</Text>
+                  </Box>
                 }
                 fontSize="sm"
                 hasArrow
-                placement="top"
+                placement="auto"
               >
                 <InfoOutlineIcon
                   cursor="help"
                   color="white"
                   ml="10px"
-                  width="20px"
-                  height="20px"
+                  width="14px"
+                  height="14px"
                   display="inline-block"
                 />
               </Tooltip>

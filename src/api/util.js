@@ -12,15 +12,38 @@ import AssetFingerprint from '@emurgo/cip14-js';
 
 export const blockfrostRequest = async (endpoint, headers, body) => {
   const network = await getNetwork();
-  return await fetch(provider.api.base(network.node) + endpoint, {
-    headers: {
-      ...provider.api.key(network.id),
-      ...headers,
-      'User-Agent': 'nami-wallet',
-    },
-    method: body ? 'POST' : 'GET',
-    body,
-  }).then((res) => res.json());
+
+  return await new Promise(async (res, rej) => {
+    let result = await fetch(provider.api.base(network.node) + endpoint, {
+      headers: {
+        ...provider.api.key(network.id),
+        ...headers,
+        'User-Agent': 'nami-wallet',
+      },
+      method: body ? 'POST' : 'GET',
+      body,
+    }).then((res) => res.json());
+    // in case blockfrost throws error 500 => loop until result in 100ms interval
+    if (result.status_code === 500) {
+      const interval = setInterval(async () => {
+        result = await fetch(provider.api.base(network.node) + endpoint, {
+          headers: {
+            ...provider.api.key(network.id),
+            ...headers,
+            'User-Agent': 'nami-wallet',
+          },
+          method: body ? 'POST' : 'GET',
+          body,
+        }).then((res) => res.json());
+        if (result.status_code !== 500) {
+          clearInterval(interval);
+          return res(result);
+        }
+      }, 100);
+    } else {
+      res(result);
+    }
+  });
 };
 
 /**
