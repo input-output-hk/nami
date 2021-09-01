@@ -954,21 +954,7 @@ export const updateAccount = async () => {
   if (!needUpdate) {
     return;
   }
-
-  // fetching the balance in a loop in case blockfrost throws an internal server error
-  await new Promise(async (res, rej) => {
-    if (await updateBalance(currentAccount, network)) {
-      res(true);
-      return;
-    }
-    const interval = setInterval(async () => {
-      if (await updateBalance(currentAccount, network)) {
-        clearInterval(interval);
-        res(true);
-        return;
-      }
-    }, 100);
-  });
+  await updateBalance(currentAccount, network);
 
   return await setStorage({
     [STORAGE.accounts]: {
