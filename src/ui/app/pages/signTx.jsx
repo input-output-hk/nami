@@ -46,9 +46,10 @@ const SignTx = ({ request, controller }) => {
     certificate: false,
     withdrawal: false,
     minting: false,
-    script: false, //NEW; needs to be implemented
-    contract: false, //NEW; needs to be implemented
+    script: false,
+    contract: false,
   });
+  // key kind can be payment and stake
   const [keyHashes, setKeyHashes] = React.useState({ kind: null, key: [] });
 
   const getFee = (tx) => {
@@ -57,11 +58,17 @@ const SignTx = ({ request, controller }) => {
   };
 
   const getProperties = (tx) => {
-    const metadata = tx.metadata();
+    const metadata = tx.auxiliary_data();
     const certificate = tx.body().certs();
     const withdrawal = tx.body().withdrawals();
     const minting = tx.body().multiassets();
-    setProperty({ metadata, certificate, withdrawal, minting });
+    const script = tx.witness_set().native_scripts();
+    const contract =
+      tx.witness_set().plutus_data() ||
+      tx.witness_set().redeemers() ||
+      tx.witness_set().plutus_scripts();
+
+    setProperty({ metadata, certificate, withdrawal, minting, contract });
   };
 
   const getValue = async (tx, utxos, account) => {
@@ -73,14 +80,12 @@ const SignTx = ({ request, controller }) => {
     for (let i = 0; i < inputs.len(); i++) {
       const input = inputs.get(i);
       const inputTxHash = Buffer.from(
-        input.transaction_id().to_bytes(),
-        'hex'
+        input.transaction_id().to_bytes()
       ).toString('hex');
       const inputTxId = input.index();
       const utxo = utxos.find((utxo) => {
         const utxoTxHash = Buffer.from(
-          utxo.input().transaction_id().to_bytes(),
-          'hex'
+          utxo.input().transaction_id().to_bytes()
         ).toString('hex');
         const utxoTxId = utxo.input().index();
         return inputTxHash === utxoTxHash && inputTxId === utxoTxId;
@@ -164,28 +169,24 @@ const SignTx = ({ request, controller }) => {
       Loader.Cardano.Address.from_bech32(account.paymentAddr)
     );
     const paymentKeyHash = Buffer.from(
-      baseAddr.payment_cred().to_keyhash().to_bytes(),
-      'hex'
+      baseAddr.payment_cred().to_keyhash().to_bytes()
     ).toString('hex');
     const stakeKeyHash = Buffer.from(
-      baseAddr.stake_cred().to_keyhash().to_bytes(),
-      'hex'
+      baseAddr.stake_cred().to_keyhash().to_bytes()
     ).toString('hex');
 
     //get key hashes from inputs
     const inputs = tx.body().inputs();
     for (let i = 0; i < inputs.len(); i++) {
       const txHash = Buffer.from(
-        inputs.get(i).transaction_id().to_bytes(),
-        'hex'
+        inputs.get(i).transaction_id().to_bytes()
       ).toString('hex');
       if (
         utxos.some(
           (utxo) =>
-            Buffer.from(
-              utxo.input().transaction_id().to_bytes(),
+            Buffer.from(utxo.input().transaction_id().to_bytes()).toString(
               'hex'
-            ).toString('hex') === txHash
+            ) === txHash
         )
       ) {
         requiredKeyHashes.push(paymentKeyHash);
@@ -203,8 +204,7 @@ const SignTx = ({ request, controller }) => {
           const credential = cert.as_stake_registration().stake_credential();
           if (credential.kind() === 0) {
             const keyHash = Buffer.from(
-              credential.to_keyhash().to_bytes(),
-              'hex'
+              credential.to_keyhash().to_bytes()
             ).toString('hex');
             requiredKeyHashes.push(keyHash);
           }
@@ -212,8 +212,7 @@ const SignTx = ({ request, controller }) => {
           const credential = cert.as_stake_deregistration().stake_credential();
           if (credential.kind() === 0) {
             const keyHash = Buffer.from(
-              credential.to_keyhash().to_bytes(),
-              'hex'
+              credential.to_keyhash().to_bytes()
             ).toString('hex');
             requiredKeyHashes.push(keyHash);
           }
@@ -221,8 +220,7 @@ const SignTx = ({ request, controller }) => {
           const credential = cert.as_stake_delegation().stake_credential();
           if (credential.kind() === 0) {
             const keyHash = Buffer.from(
-              credential.to_keyhash().to_bytes(),
-              'hex'
+              credential.to_keyhash().to_bytes()
             ).toString('hex');
             requiredKeyHashes.push(keyHash);
           }
@@ -237,10 +235,9 @@ const SignTx = ({ request, controller }) => {
             .pool_params()
             .pool_owners();
           for (let i = 0; i < owners.len(); i++) {
-            const keyHash = Buffer.from(
-              owners.get(i).to_bytes(),
+            const keyHash = Buffer.from(owners.get(i).to_bytes()).toString(
               'hex'
-            ).toString('hex');
+            );
             requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 6) {
@@ -253,8 +250,7 @@ const SignTx = ({ request, controller }) => {
 
             if (credential.kind() === 0) {
               const keyHash = Buffer.from(
-                credential.to_keyhash().to_bytes(),
-                'hex'
+                credential.to_keyhash().to_bytes()
               ).toString('hex');
               requiredKeyHashes.push(keyHash);
             }
@@ -265,14 +261,13 @@ const SignTx = ({ request, controller }) => {
     if (txBody.certs()) keyHashFromCert(txBody);
 
     //get key hashes from scripts
-    const scripts = tx.witness_set().scripts();
+    const scripts = tx.witness_set().native_scripts();
     const keyHashFromScript = (scripts) => {
       for (let i = 0; i < scripts.len(); i++) {
         const script = scripts.get(i);
         if (script.kind() === 0) {
           const keyHash = Buffer.from(
-            script.as_script_pubkey().addr_keyhash().to_bytes(),
-            'hex'
+            script.as_script_pubkey().addr_keyhash().to_bytes()
           ).toString('hex');
           requiredKeyHashes.push(keyHash);
         }
@@ -288,6 +283,17 @@ const SignTx = ({ request, controller }) => {
       }
     };
     if (scripts) keyHashFromScript(scripts);
+
+    //get keyHashes from required signers
+    const requiredSigners = tx.body().required_signers();
+    if (requiredSigners) {
+      for (let i = 0; i < requiredSigners.len(); i++) {
+        requiredKeyHashes.push(
+          Buffer.from(requiredSigners.get(i).to_bytes()).toString('hex')
+        );
+      }
+    }
+
     const keyKind = [];
     requiredKeyHashes = [...new Set(requiredKeyHashes)];
     if (requiredKeyHashes.includes(paymentKeyHash)) keyKind.push('payment');
@@ -303,6 +309,7 @@ const SignTx = ({ request, controller }) => {
     const tx = Loader.Cardano.Transaction.from_bytes(
       Buffer.from(request.data.tx, 'hex')
     );
+    console.log(Buffer.from(tx.to_bytes()).toString('hex'));
     getFee(tx);
     getValue(tx, utxos, currentAccount);
     getKeyHashes(tx, utxos, currentAccount);
