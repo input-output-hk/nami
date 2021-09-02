@@ -457,7 +457,12 @@ const Wallet = () => {
               quantity={
                 state.account &&
                 parseInt(
-                  displayUnit(state.account.lovelace - state.account.minAda) *
+                  displayUnit(
+                    (
+                      BigInt(state.account.lovelace) -
+                      BigInt(state.account.minAda)
+                    ).toString()
+                  ) *
                     state.fiatPrice *
                     10 ** 2
                 )
