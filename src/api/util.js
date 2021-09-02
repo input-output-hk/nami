@@ -14,7 +14,7 @@ export const blockfrostRequest = async (endpoint, headers, body) => {
   const network = await getNetwork();
 
   return await new Promise(async (res, rej) => {
-    let result = await fetch(provider.api.base(network.node) + endpoint, {
+    const result = await fetch(provider.api.base(network.node) + endpoint, {
       headers: {
         ...provider.api.key(network.id),
         ...headers,
@@ -26,7 +26,7 @@ export const blockfrostRequest = async (endpoint, headers, body) => {
     // in case blockfrost throws error 500 => loop until result in 100ms interval
     if (result.status_code === 500) {
       const interval = setInterval(async () => {
-        result = await fetch(provider.api.base(network.node) + endpoint, {
+        const result = await fetch(provider.api.base(network.node) + endpoint, {
           headers: {
             ...provider.api.key(network.id),
             ...headers,
