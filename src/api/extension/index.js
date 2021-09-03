@@ -751,6 +751,7 @@ export const requestAccountKey = async (password, accountIndex) => {
   }
 
   return {
+    accountKey,
     paymentKey: accountKey.derive(0).derive(0).to_raw_key(),
     stakeKey: accountKey.derive(2).derive(0).to_raw_key(),
   };
@@ -771,16 +772,21 @@ export const createAccount = async (name, password) => {
     ? Object.keys(existingAccounts).length
     : 0;
 
-  let { paymentKey, stakeKey } = await requestAccountKey(
+  let { accountKey, paymentKey, stakeKey } = await requestAccountKey(
     password,
     accountIndex
   );
 
+  const publicKey = Buffer.from(accountKey.to_public().as_bytes()).toString(
+    'hex'
+  ); // BIP32 Public key
   const paymentKeyPub = paymentKey.to_public();
   const stakeKeyPub = stakeKey.to_public();
 
+  accountKey.free();
   paymentKey.free();
   stakeKey.free();
+  accountKey = null;
   paymentKey = null;
   stakeKey = null;
 
@@ -803,6 +809,7 @@ export const createAccount = async (name, password) => {
   const newAccount = {
     [accountIndex]: {
       index: accountIndex,
+      publicKey,
       paymentKeyHash,
       stakeKeyHash,
       name,

@@ -4,6 +4,7 @@ import {
   Value,
 } from '@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
 import Loader from '../api/loader';
+
 /**
  * BerryPool implementation of the __Random-Improve__ coin selection algorithm.
  *
@@ -371,9 +372,12 @@ function randomSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
  */
 function descSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
   // Sort UTxO subset in DESC order for required Output unit type
-  utxoSelection.subset = utxoSelection.subset.sort((utxoA, utxoB) =>
-    utxoB.output().amount().compare(utxoA.output().amount())
-  );
+  utxoSelection.subset = utxoSelection.subset.sort((a, b) => {
+    return Number(
+      searchAmountValue(outputAmount, b.output().amount()) -
+        searchAmountValue(outputAmount, a.output().amount())
+    );
+  });
 
   do {
     if (limit <= 0) {
@@ -427,7 +431,7 @@ function improve(utxoSelection, outputAmount, limit, range) {
   let nbFreeUTxO = utxoSelection.subset.length;
 
   if (
-    utxoSelection.amount.compare(range.ideal) >= 0 ||
+    compare(utxoSelection.amount, range.ideal) >= 0 ||
     nbFreeUTxO <= 0 ||
     limit <= 0
   ) {
@@ -455,7 +459,7 @@ function improve(utxoSelection, outputAmount, limit, range) {
   if (
     abs(getAmountValue(range.ideal) - getAmountValue(newAmount)) <
       abs(getAmountValue(range.ideal) - getAmountValue(outputAmount)) &&
-    newAmount.compare(range.maximum) <= 0
+    compare(newAmount, range.maximum) <= 0
   ) {
     utxoSelection.selection.push(utxo);
     utxoSelection.amount = addAmounts(
@@ -569,7 +573,7 @@ function sortAmountList(amountList, sortOrder = 'ASC') {
 
 /**
  * Return BigInt amount value
- * @param amount
+ * @param {Value} amount
  * @return {bigint}
  */
 function getAmountValue(amount) {
@@ -588,19 +592,52 @@ function getAmountValue(amount) {
 }
 
 /**
+ * Search & Return BigInt amount value
+ * @param {Value} needle
+ * @param {Value} haystack
+ * @return {bigint}
+ */
+function searchAmountValue(needle, haystack) {
+  let val = BigInt(0);
+  let lovelace = BigInt(needle.coin().to_str());
+
+  if (lovelace > 0) {
+    val = BigInt(haystack.coin().to_str());
+  } else if (
+    needle.multiasset() &&
+    haystack.multiasset() &&
+    needle.multiasset().len() > 0 &&
+    haystack.multiasset().len() > 0
+  ) {
+    let scriptHash = needle.multiasset().keys().get(0);
+    let assetName = needle.multiasset().get(scriptHash).keys().get(0);
+    val = BigInt(haystack.multiasset().get(scriptHash).get(assetName).to_str());
+  }
+
+  return val;
+}
+
+/**
  * Narrow down remaining UTxO set in case of native token, use full set for lovelace
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
  * @param {Value} output - Single compiled output qty requested for payment.
  */
 function createSubSet(utxoSelection, output) {
   if (BigInt(output.coin().to_str()) < BigInt(1)) {
-    utxoSelection.remaining.forEach((utxo, index) => {
-      if (output.compare(utxo.output().amount()) !== undefined) {
-        utxoSelection.subset.push(
-          utxoSelection.remaining.splice(index, 1).pop()
-        );
+    let subset = [];
+    let remaining = [];
+    for (let i = 0; i < utxoSelection.remaining.length; i++) {
+      if (
+        compare(utxoSelection.remaining[i].output().amount(), output) !==
+        undefined
+      ) {
+        subset.push(utxoSelection.remaining[i]);
+      } else {
+        remaining.push(utxoSelection.remaining[i]);
       }
-    });
+    }
+    utxoSelection.subset = subset;
+    utxoSelection.remaining = remaining;
   } else {
     utxoSelection.subset = utxoSelection.remaining.splice(
       0,
@@ -634,10 +671,10 @@ function isQtyFulfilled(
     );
 
     // Lovelace min amount to cover assets and number of output need to be met
-    if (cumulatedAmount.compare(minAmount) < 0) return false;
+    if (compare(cumulatedAmount, minAmount) < 0) return false;
 
     // If requested Lovelace lower than minAmount, plan for change
-    if (outputAmount.compare(minAmount) < 0) {
+    if (compare(outputAmount, minAmount) < 0) {
       amount = minAmount.checked_add(
         Loader.Cardano.Value.new(
           Loader.Cardano.BigNum.from_str(protocolParameters.minUTxO)
@@ -660,7 +697,7 @@ function isQtyFulfilled(
     }
   }
 
-  return cumulatedAmount.compare(amount) >= 0;
+  return compare(cumulatedAmount, amount) >= 0;
 }
 
 /**
@@ -697,6 +734,42 @@ const cloneValue = (value) => Loader.Cardano.Value.from_bytes(value.to_bytes());
 // Helper
 function abs(big) {
   return big < 0 ? big * BigInt(-1) : big;
+}
+
+/**
+ * Compare a candidate value to the one in a group if present
+ * @param {Value} group
+ * @param {Value} candidate
+ * @return {int} - -1 group lower, 0 equal, 1 group higher, undefined if no match
+ */
+function compare(group, candidate) {
+  let gQty = BigInt(group.coin().to_str());
+  let cQty = BigInt(candidate.coin().to_str());
+
+  if (candidate.multiasset()) {
+    let cScriptHash = candidate.multiasset().keys().get(0);
+    let cAssetName = candidate.multiasset().get(cScriptHash).keys().get(0);
+
+    if (group.multiasset() && group.multiasset().len()) {
+      if (
+        group.multiasset().get(cScriptHash) &&
+        group.multiasset().get(cScriptHash).get(cAssetName)
+      ) {
+        gQty = BigInt(
+          group.multiasset().get(cScriptHash).get(cAssetName).to_str()
+        );
+        cQty = BigInt(
+          candidate.multiasset().get(cScriptHash).get(cAssetName).to_str()
+        );
+      } else {
+        return undefined;
+      }
+    } else {
+      return undefined;
+    }
+  }
+
+  return gQty >= cQty ? (gQty === cQty ? 0 : 1) : -1;
 }
 
 export default CoinSelection;
