@@ -747,7 +747,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
                                   ? asset.quantity <= 0
                                     ? '+'
                                     : '-'
-                                  : '+'}{' '}
+                                  : ''}{' '}
                                 {abs(asset.quantity).toString()}
                               </Text>
                             </Box>
