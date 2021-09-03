@@ -1,9 +1,8 @@
-import { STORAGE, NETWORK_ID } from '../config/config';
+import { NETWORK_ID, STORAGE } from '../config/config';
 import {
   decryptWithPassword,
   getStorage,
   setStorage,
-  updateBalance,
 } from '../api/extension/index';
 import { initTx } from '../api/extension/wallet';
 import Loader from '../api/loader';
@@ -30,11 +29,10 @@ const migration = {
           let assets = currentAccountNetwork.assets;
           if (assets.length > 0) {
             const amount = await assetsToValue(assets);
-            const minAda = Loader.Cardano.min_ada_required(
+            currentAccountNetwork.minAda = Loader.Cardano.min_ada_required(
               amount,
               Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
             ).to_str();
-            currentAccountNetwork.minAda = minAda;
           } else {
             currentAccountNetwork.minAda = 0;
           }
@@ -88,6 +86,16 @@ const migration = {
       title: 'Show only spendable Ada',
       detail:
         'In previous version, the wallet was showing the complete Ada balance. This lead the user to think that all Ada were available for spending. Native Assets (ie: NFT) require a small amount of Ada to be locked with them at all time. Locked Ada are now hidden.',
+    },
+    {
+      title: 'Bug fix: Inconsistent Balance',
+      detail:
+        'Balance was reported many times to be out of sync. The wallet now tries to fetch the balance until it succeeds.',
+    },
+    {
+      title: 'Bug fix: CoinSelection',
+      detail:
+        'The underlying algorithm managing UTxO set was behaving inconsistently, making it impossible to send out certain asset amounts.',
     },
   ],
   pwdRequired: true,
