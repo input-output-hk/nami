@@ -13,7 +13,7 @@ export const initTx = async () => {
       minFeeA: p.min_fee_a.toString(),
       minFeeB: p.min_fee_b.toString(),
     },
-    minUtxo: p.min_utxo,
+    minUtxo: '1000000', //p.min_utxo, minUTxOValue protocol paramter has been removed since Alonzo HF. Calulation of minADA works differently now, but 1 minADA still sufficient for now
     poolDeposit: p.pool_deposit,
     keyDeposit: p.key_deposit,
     maxTxSize: parseInt(p.max_tx_size),

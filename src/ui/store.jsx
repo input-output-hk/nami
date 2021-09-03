@@ -132,7 +132,7 @@ const StoreInit = ({ children }) => {
 
           <ConfirmModal
             ref={refA}
-            title="Upgrades requires password"
+            title="Update requires password"
             sign={async (pwd) => {
               await requestAccountKey(pwd, 0);
               setPWD(pwd);
