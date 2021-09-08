@@ -386,9 +386,8 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
   const date = dateFromUnix(detail.block.time);
   const amounts = calculateAmount(currentAddr, detail.utxos);
   const assets = amounts.filter((amount) => amount.unit !== 'lovelace');
-  const lovelace = BigInt(
-    amounts.find((amount) => amount.unit === 'lovelace').quantity
-  );
+  let lovelace = amounts.find((amount) => amount.unit === 'lovelace');
+  lovelace = BigInt(lovelace ? lovelace.quantity : 0);
 
   return {
     txHash: txHash,
