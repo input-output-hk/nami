@@ -4,7 +4,7 @@ import {
   IconButton,
   Text,
   useColorMode,
-  Switch as SwitchCurrency,
+  Switch as ButtonSwitch,
   Image,
   SkeletonCircle,
   Spinner,
@@ -137,7 +137,7 @@ const GeneralSettings = () => {
       <Box display="flex" alignItems="center" justifyContent="center">
         <Text>USD</Text>
         <Box width="2" />
-        <SwitchCurrency
+        <ButtonSwitch
           defaultChecked={settings.currency !== 'usd'}
           onChange={(e) => {
             if (e.target.checked) {
@@ -274,7 +274,7 @@ const Network = () => {
       <Box display="flex" alignItems="center" justifyContent="center">
         <Text>Mainnet</Text>
         <Box width="2" />
-        <SwitchCurrency
+        <ButtonSwitch
           defaultChecked={settings.network.id !== NETWORK_ID.mainnet}
           onChange={(e) => {
             if (e.target.checked) {
