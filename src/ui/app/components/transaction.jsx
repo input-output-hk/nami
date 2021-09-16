@@ -30,6 +30,7 @@ import {
   FaRegEdit,
   FaUserCheck,
   FaUsers,
+  FaRegFileCode,
 } from 'react-icons/fa';
 import { GiAnvilImpact } from 'react-icons/gi';
 import { Button } from '@chakra-ui/button';
@@ -57,6 +58,7 @@ const txTypeColor = {
   poolRetire: 'red.500',
   mint: 'cyan.500',
   multisig: 'pink.400',
+  contract: 'teal.300',
 };
 
 const txTypeLabel = {
@@ -67,6 +69,7 @@ const txTypeLabel = {
   poolRetire: 'Pool Retire',
   mint: 'Asset(s) Minted/Burnt',
   multisig: 'Multi-signatures',
+  contract: 'Smart Contract',
 };
 
 const useIsMounted = () => {
@@ -262,6 +265,7 @@ const TxIcon = ({ txType, extra }) => {
     poolRetire: FaTrashAlt,
     mint: GiAnvilImpact,
     multisig: FaUsers,
+    contract: FaRegFileCode,
   };
 
   if (extra.length) txType = extra[0];
@@ -386,8 +390,9 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
   const date = dateFromUnix(detail.block.time);
   const amounts = calculateAmount(currentAddr, detail.utxos);
   const assets = amounts.filter((amount) => amount.unit !== 'lovelace');
-  let lovelace = amounts.find((amount) => amount.unit === 'lovelace');
-  lovelace = BigInt(lovelace ? lovelace.quantity : 0);
+  const lovelace = BigInt(
+    amounts.find((amount) => amount.unit === 'lovelace').quantity
+  );
 
   return {
     txHash: txHash,
@@ -479,7 +484,7 @@ const calculateAmount = (currentAddr, uTxOList) => {
       qty = BigInt(input.quantity) * BigInt(-1);
     }
 
-    if (qty !== BigInt(0))
+    if (qty !== BigInt(0) || input.unit === 'lovelace')
       amounts.push({
         unit: input.unit,
         quantity: qty,
@@ -491,7 +496,11 @@ const calculateAmount = (currentAddr, uTxOList) => {
 
 const getExtra = (info, txType) => {
   let extra = [];
-  if (txType === 'multisig') extra.push('multisig');
+  if (info.redeemer_count) {
+    extra.push('contract');
+  } else if (txType === 'multisig') {
+    extra.push('multisig');
+  }
   if (info.withdrawal_count && txType === 'internalIn')
     extra.push('withdrawal');
   if (info.delegation_count) extra.push('delegation');
