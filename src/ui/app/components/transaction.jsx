@@ -58,7 +58,7 @@ const txTypeColor = {
   poolRetire: 'red.500',
   mint: 'cyan.500',
   multisig: 'pink.400',
-  contract: 'teal.300',
+  contract: 'teal.400',
 };
 
 const txTypeLabel = {
@@ -67,9 +67,9 @@ const txTypeLabel = {
   stake: 'Stake Registration',
   poolUpdate: 'Pool Update',
   poolRetire: 'Pool Retire',
-  mint: 'Asset(s) Minted/Burnt',
+  mint: 'Minting',
   multisig: 'Multi-signatures',
-  contract: 'Smart Contract',
+  contract: 'Contract',
 };
 
 const useIsMounted = () => {
