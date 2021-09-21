@@ -285,7 +285,7 @@ const CoinSelection = {
       );
     }
 
-    // Insure change hold enough Ada to cover included native assets
+    // Insure change hold enough Ada to cover included native assets and fees
     const change = utxoSelection.amount.checked_sub(mergedOutputsAmounts);
 
     let minAmount = Loader.Cardano.Value.new(
@@ -294,6 +294,17 @@ const CoinSelection = {
         Loader.Cardano.BigNum.from_str(protocolParameters.minUTxO)
       )
     );
+
+    let maxFee =
+      BigInt(protocolParameters.minFeeA) *
+        BigInt(protocolParameters.maxTxSize) +
+      BigInt(protocolParameters.minFeeB);
+
+    maxFee = Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_str(maxFee.toString())
+    );
+
+    minAmount = minAmount.checked_add(maxFee);
 
     if (compare(change, minAmount) < 0) {
       // Not enough, add missing amount and run select one last time
