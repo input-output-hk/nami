@@ -247,57 +247,74 @@ const CoinSelection = {
     // Explode amount in an array of unique asset amount for comparison's sake
     let splitOutputsAmounts = splitAmounts(mergedOutputsAmounts);
 
-    // Phase 1: RandomSelect
-    splitOutputsAmounts.forEach((output) => {
-      createSubSet(utxoSelection, output); // Narrow down for NatToken UTxO
+    // Phase 1: Select enough input
+    for (let i = 0; i < splitOutputsAmounts.length; i++) {
+      createSubSet(utxoSelection, splitOutputsAmounts[i]); // Narrow down for NatToken UTxO
 
-      try {
-        utxoSelection = randomSelect(
-          cloneUTxOSelection(utxoSelection), // Deep copy in case of fallback needed
-          output,
-          limit - utxoSelection.selection.length,
-          _minUTxOValue
-        );
-      } catch (e) {
-        if (e.message === 'INPUT_LIMIT_EXCEEDED') {
-          // Limit reached : Fallback on DescOrdAlgo
-          utxoSelection = descSelect(
-            utxoSelection,
-            output,
-            limit - utxoSelection.selection.length,
-            _minUTxOValue
-          );
-        } else {
-          throw e;
-        }
-      }
-    });
+      utxoSelection = select(
+        utxoSelection,
+        splitOutputsAmounts[i],
+        limit,
+        _minUTxOValue
+      );
+    }
 
     // Phase 2: Improve
     splitOutputsAmounts = sortAmountList(splitOutputsAmounts);
 
-    splitOutputsAmounts.forEach((output) => {
-      createSubSet(utxoSelection, output); // Narrow down for NatToken UTxO
+    for (let i = 0; i < splitOutputsAmounts.length; i++) {
+      createSubSet(utxoSelection, splitOutputsAmounts[i]); // Narrow down for NatToken UTxO
 
       let range = {};
       range.ideal = Loader.Cardano.Value.new(
         Loader.Cardano.BigNum.from_str('0')
       )
-        .checked_add(output)
-        .checked_add(output);
+        .checked_add(splitOutputsAmounts[i])
+        .checked_add(splitOutputsAmounts[i]);
       range.maximum = Loader.Cardano.Value.new(
         Loader.Cardano.BigNum.from_str('0')
       )
         .checked_add(range.ideal)
-        .checked_add(output);
+        .checked_add(splitOutputsAmounts[i]);
 
       improve(
         utxoSelection,
-        output,
+        splitOutputsAmounts[i],
         limit - utxoSelection.selection.length,
         range
       );
-    });
+    }
+
+    // Insure change hold enough Ada to cover included native assets and fees
+    const change = utxoSelection.amount.checked_sub(mergedOutputsAmounts);
+
+    let minAmount = Loader.Cardano.Value.new(
+      Loader.Cardano.min_ada_required(
+        change,
+        Loader.Cardano.BigNum.from_str(protocolParameters.minUTxO)
+      )
+    );
+
+    let maxFee =
+      BigInt(protocolParameters.minFeeA) *
+        BigInt(protocolParameters.maxTxSize) +
+      BigInt(protocolParameters.minFeeB);
+
+    maxFee = Loader.Cardano.Value.new(
+      Loader.Cardano.BigNum.from_str(maxFee.toString())
+    );
+
+    minAmount = minAmount.checked_add(maxFee);
+
+    if (compare(change, minAmount) < 0) {
+      // Not enough, add missing amount and run select one last time
+      const minAda = minAmount
+        .checked_sub(Loader.Cardano.Value.new(change.coin()))
+        .checked_add(Loader.Cardano.Value.new(utxoSelection.amount.coin()));
+
+      createSubSet(utxoSelection, minAda);
+      utxoSelection = select(utxoSelection, minAda, limit, _minUTxOValue);
+    }
 
     return {
       input: utxoSelection.selection,
@@ -308,6 +325,42 @@ const CoinSelection = {
     };
   },
 };
+
+/**
+ * Use randomSelect & descSelect algorithm to select enough UTxO to fulfill requested outputs
+ * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
+ * @param {Value} outputAmount - Single compiled output qty requested for payment.
+ * @param {int} limit - A limit on the number of inputs that can be selected.
+ * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value.
+ * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter.
+ * @throws INPUTS_EXHAUSTED if all UTxO doesn't hold enough funds to pay for output.
+ * @throws MIN_UTXO_ERROR if lovelace change is under 'minUTxOValue' parameter.
+ * @return {UTxOSelection} - Successful random utxo selection.
+ */
+function select(utxoSelection, outputAmount, limit, minUTxOValue) {
+  try {
+    utxoSelection = randomSelect(
+      cloneUTxOSelection(utxoSelection), // Deep copy in case of fallback needed
+      outputAmount,
+      limit - utxoSelection.selection.length,
+      minUTxOValue
+    );
+  } catch (e) {
+    if (e.message === 'INPUT_LIMIT_EXCEEDED') {
+      // Limit reached : Fallback on DescOrdAlgo
+      utxoSelection = descSelect(
+        utxoSelection,
+        outputAmount,
+        limit - utxoSelection.selection.length,
+        minUTxOValue
+      );
+    } else {
+      throw e;
+    }
+  }
+
+  return utxoSelection;
+}
 
 /**
  * Randomly select enough UTxO to fulfill requested outputs
