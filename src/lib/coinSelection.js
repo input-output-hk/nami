@@ -248,13 +248,13 @@ const CoinSelection = {
     let splitOutputsAmounts = splitAmounts(mergedOutputsAmounts);
 
     // Phase 1: RandomSelect
-    splitOutputsAmounts.forEach((output) => {
-      createSubSet(utxoSelection, output); // Narrow down for NatToken UTxO
+    for (let i = 0; i < splitOutputsAmounts.length; i++) {
+      createSubSet(utxoSelection, splitOutputsAmounts[i]); // Narrow down for NatToken UTxO
 
       try {
         utxoSelection = randomSelect(
           cloneUTxOSelection(utxoSelection), // Deep copy in case of fallback needed
-          output,
+          splitOutputsAmounts[i],
           limit - utxoSelection.selection.length,
           _minUTxOValue
         );
@@ -263,7 +263,7 @@ const CoinSelection = {
           // Limit reached : Fallback on DescOrdAlgo
           utxoSelection = descSelect(
             utxoSelection,
-            output,
+            splitOutputsAmounts[i],
             limit - utxoSelection.selection.length,
             _minUTxOValue
           );
@@ -271,33 +271,33 @@ const CoinSelection = {
           throw e;
         }
       }
-    });
+    }
 
     // Phase 2: Improve
     splitOutputsAmounts = sortAmountList(splitOutputsAmounts);
 
-    splitOutputsAmounts.forEach((output) => {
-      createSubSet(utxoSelection, output); // Narrow down for NatToken UTxO
+    for (let i = 0; i < splitOutputsAmounts.length; i++) {
+      createSubSet(utxoSelection, splitOutputsAmounts[i]); // Narrow down for NatToken UTxO
 
       let range = {};
       range.ideal = Loader.Cardano.Value.new(
         Loader.Cardano.BigNum.from_str('0')
       )
-        .checked_add(output)
-        .checked_add(output);
+        .checked_add(splitOutputsAmounts[i])
+        .checked_add(splitOutputsAmounts[i]);
       range.maximum = Loader.Cardano.Value.new(
         Loader.Cardano.BigNum.from_str('0')
       )
         .checked_add(range.ideal)
-        .checked_add(output);
+        .checked_add(splitOutputsAmounts[i]);
 
       improve(
         utxoSelection,
-        output,
+        splitOutputsAmounts[i],
         limit - utxoSelection.selection.length,
         range
       );
-    });
+    }
 
     return {
       input: utxoSelection.selection,
