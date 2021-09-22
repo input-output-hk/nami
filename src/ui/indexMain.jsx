@@ -46,7 +46,8 @@ const App = () => {
   React.useEffect(() => {
     init();
     history.listen(() => {
-      setRoute(history.location.pathname);
+      if (history.location.pathname !== '/mainPopup.html')
+        setRoute(history.location.pathname);
     });
   }, []);
 
