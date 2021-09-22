@@ -952,13 +952,13 @@ export const setTransactions = async (txs) => {
   });
 };
 
-export const updateAccount = async () => {
+export const updateAccount = async (forceUpdate = false) => {
   const currentIndex = await getCurrentAccountIndex();
   const accounts = await getStorage(STORAGE.accounts);
   const currentAccount = accounts[currentIndex];
   const network = await getNetwork();
   const needUpdate = await updateTransactions(currentAccount, network);
-  if (!needUpdate) {
+  if (!needUpdate && !forceUpdate) {
     return;
   }
   await updateBalance(currentAccount, network);

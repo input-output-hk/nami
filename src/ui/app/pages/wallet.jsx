@@ -95,7 +95,7 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const Wallet = () => {
+const Wallet = ({ onBoot }) => {
   const isMounted = useIsMounted();
   const history = useHistory();
   const settings = useStoreState((state) => state.settings.settings);
@@ -143,7 +143,8 @@ const Wallet = () => {
       account: null,
       delegation: null,
     }));
-    await updateAccount();
+    await updateAccount(onBoot.forceUpdate);
+    onBoot.setForceUpdate(false);
     const allAccounts = await getAccounts();
     const currentAccount = allAccounts[currentIndex];
     const fiatPrice = await provider.api.price(settings.currency);

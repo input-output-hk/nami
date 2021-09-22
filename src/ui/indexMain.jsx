@@ -25,6 +25,7 @@ const App = () => {
   );
   const history = useHistory();
   const [isLoading, setIsLoading] = React.useState(true);
+  const [forceUpdate, setForceUpdate] = React.useState(true);
   const init = async () => {
     const hasWallet = await getAccounts();
     if (hasWallet) {
@@ -64,7 +65,12 @@ const App = () => {
     <div style={{ overflowX: 'hidden' }}>
       <Switch>
         <Route exact path="/wallet">
-          <Wallet />
+          <Wallet
+            onBoot={{
+              forceUpdate: forceUpdate,
+              setForceUpdate: setForceUpdate,
+            }}
+          />
         </Route>
         <Route exact path="/welcome">
           <Welcome />
