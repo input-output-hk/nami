@@ -624,7 +624,7 @@ export const signTx = async (
 
   const rawTx = Loader.Cardano.Transaction.from_bytes(Buffer.from(tx, 'hex'));
 
-  const txWitnessSet = rawTx.witness_set();
+  const txWitnessSet = Loader.Cardano.TransactionWitnessSet.new();
   const vkeyWitnesses = Loader.Cardano.Vkeywitnesses.new();
   const txHash = Loader.Cardano.hash_transaction(rawTx.body());
   keyHashes.forEach((keyHash) => {
