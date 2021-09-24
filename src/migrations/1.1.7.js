@@ -6,7 +6,7 @@ const migration = {
     {
       title: 'Bug fix: Inconsistent Balance',
       detail:
-        'Balance was reported many times to be out of sync, even with the latest fix. The logic to decide whether an update is needed or not as been reworked.',
+        'Balance was reported many times to be out of sync, even with the latest fix. The logic to decide whether an update is needed or not has been reworked.',
     },
     {
       title: 'Bug fix: Coin Selection',
