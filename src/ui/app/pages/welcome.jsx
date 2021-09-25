@@ -15,14 +15,14 @@ import {
 import { Box, Spacer, Text, Link } from '@chakra-ui/layout';
 import { useDisclosure } from '@chakra-ui/hooks';
 import { Select } from '@chakra-ui/select';
-
+import Pawn from '../../../assets/img/pawn.png';
 import BannerWhite from '../../../assets/img/bannerWhite.svg';
 import BannerBlack from '../../../assets/img/bannerBlack.svg';
 import TermsOfUse from '../components/termsOfUse';
 import { ViewIcon, WarningTwoIcon } from '@chakra-ui/icons';
 
 const Welcome = () => {
-  const Banner = useColorModeValue(BannerBlack, BannerWhite);
+  const Banner = useColorModeValue(BannerBlack, Pawn);
   const refWallet = React.useRef();
   const refImport = React.useRef();
 
