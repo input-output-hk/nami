@@ -21,6 +21,8 @@ const ConfirmModal = React.forwardRef((props, ref) => {
     name: '',
   });
 
+  const [waitReady, setWaitReady] = React.useState(true);
+
   React.useImperativeHandle(ref, () => ({
     openModal() {
       onOpen();
@@ -83,17 +85,20 @@ const ConfirmModal = React.forwardRef((props, ref) => {
             Close
           </Button>
           <Button
-            isDisabled={!state.password || props.ready === false}
+            isDisabled={!state.password || props.ready === false || !waitReady}
+            isLoading={!waitReady}
             colorScheme="teal"
             onClick={async () => {
               try {
+                setWaitReady(false);
                 const signedMessage = await props.sign(state.password);
-                props.onConfirm(true, signedMessage);
+                await props.onConfirm(true, signedMessage);
               } catch (e) {
                 if (e === ERROR.wrongPassword)
                   setState((s) => ({ ...s, wrongPassword: true }));
-                else props.onConfirm(false, e);
+                else await props.onConfirm(false, e);
               }
+              setWaitReady(true);
             }}
           >
             Confirm
