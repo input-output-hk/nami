@@ -13,6 +13,11 @@ const migration = {
       detail:
         'The Coin Selection algorithm failed calculating properly requirements for some UTxO set, thus making impossible to send amount within a certain range.',
     },
+    {
+      title: 'Bug fix: Blank Screen',
+      detail:
+        'A blank screen was reported a few times. The causing issue was being able to pres the Confirm button mulitple times.',
+    },
   ],
   pwdRequired: false,
 };
