@@ -463,7 +463,9 @@ const getTimestamp = (date) => {
 
 const calculateAmount = (currentAddr, uTxOList) => {
   let inputs = compileOutputs(
-    uTxOList.inputs.filter((input) => input.address === currentAddr)
+    uTxOList.inputs.filter(
+      (input) => input.address === currentAddr && !input.collateral
+    )
   );
   let outputs = compileOutputs(
     uTxOList.outputs.filter((output) => output.address === currentAddr)
