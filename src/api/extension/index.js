@@ -957,11 +957,20 @@ export const updateAccount = async () => {
   const accounts = await getStorage(STORAGE.accounts);
   const currentAccount = accounts[currentIndex];
   const network = await getNetwork();
-  const needUpdate = await updateTransactions(currentAccount, network);
-  if (!needUpdate) {
+
+  await updateTransactions(currentAccount, network);
+
+  if (
+    currentAccount[network.id].history.confirmed[0] ===
+    currentAccount[network.id].lastUpdate
+  ) {
     return;
   }
+
   await updateBalance(currentAccount, network);
+
+  currentAccount[network.id].lastUpdate =
+    currentAccount[network.id].history.confirmed[0];
 
   return await setStorage({
     [STORAGE.accounts]: {

@@ -124,9 +124,10 @@ const Wallet = () => {
     setInterval(async () => {
       const currentAccount = await getCurrentAccount();
       const transactions = await getTransactions();
+      const network = await getNetwork();
       if (
         transactions.length > 0 &&
-        !currentAccount.history.confirmed.includes(transactions[0].txHash)
+        currentAccount[network.id].lastUpdate !== transactions[0].txHash
       ) {
         await getData();
       }
