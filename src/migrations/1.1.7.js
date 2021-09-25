@@ -16,7 +16,7 @@ const migration = {
     {
       title: 'Bug fix: Blank Screen',
       detail:
-        'A blank screen was reported a few times. The causing issue was being able to pres the Confirm button multiple times.',
+        'A blank screen was reported a few times. The causing issue was being able to press the Confirm button multiple times.',
     },
   ],
   pwdRequired: false,
