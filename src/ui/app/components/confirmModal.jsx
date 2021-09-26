@@ -32,6 +32,20 @@ const ConfirmModal = React.forwardRef((props, ref) => {
     },
   }));
 
+  const confirmHandler = async () => {
+    if (!waitReady) return;
+    try {
+      setWaitReady(false);
+      const signedMessage = await props.sign(state.password);
+      await props.onConfirm(true, signedMessage);
+    } catch (e) {
+      if (e === ERROR.wrongPassword)
+        setState((s) => ({ ...s, wrongPassword: true }));
+      else await props.onConfirm(false, e);
+    }
+    setWaitReady(true);
+  };
+
   React.useEffect(() => {
     setState({
       password: '',
@@ -59,6 +73,9 @@ const ConfirmModal = React.forwardRef((props, ref) => {
               onChange={(e) =>
                 setState((s) => ({ ...s, password: e.target.value }))
               }
+              onKeyDown={(e) => {
+                if (e.key == 'Enter') confirmHandler();
+              }}
               placeholder="Enter password"
             />
             <InputRightElement width="4.5rem">
@@ -88,18 +105,7 @@ const ConfirmModal = React.forwardRef((props, ref) => {
             isDisabled={!state.password || props.ready === false || !waitReady}
             isLoading={!waitReady}
             colorScheme="teal"
-            onClick={async () => {
-              try {
-                setWaitReady(false);
-                const signedMessage = await props.sign(state.password);
-                await props.onConfirm(true, signedMessage);
-              } catch (e) {
-                if (e === ERROR.wrongPassword)
-                  setState((s) => ({ ...s, wrongPassword: true }));
-                else await props.onConfirm(false, e);
-              }
-              setWaitReady(true);
-            }}
+            onClick={confirmHandler}
           >
             Confirm
           </Button>
