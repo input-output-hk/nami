@@ -363,10 +363,7 @@ const SignTx = ({ request, controller }) => {
     checkCollateral(tx, currentAccount);
     getKeyHashes(tx, utxos, currentAccount);
     getProperties(tx);
-    setIsLoading((l) => {
-      console.log(l);
-      return { ...l, loading: false };
-    });
+    setIsLoading((l) => ({ ...l, loading: false }));
   };
   const valueBgColor = useColorModeValue(
     { bg: 'gray.50', shadow: '#E2E8F0;' },
