@@ -3,6 +3,7 @@ import {
   extractKeyHash,
   getAddress,
   getBalance,
+  getCollateralInputs,
   getNetwork,
   getRewardAddress,
   getUtxos,
@@ -148,6 +149,29 @@ app.add(METHOD.getRewardAddress, async (request, sendResponse) => {
 
 app.add(METHOD.getUtxos, (request, sendResponse) => {
   getUtxos(request.data.amount, request.data.paginate)
+    .then((utxos) => {
+      utxos = utxos.map((utxo) =>
+        Buffer.from(utxo.to_bytes(), 'hex').toString('hex')
+      );
+      sendResponse({
+        id: request.id,
+        data: utxos,
+        target: TARGET,
+        sender: SENDER.extension,
+      });
+    })
+    .catch((e) => {
+      sendResponse({
+        id: request.id,
+        error: e,
+        target: TARGET,
+        sender: SENDER.extension,
+      });
+    });
+});
+
+app.add(METHOD.getCollateralInputs, (request, sendResponse) => {
+  getCollateralInputs()
     .then((utxos) => {
       utxos = utxos.map((utxo) =>
         Buffer.from(utxo.to_bytes(), 'hex').toString('hex')

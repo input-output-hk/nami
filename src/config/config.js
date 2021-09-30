@@ -9,6 +9,7 @@ export const METHOD = {
   getBalance: 'getBalance',
   getDelegation: 'getDelegation',
   getUtxos: 'getUtxos',
+  getCollateralInputs: 'getCollateralInputs',
   getRewardAddress: 'getRewardAddress',
   getAddress: 'getAddress',
   signData: 'signData',

@@ -48,9 +48,14 @@ const SignTx = ({ request, controller }) => {
     minting: false,
     script: false,
     contract: false,
+    datum: false,
   });
   // key kind can be payment and stake
   const [keyHashes, setKeyHashes] = React.useState({ kind: null, key: [] });
+  const [isLoading, setIsLoading] = React.useState({
+    loading: true,
+    error: null,
+  });
 
   const getFee = (tx) => {
     const fee = tx.body().fee().to_str();
@@ -63,16 +68,32 @@ const SignTx = ({ request, controller }) => {
     const withdrawal = tx.body().withdrawals();
     const minting = tx.body().multiassets();
     const script = tx.witness_set().native_scripts();
+    let datum;
+    const outputs = tx.body().outputs();
+    for (let i = 0; i < outputs.len(); i++) {
+      const output = outputs.get(i);
+      if (output.data_hash()) {
+        datum = true;
+        break;
+      }
+    }
     const contract =
       tx.witness_set().plutus_data() ||
       tx.witness_set().redeemers() ||
       tx.witness_set().plutus_scripts();
 
-    setProperty({ metadata, certificate, withdrawal, minting, contract });
+    setProperty({
+      metadata,
+      certificate,
+      withdrawal,
+      minting,
+      contract,
+      script,
+      datum,
+    });
   };
 
   const getValue = async (tx, utxos, account) => {
-    await Loader.load();
     let inputValue = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
     );
@@ -162,8 +183,7 @@ const SignTx = ({ request, controller }) => {
     setValue({ ownValue, externalValue });
   };
 
-  const getKeyHashes = async (tx, utxos, account) => {
-    await Loader.load();
+  const getKeyHashes = (tx, utxos, account) => {
     let requiredKeyHashes = [];
     const baseAddr = Loader.Cardano.BaseAddress.from_address(
       Loader.Cardano.Address.from_bech32(account.paymentAddr)
@@ -298,7 +318,36 @@ const SignTx = ({ request, controller }) => {
     requiredKeyHashes = [...new Set(requiredKeyHashes)];
     if (requiredKeyHashes.includes(paymentKeyHash)) keyKind.push('payment');
     if (requiredKeyHashes.includes(stakeKeyHash)) keyKind.push('stake');
+    if (keyKind.length <= 0) {
+      setIsLoading((l) => ({
+        ...l,
+        error: 'Signature not possible',
+      }));
+      return;
+    }
     setKeyHashes({ key: requiredKeyHashes, kind: keyKind });
+  };
+
+  const checkCollateral = (tx, account) => {
+    const collateralInputs = tx.body().collateral();
+    if (!collateralInputs) return;
+    if (!account.collateral) {
+      setIsLoading((l) => ({ ...l, error: 'Collateral not set' }));
+      return;
+    }
+    for (let i = 0; i < collateralInputs.len(); i++) {
+      const collateral = collateralInputs.get(i);
+      if (
+        !(
+          Buffer.from(collateral.transaction_id().to_bytes()).toString('hex') ==
+            account.collateral.txHash &&
+          collateral.index == account.collateral.txId
+        )
+      ) {
+        setIsLoading((l) => ({ ...l, error: 'Invalid collateral used' }));
+        break;
+      }
+    }
   };
 
   const getInfo = async () => {
@@ -310,9 +359,14 @@ const SignTx = ({ request, controller }) => {
       Buffer.from(request.data.tx, 'hex')
     );
     getFee(tx);
-    getValue(tx, utxos, currentAccount);
+    await getValue(tx, utxos, currentAccount);
+    checkCollateral(tx, currentAccount);
     getKeyHashes(tx, utxos, currentAccount);
     getProperties(tx);
+    setIsLoading((l) => {
+      console.log(l);
+      return { ...l, loading: false };
+    });
   };
   const valueBgColor = useColorModeValue(
     { bg: 'gray.50', shadow: '#E2E8F0;' },
@@ -531,6 +585,11 @@ const SignTx = ({ request, controller }) => {
                         <b>Script</b>
                       </Text>
                     )}
+                    {property.datum && (
+                      <Text>
+                        <b>Datum</b>
+                      </Text>
+                    )}
                   </>
                 }
               >
@@ -540,9 +599,9 @@ const SignTx = ({ request, controller }) => {
               </Tooltip>
             </Box>
           )}
-          {keyHashes.kind ? (
-            keyHashes.kind.length <= 0 ? (
-              <span style={{ color: '#FC8181' }}>Signature not possible</span>
+          {!isLoading.loading ? (
+            isLoading.error ? (
+              <span style={{ color: '#FC8181' }}>{isLoading.error}</span>
             ) : (
               <Text>
                 <b>Required keys:</b>{' '}

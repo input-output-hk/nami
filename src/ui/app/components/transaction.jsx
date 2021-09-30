@@ -317,7 +317,7 @@ const TxDetail = ({ displayInfo, network }) => {
               href={
                 (network.id === NETWORK_ID.mainnet
                   ? 'https://cardanoscan.io/transaction/'
-                  : 'https://explorer.cardano-testnet.iohkdev.io/en/transaction?id=') +
+                  : 'https://testnet.cardanoscan.io/transaction/') +
                 displayInfo.txHash
               }
               isExternal
