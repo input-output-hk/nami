@@ -24,6 +24,7 @@ import {
   utxoFromJson,
   assetsToValue,
   valueToAssets,
+  sumUtxos,
 } from '../util';
 
 export const getStorage = (key) =>
@@ -271,6 +272,21 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
     page++;
   }
 
+  // exclude collateral input from overall utxo set
+  if (currentAccount.collateral) {
+    const initialSize = result.length;
+    result = result.filter(
+      (utxo) =>
+        !(
+          utxo.tx_hash === currentAccount.collateral.txHash &&
+          utxo.output_index === currentAccount.collateral.txId
+        )
+    );
+    if (initialSize == result.length) {
+      removeCollateral(); // assume utxo was spent
+    }
+  }
+
   const address = await getAddress();
   let converted = await Promise.all(
     result.map(async (utxo) => await utxoFromJson(utxo, address))
@@ -292,6 +308,30 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
     );
   }
   return converted;
+};
+
+export const getCollateralInputs = async () => {
+  await Loader.load();
+  const currentAccount = await getCurrentAccount();
+  const collateral = currentAccount.collateral;
+  if (collateral) {
+    const collateralUtxo = Loader.Cardano.TransactionUnspentOutput.new(
+      Loader.Cardano.TransactionInput.new(
+        Loader.Cardano.TransactionHash.from_bytes(
+          Buffer.from(collateral.txHash, 'hex')
+        ),
+        collateral.txId
+      ),
+      Loader.Cardano.TransactionOutput.new(
+        Loader.Cardano.Address.from_bech32(currentAccount.paymentAddr),
+        Loader.Cardano.Value.new(
+          Loader.Cardano.BigNum.from_str(collateral.lovelace)
+        )
+      )
+    );
+    return [collateralUtxo];
+  }
+  return [];
 };
 
 export const getAddress = async () => {
@@ -369,6 +409,7 @@ const accountToNetworkSpecific = async (account, network) => {
   const lovelace = account[network.id].lovelace;
   const history = account[network.id].history;
   const minAda = account[network.id].minAda;
+  const collateral = account[network.id].collateral;
   const recentSendToAddresses = account[network.id].recentSendToAddresses;
 
   return {
@@ -378,6 +419,7 @@ const accountToNetworkSpecific = async (account, network) => {
     assets,
     lovelace,
     minAda,
+    collateral,
     history,
     recentSendToAddresses,
   };
@@ -659,7 +701,8 @@ export const submitTx = async (tx) => {
     Buffer.from(tx, 'hex')
   );
   if (result.error) {
-    if (result.status_code === 400) throw TxSendError.Failure;
+    if (result.status_code === 400)
+      throw { ...TxSendError.Failure, message: result.message };
     else if (result.status_code === 500) throw APIError.InternalError;
     else if (result.status_code === 429) throw TxSendError.Refused;
     else throw APIError.InvalidRequest;
@@ -895,7 +938,9 @@ export const avatarToImage = (avatar) => {
 
 export const updateBalance = async (currentAccount, network) => {
   await Loader.load();
-  const amount = await getBalance();
+  const utxos = await getUtxos();
+  const amount = await sumUtxos(utxos);
+  // const amount = await getBalance();
 
   const assets = await valueToAssets(amount);
 
@@ -952,7 +997,31 @@ export const setTransactions = async (txs) => {
   });
 };
 
-export const updateAccount = async () => {
+export const setCollateral = async (collateral) => {
+  const currentIndex = await getCurrentAccountIndex();
+  const network = await getNetwork();
+  const accounts = await getStorage(STORAGE.accounts);
+  accounts[currentIndex][network.id].collateral = collateral;
+  return await setStorage({
+    [STORAGE.accounts]: {
+      ...accounts,
+    },
+  });
+};
+
+export const removeCollateral = async () => {
+  const currentIndex = await getCurrentAccountIndex();
+  const network = await getNetwork();
+  const accounts = await getStorage(STORAGE.accounts);
+  delete accounts[currentIndex][network.id].collateral;
+  return await setStorage({
+    [STORAGE.accounts]: {
+      ...accounts,
+    },
+  });
+};
+
+export const updateAccount = async (forceUpdate = false) => {
   const currentIndex = await getCurrentAccountIndex();
   const accounts = await getStorage(STORAGE.accounts);
   const currentAccount = accounts[currentIndex];
@@ -962,7 +1031,8 @@ export const updateAccount = async () => {
 
   if (
     currentAccount[network.id].history.confirmed[0] ===
-    currentAccount[network.id].lastUpdate
+      currentAccount[network.id].lastUpdate ||
+    forceUpdate
   ) {
     return;
   }

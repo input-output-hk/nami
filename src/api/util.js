@@ -301,10 +301,11 @@ export const valueToAssets = async (value) => {
       }
     }
   }
+  // if (value.coin().to_str() == '0') return [];
   return assets;
 };
 
-export const minAdaRequired = async (value, utxoVal) => {
+export const minAdaRequired = async (value, minUtxo) => {
   await Loader.load();
-  return Loader.Cardano.min_ada_required(value, utxoVal).to_str();
+  return Loader.Cardano.min_ada_required(value, minUtxo).to_str();
 };

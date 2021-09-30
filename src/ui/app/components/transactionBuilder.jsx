@@ -3,6 +3,7 @@ import React from 'react';
 import {
   delegationTx,
   initTx,
+  buildTx,
   signAndSubmit,
   withdrawalTx,
 } from '../../../api/extension/wallet';
@@ -14,23 +15,36 @@ import {
   ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
   useDisclosure,
   Button,
   useToast,
+  Icon,
 } from '@chakra-ui/react';
 
 // Assets
 import Berry from '../../../assets/img/berry.svg';
 import { ERROR } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
+import Loader from '../../../api/loader';
+import {
+  getUtxos,
+  removeCollateral,
+  setCollateral,
+  toUnit,
+} from '../../../api/extension';
+import { FaRegFileCode } from 'react-icons/fa';
 
-const TransactionBuilder = React.forwardRef((props, ref) => {
+const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
   const settings = useStoreState((state) => state.settings.settings);
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isOpenCol,
+    onOpen: onOpenCol,
+    onClose: onCloseCol,
+  } = useDisclosure();
+  const [isLoading, setIsLoading] = React.useState(false);
   const [data, setData] = React.useState({
     fee: '',
     tx: null,
@@ -39,15 +53,16 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
     rewards: '',
     ready: false,
   });
+  const COLLATERAL = '5';
   const delegationRef = React.useRef();
   const withdrawRef = React.useRef();
+  const collateralRef = React.useRef();
   React.useImperativeHandle(ref, () => ({
     async initDelegation(account, delegation) {
       if (
         delegation.poolId ===
         'pool19f6guwy97mmnxg9dz65rxyj8hq07qxud886hamyu4fgfz7dj9gl' // BERRY
       ) {
-        onOpen();
         return;
       }
       setData({
@@ -110,6 +125,46 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
         setData((d) => ({
           ...d,
           error: 'Transaction not possible (maybe reward amount too small)',
+        }));
+      }
+    },
+    async initCollateral(account) {
+      setData({
+        fee: '',
+        stakeRegistration: '',
+        rewards: '',
+        ready: false,
+        error: '',
+      });
+      if (account.collateral) {
+        onOpenCol();
+        return;
+      }
+      collateralRef.current.openModal();
+      const protocolParameters = await initTx();
+      const utxos = await getUtxos();
+      await Loader.load();
+      const outputs = Loader.Cardano.TransactionOutputs.new();
+      outputs.add(
+        Loader.Cardano.TransactionOutput.new(
+          Loader.Cardano.Address.from_bech32(account.paymentAddr),
+          Loader.Cardano.Value.new(
+            Loader.Cardano.BigNum.from_str(toUnit(COLLATERAL))
+          )
+        )
+      );
+      try {
+        const tx = await buildTx(account, utxos, outputs, protocolParameters);
+        setData({
+          tx,
+          account,
+          fee: tx.body().fee().to_str(),
+          ready: true,
+        });
+      } catch (e) {
+        setData((d) => ({
+          ...d,
+          error: 'Transaction not possible (maybe insufficient balance)',
         }));
       }
     },
@@ -289,13 +344,112 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
         }
         ref={withdrawRef}
       />
+      <ConfirmModal
+        ready={data.ready}
+        title={
+          <Box display="flex" alignItems="center">
+            <Icon as={FaRegFileCode} mr="2" /> <Box>Collateral</Box>
+          </Box>
+        }
+        sign={(password) =>
+          signAndSubmit(
+            data.tx,
+            {
+              keyHashes: [data.account.paymentKeyHash],
+              accountIndex: data.account.index,
+            },
+            password
+          )
+        }
+        onConfirm={async (status, signedTx) => {
+          if (status === true) {
+            await setCollateral({
+              txHash: signedTx,
+              txId: 0,
+              lovelace: toUnit(COLLATERAL),
+            });
+            toast({
+              title: 'Collateral added',
+              status: 'success',
+              duration: 5000,
+            });
+            onConfirm();
+          } else
+            toast({
+              title: 'Transaction failed',
+              status: 'error',
+              duration: 5000,
+            });
+          collateralRef.current.closeModal();
+        }}
+        info={
+          <Box
+            width="100%"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            flexDirection="column"
+          >
+            <Text fontSize="sm">
+              Add collateral in order to interact with smart contracts on
+              Cardano:
+              <Box mt="3">The recommended collateral amount is</Box>
+              <Box mb="3" width="full" textAlign="center">
+                <b style={{ fontSize: 16 }}>5 {settings.adaSymbol}</b>
+              </Box>{' '}
+              The amount is separated from your accound balance, you can choose
+              to return it to your balance at any time.
+              <br />
+              <Link
+                fontWeight="semibold"
+                onClick={() => window.open('https://namiwallet.io')}
+              >
+                Read more
+              </Link>
+            </Text>
+            <Box h="6" />
+            {data.error ? (
+              <Box textAlign="center" mb="4" color="red.300">
+                {data.error}
+              </Box>
+            ) : (
+              <Box fontSize="sm">
+                <Box display="flex" alignItems="center" justifyContent="center">
+                  <Text fontWeight="bold">+ Fee:</Text>
+                  <Box w="1" />
+                  <UnitDisplay
+                    quantity={data.fee}
+                    decimals={6}
+                    symbol={settings.adaSymbol}
+                  />
+                </Box>
+                <Box h="4" />
+              </Box>
+            )}
+          </Box>
+        }
+        ref={collateralRef}
+      />
 
-      <Modal size="xs" isCentered isOpen={isOpen} onClose={onClose}>
+      <Modal size="xs" isCentered isOpen={isOpenCol} onClose={onCloseCol}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader fontSize="md">{'Delegate to Berry'}</ModalHeader>
+          <ModalHeader fontSize="md">
+            {' '}
+            <Box display="flex" alignItems="center">
+              <Icon as={FaRegFileCode} mr="2" /> <Box>Collateral</Box>
+            </Box>
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
+            <Text fontSize="sm">
+              Your collateral amount is{' '}
+              <b style={{ fontSize: 16 }}>5 {settings.adaSymbol}</b>.<br />
+              <br /> When removing the collateral amount, it is returned to the
+              account balance, but disables interactions with smart contracts.
+            </Text>
+            <Box h="6" />
+            <Box h="3" />
             <Box
               width="100%"
               display="flex"
@@ -303,27 +457,25 @@ const TransactionBuilder = React.forwardRef((props, ref) => {
               justifyContent="center"
               flexDirection="column"
             >
-              <Image src={Berry} width="60px" />
-              <Box height="4" />
-              <Text textAlign="center" fontWeight="bold" color="GrayText">
-                Already delegated to Berry and earning rewards!
-              </Text>
-              <Box h="6" />
               <Button
-                size="sm"
-                colorScheme="teal"
-                onClick={() =>
-                  window.open(
-                    'https://adapools.org/pool/2a748e3885f6f73320ad16a8331247b81fe01b8d39f57eec9caa5091'
-                  )
-                }
+                isDisabled={isLoading}
+                isLoading={isLoading}
+                onClick={async () => {
+                  setIsLoading(true);
+                  await removeCollateral();
+                  toast({
+                    title: 'Collateral removed',
+                    status: 'success',
+                    duration: 5000,
+                  });
+                  onConfirm(true);
+                  onCloseCol();
+                  setIsLoading(false);
+                }}
               >
-                View Pool
+                Remove
               </Button>
-              <Box h="3" />
-              <Button size="sm" onClick={() => onClose()}>
-                Close
-              </Button>
+
               <Box h="4" />
             </Box>
           </ModalBody>

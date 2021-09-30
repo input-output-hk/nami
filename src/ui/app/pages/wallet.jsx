@@ -82,6 +82,8 @@ import { currencyToSymbol } from '../../../api/util';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID } from '../../../config/config';
 import { BalanceWarning } from '../components/balanceWarning';
+import { FaRegFileCode } from 'react-icons/fa';
+import { BiWallet } from 'react-icons/bi';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
@@ -133,7 +135,7 @@ const Wallet = () => {
       }
     }, 10000);
 
-  const getData = async () => {
+  const getData = async (forceUpdate) => {
     const currentIndex = await getCurrentAccountIndex();
     const accounts = await getAccounts();
     const { avatar, name, index, paymentAddr } = accounts[currentIndex];
@@ -144,7 +146,7 @@ const Wallet = () => {
       account: null,
       delegation: null,
     }));
-    await updateAccount();
+    await updateAccount(forceUpdate);
     const allAccounts = await getAccounts();
     const currentAccount = allAccounts[currentIndex];
     const fiatPrice = await provider.api.price(settings.currency);
@@ -327,7 +329,6 @@ const Wallet = () => {
                   icon={<AddIcon />}
                   onClick={() => newAccountRef.current.openModal()}
                 >
-                  {' '}
                   New Account
                 </MenuItem>
                 {state.account &&
@@ -345,19 +346,13 @@ const Wallet = () => {
                   )}
                 <MenuDivider />
                 <MenuItem
-                  fontWeight="bold"
-                  isDisabled={
-                    !state.account ||
-                    (state.account && state.network.id !== NETWORK_ID.mainnet)
-                  }
+                  icon={<Icon as={FaRegFileCode} w={3} h={3} />}
                   onClick={() =>
-                    builderRef.current.initDelegation(
-                      state.account,
-                      state.delegation
-                    )
+                    builderRef.current.initCollateral(state.account)
                   }
                 >
-                  Stake & Earn Rewards
+                  {' '}
+                  Collateral
                 </MenuItem>
                 <MenuDivider />
                 <MenuItem
@@ -409,7 +404,10 @@ const Wallet = () => {
               fontSize="2xl"
               fontWeight="bold"
               quantity={
-                state.account && state.account.lovelace - state.account.minAda
+                state.account &&
+                (
+                  BigInt(state.account.lovelace) - BigInt(state.account.minAda)
+                ).toString()
               }
               decimals={6}
               symbol={settings.adaSymbol}
@@ -417,14 +415,31 @@ const Wallet = () => {
             {state.account && state.account.assets.length ? (
               <Tooltip
                 label={
-                  <Box display="flex">
-                    <Text mr="0.5">+</Text>
-                    <UnitDisplay
-                      quantity={state.account.minAda}
-                      symbol={settings.adaSymbol}
-                      decimals={6}
-                    />
-                    <Text ml="1">locked with assets</Text>
+                  <Box display="flex" flexDirection="column">
+                    <Box>
+                      <Box display="flex">
+                        <Text mr="0.5">+</Text>
+                        <UnitDisplay
+                          quantity={state.account.minAda}
+                          symbol={settings.adaSymbol}
+                          decimals={6}
+                        />
+                        <Text ml="1">locked with assets</Text>
+                      </Box>
+                    </Box>
+                    {state.account.collateral && (
+                      <Box>
+                        <Box display="flex">
+                          <Text mr="0.5">+</Text>
+                          <UnitDisplay
+                            quantity={state.account.collateral.lovelace}
+                            symbol={settings.adaSymbol}
+                            decimals={6}
+                          />
+                          <Text ml="1">Collateral</Text>
+                        </Box>
+                      </Box>
+                    )}
                   </Box>
                 }
                 fontSize="sm"
@@ -582,7 +597,10 @@ const Wallet = () => {
         name={state.account && state.account.name}
         ref={deletAccountRef}
       />
-      <TransactionBuilder ref={builderRef} />
+      <TransactionBuilder
+        ref={builderRef}
+        onConfirm={(forceUpdate) => getData(forceUpdate)}
+      />
       <About ref={aboutRef} />
     </>
   );
@@ -590,11 +608,23 @@ const Wallet = () => {
 
 const NewAccountModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isLoading, setIsLoading] = React.useState(false);
   const [state, setState] = React.useState({
     password: '',
     show: false,
     name: '',
   });
+
+  const confirmHandler = async () => {
+    setIsLoading(true);
+    try {
+      await createAccount(state.name, state.password);
+      onClose();
+    } catch (e) {
+      setState((s) => ({ ...s, wrongPassword: true }));
+    }
+    setIsLoading(false);
+  };
 
   React.useImperativeHandle(ref, () => ({
     openModal() {
@@ -614,7 +644,12 @@ const NewAccountModal = React.forwardRef((props, ref) => {
     <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader fontSize="md">Create new account</ModalHeader>
+        <ModalHeader fontSize="md">
+          {' '}
+          <Box display="flex" alignItems="center">
+            <Icon as={BiWallet} mr="2" /> <Box>Create new account</Box>
+          </Box>
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody px="10">
           <Input
@@ -633,6 +668,9 @@ const NewAccountModal = React.forwardRef((props, ref) => {
                 setState((s) => ({ ...s, password: e.target.value }))
               }
               placeholder="Enter password"
+              onKeyDown={(e) => {
+                if (e.key == 'Enter') confirmHandler();
+              }}
             />
             <InputRightElement width="4.5rem">
               <Button
@@ -654,16 +692,10 @@ const NewAccountModal = React.forwardRef((props, ref) => {
             Close
           </Button>
           <Button
-            isDisabled={!state.password || !state.name}
+            isDisabled={!state.password || !state.name || isLoading}
+            isLoading={isLoading}
             colorScheme="teal"
-            onClick={async () => {
-              try {
-                await createAccount(state.name, state.password);
-                onClose();
-              } catch (e) {
-                setState((s) => ({ ...s, wrongPassword: true }));
-              }
-            }}
+            onClick={confirmHandler}
           >
             Create
           </Button>
@@ -675,6 +707,7 @@ const NewAccountModal = React.forwardRef((props, ref) => {
 
 const DeleteAccountModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isLoading, setIsLoading] = React.useState(false);
   const cancelRef = React.useRef();
 
   React.useImperativeHandle(ref, () => ({
@@ -708,11 +741,15 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
               Cancel
             </Button>
             <Button
+              isDisabled={isLoading}
+              isLoading={isLoading}
               colorScheme="red"
               onClick={async () => {
+                setIsLoading(true);
                 await deleteAccount();
                 await switchAccount(0);
                 onClose();
+                setIsLoading(false);
               }}
             >
               Delete

@@ -2,7 +2,7 @@ import { getCurrentAccount, getUtxos, signTx, submitTx } from '.';
 import { ERROR, EVENT, SENDER, TARGET, TX } from '../../config/config';
 import Loader from '../loader';
 import CoinSelection from '../../lib/coinSelection';
-import { blockfrostRequest, multiAssetCount } from '../util';
+import { blockfrostRequest, multiAssetCount, utxoToJson } from '../util';
 
 export const initTx = async () => {
   const latest_block = await blockfrostRequest('/blocks/latest');
@@ -16,6 +16,10 @@ export const initTx = async () => {
     minUtxo: '1000000', //p.min_utxo, minUTxOValue protocol paramter has been removed since Alonzo HF. Calulation of minADA works differently now, but 1 minADA still sufficient for now
     poolDeposit: p.pool_deposit,
     keyDeposit: p.key_deposit,
+    coinsPerUtxoWord: '34482',
+    maxValSize: 5000,
+    priceMem: 5.77e-2,
+    priceStep: 7.21e-5,
     maxTxSize: parseInt(p.max_tx_size),
     slot: parseInt(latest_block.slot),
   };
@@ -26,8 +30,8 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   //estimated max multiasset size 5848
   //estimated max value size 5860
   //estimated max utxo size 5980
-  const MULTIASSET_SIZE = 5848;
-  const VALUE_SIZE = 5860;
+  const MULTIASSET_SIZE = 5000;
+  const VALUE_SIZE = 5000;
   const totalAssets = await multiAssetCount(
     outputs.get(0).amount().multiasset()
   );
@@ -43,6 +47,10 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     20 + totalAssets
   );
   const inputs = selection.input;
+  inputs.forEach((input) => {
+    console.log(utxoToJson(input));
+  });
+
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
     Loader.Cardano.LinearFee.new(
       Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeA),
@@ -50,7 +58,11 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     ),
     Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
     Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
-    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit)
+    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit),
+    protocolParameters.maxValSize,
+    protocolParameters.maxTxSize,
+    protocolParameters.priceMem,
+    protocolParameters.priceStep
   );
 
   for (let i = 0; i < inputs.length; i++) {
@@ -68,7 +80,10 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   const changeMultiAssets = change.multiasset();
 
   // check if change value is too big for single output
-  if (changeMultiAssets && change.to_bytes().length * 2 > VALUE_SIZE) {
+  if (
+    changeMultiAssets &&
+    change.to_bytes().length * 2 > protocolParameters.maxValSize
+  ) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
     );
@@ -90,7 +105,14 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
             partialMultiAssets.to_bytes()
           );
           checkMultiAssets.insert(policy, assets);
-          if (checkMultiAssets.to_bytes().length * 2 >= MULTIASSET_SIZE) {
+          const checkValue = Loader.Cardano.Value.new(
+            Loader.Cardano.BigNum.from_str('0')
+          );
+          checkValue.set_multiasset(checkMultiAssets);
+          if (
+            checkValue.to_bytes().length * 2 >=
+            protocolParameters.maxValSize
+          ) {
             partialMultiAssets.insert(policy, assets);
             return;
           }
@@ -115,7 +137,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   }
 
   txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
-
   txBuilder.add_change_if_needed(
     Loader.Cardano.Address.from_bech32(account.paymentAddr)
   );
@@ -185,7 +206,11 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     ),
     Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
     Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
-    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit)
+    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit),
+    protocolParameters.maxValSize,
+    protocolParameters.maxTxSize,
+    protocolParameters.priceMem,
+    protocolParameters.priceStep
   );
   for (let i = 0; i < inputs.length; i++) {
     const utxo = inputs[i];
@@ -231,7 +256,10 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
   const changeMultiAssets = change.multiasset();
 
   // check if change value is too big for single output
-  if (changeMultiAssets && change.to_bytes().length * 2 > VALUE_SIZE) {
+  if (
+    changeMultiAssets &&
+    change.to_bytes().length * 2 > protocolParameters.maxValSize
+  ) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
     );
@@ -253,7 +281,14 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
             partialMultiAssets.to_bytes()
           );
           checkMultiAssets.insert(policy, assets);
-          if (checkMultiAssets.to_bytes().length * 2 >= MULTIASSET_SIZE) {
+          const checkValue = Loader.Cardano.Value.new(
+            Loader.Cardano.BigNum.from_str('0')
+          );
+          checkValue.set_multiasset(checkMultiAssets);
+          if (
+            checkValue.to_bytes().length * 2 >=
+            protocolParameters.maxValSize
+          ) {
             partialMultiAssets.insert(policy, assets);
             return;
           }
@@ -327,7 +362,11 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     ),
     Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
     Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
-    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit)
+    Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit),
+    protocolParameters.maxValSize,
+    protocolParameters.maxTxSize,
+    protocolParameters.priceMem,
+    protocolParameters.priceStep
   );
 
   for (let i = 0; i < inputs.length; i++) {
@@ -353,7 +392,10 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
   const changeMultiAssets = change.multiasset();
 
   // check if change value is too big for single output
-  if (changeMultiAssets && change.to_bytes().length * 2 > VALUE_SIZE) {
+  if (
+    changeMultiAssets &&
+    change.to_bytes().length * 2 > protocolParameters.maxValSize
+  ) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
     );
@@ -375,7 +417,14 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
             partialMultiAssets.to_bytes()
           );
           checkMultiAssets.insert(policy, assets);
-          if (checkMultiAssets.to_bytes().length * 2 >= MULTIASSET_SIZE) {
+          const checkValue = Loader.Cardano.Value.new(
+            Loader.Cardano.BigNum.from_str('0')
+          );
+          checkValue.set_multiasset(checkMultiAssets);
+          if (
+            checkValue.to_bytes().length * 2 >=
+            protocolParameters.maxValSize
+          ) {
             partialMultiAssets.insert(policy, assets);
             return;
           }

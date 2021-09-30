@@ -33,7 +33,7 @@ const ConfirmModal = React.forwardRef((props, ref) => {
   }));
 
   const confirmHandler = async () => {
-    if (!waitReady) return;
+    if (!state.password || props.ready === false || !waitReady) return;
     try {
       setWaitReady(false);
       const signedMessage = await props.sign(state.password);
