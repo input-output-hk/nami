@@ -47,9 +47,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     20 + totalAssets
   );
   const inputs = selection.input;
-  inputs.forEach((input) => {
-    console.log(utxoToJson(input));
-  });
 
   const txBuilder = Loader.Cardano.TransactionBuilder.new(
     Loader.Cardano.LinearFee.new(

@@ -244,7 +244,6 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
-      console.log(e);
       prepareTx(v, a, count + 1);
     }
   };
