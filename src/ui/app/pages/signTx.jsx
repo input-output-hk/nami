@@ -341,7 +341,7 @@ const SignTx = ({ request, controller }) => {
         !(
           Buffer.from(collateral.transaction_id().to_bytes()).toString('hex') ==
             account.collateral.txHash &&
-          collateral.index == account.collateral.txId
+          collateral.index() == account.collateral.txId
         )
       ) {
         setIsLoading((l) => ({ ...l, error: 'Invalid collateral used' }));
@@ -635,7 +635,7 @@ const SignTx = ({ request, controller }) => {
             Cancel
           </Button>
           <Button
-            isDisabled={!keyHashes.kind || keyHashes.kind.length <= 0}
+            isDisabled={isLoading.loading || isLoading.error}
             colorScheme="orange"
             onClick={() => ref.current.openModal()}
           >
