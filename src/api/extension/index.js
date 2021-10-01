@@ -310,6 +310,41 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
   return converted;
 };
 
+const checkCollateral = async (currentAccount) => {
+  let result = [];
+  let page = 1;
+  while (true) {
+    let pageResult = await blockfrostRequest(
+      `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}`
+    );
+    if (pageResult.error) {
+      if (result.status_code === 400) throw APIError.InvalidRequest;
+      else if (result.status_code === 500) throw APIError.InternalError;
+      else {
+        pageResult = [];
+      }
+    }
+    result = result.concat(pageResult);
+    if (pageResult.length <= 0 || paginate) break;
+    page++;
+  }
+
+  // exclude collateral input from overall utxo set
+  if (currentAccount.collateral) {
+    const initialSize = result.length;
+    result = result.filter(
+      (utxo) =>
+        !(
+          utxo.tx_hash === currentAccount.collateral.txHash &&
+          utxo.output_index === currentAccount.collateral.txId
+        )
+    );
+    if (initialSize == result.length) {
+      removeCollateral(); // assume utxo was spent
+    }
+  }
+};
+
 export const getCollateralInputs = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
@@ -938,9 +973,8 @@ export const avatarToImage = (avatar) => {
 
 export const updateBalance = async (currentAccount, network) => {
   await Loader.load();
-  const utxos = await getUtxos();
-  const amount = await sumUtxos(utxos);
-  // const amount = await getBalance();
+  const amount = await getBalance();
+  checkCollateral(currentAccount);
 
   const assets = await valueToAssets(amount);
 
