@@ -406,7 +406,13 @@ const Wallet = () => {
               quantity={
                 state.account &&
                 (
-                  BigInt(state.account.lovelace) - BigInt(state.account.minAda)
+                  BigInt(state.account.lovelace) -
+                  BigInt(state.account.minAda) -
+                  BigInt(
+                    state.account.collateral
+                      ? state.account.collateral.lovelace
+                      : 0
+                  )
                 ).toString()
               }
               decimals={6}
@@ -476,7 +482,12 @@ const Wallet = () => {
                   displayUnit(
                     (
                       BigInt(state.account.lovelace) -
-                      BigInt(state.account.minAda)
+                      BigInt(state.account.minAda) -
+                      BigInt(
+                        state.account.collateral
+                          ? state.account.collateral.lovelace
+                          : 0
+                      )
                     ).toString()
                   ) *
                     state.fiatPrice *
