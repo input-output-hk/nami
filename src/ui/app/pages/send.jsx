@@ -272,15 +272,10 @@ const Send = () => {
     let _utxos = await getUtxos();
     const protocolParameters = await initTx();
     const utxoSum = await sumUtxos(_utxos);
-    const minAda = await minAdaRequired(
-      utxoSum,
-      Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
-    );
     let balance = await valueToAssets(utxoSum);
     balance = {
       lovelace: balance.find((v) => v.unit === 'lovelace').quantity,
       assets: balance.filter((v) => v.unit !== 'lovelace'),
-      minAda,
     };
     utxos.current = _utxos;
     _utxos = _utxos.map((utxo) => Buffer.from(utxo.to_bytes()).toString('hex'));
@@ -391,10 +386,11 @@ const Send = () => {
                     isDisabled={isLoading}
                     isInvalid={
                       value.ada &&
-                      (BigInt(toUnit(value.ada)) < BigInt(value.minAda) ||
+                      (BigInt(toUnit(value.ada)) <
+                        BigInt(txInfo.protocolParameters.minUtxo) ||
                         BigInt(toUnit(value.ada)) >
                           BigInt(txInfo.balance.lovelace || '0') -
-                            BigInt(txInfo.balance.minAda || '0'))
+                            BigInt(account.current.minAda || '0'))
                     }
                     onFocus={() => (focus.current = true)}
                     onBlur={(e) => {
