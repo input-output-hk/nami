@@ -286,34 +286,36 @@ const CoinSelection = {
     }
 
     // Insure change hold enough Ada to cover included native assets and fees
-    const change = utxoSelection.amount.checked_sub(mergedOutputsAmounts);
+    if (utxoSelection.remaining.length > 0) {
+      const change = utxoSelection.amount.checked_sub(mergedOutputsAmounts);
 
-    let minAmount = Loader.Cardano.Value.new(
-      Loader.Cardano.min_ada_required(
-        change,
-        Loader.Cardano.BigNum.from_str(protocolParameters.minUTxO)
-      )
-    );
+      let minAmount = Loader.Cardano.Value.new(
+        Loader.Cardano.min_ada_required(
+          change,
+          Loader.Cardano.BigNum.from_str(protocolParameters.minUTxO)
+        )
+      );
 
-    let maxFee =
-      BigInt(protocolParameters.minFeeA) *
-        BigInt(protocolParameters.maxTxSize) +
-      BigInt(protocolParameters.minFeeB);
+      let maxFee =
+        BigInt(protocolParameters.minFeeA) *
+          BigInt(protocolParameters.maxTxSize) +
+        BigInt(protocolParameters.minFeeB);
 
-    maxFee = Loader.Cardano.Value.new(
-      Loader.Cardano.BigNum.from_str(maxFee.toString())
-    );
+      maxFee = Loader.Cardano.Value.new(
+        Loader.Cardano.BigNum.from_str(maxFee.toString())
+      );
 
-    minAmount = minAmount.checked_add(maxFee);
+      minAmount = minAmount.checked_add(maxFee);
 
-    if (compare(change, minAmount) < 0) {
-      // Not enough, add missing amount and run select one last time
-      const minAda = minAmount
-        .checked_sub(Loader.Cardano.Value.new(change.coin()))
-        .checked_add(Loader.Cardano.Value.new(utxoSelection.amount.coin()));
+      if (compare(change, minAmount) < 0) {
+        // Not enough, add missing amount and run select one last time
+        const minAda = minAmount
+          .checked_sub(Loader.Cardano.Value.new(change.coin()))
+          .checked_add(Loader.Cardano.Value.new(utxoSelection.amount.coin()));
 
-      createSubSet(utxoSelection, minAda);
-      utxoSelection = select(utxoSelection, minAda, limit, _minUTxOValue);
+        createSubSet(utxoSelection, minAda);
+        utxoSelection = select(utxoSelection, minAda, limit, _minUTxOValue);
+      }
     }
 
     return {
