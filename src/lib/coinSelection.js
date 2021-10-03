@@ -221,9 +221,10 @@ const CoinSelection = {
    * @param {UTxOList} inputs - The set of inputs available for selection.
    * @param {TransactionOutputs} outputs - The set of outputs requested for payment.
    * @param {int} limit - A limit on the number of inputs that can be selected.
+   * @param {UTxOList} [preset=[]]] - The pre-selection of inputs that will be added.
    * @return {SelectionResult} - Coin Selection algorithm return
    */
-  randomImprove: async (inputs, outputs, limit) => {
+  randomImprove: async (inputs, outputs, limit, preset = []) => {
     if (!protocolParameters)
       throw new Error(
         'Protocol parameters not set. Use setProtocolParameters().'
@@ -234,12 +235,18 @@ const CoinSelection = {
     const _minUTxOValue =
       BigInt(outputs.len()) * BigInt(protocolParameters.minUTxO);
 
+    let amount = Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
+
+    for (let i = 0; i < preset.length; i++) {
+      amount = addAmounts(preset[i].output().amount(), amount);
+    }
+
     /** @type {UTxOSelection} */
     let utxoSelection = {
-      selection: [],
+      selection: [...preset], // Shallow copy
       remaining: [...inputs], // Shallow copy
       subset: [],
-      amount: Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0')),
+      amount: amount,
     };
 
     let mergedOutputsAmounts = mergeOutputsAmounts(outputs);
