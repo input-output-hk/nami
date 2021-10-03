@@ -974,7 +974,7 @@ export const avatarToImage = (avatar) => {
 export const updateBalance = async (currentAccount, network) => {
   await Loader.load();
   const amount = await getBalance();
-  checkCollateral(currentAccount);
+  await checkCollateral(currentAccount);
 
   const assets = await valueToAssets(amount);
 
