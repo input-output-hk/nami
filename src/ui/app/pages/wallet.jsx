@@ -418,21 +418,24 @@ const Wallet = () => {
               decimals={6}
               symbol={settings.adaSymbol}
             />
-            {state.account && state.account.assets.length ? (
+            {state.account &&
+            (state.account.assets.length > 0 || state.account.collateral) ? (
               <Tooltip
                 label={
                   <Box display="flex" flexDirection="column">
-                    <Box>
-                      <Box display="flex">
-                        <Text mr="0.5">+</Text>
-                        <UnitDisplay
-                          quantity={state.account.minAda}
-                          symbol={settings.adaSymbol}
-                          decimals={6}
-                        />
-                        <Text ml="1">locked with assets</Text>
+                    {state.account.assets.length > 0 && (
+                      <Box>
+                        <Box display="flex">
+                          <Text mr="0.5">+</Text>
+                          <UnitDisplay
+                            quantity={state.account.minAda}
+                            symbol={settings.adaSymbol}
+                            decimals={6}
+                          />
+                          <Text ml="1">locked with assets</Text>
+                        </Box>
                       </Box>
-                    </Box>
+                    )}
                     {state.account.collateral && (
                       <Box>
                         <Box display="flex">
