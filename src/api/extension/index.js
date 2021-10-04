@@ -345,7 +345,7 @@ const checkCollateral = async (currentAccount) => {
   }
 };
 
-export const getCollateralInputs = async () => {
+export const getCollateral = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
   const collateral = currentAccount.collateral;

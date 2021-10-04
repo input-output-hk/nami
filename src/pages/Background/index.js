@@ -3,7 +3,7 @@ import {
   extractKeyHash,
   getAddress,
   getBalance,
-  getCollateralInputs,
+  getCollateral,
   getNetwork,
   getRewardAddress,
   getUtxos,
@@ -170,8 +170,8 @@ app.add(METHOD.getUtxos, (request, sendResponse) => {
     });
 });
 
-app.add(METHOD.getCollateralInputs, (request, sendResponse) => {
-  getCollateralInputs()
+app.add(METHOD.getCollateral, (request, sendResponse) => {
+  getCollateral()
     .then((utxos) => {
       utxos = utxos.map((utxo) =>
         Buffer.from(utxo.to_bytes(), 'hex').toString('hex')

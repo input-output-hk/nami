@@ -50,6 +50,12 @@ cardano.getUtxos(amount?: Value, paginate?: {page: number, limit: number}) : [Tr
 
 `amount` and `paginate` are optional parameters. They are meant to filter the overall utxo set of a user's wallet.
 
+##### cardano.getCollateral()
+
+```
+cardano.getCollateral() : [TransactionUnspentOutput]
+```
+
 ##### cardano.getUsedAddresses()
 
 ```
