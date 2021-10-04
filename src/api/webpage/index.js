@@ -61,9 +61,9 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
   return result.data;
 };
 
-export const getCollateralInputs = async () => {
+export const getCollateral = async () => {
   const result = await Messaging.sendToContent({
-    method: METHOD.getCollateralInputs,
+    method: METHOD.getCollateral,
   });
   return result.data;
 };
