@@ -304,8 +304,16 @@ const Wallet = () => {
                               <UnitDisplay
                                 quantity={
                                   account &&
-                                  account[state.network.id].lovelace -
-                                    account[state.network.id].minAda
+                                  (
+                                    BigInt(account[state.network.id].lovelace) -
+                                    BigInt(account[state.network.id].minAda) -
+                                    BigInt(
+                                      account[state.network.id].collateral
+                                        ? account[state.network.id].collateral
+                                            .lovelace
+                                        : 0
+                                    )
+                                  ).toString()
                                 }
                                 decimals={6}
                                 symbol={settings.adaSymbol}
