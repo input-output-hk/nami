@@ -389,8 +389,7 @@ const Send = () => {
                       (BigInt(toUnit(value.ada)) <
                         BigInt(txInfo.protocolParameters.minUtxo) ||
                         BigInt(toUnit(value.ada)) >
-                          BigInt(txInfo.balance.lovelace || '0') -
-                            BigInt(account.current.minAda || '0'))
+                          BigInt(txInfo.balance.lovelace || '0'))
                     }
                     onFocus={() => (focus.current = true)}
                     onBlur={(e) => {
