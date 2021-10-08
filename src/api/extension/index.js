@@ -310,7 +310,8 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
   return converted;
 };
 
-const checkCollateral = async (currentAccount) => {
+const checkCollateral = async () => {
+  const currentAccount = await getCurrentAccount();
   let result = [];
   let page = 1;
   while (true) {
@@ -325,7 +326,7 @@ const checkCollateral = async (currentAccount) => {
       }
     }
     result = result.concat(pageResult);
-    if (pageResult.length <= 0 || paginate) break;
+    if (pageResult.length <= 0) break;
     page++;
   }
 
@@ -974,7 +975,7 @@ export const avatarToImage = (avatar) => {
 export const updateBalance = async (currentAccount, network) => {
   await Loader.load();
   const amount = await getBalance();
-  await checkCollateral(currentAccount);
+  await checkCollateral();
 
   const assets = await valueToAssets(amount);
 
