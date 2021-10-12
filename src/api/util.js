@@ -19,6 +19,7 @@ export const blockfrostRequest = async (endpoint, headers, body) => {
         ...provider.api.key(network.id),
         ...headers,
         'User-Agent': 'nami-wallet',
+        'Cache-Control': 'no-cache',
       },
       method: body ? 'POST' : 'GET',
       body,
