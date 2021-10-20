@@ -350,12 +350,7 @@ function select(utxoSelection, outputAmount, limit, minUTxOValue) {
   } catch (e) {
     if (e.message === 'INPUT_LIMIT_EXCEEDED') {
       // Limit reached : Fallback on DescOrdAlgo
-      utxoSelection = descSelect(
-        utxoSelection,
-        outputAmount,
-        limit - utxoSelection.selection.length,
-        minUTxOValue
-      );
+      utxoSelection = descSelect(utxoSelection, outputAmount, minUTxOValue);
     } else {
       throw e;
     }
@@ -418,14 +413,12 @@ function randomSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
  * Select enough UTxO in DESC order to fulfill requested outputs
  * @param {UTxOSelection} utxoSelection - The set of selected/available inputs.
  * @param {Value} outputAmount - Single compiled output qty requested for payment.
- * @param {int} limit - A limit on the number of inputs that can be selected.
  * @param {int} minUTxOValue - Network protocol 'minUTxOValue' current value.
- * @throws INPUT_LIMIT_EXCEEDED if the number of randomly picked inputs exceed 'limit' parameter.
  * @throws INPUTS_EXHAUSTED if all UTxO doesn't hold enough funds to pay for output.
  * @throws MIN_UTXO_ERROR if lovelace change is under 'minUTxOValue' parameter.
  * @return {UTxOSelection} - Successful random utxo selection.
  */
-function descSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
+function descSelect(utxoSelection, outputAmount, minUTxOValue) {
   // Sort UTxO subset in DESC order for required Output unit type
   utxoSelection.subset = utxoSelection.subset.sort((a, b) => {
     return Number(
@@ -435,10 +428,6 @@ function descSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
   });
 
   do {
-    if (limit <= 0) {
-      throw new Error('INPUT_LIMIT_EXCEEDED');
-    }
-
     if (utxoSelection.subset.length <= 0) {
       if (isQtyFulfilled(outputAmount, utxoSelection.amount, 0, 0)) {
         throw new Error('MIN_UTXO_ERROR');
@@ -454,8 +443,6 @@ function descSelect(utxoSelection, outputAmount, limit, minUTxOValue) {
       utxo.output().amount(),
       utxoSelection.amount
     );
-
-    limit--;
   } while (
     !isQtyFulfilled(
       outputAmount,
