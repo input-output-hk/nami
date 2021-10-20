@@ -171,7 +171,7 @@ const Wallet = () => {
     getData().then(() => {
       if (!isMounted.current) return;
       txInterval = checkTransactions();
-      accountChangeHandler = onAccountChange(getData);
+      accountChangeHandler = onAccountChange(() => getData());
     });
     return () => {
       clearInterval(txInterval);

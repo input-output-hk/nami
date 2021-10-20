@@ -578,11 +578,21 @@ const Send = () => {
               duration: 5000,
             });
             await updateRecentSentToAddress(address.result);
+          } else if (signedTx === ERROR.fullMempool) {
+            toast({
+              title: 'Transaction failed',
+              description: 'Mempool full. Try again.',
+              status: 'error',
+              duration: 3000,
+              isClosable: true,
+            });
+            ref.current.closeModal();
+            return; // don't go back to home screen. let user try to submit same tx again
           } else
             toast({
               title: 'Transaction failed',
               status: 'error',
-              duration: 5000,
+              duration: 3000,
             });
           ref.current.closeModal();
           setTimeout(() => {
@@ -642,6 +652,7 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
           variant="filled"
           autoComplete="off"
           value={address.result}
+          spellCheck={false}
           onBlur={async (e) => {
             await new Promise((res, rej) => setTimeout(() => res()));
             if (ref.current) {

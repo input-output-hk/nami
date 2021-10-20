@@ -88,6 +88,7 @@ export const ERROR = {
   txNotPossible: 'Transaction not possible',
   storeNotEmpty: 'Storage key is already set',
   onlyOneAccount: 'Only one account exist in the wallet',
+  fullMempool: 'fullMempool',
 };
 
 export const TX = {
