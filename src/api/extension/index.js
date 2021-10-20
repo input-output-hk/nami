@@ -272,21 +272,6 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
     page++;
   }
 
-  // exclude collateral input from overall utxo set
-  if (currentAccount.collateral) {
-    const initialSize = result.length;
-    result = result.filter(
-      (utxo) =>
-        !(
-          utxo.tx_hash === currentAccount.collateral.txHash &&
-          utxo.output_index === currentAccount.collateral.txId
-        )
-    );
-    if (initialSize == result.length) {
-      removeCollateral(); // assume utxo was spent
-    }
-  }
-
   const address = await getAddress();
   let converted = await Promise.all(
     result.map(async (utxo) => await utxoFromJson(utxo, address))
@@ -525,11 +510,23 @@ const harden = (num) => {
   return 0x80000000 + num;
 };
 
+export const bytesAddressToBinary = (bytes) =>
+  bytes.reduce((str, byte) => str + byte.toString(2).padStart(8, '0'), '');
+
 export const isValidAddress = async (address) => {
   await Loader.load();
   const network = await getNetwork();
   try {
     const addr = Loader.Cardano.Address.from_bech32(address);
+    const prefix = bytesAddressToBinary(addr.to_bytes()).slice(0, 4);
+    if (
+      prefix == '0111' ||
+      prefix == '0011' ||
+      prefix == '0001' ||
+      prefix == '0101'
+    ) {
+      return false;
+    }
     if (
       (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
       (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
@@ -741,6 +738,7 @@ export const submitTx = async (tx) => {
       throw { ...TxSendError.Failure, message: result.message };
     else if (result.status_code === 500) throw APIError.InternalError;
     else if (result.status_code === 429) throw TxSendError.Refused;
+    else if (result.status_code === 425) throw ERROR.fullMempool;
     else throw APIError.InvalidRequest;
   }
   return result;
@@ -1065,7 +1063,7 @@ export const updateAccount = async (forceUpdate = false) => {
   await updateTransactions(currentAccount, network);
 
   if (
-    currentAccount[network.id].history.confirmed[0] ===
+    currentAccount[network.id].history.confirmed[0] ==
       currentAccount[network.id].lastUpdate ||
     forceUpdate
   ) {

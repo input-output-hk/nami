@@ -192,13 +192,20 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             toast({
               title: 'Delegation submitted',
               status: 'success',
-              duration: 5000,
+              duration: 4000,
             });
-          else
+          else if (signedTx === ERROR.fullMempool) {
+            toast({
+              title: 'Transaction failed',
+              description: 'Mempool full. Try again.',
+              status: 'error',
+              duration: 3000,
+            });
+          } else
             toast({
               title: 'Transaction failed',
               status: 'error',
-              duration: 5000,
+              duration: 3000,
             });
           delegationRef.current.closeModal();
         }}
@@ -281,13 +288,20 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             toast({
               title: 'Withdrawal submitted',
               status: 'success',
-              duration: 5000,
+              duration: 4000,
             });
-          else
+          else if (signedTx === ERROR.fullMempool) {
             toast({
-              title: 'Transaction failed',
+              title: 'Withdrawal failed',
+              description: 'Mempool full. Try again.',
               status: 'error',
-              duration: 5000,
+              duration: 3000,
+            });
+          } else
+            toast({
+              title: 'Withdrawal failed',
+              status: 'error',
+              duration: 3000,
             });
           withdrawRef.current.closeModal();
         }}
@@ -371,14 +385,21 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             toast({
               title: 'Collateral added',
               status: 'success',
-              duration: 5000,
+              duration: 4000,
             });
             onConfirm();
+          } else if (signedTx === ERROR.fullMempool) {
+            toast({
+              title: 'Transaction failed',
+              description: 'Mempool full. Try again.',
+              status: 'error',
+              duration: 3000,
+            });
           } else
             toast({
               title: 'Transaction failed',
               status: 'error',
-              duration: 5000,
+              duration: 3000,
             });
           collateralRef.current.closeModal();
         }}
@@ -466,7 +487,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                   toast({
                     title: 'Collateral removed',
                     status: 'success',
-                    duration: 5000,
+                    duration: 4000,
                   });
                   onConfirm(true);
                   onCloseCol();

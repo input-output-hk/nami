@@ -1,5 +1,10 @@
 import React from 'react';
-import { getCurrentAccount, getUtxos, signTx } from '../../../api/extension';
+import {
+  bytesAddressToBinary,
+  getCurrentAccount,
+  getUtxos,
+  signTx,
+} from '../../../api/extension';
 import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
@@ -69,18 +74,28 @@ const SignTx = ({ request, controller }) => {
     const minting = tx.body().multiassets();
     const script = tx.witness_set().native_scripts();
     let datum;
+    let contract = tx.body().script_data_hash();
     const outputs = tx.body().outputs();
     for (let i = 0; i < outputs.len(); i++) {
       const output = outputs.get(i);
       if (output.data_hash()) {
         datum = true;
+        const prefix = bytesAddressToBinary(output.address().to_bytes()).slice(
+          0,
+          4
+        );
+        // from cardano ledger specs; if any of these prefixes match then it means the payment credential is a script hash, so it's a contract address
+        if (
+          prefix == '0111' ||
+          prefix == '0011' ||
+          prefix == '0001' ||
+          prefix == '0101'
+        ) {
+          contract = true;
+        }
         break;
       }
     }
-    const contract =
-      tx.witness_set().plutus_data() ||
-      tx.witness_set().redeemers() ||
-      tx.witness_set().plutus_scripts();
 
     setProperty({
       metadata,
