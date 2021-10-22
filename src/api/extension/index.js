@@ -272,6 +272,17 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
     page++;
   }
 
+  // exclude collateral input from overall utxo set
+  if (currentAccount.collateral) {
+    result = result.filter(
+      (utxo) =>
+        !(
+          utxo.tx_hash === currentAccount.collateral.txHash &&
+          utxo.output_index === currentAccount.collateral.txId
+        )
+    );
+  }
+
   const address = await getAddress();
   let converted = await Promise.all(
     result.map(async (utxo) => await utxoFromJson(utxo, address))
