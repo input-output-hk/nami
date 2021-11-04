@@ -1,5 +1,5 @@
 import React from 'react';
-import { POPUP, POPUP_WINDOW } from '../config/config';
+import { POPUP, POPUP_WINDOW, TAB } from '../config/config';
 import { Scrollbars } from 'react-custom-scrollbars';
 import './app/components/styles.css';
 import Theme from './theme';
@@ -7,6 +7,7 @@ import StoreProvider from './store';
 import { Box } from '@chakra-ui/react';
 
 const isMain = window.document.querySelector(`#${POPUP.main}`);
+const isTab = window.document.querySelector(`#${TAB.hw}`);
 
 const Main = ({ children }) => {
   React.useEffect(() => {
@@ -15,7 +16,7 @@ const Main = ({ children }) => {
       (e) => e.key === 'Escape' && e.preventDefault()
     );
     // Windows is somehow not opening the popup with the right size. Dynamically changing it, fixes it for now:
-    if (navigator.userAgent.indexOf('Win') != -1 && !isMain) {
+    if (navigator.userAgent.indexOf('Win') != -1 && !isMain && !isTab) {
       const width =
         POPUP_WINDOW.width + (window.outerWidth - window.innerWidth);
       const height =
@@ -30,10 +31,7 @@ const Main = ({ children }) => {
     >
       <Theme>
         <StoreProvider>
-          <Scrollbars
-            style={{ width: POPUP_WINDOW.width, height: POPUP_WINDOW.height }}
-            autoHide
-          >
+          <Scrollbars style={{ width: '100vw', height: '100vh' }} autoHide>
             {children}
           </Scrollbars>
         </StoreProvider>

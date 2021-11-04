@@ -6,6 +6,7 @@ import {
   buildTx,
   signAndSubmit,
   withdrawalTx,
+  signAndSubmitHW,
 } from '../../../api/extension/wallet';
 import ConfirmModal from './confirmModal';
 import UnitDisplay from './unitDisplay';
@@ -30,6 +31,7 @@ import { useStoreState } from 'easy-peasy';
 import Loader from '../../../api/loader';
 import {
   getUtxos,
+  isHW,
   removeCollateral,
   setCollateral,
   toUnit,
@@ -57,6 +59,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
   const delegationRef = React.useRef();
   const withdrawRef = React.useRef();
   const collateralRef = React.useRef();
+  const accountIndex = React.useRef();
   React.useImperativeHandle(ref, () => ({
     async initDelegation(account, delegation) {
       if (
@@ -72,7 +75,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ready: false,
         error: '',
       });
-      delegationRef.current.openModal();
+      delegationRef.current.openModal(account.index);
       const protocolParameters = await initTx();
       const checkTx = async (count) => {
         if (count >= 5) {
@@ -110,7 +113,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ready: false,
         error: '',
       });
-      withdrawRef.current.openModal();
+      withdrawRef.current.openModal(account.index);
       const protocolParameters = await initTx();
       try {
         const tx = await withdrawalTx(account, delegation, protocolParameters);
@@ -140,7 +143,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         onOpenCol();
         return;
       }
-      collateralRef.current.openModal();
+      collateralRef.current.openModal(account.index);
       const protocolParameters = await initTx();
       const utxos = await getUtxos();
       await Loader.load();
@@ -174,8 +177,17 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       <ConfirmModal
         ready={data.ready}
         title="Delegate to Berry"
-        sign={(password) =>
-          signAndSubmit(
+        sign={async (password, hw) => {
+          if (hw)
+            return await signAndSubmitHW(data.tx, {
+              keyHashes: [
+                data.account.paymentKeyHash,
+                data.account.stakeKeyHash,
+              ],
+              account: data.account,
+              hw,
+            });
+          return await signAndSubmit(
             data.tx,
             {
               keyHashes: [
@@ -185,8 +197,8 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               accountIndex: data.account.index,
             },
             password
-          )
-        }
+          );
+        }}
         onConfirm={(status, signedTx) => {
           if (status === true)
             toast({
@@ -270,8 +282,17 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ref={delegationRef}
       />
       <ConfirmModal
-        sign={(password) =>
-          signAndSubmit(
+        sign={async (password, hw) => {
+          if (hw)
+            return await signAndSubmitHW(data.tx, {
+              keyHashes: [
+                data.account.paymentKeyHash,
+                data.account.stakeKeyHash,
+              ],
+              account: data.account,
+              hw,
+            });
+          return await signAndSubmit(
             data.tx,
             {
               keyHashes: [
@@ -281,8 +302,8 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               accountIndex: data.account.index,
             },
             password
-          )
-        }
+          );
+        }}
         onConfirm={(status, signedTx) => {
           if (status === true)
             toast({
@@ -327,10 +348,6 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <Text fontSize="md" color="green.500" fontWeight="bold">
-                    Rewards:{' '}
-                  </Text>
-                  <Box w="1" />
                   <UnitDisplay
                     fontSize="md"
                     fontWeight="bold"
@@ -359,22 +376,28 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ref={withdrawRef}
       />
       <ConfirmModal
-        ready={data.ready}
+        ready={data.ready && !isHW(data.account.index)} // TODO plutus not supported yet by HW
         title={
           <Box display="flex" alignItems="center">
             <Icon as={FaRegFileCode} mr="2" /> <Box>Collateral</Box>
           </Box>
         }
-        sign={(password) =>
-          signAndSubmit(
+        sign={async (password, hw) => {
+          if (hw)
+            return await signAndSubmitHW(data.tx, {
+              keyHashes: [data.account.paymentKeyHash],
+              account: data.account,
+              hw,
+            });
+          return await signAndSubmit(
             data.tx,
             {
               keyHashes: [data.account.paymentKeyHash],
               accountIndex: data.account.index,
             },
             password
-          )
-        }
+          );
+        }}
         onConfirm={async (status, signedTx) => {
           if (status === true) {
             await setCollateral({

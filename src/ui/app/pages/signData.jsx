@@ -1,6 +1,6 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { getCurrentAccount, signData } from '../../../api/extension';
+import { getCurrentAccount, isHW, signData } from '../../../api/extension';
 import { Box, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
@@ -15,8 +15,10 @@ const SignData = ({ request, controller }) => {
   const [account, setAccount] = React.useState(null);
   const [payload, setPayload] = React.useState('');
   const [address, setAddress] = React.useState('');
+  const [error, setError] = React.useState('');
   const getAccount = async () => {
     const currentAccount = await getCurrentAccount();
+    if (isHW(currentAccount.index)) setError('HW not supported');
     setAccount(currentAccount);
   };
   const getPayload = async () => {
@@ -90,6 +92,19 @@ const SignData = ({ request, controller }) => {
             Data to be signed with <b>{address}</b> key
           </Text>
         </Box>
+        {error && (
+          <Box
+            bottom="95px"
+            position="absolute"
+            maxWidth="90%"
+            wordBreak="break-all"
+            textAlign="center"
+            fontSize="xs"
+            color="red.300"
+          >
+            {error}
+          </Box>
+        )}
         <Box
           position="absolute"
           width="full"
@@ -110,7 +125,11 @@ const SignData = ({ request, controller }) => {
           >
             Cancel
           </Button>
-          <Button colorScheme="orange" onClick={() => ref.current.openModal()}>
+          <Button
+            isDisabled={error}
+            colorScheme="orange"
+            onClick={() => ref.current.openModal(account.index)}
+          >
             Sign
           </Button>
         </Box>

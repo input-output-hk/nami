@@ -10,6 +10,9 @@ import {
   Spinner,
   Checkbox,
   Input,
+  InputGroup,
+  InputRightElement,
+  Icon,
 } from '@chakra-ui/react';
 import {
   ChevronLeftIcon,
@@ -19,18 +22,22 @@ import {
 } from '@chakra-ui/icons';
 import React from 'react';
 import {
+  getCurrentAccount,
   getWhitelisted,
   removeWhitelisted,
   resetStorage,
+  setAccountName,
 } from '../../../api/extension';
 import Account from '../components/account';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { NETWORK_ID, NODE } from '../../../config/config';
 import ConfirmModal from '../components/confirmModal';
 import { useStoreState, useStoreActions } from 'easy-peasy';
+import { MdModeEdit } from 'react-icons/md';
 
 const Settings = () => {
   const history = useHistory();
+  const accountRef = React.useRef();
   return (
     <>
       <Box
@@ -40,7 +47,7 @@ const Settings = () => {
         flexDirection="column"
         position="relative"
       >
-        <Account />
+        <Account ref={accountRef} />
         <Box position="absolute" top="24" left="6">
           <IconButton
             rounded="md"
@@ -52,7 +59,11 @@ const Settings = () => {
 
         <Switch>
           <Route exact path="/settings" component={Overview} />
-          <Route exact path="/settings/general" component={GeneralSettings} />
+          <Route
+            exact
+            path="/settings/general"
+            component={() => GeneralSettings({ accountRef })}
+          />
           <Route exact path="/settings/whitelisted" component={Whitelisted} />
           <Route exact path="/settings/network" component={Network} />
         </Switch>
@@ -110,13 +121,29 @@ const Overview = () => {
   );
 };
 
-const GeneralSettings = () => {
+const GeneralSettings = ({ accountRef }) => {
   const settings = useStoreState((state) => state.settings.settings);
   const setSettings = useStoreActions(
     (actions) => actions.settings.setSettings
   );
-  const { toggleColorMode } = useColorMode();
+  const [name, setName] = React.useState('');
+  const [originalName, setOriginalName] = React.useState('');
+  const { colorMode, toggleColorMode } = useColorMode();
   const ref = React.useRef();
+
+  const handler = async () => {
+    await setAccountName(name);
+    setOriginalName(name);
+    accountRef.current.updateAccount();
+  };
+
+  React.useEffect(() => {
+    getCurrentAccount().then((account) => {
+      setOriginalName(account.name);
+      setName(account.name);
+    });
+  }, []);
+
   return (
     <>
       <Box height="10" />
@@ -124,14 +151,43 @@ const GeneralSettings = () => {
         General settings
       </Text>
       <Box height="6" />
-      <IconButton
+      <InputGroup size="md" width="210px">
+        <Input
+          onKeyDown={(e) => {
+            if (e.key == 'Enter' && name.length > 0 && name != originalName)
+              handler();
+          }}
+          placeholder="Change name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          pr="4.5rem"
+        />
+        <InputRightElement width="4.5rem">
+          {name == originalName ? (
+            <Icon mr="-4" as={MdModeEdit} />
+          ) : (
+            <Button
+              isDisabled={name.length <= 0}
+              h="1.75rem"
+              size="sm"
+              onClick={handler}
+            >
+              Apply
+            </Button>
+          )}
+        </InputRightElement>
+      </InputGroup>
+      <Box height="6" />
+      <Button
         size="sm"
         rounded="md"
         onClick={() => {
           toggleColorMode();
         }}
-        icon={<SunIcon />}
-      />
+        rightIcon={<SunIcon ml="2" />}
+      >
+        {colorMode == 'dark' ? 'Light' : 'Dark'}
+      </Button>
 
       <Box height="6" />
       <Box display="flex" alignItems="center" justifyContent="center">

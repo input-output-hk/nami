@@ -81,7 +81,8 @@ test('expect error because of wrong password', async () => {
   const password = 'password456';
   expect.assertions(1);
   try {
-    await createAccount(name, password);
+    const index = await createAccount(name, password);
+    await switchAccount(index);
   } catch (e) {
     expect(e).toBe(ERROR.wrongPassword);
   }

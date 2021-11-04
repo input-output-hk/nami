@@ -5,6 +5,8 @@ import {
   getAccounts,
   getCurrentAccount,
   getUtxos,
+  indexToHw,
+  isHW,
   isValidAddress,
   toUnit,
   updateRecentSentToAddress,
@@ -35,7 +37,12 @@ import {
 import MiddleEllipsis from 'react-middle-ellipsis';
 import { Avatar } from '@chakra-ui/avatar';
 import UnitDisplay from '../components/unitDisplay';
-import { buildTx, initTx, signAndSubmit } from '../../../api/extension/wallet';
+import {
+  buildTx,
+  initTx,
+  signAndSubmit,
+  signAndSubmitHW,
+} from '../../../api/extension/wallet';
 import {
   sumUtxos,
   valueToAssets,
@@ -545,7 +552,7 @@ const Send = () => {
               <Button
                 isDisabled={!tx || fee.error}
                 colorScheme="orange"
-                onClick={() => ref.current.openModal()}
+                onClick={() => ref.current.openModal(account.current.index)}
                 rightIcon={<Icon as={BsArrowUpRight} />}
               >
                 Send
@@ -556,19 +563,26 @@ const Send = () => {
       </Box>
       <ConfirmModal
         ref={ref}
-        sign={async (password) => {
+        sign={async (password, hw) => {
           await Loader.load();
           const txDes = Loader.Cardano.Transaction.from_bytes(
             Buffer.from(tx, 'hex')
           );
-          return await signAndSubmit(
-            txDes,
-            {
-              accountIndex: account.current.index,
+          if (hw)
+            return await signAndSubmitHW(txDes, {
               keyHashes: [account.current.paymentKeyHash],
-            },
-            password
-          );
+              account: account.current,
+              hw,
+            });
+          else
+            return await signAndSubmit(
+              txDes,
+              {
+                accountIndex: account.current.index,
+                keyHashes: [account.current.paymentKeyHash],
+              },
+              password
+            );
         }}
         onConfirm={async (status, signedTx) => {
           if (status === true) {

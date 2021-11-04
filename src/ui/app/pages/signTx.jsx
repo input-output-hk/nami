@@ -4,6 +4,7 @@ import {
   getCurrentAccount,
   getUtxos,
   signTx,
+  signTxHW,
 } from '../../../api/extension';
 import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
@@ -260,11 +261,6 @@ const SignTx = ({ request, controller }) => {
             requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 3) {
-          const credential = cert
-            .as_pool_registration()
-            .pool_params()
-            .pool_owners();
-
           const owners = cert
             .as_pool_registration()
             .pool_params()
@@ -652,7 +648,7 @@ const SignTx = ({ request, controller }) => {
           <Button
             isDisabled={isLoading.loading || isLoading.error}
             colorScheme="orange"
-            onClick={() => ref.current.openModal()}
+            onClick={() => ref.current.openModal(account.index)}
           >
             Sign
           </Button>
@@ -660,15 +656,24 @@ const SignTx = ({ request, controller }) => {
       </Box>
       <ConfirmModal
         ref={ref}
-        sign={(password) =>
-          signTx(
+        sign={async (password, hw) => {
+          if (hw) {
+            return await signTxHW(
+              request.data.tx,
+              keyHashes.key,
+              account,
+              hw,
+              request.data.partialSign
+            );
+          }
+          return await signTx(
             request.data.tx,
             keyHashes.key,
             password,
             account.index,
             request.data.partialSign
-          )
-        }
+          );
+        }}
         onConfirm={async (status, signedTx) => {
           if (status === true)
             await controller.returnData({

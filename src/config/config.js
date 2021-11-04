@@ -74,6 +74,15 @@ export const POPUP = {
   internal: 'internalPopup',
 };
 
+export const TAB = {
+  hw: 'hwTab',
+};
+
+export const HW = {
+  trezor: 'trezor',
+  ledger: 'ledger',
+};
+
 export const POPUP_WINDOW = {
   top: 50,
   left: 100,
@@ -89,6 +98,7 @@ export const ERROR = {
   storeNotEmpty: 'Storage key is already set',
   onlyOneAccount: 'Only one account exist in the wallet',
   fullMempool: 'fullMempool',
+  submit: 'submit',
 };
 
 export const TX = {

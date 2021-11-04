@@ -42,6 +42,7 @@ var options = {
   entry: {
     mainPopup: path.join(__dirname, 'src', 'ui', 'indexMain.jsx'),
     internalPopup: path.join(__dirname, 'src', 'ui', 'indexInternal.jsx'),
+    hwTab: path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'hw.jsx'),
     background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
     contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
     injected: path.join(__dirname, 'src', 'pages', 'Content', 'injected.js'),
@@ -108,7 +109,7 @@ var options = {
             loader: 'babel-loader',
           },
         ],
-        exclude: /node_modules/,
+        exclude: [/node_modules/, /temporary_modules/],
       },
     ],
   },
@@ -165,6 +166,14 @@ var options = {
         },
       ],
     }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'src/pages/Trezor',
+          to: path.join(__dirname, 'build/Trezor'),
+        },
+      ],
+    }),
     new HtmlWebpackPlugin({
       template: path.join(
         __dirname,
@@ -181,6 +190,12 @@ var options = {
       template: path.join(__dirname, 'src', 'pages', 'Popup', 'mainPopup.html'),
       filename: 'mainPopup.html',
       chunks: ['mainPopup'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Tab', 'hwTab.html'),
+      filename: 'hwTab.html',
+      chunks: ['hwTab'],
       cache: false,
     }),
   ],
