@@ -1,8 +1,21 @@
-import { getCurrentAccount, getUtxos, signTx, submitTx } from '.';
-import { ERROR, EVENT, SENDER, TARGET, TX } from '../../config/config';
+import {
+  getCurrentAccount,
+  getNetwork,
+  getUtxos,
+  signTx,
+  signTxHW,
+  submitTx,
+} from '.';
+import { ERROR, EVENT, HW, SENDER, TARGET, TX } from '../../config/config';
 import Loader from '../loader';
 import CoinSelection from '../../lib/coinSelection';
-import { blockfrostRequest, multiAssetCount, utxoToJson } from '../util';
+import {
+  blockfrostRequest,
+  multiAssetCount,
+  txToLedger,
+  utxoToJson,
+} from '../util';
+import { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 
 export const initTx = async () => {
   const latest_block = await blockfrostRequest('/blocks/latest');
@@ -167,6 +180,32 @@ export const signAndSubmit = async (
     Buffer.from(transaction.to_bytes(), 'hex').toString('hex')
   );
   return txHash;
+};
+
+export const signAndSubmitHW = async (
+  tx,
+  { keyHashes, account, hw, partialSign }
+) => {
+  await Loader.load();
+
+  const witnessSet = await signTxHW(
+    Buffer.from(tx.to_bytes(), 'hex').toString('hex'),
+    keyHashes,
+    account,
+    hw,
+    partialSign
+  );
+
+  const transaction = Loader.Cardano.Transaction.new(tx.body(), witnessSet);
+
+  try {
+    const txHash = await submitTx(
+      Buffer.from(transaction.to_bytes(), 'hex').toString('hex')
+    );
+    return txHash;
+  } catch (e) {
+    throw ERROR.submit;
+  }
 };
 
 export const delegationTx = async (account, delegation, protocolParameters) => {

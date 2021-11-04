@@ -3,14 +3,18 @@ import { Button } from '@chakra-ui/button';
 import { useHistory } from 'react-router-dom';
 import {
   createAccount,
+  createPopup,
+  createTab,
   deleteAccount,
   displayUnit,
   getAccounts,
   getCurrentAccount,
   getCurrentAccountIndex,
   getDelegation,
+  getNativeAccounts,
   getNetwork,
   getTransactions,
+  isHW,
   setBalanceWarning,
   switchAccount,
   updateAccount,
@@ -66,6 +70,8 @@ import {
   CopyIcon,
   ChevronDownIcon,
   InfoOutlineIcon,
+  SmallCloseIcon,
+  CloseIcon,
 } from '@chakra-ui/icons';
 import Scrollbars from 'react-custom-scrollbars';
 import QrCode from '../components/qrCode';
@@ -80,13 +86,14 @@ import { useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
 import { currencyToSymbol } from '../../../api/util';
 import TransactionBuilder from '../components/transactionBuilder';
-import { NETWORK_ID } from '../../../config/config';
+import { NETWORK_ID, TAB } from '../../../config/config';
 import { BalanceWarning } from '../components/balanceWarning';
 import { FaRegFileCode } from 'react-icons/fa';
 import { BiWallet } from 'react-icons/bi';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
+import { GiUsbKey } from 'react-icons/gi';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -264,7 +271,7 @@ const Wallet = () => {
                   <Scrollbars
                     style={{ width: '100%' }}
                     autoHeight
-                    autoHeightMax={240}
+                    autoHeightMax={210}
                   >
                     {Object.keys(info.accounts).map((accountIndex) => {
                       const accountInfo = info.accounts[accountIndex];
@@ -285,46 +292,78 @@ const Wallet = () => {
                             await switchAccount(accountIndex);
                           }}
                         >
-                          <Stack direction="row" alignItems="center">
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            width="full"
+                          >
                             <Box boxSize="2rem" mr="12px">
                               <AvatarLoader avatar={accountInfo.avatar} />
                             </Box>
 
-                            <Box display="flex" flexDirection="column">
-                              <Box height="1.5" />
-                              <Text
-                                mb="-1"
-                                fontWeight="bold"
-                                fontSize="14px"
-                                isTruncated={true}
-                                maxWidth="210px"
-                              >
-                                {accountInfo.name}
-                              </Text>
-                              <UnitDisplay
-                                quantity={
-                                  account &&
-                                  (
-                                    BigInt(account[state.network.id].lovelace) -
-                                    BigInt(account[state.network.id].minAda) -
-                                    BigInt(
-                                      account[state.network.id].collateral
-                                        ? account[state.network.id].collateral
-                                            .lovelace
-                                        : 0
-                                    )
-                                  ).toString()
-                                }
-                                decimals={6}
-                                symbol={settings.adaSymbol}
-                              />
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              width="full"
+                            >
+                              <Box display="flex" flexDirection="column">
+                                <Box height="1.5" />
+                                <Text
+                                  mb="-1"
+                                  fontWeight="bold"
+                                  fontSize="14px"
+                                  isTruncated={true}
+                                  maxWidth="210px"
+                                >
+                                  {accountInfo.name}
+                                </Text>
+                                {account ? (
+                                  account[state.network.id].lovelace ||
+                                  account[state.network.id].lovelace == 0 ? (
+                                    <UnitDisplay
+                                      quantity={
+                                        account &&
+                                        account[state.network.id].lovelace &&
+                                        (
+                                          BigInt(
+                                            account[state.network.id].lovelace
+                                          ) -
+                                          BigInt(
+                                            account[state.network.id].minAda
+                                          ) -
+                                          BigInt(
+                                            account[state.network.id].collateral
+                                              ? account[state.network.id]
+                                                  .collateral.lovelace
+                                              : 0
+                                          )
+                                        ).toString()
+                                      }
+                                      decimals={6}
+                                      symbol={settings.adaSymbol}
+                                    />
+                                  ) : (
+                                    <Text fontWeight="light">
+                                      Select to load...
+                                    </Text>
+                                  )
+                                ) : (
+                                  <Text>...</Text>
+                                )}
+                              </Box>
+                              {info.currentIndex === accountInfo.index && (
+                                <>
+                                  <Box width="4" />
+                                  <StarIcon />
+                                  <Box width="4" />
+                                </>
+                              )}
+                              {isHW(accountInfo.index) && (
+                                <Box ml="auto" mr="2">
+                                  HW
+                                </Box>
+                              )}
                             </Box>
-                            {info.currentIndex === accountInfo.index && (
-                              <>
-                                <Box width="2" />
-                                <StarIcon />
-                              </>
-                            )}
                           </Stack>
                         </MenuItem>
                       );
@@ -341,8 +380,10 @@ const Wallet = () => {
                 </MenuItem>
                 {state.account &&
                   state.accounts &&
-                  state.account.index >=
-                    Object.keys(state.accounts).length - 1 &&
+                  (isHW(state.account.index) ||
+                    state.account.index >=
+                      Object.keys(getNativeAccounts(state.accounts)).length -
+                        1) &&
                   Object.keys(state.accounts).length > 1 && (
                     <MenuItem
                       color="red.300"
@@ -352,6 +393,12 @@ const Wallet = () => {
                       Delete Account
                     </MenuItem>
                   )}
+                <MenuItem
+                  icon={<Icon as={GiUsbKey} w={3} h={3} />}
+                  onClick={() => createTab(TAB.hw)}
+                >
+                  Connect Hardware Wallet
+                </MenuItem>
                 <MenuDivider />
                 <MenuItem
                   icon={<Icon as={FaRegFileCode} w={3} h={3} />}
@@ -413,6 +460,7 @@ const Wallet = () => {
               fontWeight="bold"
               quantity={
                 state.account &&
+                state.account.lovelace &&
                 (
                   BigInt(state.account.lovelace) -
                   BigInt(state.account.minAda) -
@@ -489,6 +537,7 @@ const Wallet = () => {
               fontSize="md"
               quantity={
                 state.account &&
+                state.account.lovelace &&
                 parseInt(
                   displayUnit(
                     (
@@ -640,7 +689,8 @@ const NewAccountModal = React.forwardRef((props, ref) => {
   const confirmHandler = async () => {
     setIsLoading(true);
     try {
-      await createAccount(state.name, state.password);
+      const index = await createAccount(state.name, state.password);
+      await switchAccount(index);
       onClose();
     } catch (e) {
       setState((s) => ({ ...s, wrongPassword: true }));

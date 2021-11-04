@@ -4,7 +4,8 @@ import v1_1_5 from '../migrations/1.1.5';
 import v1_1_7 from '../migrations/1.1.7';
 import v2_0_0 from '../migrations/2.0.0';
 import v2_1_0 from '../migrations/2.1.0';
-const MIG_SCRIPTS = [v1_1_5, v1_1_7, v2_0_0, v2_1_0];
+import v2_2_0 from '../migrations/2.2.0';
+const MIG_SCRIPTS = [v1_1_5, v1_1_7, v2_0_0, v2_1_0, v2_2_0];
 const { version } = require('../../package.json');
 let pwd = null;
 let migrations = MIG_SCRIPTS.map((migration) => ({

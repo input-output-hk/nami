@@ -3,6 +3,7 @@ import {
   DataSignError,
   ERROR,
   EVENT,
+  HW,
   NETWORK_ID,
   NODE,
   SENDER,
@@ -25,7 +26,12 @@ import {
   assetsToValue,
   valueToAssets,
   sumUtxos,
+  txToLedger,
+  txToTrezor,
 } from '../util';
+import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
+import Ada, { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
+import TrezorConnect from '../../../temporary_modules/trezor-connect';
 
 export const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -475,6 +481,13 @@ export const getAccounts = async () => {
   return accounts;
 };
 
+export const setAccountName = async (name) => {
+  const currentAccountIndex = await getCurrentAccountIndex();
+  const accounts = await getStorage(STORAGE.accounts);
+  accounts[currentAccountIndex].name = name;
+  return await setStorage({ [STORAGE.accounts]: accounts });
+};
+
 export const createPopup = (popup) =>
   new Promise((res, rej) =>
     chrome.tabs.create(
@@ -489,6 +502,27 @@ export const createPopup = (popup) =>
             type: 'popup',
             focused: true,
             ...POPUP_WINDOW,
+          },
+          function () {
+            res(tab);
+          }
+        );
+      }
+    )
+  );
+
+export const createTab = (tab) =>
+  new Promise((res, rej) =>
+    chrome.tabs.create(
+      {
+        url: chrome.runtime.getURL(tab + '.html'),
+        active: true,
+      },
+      function (tab) {
+        chrome.windows.create(
+          {
+            tabId: tab.id,
+            focused: true,
           },
           function () {
             res(tab);
@@ -732,6 +766,125 @@ export const signTx = async (
   return txWitnessSet;
 };
 
+export const signTxHW = async (
+  tx,
+  keyHashes,
+  account,
+  hw,
+  partialSign = false
+) => {
+  await Loader.load();
+  const rawTx = Loader.Cardano.Transaction.from_bytes(Buffer.from(tx, 'hex'));
+  const address = Loader.Cardano.Address.from_bech32(account.paymentAddr);
+  const network = address.network_id();
+  const keys = {
+    payment: { hash: null, path: null },
+    stake: { hash: null, path: null },
+  };
+  if (hw.device === HW.ledger) {
+    const appAda = hw.appAda;
+    keyHashes.forEach((keyHash) => {
+      if (keyHash === account.paymentKeyHash)
+        keys.payment = {
+          hash: keyHash,
+          path: [HARDENED + 1852, HARDENED + 1815, HARDENED + hw.account, 0, 0],
+        };
+      else if (keyHash === account.stakeKeyHash)
+        keys.stake = {
+          hash: keyHash,
+          path: [HARDENED + 1852, HARDENED + 1815, HARDENED + hw.account, 2, 0],
+        };
+      else if (!partialSign) throw TxSignError.ProofGeneration;
+      else return;
+    });
+    const ledgerTx = await txToLedger(
+      rawTx,
+      network,
+      keys,
+      Buffer.from(address.to_bytes()).toString('hex'),
+      hw.account
+    );
+    const result = await appAda.signTransaction(ledgerTx);
+    // getting public keys
+    const witnessSet = Loader.Cardano.TransactionWitnessSet.new();
+    const vkeys = Loader.Cardano.Vkeywitnesses.new();
+    result.witnesses.forEach((witness) => {
+      if (
+        witness.path[3] == 0 // payment key
+      ) {
+        const vkey = Loader.Cardano.Vkey.new(
+          Loader.Cardano.Bip32PublicKey.from_bytes(
+            Buffer.from(account.publicKey, 'hex')
+          )
+            .derive(0)
+            .derive(0)
+            .to_raw_key()
+        );
+        const signature = Loader.Cardano.Ed25519Signature.from_hex(
+          witness.witnessSignatureHex
+        );
+        vkeys.add(Loader.Cardano.Vkeywitness.new(vkey, signature));
+      } else if (
+        witness.path[3] == 2 // stake key
+      ) {
+        const vkey = Loader.Cardano.Vkey.new(
+          Loader.Cardano.Bip32PublicKey.from_bytes(
+            Buffer.from(account.publicKey, 'hex')
+          )
+            .derive(2)
+            .derive(0)
+            .to_raw_key()
+        );
+        const signature = Loader.Cardano.Ed25519Signature.from_hex(
+          witness.witnessSignatureHex
+        );
+        vkeys.add(Loader.Cardano.Vkeywitness.new(vkey, signature));
+      }
+    });
+    witnessSet.set_vkeys(vkeys);
+    return witnessSet;
+  } else {
+    keyHashes.forEach((keyHash) => {
+      if (keyHash === account.paymentKeyHash)
+        keys.payment = {
+          hash: keyHash,
+          path: `m/1852'/1815'/${hw.account}'/0/0`,
+        };
+      else if (keyHash === account.stakeKeyHash)
+        keys.stake = {
+          hash: keyHash,
+          path: `m/1852'/1815'/${hw.account}'/2/0`,
+        };
+      else if (!partialSign) throw TxSignError.ProofGeneration;
+      else return;
+    });
+    const trezorTx = await txToTrezor(
+      rawTx,
+      network,
+      keys,
+      Buffer.from(address.to_bytes()).toString('hex'),
+      hw.account
+    );
+    console.log(trezorTx);
+    const result = await TrezorConnect.cardanoSignTransaction(trezorTx);
+    if (!result.success) throw new Error('Trezor could not sign tx');
+    // getting public keys
+    const witnessSet = Loader.Cardano.TransactionWitnessSet.new();
+    const vkeys = Loader.Cardano.Vkeywitnesses.new();
+    result.payload.witnesses.forEach((witness) => {
+      const vkey = Loader.Cardano.Vkey.new(
+        Loader.Cardano.PublicKey.from_bytes(Buffer.from(witness.pubKey, 'hex'))
+      );
+      const signature = Loader.Cardano.Ed25519Signature.from_hex(
+        witness.signature
+      );
+      vkeys.add(Loader.Cardano.Vkeywitness.new(vkey, signature));
+    });
+    witnessSet.set_vkeys(vkeys);
+    return witnessSet;
+  }
+};
+
 /**
  *
  * @param {string} tx - cbor hex string
@@ -851,18 +1004,20 @@ export const resetStorage = async (password) => {
   return true;
 };
 
-export const createAccount = async (name, password) => {
+export const createAccount = async (name, password, accountIndex = null) => {
   await Loader.load();
 
   const existingAccounts = await getStorage(STORAGE.accounts);
 
-  const accountIndex = existingAccounts
-    ? Object.keys(existingAccounts).length
+  const index = accountIndex
+    ? accountIndex
+    : existingAccounts
+    ? Object.keys(getNativeAccounts(existingAccounts)).length
     : 0;
 
   let { accountKey, paymentKey, stakeKey } = await requestAccountKey(
     password,
-    accountIndex
+    index
   );
 
   const publicKey = Buffer.from(accountKey.to_public().as_bytes()).toString(
@@ -888,15 +1043,15 @@ export const createAccount = async (name, password) => {
   ).toString('hex');
 
   const networkDefault = {
-    lovelace: 0,
+    lovelace: null,
     minAda: 0,
     assets: [],
     history: { confirmed: [], details: {} },
   };
 
   const newAccount = {
-    [accountIndex]: {
-      index: accountIndex,
+    [index]: {
+      index,
       publicKey,
       paymentKeyHash,
       stakeKeyHash,
@@ -910,15 +1065,125 @@ export const createAccount = async (name, password) => {
   await setStorage({
     [STORAGE.accounts]: { ...existingAccounts, ...newAccount },
   });
-  await switchAccount(accountIndex);
-  return true;
+  return index;
+};
+
+export const createHWAccounts = async (accounts) => {
+  await Loader.load();
+  const existingAccounts = await getStorage(STORAGE.accounts);
+  accounts.forEach((account) => {
+    const publicKey = Loader.Cardano.Bip32PublicKey.from_bytes(
+      Buffer.from(account.publicKey, 'hex')
+    );
+    const paymentKeyHash = Buffer.from(
+      publicKey.derive(0).derive(0).to_raw_key().hash().to_bytes()
+    ).toString('hex');
+    const stakeKeyHash = Buffer.from(
+      publicKey.derive(2).derive(0).to_raw_key().hash().to_bytes()
+    ).toString('hex');
+
+    const index = account.accountIndex;
+    const name = account.name;
+
+    const networkDefault = {
+      lovelace: null,
+      minAda: 0,
+      assets: [],
+      history: { confirmed: [], details: {} },
+    };
+
+    existingAccounts[index] = {
+      index,
+      publicKey: Buffer.from(publicKey.as_bytes()).toString('hex'),
+      paymentKeyHash,
+      stakeKeyHash,
+      name,
+      [NETWORK_ID.mainnet]: networkDefault,
+      [NETWORK_ID.testnet]: networkDefault,
+      avatar: Math.random().toString(),
+    };
+  });
+  await setStorage({
+    [STORAGE.accounts]: existingAccounts,
+  });
 };
 
 export const deleteAccount = async () => {
-  const accounts = await getStorage(STORAGE.accounts);
+  const storage = await getStorage();
+  const accounts = storage[STORAGE.accounts];
+  const currentIndex = storage[STORAGE.currentAccount];
   if (Object.keys(accounts).length <= 1) throw new Error(ERROR.onlyOneAccount);
-  delete accounts[Object.keys(accounts).length - 1];
+  delete accounts[currentIndex];
   return await setStorage({ [STORAGE.accounts]: accounts });
+};
+
+export const getNativeAccounts = (accounts) => {
+  const nativeAccounts = {};
+  Object.keys(accounts)
+    .filter((accountIndex) => !isHW(accountIndex))
+    .forEach(
+      (accountIndex) => (nativeAccounts[accountIndex] = accounts[accountIndex])
+    );
+  return nativeAccounts;
+};
+
+export const indexToHw = (accountIndex) => ({
+  device: accountIndex.split('-')[0],
+  id: accountIndex.split('-')[1],
+  account: parseInt(accountIndex.split('-')[2]),
+});
+
+export const getHwAccounts = (accounts, { device, id }) => {
+  const hwAccounts = {};
+  Object.keys(accounts)
+    .filter(
+      (accountIndex) =>
+        isHW(accountIndex) &&
+        indexToHw(accountIndex).device == device &&
+        indexToHw(accountIndex).id == id
+    )
+    .forEach(
+      (accountIndex) => (hwAccounts[accountIndex] = accounts[accountIndex])
+    );
+  return hwAccounts;
+};
+
+export const isHW = (accountIndex) =>
+  (accountIndex != null || accountIndex != undefined || accountIndex != 0) &&
+  typeof accountIndex !== 'number' &&
+  (accountIndex.startsWith(HW.trezor) || accountIndex.startsWith(HW.ledger));
+
+export const initHW = async ({ device, id }) => {
+  if (device == HW.ledger) {
+    const foundDevice = await new Promise((res, rej) =>
+      navigator.usb
+        .getDevices()
+        .then((devices) =>
+          res(
+            devices.find(
+              (device) =>
+                device.productId == id && device.manufacturerName === 'Ledger'
+            )
+          )
+        )
+    );
+    const transport = await TransportWebUSB.open(foundDevice);
+    const appAda = new Ada(transport);
+    await appAda.getVersion(); // check if Ledger has Cardano app opened
+    return appAda;
+  } else if (device == HW.trezor) {
+    const url = 'chrome-extension://ofpgiphffndmmcnflcejdgoiddccffom/Trezor/';
+    try {
+      await TrezorConnect.init({
+        connectSrc: url,
+        webusb: true,
+        manifest: {
+          email: 'namiwallet.cardano@gmail.com',
+          appUrl: 'http://namiwallet.io',
+        },
+      });
+    } catch (e) {}
+  }
 };
 
 export const createWallet = async (name, seedPhrase, password) => {
@@ -950,8 +1215,39 @@ export const createWallet = async (name, seedPhrase, password) => {
     [STORAGE.currency]: 'usd',
   });
 
-  await createAccount(name, password);
+  const index = await createAccount(name, password);
+
+  //check for sub accounts
+  let searchIndex = 1;
+  while (true) {
+    let { paymentKey, stakeKey } = await requestAccountKey(
+      password,
+      searchIndex
+    );
+    const paymentKeyHash = paymentKey.to_public().hash();
+    const stakeKeyHash = stakeKey.to_public().hash();
+    paymentKey.free();
+    stakeKey.free();
+    paymentKey = null;
+    stakeKey = null;
+    const paymentAddr = Loader.Cardano.BaseAddress.new(
+      Loader.Cardano.NetworkInfo.mainnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHash),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
+    )
+      .to_address()
+      .to_bech32();
+    const transactions = await blockfrostRequest(
+      `/addresses/${paymentAddr}/transactions`
+    );
+    if (transactions && !transactions.error && transactions.length >= 1)
+      createAccount(`Account ${searchIndex}`, password, searchIndex);
+    else break;
+    searchIndex++;
+  }
+
   password = null;
+  await switchAccount(index);
 
   return true;
 };
@@ -1078,6 +1374,15 @@ export const updateAccount = async (forceUpdate = false) => {
       currentAccount[network.id].lastUpdate ||
     forceUpdate
   ) {
+    if (currentAccount[network.id].lovelace == null) {
+      // first initilization of account
+      currentAccount[network.id].lovelace = '0';
+      await setStorage({
+        [STORAGE.accounts]: {
+          ...accounts,
+        },
+      });
+    }
     return;
   }
 

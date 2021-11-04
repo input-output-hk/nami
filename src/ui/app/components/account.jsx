@@ -6,13 +6,22 @@ import Logo from '../../../assets/img/logoWhite.svg';
 import { Image, useColorModeValue } from '@chakra-ui/react';
 import AvatarLoader from './avatarLoader';
 
-const Account = () => {
+const Account = React.forwardRef((props, ref) => {
   const avatarBg = useColorModeValue('white', 'gray.700');
   const panelBg = useColorModeValue('teal.400', 'gray.800');
   const [account, setAccount] = React.useState(null);
 
-  React.useEffect(() => {
+  const initAccount = () =>
     getCurrentAccount().then((account) => setAccount(account));
+
+  React.useImperativeHandle(ref, () => ({
+    updateAccount() {
+      initAccount();
+    },
+  }));
+
+  React.useEffect(() => {
+    initAccount();
   }, []);
 
   return (
@@ -67,6 +76,6 @@ const Account = () => {
       </Box>
     </Box>
   );
-};
+});
 
 export default Account;
