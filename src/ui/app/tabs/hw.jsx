@@ -350,7 +350,6 @@ const SelectAccounts = ({ data, onConfirm }) => {
               await createHWAccounts(accounts);
               return onConfirm();
             } catch (e) {
-              console.log(e);
               setError('An error occured');
             }
 
