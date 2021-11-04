@@ -276,7 +276,8 @@ const SelectAccounts = ({ data, onConfirm }) => {
               >
                 <Box ml={6} fontWeight="bold">
                   {' '}
-                  Account {accountIndex} {accountIndex == 0 && ' - Default'}
+                  Account {parseInt(accountIndex) + 1}{' '}
+                  {accountIndex == 0 && ' - Default'}
                 </Box>
                 <Checkbox
                   isDisabled={existing[accountIndex]}
@@ -324,7 +325,7 @@ const SelectAccounts = ({ data, onConfirm }) => {
                   ({ publicKeyHex, chainCodeHex }, index) => ({
                     accountIndex: `${HW.ledger}-${id}-${accountIndexes[index]}`,
                     publicKey: publicKeyHex + chainCodeHex,
-                    name: `Ledger ${accountIndexes[index]}`,
+                    name: `Ledger ${parseInt(accountIndexes[index]) + 1}`,
                   })
                 );
               } else if (device == HW.trezor) {
@@ -342,13 +343,14 @@ const SelectAccounts = ({ data, onConfirm }) => {
                 accounts = trezorKeys.payload.map(({ publicKey }, index) => ({
                   accountIndex: `${HW.trezor}-${id}-${accountIndexes[index]}`,
                   publicKey,
-                  name: `Trezor ${accountIndexes[index]}`,
+                  name: `Trezor ${parseInt(accountIndexes[index]) + 1}`,
                 }));
                 trezorRef.current.closeModal();
               }
               await createHWAccounts(accounts);
               return onConfirm();
             } catch (e) {
+              console.log(e);
               setError('An error occured');
             }
 
