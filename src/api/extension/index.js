@@ -865,7 +865,6 @@ export const signTxHW = async (
       Buffer.from(address.to_bytes()).toString('hex'),
       hw.account
     );
-    console.log(trezorTx);
     const result = await TrezorConnect.cardanoSignTransaction(trezorTx);
     if (!result.success) throw new Error('Trezor could not sign tx');
     // getting public keys
