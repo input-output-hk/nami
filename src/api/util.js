@@ -994,7 +994,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     fee,
     ttl,
     certificates: ledgerCertificates,
-    withdrawals,
+    withdrawals: ledgerWithdrawals,
     auxiliaryData,
     validityStartInterval,
     mint: mintBundle,

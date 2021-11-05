@@ -178,7 +178,6 @@ const ConfirmModalHw = ({ props, isOpen, onClose, hw }) => {
       if (hw.device == HW.trezor) ref.current.closeModal();
       await props.onConfirm(true, signedMessage);
     } catch (e) {
-      console.log(e);
       if (hw.device == HW.trezor) ref.current.closeModal();
       if (e === ERROR.submit) props.onConfirm(false, e);
       else setError('An error occured');

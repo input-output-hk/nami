@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A wallet to experience Cardano to the fullest",
   "name": "Nami Wallet",
   "background": { "scripts": ["background.bundle.js"], "persistent": false },
