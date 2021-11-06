@@ -82,13 +82,7 @@ export const currencyToSymbol = (currency) => {
  * @param {string} hex
  * @returns
  */
-export const hexToAscii = (hex) => {
-  var _hex = hex.toString();
-  var str = '';
-  for (var i = 0; i < _hex.length && _hex.substr(i, 2) !== '00'; i += 2)
-    str += String.fromCharCode(parseInt(_hex.substr(i, 2), 16));
-  return str;
-};
+export const hexToAscii = (hex) => Buffer.from(hex, 'hex').toString();
 
 export const networkNameToId = (name) => {
   const names = { [NETWORK_ID.mainnet]: 1, [NETWORK_ID.testnet]: 0 };
