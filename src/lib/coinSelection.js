@@ -186,6 +186,7 @@ import Loader from '../api/loader';
 /**
  * @typedef {Object} ProtocolParameters
  * @property {int} minUTxO
+ * @property {int} coinsPerUtxoWord
  * @property {int} minFeeA
  * @property {int} minFeeB
  * @property {int} maxTxSize
@@ -204,13 +205,21 @@ const CoinSelection = {
   /**
    * Set protocol parameters required by the algorithm
    * @param {string} minUTxO
+   * @param {string} coinsPerUtxoWord
    * @param {string} minFeeA
    * @param {string} minFeeB
    * @param {string} maxTxSize
    */
-  setProtocolParameters: (minUTxO, minFeeA, minFeeB, maxTxSize) => {
+  setProtocolParameters: (
+    minUTxO,
+    coinsPerUtxoWord,
+    minFeeA,
+    minFeeB,
+    maxTxSize
+  ) => {
     protocolParameters = {
       minUTxO: minUTxO,
+      coinsPerUtxoWord: coinsPerUtxoWord,
       minFeeA: minFeeA,
       minFeeB: minFeeB,
       maxTxSize: maxTxSize,
@@ -232,7 +241,7 @@ const CoinSelection = {
     await Loader.load();
 
     const _minUTxOValue =
-      BigInt(outputs.len()) * BigInt(protocolParameters.minUTxO);
+      BigInt(outputs.len()) * BigInt(protocolParameters.minUTxO); // TODO: update use case with coinsPerUtxo instead of minUtxo
 
     /** @type {UTxOSelection} */
     let utxoSelection = {
@@ -292,7 +301,8 @@ const CoinSelection = {
       let minAmount = Loader.Cardano.Value.new(
         Loader.Cardano.min_ada_required(
           change,
-          Loader.Cardano.BigNum.from_str(protocolParameters.minUTxO)
+          false,
+          Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
         )
       );
 
@@ -708,7 +718,8 @@ function isQtyFulfilled(
     let minAmount = Loader.Cardano.Value.new(
       Loader.Cardano.min_ada_required(
         cumulatedAmount,
-        Loader.Cardano.BigNum.from_str(minUTxOValue.toString())
+        false,
+        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
       )
     );
 
