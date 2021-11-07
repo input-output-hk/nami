@@ -73,11 +73,11 @@ export function hash_transaction(tx_body: TransactionBody): TransactionHash;
 export function hash_plutus_data(plutus_data: PlutusData): DataHash;
 /**
 * @param {Redeemers} redeemers
-* @param {LanguageViews} language_views
+* @param {Costmdls} cost_models
 * @param {PlutusList | undefined} datums
 * @returns {ScriptDataHash}
 */
-export function hash_script_data(redeemers: Redeemers, language_views: LanguageViews, datums?: PlutusList): ScriptDataHash;
+export function hash_script_data(redeemers: Redeemers, cost_models: Costmdls, datums?: PlutusList): ScriptDataHash;
 /**
 * @param {TransactionBody} txbody
 * @param {BigNum} pool_deposit
@@ -94,19 +94,32 @@ export function get_implicit_input(txbody: TransactionBody, pool_deposit: BigNum
 export function get_deposit(txbody: TransactionBody, pool_deposit: BigNum, key_deposit: BigNum): BigNum;
 /**
 * @param {Value} assets
-* @param {BigNum} minimum_utxo_val
-* @param {DataHash | undefined} data_hash
+* @param {boolean} has_data_hash
+* @param {BigNum} coins_per_utxo_word
 * @returns {BigNum}
 */
-export function min_ada_required(assets: Value, minimum_utxo_val: BigNum, data_hash?: DataHash): BigNum;
+export function min_ada_required(assets: Value, has_data_hash: boolean, coins_per_utxo_word: BigNum): BigNum;
+/**
+* Receives a script JSON string
+* and returns a NativeScript.
+* Cardano Wallet and Node styles are supported.
+*
+* * wallet: https://github.com/input-output-hk/cardano-wallet/blob/master/specifications/api/swagger.yaml
+* * node: https://github.com/input-output-hk/cardano-node/blob/master/doc/reference/simple-scripts.md
+*
+* self_xpub is expected to be a Bip32PublicKey as hex-encoded bytes
+* @param {string} json
+* @param {string} self_xpub
+* @param {number} schema
+* @returns {NativeScript}
+*/
+export function encode_json_str_to_native_script(json: string, self_xpub: string, schema: number): NativeScript;
 /**
 * @param {Transaction} tx
 * @param {LinearFee} linear_fee
-* @param {number} mem_price
-* @param {number} step_price
 * @returns {BigNum}
 */
-export function min_fee(tx: Transaction, linear_fee: LinearFee, mem_price: number, step_price: number): BigNum;
+export function min_fee(tx: Transaction, linear_fee: LinearFee): BigNum;
 /**
 */
 export enum CertificateKind {
@@ -177,6 +190,19 @@ export enum MetadataJsonSchema {
   NoConversions,
   BasicConversions,
   DetailedSchema,
+}
+/**
+* Used to choosed the schema for a script JSON string
+*/
+export enum ScriptSchema {
+  Wallet,
+  Node,
+}
+/**
+*/
+export enum StakeCredKind {
+  Key,
+  Script,
 }
 /**
 */
@@ -496,15 +522,14 @@ export class BigNum {
 */
   static zero(): BigNum;
 /**
-* @param {BigNum} other
-* @returns {BigNum}
+* @returns {boolean}
 */
-  checked_mul(other: BigNum): BigNum;
+  is_zero(): boolean;
 /**
 * @param {BigNum} other
 * @returns {BigNum}
 */
-  checked_div(other: BigNum): BigNum;
+  checked_mul(other: BigNum): BigNum;
 /**
 * @param {BigNum} other
 * @returns {BigNum}
@@ -1693,29 +1718,6 @@ export class Language {
 }
 /**
 */
-export class LanguageViews {
-  free(): void;
-/**
-* @returns {Uint8Array}
-*/
-  to_bytes(): Uint8Array;
-/**
-* @param {Uint8Array} bytes
-* @returns {LanguageViews}
-*/
-  static from_bytes(bytes: Uint8Array): LanguageViews;
-/**
-* @param {Uint8Array} bytes
-* @returns {LanguageViews}
-*/
-  static new(bytes: Uint8Array): LanguageViews;
-/**
-* @returns {Uint8Array}
-*/
-  bytes(): Uint8Array;
-}
-/**
-*/
 export class Languages {
   free(): void;
 /**
@@ -2116,9 +2118,9 @@ export class NativeScript {
   static from_bytes(bytes: Uint8Array): NativeScript;
 /**
 * @param {number} namespace
-* @returns {Ed25519KeyHash}
+* @returns {ScriptHash}
 */
-  hash(namespace: number): Ed25519KeyHash;
+  hash(namespace: number): ScriptHash;
 /**
 * @param {ScriptPubkey} script_pubkey
 * @returns {NativeScript}
@@ -2738,6 +2740,19 @@ export class PrivateKey {
 * @returns {PrivateKey}
 */
   static generate_ed25519extended(): PrivateKey;
+/**
+* Get private key from its bech32 representation
+* ```javascript
+* PrivateKey.from_bech32(&#39;ed25519_sk1ahfetf02qwwg4dkq7mgp4a25lx5vh9920cr5wnxmpzz9906qvm8qwvlts0&#39;);
+* ```
+* For an extended 25519 key
+* ```javascript
+* PrivateKey.from_bech32(&#39;ed25519e_sk1gqwl4szuwwh6d0yk3nsqcc6xxc3fpvjlevgwvt60df59v8zd8f8prazt8ln3lmz096ux3xvhhvm3ca9wj2yctdh3pnw0szrma07rt5gl748fp&#39;);
+* ```
+* @param {string} bech32_str
+* @returns {PrivateKey}
+*/
+  static from_bech32(bech32_str: string): PrivateKey;
 /**
 * @returns {string}
 */
@@ -3818,13 +3833,13 @@ export class Transaction {
 */
   is_valid(): boolean;
 /**
-* @param {boolean} valid
-*/
-  set_is_valid(valid: boolean): void;
-/**
 * @returns {AuxiliaryData | undefined}
 */
   auxiliary_data(): AuxiliaryData | undefined;
+/**
+* @param {boolean} valid
+*/
+  set_is_valid(valid: boolean): void;
 /**
 * @param {TransactionBody} body
 * @param {TransactionWitnessSet} witness_set
@@ -4049,47 +4064,23 @@ export class TransactionBuilder {
 */
   set_withdrawals(withdrawals: Withdrawals): void;
 /**
-* @param {TransactionInputs} collateral
-*/
-  set_collateral(collateral: TransactionInputs): void;
-/**
-* @param {PlutusList} plutus_data
-*/
-  set_plutus_data(plutus_data: PlutusList): void;
-/**
-* @param {Redeemers} redeemers
-*/
-  set_redeemers(redeemers: Redeemers): void;
-/**
-* @param {PlutusScripts} plutus_scripts
-*/
-  set_plutus_scripts(plutus_scripts: PlutusScripts): void;
-/**
-* @param {Ed25519KeyHashes} required_signers
-*/
-  set_required_signers(required_signers: Ed25519KeyHashes): void;
-/**
 * @param {AuxiliaryData} auxiliary_data
 */
   set_auxiliary_data(auxiliary_data: AuxiliaryData): void;
 /**
-* @param {TransactionInput} input
-* @returns {number}
+* @param {boolean} prefer_pure_change
 */
-  index_of_input(input: TransactionInput): number;
+  set_prefer_pure_change(prefer_pure_change: boolean): void;
 /**
 * @param {LinearFee} linear_fee
-* @param {BigNum} minimum_utxo_val
 * @param {BigNum} pool_deposit
 * @param {BigNum} key_deposit
 * @param {number} max_value_size
 * @param {number} max_tx_size
-* @param {number} price_mem
-* @param {number} price_step
-* @param {LanguageViews | undefined} language_views
+* @param {BigNum} coins_per_utxo_word
 * @returns {TransactionBuilder}
 */
-  static new(linear_fee: LinearFee, minimum_utxo_val: BigNum, pool_deposit: BigNum, key_deposit: BigNum, max_value_size: number, max_tx_size: number, price_mem: number, price_step: number, language_views?: LanguageViews): TransactionBuilder;
+  static new(linear_fee: LinearFee, pool_deposit: BigNum, key_deposit: BigNum, max_value_size: number, max_tx_size: number, coins_per_utxo_word: BigNum): TransactionBuilder;
 /**
 * does not include refunds or withdrawals
 * @returns {Value}
@@ -4681,6 +4672,14 @@ export class Value {
 * @returns {Value}
 */
   static new(coin: BigNum): Value;
+/**
+* @returns {Value}
+*/
+  static zero(): Value;
+/**
+* @returns {boolean}
+*/
+  is_zero(): boolean;
 /**
 * @returns {BigNum}
 */

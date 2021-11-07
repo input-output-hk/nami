@@ -320,9 +320,13 @@ export const valueToAssets = async (value) => {
   return assets;
 };
 
-export const minAdaRequired = async (value, minUtxo) => {
+export const minAdaRequired = async (value, coinsPerUtxoWord) => {
   await Loader.load();
-  return Loader.Cardano.min_ada_required(value, minUtxo).to_str();
+  return Loader.Cardano.min_ada_required(
+    value,
+    false,
+    coinsPerUtxoWord
+  ).to_str();
 };
 
 /**
@@ -601,7 +605,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
   }
 
   const trezorTx = {
-    signingMode: CardanoTxSigningMode.ORDINARY_TRANSACTION,
+    signingMode,
     inputs: trezorInputs,
     outputs: trezorOutputs,
     fee,

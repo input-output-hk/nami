@@ -400,20 +400,20 @@ export function hash_plutus_data(plutus_data) {
 
 /**
 * @param {Redeemers} redeemers
-* @param {LanguageViews} language_views
+* @param {Costmdls} cost_models
 * @param {PlutusList | undefined} datums
 * @returns {ScriptDataHash}
 */
-export function hash_script_data(redeemers, language_views, datums) {
+export function hash_script_data(redeemers, cost_models, datums) {
     _assertClass(redeemers, Redeemers);
-    _assertClass(language_views, LanguageViews);
+    _assertClass(cost_models, Costmdls);
     let ptr0 = 0;
     if (!isLikeNone(datums)) {
         _assertClass(datums, PlutusList);
         ptr0 = datums.ptr;
         datums.ptr = 0;
     }
-    var ret = wasm.hash_script_data(redeemers.ptr, language_views.ptr, ptr0);
+    var ret = wasm.hash_script_data(redeemers.ptr, cost_models.ptr, ptr0);
     return ScriptDataHash.__wrap(ret);
 }
 
@@ -447,34 +447,49 @@ export function get_deposit(txbody, pool_deposit, key_deposit) {
 
 /**
 * @param {Value} assets
-* @param {BigNum} minimum_utxo_val
-* @param {DataHash | undefined} data_hash
+* @param {boolean} has_data_hash
+* @param {BigNum} coins_per_utxo_word
 * @returns {BigNum}
 */
-export function min_ada_required(assets, minimum_utxo_val, data_hash) {
+export function min_ada_required(assets, has_data_hash, coins_per_utxo_word) {
     _assertClass(assets, Value);
-    _assertClass(minimum_utxo_val, BigNum);
-    let ptr0 = 0;
-    if (!isLikeNone(data_hash)) {
-        _assertClass(data_hash, DataHash);
-        ptr0 = data_hash.ptr;
-        data_hash.ptr = 0;
-    }
-    var ret = wasm.min_ada_required(assets.ptr, minimum_utxo_val.ptr, ptr0);
+    _assertClass(coins_per_utxo_word, BigNum);
+    var ret = wasm.min_ada_required(assets.ptr, has_data_hash, coins_per_utxo_word.ptr);
     return BigNum.__wrap(ret);
+}
+
+/**
+* Receives a script JSON string
+* and returns a NativeScript.
+* Cardano Wallet and Node styles are supported.
+*
+* * wallet: https://github.com/input-output-hk/cardano-wallet/blob/master/specifications/api/swagger.yaml
+* * node: https://github.com/input-output-hk/cardano-node/blob/master/doc/reference/simple-scripts.md
+*
+* self_xpub is expected to be a Bip32PublicKey as hex-encoded bytes
+* @param {string} json
+* @param {string} self_xpub
+* @param {number} schema
+* @returns {NativeScript}
+*/
+export function encode_json_str_to_native_script(json, self_xpub, schema) {
+    var ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    var ptr1 = passStringToWasm0(self_xpub, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    var ret = wasm.encode_json_str_to_native_script(ptr0, len0, ptr1, len1, schema);
+    return NativeScript.__wrap(ret);
 }
 
 /**
 * @param {Transaction} tx
 * @param {LinearFee} linear_fee
-* @param {number} mem_price
-* @param {number} step_price
 * @returns {BigNum}
 */
-export function min_fee(tx, linear_fee, mem_price, step_price) {
+export function min_fee(tx, linear_fee) {
     _assertClass(tx, Transaction);
     _assertClass(linear_fee, LinearFee);
-    var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, mem_price, step_price);
+    var ret = wasm.min_fee(tx.ptr, linear_fee.ptr);
     return BigNum.__wrap(ret);
 }
 
@@ -509,6 +524,13 @@ export const TransactionMetadatumKind = Object.freeze({ MetadataMap:0,"0":"Metad
 /**
 */
 export const MetadataJsonSchema = Object.freeze({ NoConversions:0,"0":"NoConversions",BasicConversions:1,"1":"BasicConversions",DetailedSchema:2,"2":"DetailedSchema", });
+/**
+* Used to choosed the schema for a script JSON string
+*/
+export const ScriptSchema = Object.freeze({ Wallet:0,"0":"Wallet",Node:1,"1":"Node", });
+/**
+*/
+export const StakeCredKind = Object.freeze({ Key:0,"0":"Key",Script:1,"1":"Script", });
 /**
 */
 export const LanguageKind = Object.freeze({ PlutusV1:0,"0":"PlutusV1", });
@@ -1318,21 +1340,19 @@ export class BigNum {
         return BigNum.__wrap(ret);
     }
     /**
+    * @returns {boolean}
+    */
+    is_zero() {
+        var ret = wasm.bignum_is_zero(this.ptr);
+        return ret !== 0;
+    }
+    /**
     * @param {BigNum} other
     * @returns {BigNum}
     */
     checked_mul(other) {
         _assertClass(other, BigNum);
         var ret = wasm.bignum_checked_mul(this.ptr, other.ptr);
-        return BigNum.__wrap(ret);
-    }
-    /**
-    * @param {BigNum} other
-    * @returns {BigNum}
-    */
-    checked_div(other) {
-        _assertClass(other, BigNum);
-        var ret = wasm.bignum_checked_div(this.ptr, other.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -4410,81 +4430,6 @@ export class Language {
 }
 /**
 */
-export class LanguageViews {
-
-    static __wrap(ptr) {
-        const obj = Object.create(LanguageViews.prototype);
-        obj.ptr = ptr;
-
-        return obj;
-    }
-
-    __destroy_into_raw() {
-        const ptr = this.ptr;
-        this.ptr = 0;
-
-        return ptr;
-    }
-
-    free() {
-        const ptr = this.__destroy_into_raw();
-        wasm.__wbg_languageviews_free(ptr);
-    }
-    /**
-    * @returns {Uint8Array}
-    */
-    to_bytes() {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.languageviews_to_bytes(retptr, this.ptr);
-            var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            var v0 = getArrayU8FromWasm0(r0, r1).slice();
-            wasm.__wbindgen_free(r0, r1 * 1);
-            return v0;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-    * @param {Uint8Array} bytes
-    * @returns {LanguageViews}
-    */
-    static from_bytes(bytes) {
-        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
-        var len0 = WASM_VECTOR_LEN;
-        var ret = wasm.languageviews_from_bytes(ptr0, len0);
-        return LanguageViews.__wrap(ret);
-    }
-    /**
-    * @param {Uint8Array} bytes
-    * @returns {LanguageViews}
-    */
-    static new(bytes) {
-        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
-        var len0 = WASM_VECTOR_LEN;
-        var ret = wasm.languageviews_new(ptr0, len0);
-        return LanguageViews.__wrap(ret);
-    }
-    /**
-    * @returns {Uint8Array}
-    */
-    bytes() {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.languageviews_bytes(retptr, this.ptr);
-            var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            var v0 = getArrayU8FromWasm0(r0, r1).slice();
-            wasm.__wbindgen_free(r0, r1 * 1);
-            return v0;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-}
-/**
-*/
 export class Languages {
 
     static __wrap(ptr) {
@@ -5490,11 +5435,11 @@ export class NativeScript {
     }
     /**
     * @param {number} namespace
-    * @returns {Ed25519KeyHash}
+    * @returns {ScriptHash}
     */
     hash(namespace) {
         var ret = wasm.nativescript_hash(this.ptr, namespace);
-        return Ed25519KeyHash.__wrap(ret);
+        return ScriptHash.__wrap(ret);
     }
     /**
     * @param {ScriptPubkey} script_pubkey
@@ -7018,6 +6963,24 @@ export class PrivateKey {
     */
     static generate_ed25519extended() {
         var ret = wasm.privatekey_generate_ed25519extended();
+        return PrivateKey.__wrap(ret);
+    }
+    /**
+    * Get private key from its bech32 representation
+    * ```javascript
+    * PrivateKey.from_bech32(&#39;ed25519_sk1ahfetf02qwwg4dkq7mgp4a25lx5vh9920cr5wnxmpzz9906qvm8qwvlts0&#39;);
+    * ```
+    * For an extended 25519 key
+    * ```javascript
+    * PrivateKey.from_bech32(&#39;ed25519e_sk1gqwl4szuwwh6d0yk3nsqcc6xxc3fpvjlevgwvt60df59v8zd8f8prazt8ln3lmz096ux3xvhhvm3ca9wj2yctdh3pnw0szrma07rt5gl748fp&#39;);
+    * ```
+    * @param {string} bech32_str
+    * @returns {PrivateKey}
+    */
+    static from_bech32(bech32_str) {
+        var ptr0 = passStringToWasm0(bech32_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.privatekey_from_bech32(ptr0, len0);
         return PrivateKey.__wrap(ret);
     }
     /**
@@ -9166,7 +9129,7 @@ export class StakeCredential {
     */
     kind() {
         var ret = wasm.stakecredential_kind(this.ptr);
-        return ret;
+        return ret >>> 0;
     }
     /**
     * @returns {Uint8Array}
@@ -9736,17 +9699,17 @@ export class Transaction {
         return ret !== 0;
     }
     /**
-    * @param {boolean} valid
-    */
-    set_is_valid(valid) {
-        wasm.transaction_set_is_valid(this.ptr, valid);
-    }
-    /**
     * @returns {AuxiliaryData | undefined}
     */
     auxiliary_data() {
         var ret = wasm.transaction_auxiliary_data(this.ptr);
         return ret === 0 ? undefined : AuxiliaryData.__wrap(ret);
+    }
+    /**
+    * @param {boolean} valid
+    */
+    set_is_valid(valid) {
+        wasm.transaction_set_is_valid(this.ptr, valid);
     }
     /**
     * @param {TransactionBody} body
@@ -10220,41 +10183,6 @@ export class TransactionBuilder {
         wasm.transactionbuilder_set_withdrawals(this.ptr, withdrawals.ptr);
     }
     /**
-    * @param {TransactionInputs} collateral
-    */
-    set_collateral(collateral) {
-        _assertClass(collateral, TransactionInputs);
-        wasm.transactionbuilder_set_collateral(this.ptr, collateral.ptr);
-    }
-    /**
-    * @param {PlutusList} plutus_data
-    */
-    set_plutus_data(plutus_data) {
-        _assertClass(plutus_data, PlutusList);
-        wasm.transactionbuilder_set_plutus_data(this.ptr, plutus_data.ptr);
-    }
-    /**
-    * @param {Redeemers} redeemers
-    */
-    set_redeemers(redeemers) {
-        _assertClass(redeemers, Redeemers);
-        wasm.transactionbuilder_set_redeemers(this.ptr, redeemers.ptr);
-    }
-    /**
-    * @param {PlutusScripts} plutus_scripts
-    */
-    set_plutus_scripts(plutus_scripts) {
-        _assertClass(plutus_scripts, PlutusScripts);
-        wasm.transactionbuilder_set_plutus_scripts(this.ptr, plutus_scripts.ptr);
-    }
-    /**
-    * @param {Ed25519KeyHashes} required_signers
-    */
-    set_required_signers(required_signers) {
-        _assertClass(required_signers, Ed25519KeyHashes);
-        wasm.transactionbuilder_set_required_signers(this.ptr, required_signers.ptr);
-    }
-    /**
     * @param {AuxiliaryData} auxiliary_data
     */
     set_auxiliary_data(auxiliary_data) {
@@ -10262,38 +10190,26 @@ export class TransactionBuilder {
         wasm.transactionbuilder_set_auxiliary_data(this.ptr, auxiliary_data.ptr);
     }
     /**
-    * @param {TransactionInput} input
-    * @returns {number}
+    * @param {boolean} prefer_pure_change
     */
-    index_of_input(input) {
-        _assertClass(input, TransactionInput);
-        var ret = wasm.transactionbuilder_index_of_input(this.ptr, input.ptr);
-        return ret >>> 0;
+    set_prefer_pure_change(prefer_pure_change) {
+        wasm.transactionbuilder_set_prefer_pure_change(this.ptr, prefer_pure_change);
     }
     /**
     * @param {LinearFee} linear_fee
-    * @param {BigNum} minimum_utxo_val
     * @param {BigNum} pool_deposit
     * @param {BigNum} key_deposit
     * @param {number} max_value_size
     * @param {number} max_tx_size
-    * @param {number} price_mem
-    * @param {number} price_step
-    * @param {LanguageViews | undefined} language_views
+    * @param {BigNum} coins_per_utxo_word
     * @returns {TransactionBuilder}
     */
-    static new(linear_fee, minimum_utxo_val, pool_deposit, key_deposit, max_value_size, max_tx_size, price_mem, price_step, language_views) {
+    static new(linear_fee, pool_deposit, key_deposit, max_value_size, max_tx_size, coins_per_utxo_word) {
         _assertClass(linear_fee, LinearFee);
-        _assertClass(minimum_utxo_val, BigNum);
         _assertClass(pool_deposit, BigNum);
         _assertClass(key_deposit, BigNum);
-        let ptr0 = 0;
-        if (!isLikeNone(language_views)) {
-            _assertClass(language_views, LanguageViews);
-            ptr0 = language_views.ptr;
-            language_views.ptr = 0;
-        }
-        var ret = wasm.transactionbuilder_new(linear_fee.ptr, minimum_utxo_val.ptr, pool_deposit.ptr, key_deposit.ptr, max_value_size, max_tx_size, price_mem, price_step, ptr0);
+        _assertClass(coins_per_utxo_word, BigNum);
+        var ret = wasm.transactionbuilder_new(linear_fee.ptr, pool_deposit.ptr, key_deposit.ptr, max_value_size, max_tx_size, coins_per_utxo_word.ptr);
         return TransactionBuilder.__wrap(ret);
     }
     /**
@@ -11829,6 +11745,20 @@ export class Value {
         _assertClass(coin, BigNum);
         var ret = wasm.value_new(coin.ptr);
         return Value.__wrap(ret);
+    }
+    /**
+    * @returns {Value}
+    */
+    static zero() {
+        var ret = wasm.value_zero();
+        return Value.__wrap(ret);
+    }
+    /**
+    * @returns {boolean}
+    */
+    is_zero() {
+        var ret = wasm.value_is_zero(this.ptr);
+        return ret !== 0;
     }
     /**
     * @returns {BigNum}
