@@ -50,6 +50,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   );
   CoinSelection.setProtocolParameters(
     protocolParameters.minUtxo,
+    protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
     protocolParameters.maxTxSize.toString()
@@ -66,13 +67,11 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
       Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeA),
       Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeB)
     ),
-    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
     Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
     Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit),
     protocolParameters.maxValSize,
     protocolParameters.maxTxSize,
-    protocolParameters.priceMem,
-    protocolParameters.priceStep
+    Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
   );
 
   for (let i = 0; i < inputs.length; i++) {
@@ -134,7 +133,8 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     partialChange.set_multiasset(partialMultiAssets);
     const minAda = Loader.Cardano.min_ada_required(
       partialChange,
-      Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
+      false,
+      Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
     );
     partialChange.set_coin(minAda);
 
@@ -228,6 +228,7 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
   );
   CoinSelection.setProtocolParameters(
     protocolParameters.minUtxo,
+    protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
     protocolParameters.maxTxSize.toString()
@@ -240,13 +241,11 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
       Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeA),
       Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeB)
     ),
-    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
     Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
     Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit),
     protocolParameters.maxValSize,
     protocolParameters.maxTxSize,
-    protocolParameters.priceMem,
-    protocolParameters.priceStep
+    Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
   );
   for (let i = 0; i < inputs.length; i++) {
     const utxo = inputs[i];
@@ -336,7 +335,8 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     partialChange.set_multiasset(partialMultiAssets);
     const minAda = Loader.Cardano.min_ada_required(
       partialChange,
-      Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
+      false,
+      Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
     );
     partialChange.set_coin(minAda);
 
@@ -385,6 +385,7 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
   );
   CoinSelection.setProtocolParameters(
     protocolParameters.minUtxo,
+    protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
     protocolParameters.maxTxSize.toString()
@@ -396,13 +397,11 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
       Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeA),
       Loader.Cardano.BigNum.from_str(protocolParameters.linearFee.minFeeB)
     ),
-    Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo),
     Loader.Cardano.BigNum.from_str(protocolParameters.poolDeposit),
     Loader.Cardano.BigNum.from_str(protocolParameters.keyDeposit),
     protocolParameters.maxValSize,
     protocolParameters.maxTxSize,
-    protocolParameters.priceMem,
-    protocolParameters.priceStep
+    Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
   );
 
   for (let i = 0; i < inputs.length; i++) {
@@ -472,7 +471,8 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     partialChange.set_multiasset(partialMultiAssets);
     const minAda = Loader.Cardano.min_ada_required(
       partialChange,
-      Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
+      false,
+      Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
     );
     partialChange.set_coin(minAda);
 
