@@ -211,7 +211,9 @@ const Send = () => {
       const outputValue = await assetsToValue(output.amount);
       const minAda = await minAdaRequired(
         outputValue,
-        Loader.Cardano.BigNum.from_str(txInfo.protocolParameters.minUtxo)
+        Loader.Cardano.BigNum.from_str(
+          txInfo.protocolParameters.coinsPerUtxoWord
+        )
       );
 
       if (BigInt(minAda) <= BigInt(toUnit(_value.personalAda || '0'))) {
@@ -251,6 +253,7 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
+      console.log(e);
       prepareTx(v, a, count + 1);
     }
   };
@@ -469,6 +472,7 @@ const Send = () => {
                           }, 300);
                         }}
                         onLoad={({ displayName, image }) => {
+                          if (!assets.current[asset.unit]) return;
                           clearTimeout(timer);
                           if (!assets.current[asset.unit].loaded) {
                             assets.current[asset.unit].loaded = true;
@@ -489,6 +493,7 @@ const Send = () => {
                           }, 300);
                         }}
                         onInput={(val) => {
+                          if (!assets.current[asset.unit]) return;
                           clearTimeout(timer);
                           assets.current[asset.unit].input = val;
                           const v = value;

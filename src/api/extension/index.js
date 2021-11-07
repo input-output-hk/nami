@@ -1148,7 +1148,9 @@ export const getHwAccounts = (accounts, { device, id }) => {
 };
 
 export const isHW = (accountIndex) =>
-  (accountIndex != null || accountIndex != undefined || accountIndex != 0) &&
+  accountIndex != null &&
+  accountIndex != undefined &&
+  accountIndex != 0 &&
   typeof accountIndex !== 'number' &&
   (accountIndex.startsWith(HW.trezor) || accountIndex.startsWith(HW.ledger));
 
@@ -1294,7 +1296,8 @@ export const updateBalance = async (currentAccount, network) => {
       const protocolParameters = await initTx();
       const minAda = Loader.Cardano.min_ada_required(
         amount,
-        Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
+        false,
+        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
       ).to_str();
       currentAccount[network.id].minAda = minAda;
     } else {
