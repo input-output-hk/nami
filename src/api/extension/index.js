@@ -1173,7 +1173,7 @@ export const initHW = async ({ device, id }) => {
     await appAda.getVersion(); // check if Ledger has Cardano app opened
     return appAda;
   } else if (device == HW.trezor) {
-    const url = 'chrome-extension://ofpgiphffndmmcnflcejdgoiddccffom/Trezor/';
+    const url = chrome.runtime.getURL('Trezor/');
     try {
       await TrezorConnect.init({
         connectSrc: url,
