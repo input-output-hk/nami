@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lxieyang/chrome-extension-boilerplate-react.git"
+    "url": "https://github.com/Berry-Pool/nami-wallet"
   },
   "scripts": {
     "build": "node utils/build.js",
