@@ -75,7 +75,6 @@ class BackgroundController {
 
   listen = () => {
     chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
-      console.log(request);
       if (request.sender === SENDER.webpage) {
         this._methodList[request.method](request, sendResponse);
       }
