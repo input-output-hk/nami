@@ -21,7 +21,12 @@ import {
 } from '../../../api/extension';
 import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
 
-import { BsArrowDownRight, BsArrowUpRight } from 'react-icons/bs';
+import {
+  BsArrowDownRight,
+  BsArrowUpRight,
+  BsClockHistory,
+  BsFillCollectionFill,
+} from 'react-icons/bs';
 import {
   Icon,
   Image,
@@ -88,12 +93,14 @@ import { currencyToSymbol } from '../../../api/util';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID, TAB } from '../../../config/config';
 import { BalanceWarning } from '../components/balanceWarning';
-import { FaRegFileCode } from 'react-icons/fa';
+import { FaGamepad, FaRegFileCode } from 'react-icons/fa';
 import { BiWallet } from 'react-icons/bi';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
-import { GiUsbKey } from 'react-icons/gi';
+import { GiTwoCoins, GiUsbKey } from 'react-icons/gi';
+import CollectiblesViewer from '../components/collectiblesViewer';
+import { MdVideogameAsset } from 'react-icons/md';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -629,6 +636,7 @@ const Wallet = () => {
           </Box>
         </Box>
         <Box height="8" />
+        {/* <CollectiblesViewer assets={state.account && state.account.assets} /> */}
         <Tabs
           isLazy={true}
           lazyBehavior="unmount"
@@ -640,12 +648,24 @@ const Wallet = () => {
           colorScheme="teal"
         >
           <TabList>
-            <Tab>Assets</Tab>
-            <Tab>History</Tab>
+            <Tab mr={2}>
+              <Icon as={GiTwoCoins} boxSize={5} />
+            </Tab>
+            <Tab mr={2}>
+              <Icon as={FaGamepad} boxSize={5} />
+            </Tab>
+            <Tab>
+              <Icon as={BsClockHistory} boxSize={5} />
+            </Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
               <AssetsViewer assets={state.account && state.account.assets} />
+            </TabPanel>
+            <TabPanel>
+              <CollectiblesViewer
+                assets={state.account && state.account.assets}
+              />
             </TabPanel>
             <TabPanel>
               <HistoryViewer
