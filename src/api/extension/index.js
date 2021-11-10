@@ -488,6 +488,13 @@ export const setAccountName = async (name) => {
   return await setStorage({ [STORAGE.accounts]: accounts });
 };
 
+export const setAccountAvatar = async (avatar) => {
+  const currentAccountIndex = await getCurrentAccountIndex();
+  const accounts = await getStorage(STORAGE.accounts);
+  accounts[currentAccountIndex].avatar = avatar;
+  return await setStorage({ [STORAGE.accounts]: accounts });
+};
+
 export const createPopup = (popup) =>
   new Promise((res, rej) =>
     chrome.tabs.create(
