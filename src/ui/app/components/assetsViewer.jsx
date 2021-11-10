@@ -12,16 +12,11 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react';
-import {
-  ChevronRightIcon,
-  ChevronLeftIcon,
-  SearchIcon,
-  SmallCloseIcon,
-} from '@chakra-ui/icons';
+import { SearchIcon, SmallCloseIcon } from '@chakra-ui/icons';
 import React from 'react';
 import Asset from './asset';
 import { Planet } from 'react-kawaii';
-import Slider from 'react-leaf-carousel';
+import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
 const storedAssets = {};
 
@@ -46,14 +41,8 @@ const AssetsViewer = ({ assets }) => {
           asset.fingerprint.includes(search)
         : true;
     const filteredAssets = assets.filter(filter);
-    while (true) {
-      const sub = filteredAssets.slice(i, i + 8);
-      if (sub.length <= 0) break;
-      assetsArray.push(sub);
-      i += 8;
-    }
     setTotal(filteredAssets.length);
-    setAssetsArray(assetsArray);
+    setAssetsArray(filteredAssets);
   };
   React.useEffect(() => {
     createArray();
@@ -95,56 +84,12 @@ const AssetsViewer = ({ assets }) => {
           </Box>
         ) : (
           <>
-            <Slider
-              prevArrow={
-                <ChevronLeftIcon
-                  zIndex="1"
-                  color="GrayText"
-                  position="absolute"
-                  top="110"
-                  left="0"
-                  boxSize="6"
-                  cursor="pointer"
-                />
-              }
-              nextArrow={
-                <ChevronRightIcon
-                  color="GrayText"
-                  position="absolute"
-                  top="110"
-                  right="0"
-                  boxSize="6"
-                  cursor="pointer"
-                />
-              }
-              sidesOpacity={0.1}
-              sideSize={0.01}
-              slidesToScroll={1}
-              slidesToShow={1}
-              showSided={false}
-              lazyLoad={true}
-              swipe={false}
-              slidesSpacing="0"
-            >
-              {assetsArray.map((_asset, index) => (
-                <AssetsGrid key={index} assets={_asset} />
-              ))}
-            </Slider>
+            <Box textAlign="center" fontSize="sm" opacity={0.4}>
+              {total} {total == 1 ? 'Asset' : 'Assets'}
+            </Box>
+            <Box h="5" />
 
-            {assetsArray.length >= 2 && (
-              <>
-                <Box
-                  width="full"
-                  position="absolute"
-                  bottom="-30px"
-                  color="GrayText"
-                >
-                  <Text fontSize="xs" width="full" textAlign="center">
-                    {total} total
-                  </Text>
-                </Box>
-              </>
-            )}
+            <AssetsGrid assets={assetsArray} />
           </>
         )}
       </Box>
@@ -157,19 +102,33 @@ const AssetsViewer = ({ assets }) => {
 
 const AssetsGrid = ({ assets }) => {
   return (
-    <Box display="flex" alignItems="center" justifyContent="center">
-      <Box width="80%">
-        <SimpleGrid columns={4} spacing={4}>
-          {assets.map((asset, index) => (
-            <Asset
-              key={index}
-              asset={asset}
-              onLoad={(fullAsset) => (storedAssets[fullAsset.unit] = fullAsset)}
-              storedAssets={storedAssets}
-            />
-          ))}
-        </SimpleGrid>
-      </Box>
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      flexDirection="column"
+    >
+      {assets.map((asset, index) => (
+        <Box key={index} width="full">
+          <LazyLoadComponent>
+            <Box
+              width="full"
+              mt={index > 0 && 4}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Asset
+                asset={asset}
+                onLoad={(fullAsset) =>
+                  (storedAssets[fullAsset.unit] = fullAsset)
+                }
+                storedAssets={storedAssets}
+              />
+            </Box>
+          </LazyLoadComponent>
+        </Box>
+      ))}
     </Box>
   );
 };

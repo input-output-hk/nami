@@ -3,9 +3,10 @@ import {
   Avatar,
   Image,
   Skeleton,
-  SkeletonCircle,
   Text,
+  useColorModeValue,
   Button,
+  Collapse,
 } from '@chakra-ui/react';
 import React from 'react';
 import {
@@ -14,6 +15,8 @@ import {
   linkToSrc,
 } from '../../../api/util';
 import AssetPopover from './assetPopover';
+import Copy from './copy';
+import UnitDisplay from './unitDisplay';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -27,6 +30,8 @@ const useIsMounted = () => {
 const Asset = ({ asset, onLoad, storedAssets, port }) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
+  const background = useColorModeValue('gray.100', 'gray.700');
+  const [show, setShow] = React.useState(false);
 
   const fetchMetadata = async () => {
     if (storedAssets[asset.unit]) {
@@ -79,91 +84,80 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
   React.useEffect(() => {
     fetchMetadata();
   }, [asset]);
-  return (
+  return !token ? (
+    <Skeleton width="90%" height="70px" rounded="xl" />
+  ) : (
     <Box
       display="flex"
       alignItems="center"
-      justifyContent="center"
-      flexDirection="column"
-      width="full"
-      height="full"
+      width="90%"
+      rounded="xl"
+      background={background}
+      onClick={() => setShow(!show)}
+      cursor="pointer"
+      overflow="hidden"
     >
-      <AssetPopover asset={token}>
+      <Collapse startingHeight={60} in={show} style={{ width: '100%' }}>
         <Box
-          rounded="lg"
-          overflow="hidden"
-          width="16"
-          height="20"
+          width="100%"
+          height="60px"
           display="flex"
           alignItems="center"
-          justifyContent="center"
-          cursor="pointer"
-          userSelect="none"
+          px={4}
         >
-          {!token ? (
-            <SkeletonCircle size="14" />
-          ) : (
-            <Button
-              style={{
-                all: 'revert',
-                background: 'none',
-                border: 'none',
-                outline: 'none',
-                padding: 0,
-                margin: 0,
-                cursor: 'pointer',
-              }}
-            >
-              <Image
-                width="full"
-                rounded="sm"
-                src={token.image}
-                fallback={
-                  !token.image ? (
-                    <Avatar name={token.name} />
-                  ) : (
-                    <Fallback name={token.name} />
-                  )
-                }
-              />
-            </Button>
-          )}
-        </Box>
-      </AssetPopover>
+          <Box width="50px" height="50px" rounded="full" overflow="hidden">
+            <Image
+              draggable={false}
+              width="full"
+              src={token.image}
+              fallback={
+                !token.image ? (
+                  <Avatar width="full" height="full" name={token.name} />
+                ) : (
+                  <Fallback name={token.name} />
+                )
+              }
+            />
+          </Box>
 
-      <Box
-        width="74px"
-        height="40px"
-        display="flex"
-        alignItems="center"
-        flexDirection="column"
-        justifyContent="center"
-      >
-        {!token ? (
-          <Skeleton height="16px" width="80%" />
-        ) : (
-          <>
-            <Text userSelect="text" fontSize="9" textAlign="center">
-              {token.quantity}
-            </Text>
-            {/* <Box height="1" /> */}
-            <Text
-              fontSize="xs"
-              userSelect="text"
-              className="lineClamp"
-              overflow="hidden"
-              height="40px"
-              maxWidth="74px"
-              fontWeight="semibold"
-              color="GrayText"
-              lineHeight="1.1"
-              textAlign="center"
-            >
-              {token.displayName}
-            </Text>
-          </>
-        )}
-      </Box>
+          <Box w={4} />
+          <Box
+            width="90px"
+            className="lineClamp"
+            fontWeight="bold"
+            overflow="hidden"
+          >
+            {token.displayName}
+          </Box>
+          <Box w={4} />
+          <Box width="120px" textAlign="center">
+            <UnitDisplay quantity={token.quantity} decimals={0} />
+          </Box>
+        </Box>
+        <Box h={4} />
+        <Box px={10} display="flex" width="full" wordBreak="break-all">
+          <Box width="140px" fontWeight="bold" fontSize={12}>
+            Policy
+          </Box>
+          <Box fontSize={10} width="340px" onClick={(e) => e.stopPropagation()}>
+            <Copy label="Copied policy" copy={asset.policy}>
+              {asset.policy}
+            </Copy>
+          </Box>
+        </Box>
+        <Box h={4} />
+        <Box px={10} display="flex" width="full" wordBreak="break-all">
+          <Box width="140px" fontWeight="bold" fontSize={12}>
+            Asset
+          </Box>
+          <Box fontSize={10} width="340px" onClick={(e) => e.stopPropagation()}>
+            <Copy label="Copied asset" copy={asset.fingerprint}>
+              {asset.fingerprint}
+            </Copy>
+          </Box>
+        </Box>
+        <Box h={2} />
+      </Collapse>
     </Box>
   );
 };
@@ -174,7 +168,7 @@ const Fallback = ({ name }) => {
     setTimeout(() => setTimedOut(true), 30000);
   }, []);
   if (timedOut) return <Avatar name={name} />;
-  return <SkeletonCircle size="14" />;
+  return <Skeleton width="full" height="full" />;
 };
 
 export default Asset;

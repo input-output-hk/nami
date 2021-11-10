@@ -4,6 +4,12 @@
   -webkit-box-orient: vertical;
 }
 
+.lineClamp3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
 body::-webkit-scrollbar {
   display: none;
 }

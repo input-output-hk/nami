@@ -636,7 +636,6 @@ const Wallet = () => {
           </Box>
         </Box>
         <Box height="8" />
-        {/* <CollectiblesViewer assets={state.account && state.account.assets} /> */}
         <Tabs
           isLazy={true}
           lazyBehavior="unmount"
