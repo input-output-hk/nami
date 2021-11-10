@@ -19,6 +19,7 @@ import {
   Avatar,
   Image,
   useColorModeValue,
+  Button,
 } from '@chakra-ui/react';
 import { SearchIcon, SmallCloseIcon } from '@chakra-ui/icons';
 import React, { useRef } from 'react';
@@ -27,6 +28,9 @@ import Collectible from './collectible';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import './styles.css';
 import Copy from './copy';
+import { useStoreActions, useStoreState } from 'easy-peasy';
+import { useHistory } from 'react-router-dom';
+import { BsArrowUpRight } from 'react-icons/bs';
 
 const storedAssets = {};
 
@@ -117,6 +121,12 @@ export const CollectibleModal = React.forwardRef((props, ref) => {
   const [asset, setAsset] = React.useState(null);
   const background = useColorModeValue('white', 'gray.800');
   const dividerColor = useColorModeValue('gray.200', 'gray.700');
+  const [value, setValue] = [
+    useStoreState((state) => state.globalModel.sendStore.value),
+    useStoreActions((actions) => actions.globalModel.sendStore.setValue),
+  ];
+  const history = useHistory();
+
   React.useImperativeHandle(ref, () => ({
     openModal(asset) {
       setAsset(asset);
@@ -173,9 +183,24 @@ export const CollectibleModal = React.forwardRef((props, ref) => {
               {asset.displayName}
             </Box>
             <Box w="90%" h="1px" background={dividerColor} my={6} />
-            <Text fontWeight="medium" fontSize={14}>
-              x {asset.quantity}
-            </Text>
+            <Box position="relative" width="full" textAlign="center">
+              <Button
+                position="absolute"
+                right="16px"
+                top="-10px"
+                size="sm"
+                rightIcon={<BsArrowUpRight />}
+                onClick={(e) => {
+                  setValue({ ...value, assets: [asset] });
+                  history.push('/send');
+                }}
+              >
+                Send
+              </Button>
+              <Text fontWeight="medium" fontSize={14}>
+                x {asset.quantity}
+              </Text>
+            </Box>
             <Box h={8} />
             <Box px={10} display="flex" width="full" wordBreak="break-all">
               <Box width="140px" fontWeight="bold" fontSize={14}>
