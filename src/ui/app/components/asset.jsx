@@ -8,15 +8,17 @@ import {
   Button,
   Collapse,
 } from '@chakra-ui/react';
+import { useStoreActions, useStoreState } from 'easy-peasy';
 import React from 'react';
 import {
   blockfrostRequest,
   convertMetadataPropToString,
   linkToSrc,
 } from '../../../api/util';
-import AssetPopover from './assetPopover';
 import Copy from './copy';
 import UnitDisplay from './unitDisplay';
+import { useHistory } from 'react-router-dom';
+import { BsArrowUpRight } from 'react-icons/bs';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -32,6 +34,11 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
   const [token, setToken] = React.useState(null);
   const background = useColorModeValue('gray.100', 'gray.700');
   const [show, setShow] = React.useState(false);
+  const [value, setValue] = [
+    useStoreState((state) => state.globalModel.sendStore.value),
+    useStoreActions((actions) => actions.globalModel.sendStore.setValue),
+  ];
+  const history = useHistory();
 
   const fetchMetadata = async () => {
     if (storedAssets[asset.unit]) {
@@ -155,6 +162,21 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
               {asset.fingerprint}
             </Copy>
           </Box>
+        </Box>
+        <Box h={2} />
+        <Box width="full" display="flex" justifyContent="right">
+          <Button
+            mr="4"
+            background={background == 'gray.100' ? 'gray.200' : 'gray.600'}
+            size="xs"
+            rightIcon={<BsArrowUpRight />}
+            onClick={(e) => {
+              setValue({ ...value, assets: [asset] });
+              history.push('/send');
+            }}
+          >
+            Send
+          </Button>
         </Box>
         <Box h={2} />
       </Collapse>
