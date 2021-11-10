@@ -14,10 +14,10 @@ const UnitDisplay = ({ quantity, decimals, symbol, hide, ...props }) => {
     .split('.')[1];
   return (
     <Box {...props}>
-      {quantity || quantity === 0 ? (
+      {quantity || quantity == 0 ? (
         <>
           {num}
-          {hide && hideZero(subNum).length <= 0 ? '' : '.'}
+          {(hide && hideZero(subNum).length <= 0) || decimals == 0 ? '' : '.'}
           <span style={{ fontSize: '75%' }}>
             {hide ? hideZero(subNum) : subNum}
           </span>{' '}

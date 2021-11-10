@@ -55,6 +55,7 @@
     "react-hot-loader": "^4.13.0",
     "react-icons": "^4.2.0",
     "react-kawaii": "^0.17.0",
+    "react-lazy-load-image-component": "^1.5.1",
     "react-leaf-carousel": "^2.0.3",
     "react-middle-ellipsis": "^1.2.1",
     "react-router-dom": "^5.2.0",
@@ -62,7 +63,7 @@
     "react-syntax-highlighter": "^15.4.3",
     "react-tiger-transition": "^4.1.2",
     "react-time-ago": "^7.0.0",
-    "react-transition-group": "^4.4.1",
+    "react-transition-group": "^4.4.2",
     "react-window": "^1.8.6",
     "styled-components": "^5.3.0",
     "trezor-connect": "^8.2.1"

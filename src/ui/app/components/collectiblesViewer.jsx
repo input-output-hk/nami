@@ -11,16 +11,22 @@ import {
   PopoverTrigger,
   Spinner,
   Text,
+  useDisclosure,
+  Modal,
+  ModalContent,
+  ModalFooter,
+  ModalBody,
+  Avatar,
+  Image,
+  useColorModeValue,
 } from '@chakra-ui/react';
-import {
-  ChevronRightIcon,
-  ChevronLeftIcon,
-  SearchIcon,
-  SmallCloseIcon,
-} from '@chakra-ui/icons';
-import React from 'react';
+import { SearchIcon, SmallCloseIcon } from '@chakra-ui/icons';
+import React, { useRef } from 'react';
 import { Planet } from 'react-kawaii';
 import Collectible from './collectible';
+import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import './styles.css';
+import Copy from './copy';
 
 const storedAssets = {};
 
@@ -28,6 +34,8 @@ const CollectiblesViewer = ({ assets }) => {
   const [assetsArray, setAssetsArray] = React.useState(null);
   const [search, setSearch] = React.useState('');
   const [total, setTotal] = React.useState(0);
+  const ref = useRef();
+
   const createArray = async () => {
     if (!assets) {
       setAssetsArray(null);
@@ -45,14 +53,8 @@ const CollectiblesViewer = ({ assets }) => {
           asset.fingerprint.includes(search)
         : true;
     const filteredAssets = assets.filter(filter);
-    while (true) {
-      const sub = filteredAssets.slice(i, i + 8);
-      if (sub.length <= 0) break;
-      assetsArray.push(sub);
-      i += 8;
-    }
     setTotal(filteredAssets.length);
-    setAssetsArray(assetsArray);
+    setAssetsArray(filteredAssets);
   };
   React.useEffect(() => {
     createArray();
@@ -89,23 +91,123 @@ const CollectiblesViewer = ({ assets }) => {
             <Planet size={80} mood="ko" color="#61DDBC" />
             <Box height="2" />
             <Text fontWeight="bold" color="GrayText">
-              No Assets
+              No Collectibles
             </Text>
           </Box>
         ) : (
           <>
-            <AssetsGrid assets={assets} />
+            <Box textAlign="center" fontSize="sm" opacity={0.4}>
+              {total} {total == 1 ? 'Collectible' : 'Collectibles'}
+            </Box>
+            <Box h="5" />
+            <AssetsGrid assets={assetsArray} ref={ref} />
           </>
         )}
       </Box>
       <Box position="absolute" left="6" top="240px">
         <Search setSearch={setSearch} assets={assets} />
       </Box>
+      <CollectibleModal ref={ref} />
     </>
   );
 };
 
-const AssetsGrid = ({ assets }) => {
+export const CollectibleModal = React.forwardRef((props, ref) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [asset, setAsset] = React.useState(null);
+  const background = useColorModeValue('white', 'gray.800');
+  const dividerColor = useColorModeValue('gray.200', 'gray.700');
+  React.useImperativeHandle(ref, () => ({
+    openModal(asset) {
+      setAsset(asset);
+      onOpen();
+    },
+    closeModal() {
+      onClose();
+    },
+  }));
+  return (
+    <Modal
+      finalFocusRef={document.body}
+      isOpen={isOpen}
+      onClose={onClose}
+      size="full"
+    >
+      {asset && (
+        <ModalContent
+          background={background}
+          onClick={onClose}
+          m={0}
+          rounded="none"
+        >
+          <ModalBody
+            display="flex"
+            alignItems="center"
+            flexDirection="column"
+            mb={6}
+          >
+            <Box h={8} />
+            <Image
+              src={asset.image}
+              height="260px"
+              width="full"
+              objectFit="contain"
+              fallback={
+                <Avatar
+                  rounded="lg"
+                  width="full"
+                  height="260px"
+                  name={asset.name}
+                />
+              }
+            />
+            <Box h={6} />
+            <Box
+              textAlign="center"
+              className="lineClamp"
+              overflow="hidden"
+              fontSize={14}
+              fontWeight="bold"
+              width="75%"
+            >
+              {asset.displayName}
+            </Box>
+            <Box w="90%" h="1px" background={dividerColor} my={6} />
+            <Text fontWeight="medium" fontSize={14}>
+              x {asset.quantity}
+            </Text>
+            <Box h={8} />
+            <Box px={10} display="flex" width="full" wordBreak="break-all">
+              <Box width="140px" fontWeight="bold" fontSize={14}>
+                Policy
+              </Box>
+
+              <Box width="340px" onClick={(e) => e.stopPropagation()}>
+                <Copy label="Copied policy" copy={asset.policy}>
+                  {asset.policy}{' '}
+                </Copy>
+              </Box>
+            </Box>
+            <Box h={6} />
+            <Box px={10} display="flex" width="full" wordBreak="break-all">
+              <Box width="140px" fontWeight="bold" fontSize={14}>
+                Asset
+              </Box>
+
+              <Box width="340px" onClick={(e) => e.stopPropagation()}>
+                <Copy label="Copied asset" copy={asset.fingerprint}>
+                  {asset.fingerprint}
+                </Copy>
+              </Box>
+            </Box>
+          </ModalBody>
+        </ModalContent>
+      )}
+    </Modal>
+  );
+});
+
+const AssetsGrid = React.forwardRef(({ assets }, ref) => {
   return (
     <Box
       width="full"
@@ -115,17 +217,23 @@ const AssetsGrid = ({ assets }) => {
     >
       <SimpleGrid columns={2} spacing={4}>
         {assets.map((asset, index) => (
-          <Collectible
-            key={index}
-            asset={asset}
-            onLoad={(fullAsset) => (storedAssets[fullAsset.unit] = fullAsset)}
-            storedAssets={storedAssets}
-          />
+          <Box key={index}>
+            <LazyLoadComponent>
+              <Collectible
+                ref={ref}
+                asset={asset}
+                onLoad={(fullAsset) =>
+                  (storedAssets[fullAsset.unit] = fullAsset)
+                }
+                storedAssets={storedAssets}
+              />
+            </LazyLoadComponent>
+          </Box>
         ))}
       </SimpleGrid>
     </Box>
   );
-};
+});
 
 const Search = ({ setSearch, assets }) => {
   const [input, setInput] = React.useState('');

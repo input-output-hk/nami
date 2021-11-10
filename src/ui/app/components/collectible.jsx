@@ -1,19 +1,13 @@
 import { Box } from '@chakra-ui/layout';
-import {
-  Avatar,
-  Image,
-  Skeleton,
-  SkeletonCircle,
-  Text,
-  Button,
-} from '@chakra-ui/react';
+import { Avatar, Image, Skeleton, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import {
   blockfrostRequest,
   convertMetadataPropToString,
   linkToSrc,
 } from '../../../api/util';
-import AssetPopover from './assetPopover';
+import './styles.css';
+import { Transition } from 'react-transition-group';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -24,9 +18,11 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const Collectible = ({ asset, onLoad, storedAssets, port }) => {
+const Collectible = React.forwardRef(({ asset, onLoad, storedAssets }, ref) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
+  const background = useColorModeValue('gray.300', 'white');
+  const [showInfo, setShowInfo] = React.useState(false);
 
   const fetchMetadata = async () => {
     if (storedAssets[asset.unit]) {
@@ -80,55 +76,118 @@ const Collectible = ({ asset, onLoad, storedAssets, port }) => {
     fetchMetadata();
   }, [asset]);
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      flexDirection="column"
-      width="160px"
-      height="160px"
-      overflow="hidden"
-      rounded="3xl"
-      _hover={{ background: 'white', opacity: 0.2 }}
-      transition="0.5s"
-    >
+    <>
       <Box
-        // overflow="hidden"
-        width="180%"
+        onClick={() => token && ref.current.openModal(token)}
+        position="relative"
         display="flex"
         alignItems="center"
         justifyContent="center"
+        flexDirection="column"
+        width="160px"
+        height="160px"
+        overflow="hidden"
+        rounded="3xl"
+        background={background}
+        border="solid 1px"
+        borderColor={background}
+        onMouseEnter={() => {
+          setShowInfo(true);
+        }}
+        onMouseLeave={() => setShowInfo(false)}
         cursor="pointer"
         userSelect="none"
       >
-        {!token ? (
-          <SkeletonCircle size="14" />
-        ) : (
-          <Image
-            width="full"
-            rounded="sm"
-            src={token.image}
-            fallback={
-              !token.image ? (
-                <Avatar name={token.name} />
-              ) : (
-                <Fallback name={token.name} />
-              )
-            }
-          />
+        <Box
+          filter={showInfo && 'brightness(0.6)'}
+          width="180%"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          {!token ? (
+            <Skeleton width="210px" height="210px" />
+          ) : (
+            <Image
+              width="full"
+              rounded="sm"
+              src={token.image}
+              fallback={
+                !token.image ? (
+                  <Avatar width="210px" height="210px" name={token.name} />
+                ) : (
+                  <Fallback name={token.name} />
+                )
+              }
+            />
+          )}
+        </Box>
+        {token && (
+          <Box width="full" position="absolute" bottom={0} left={0}>
+            <Transition in={showInfo} timeout={200}>
+              {(state) => {
+                const defaultStyle = {
+                  transition: '0.2s',
+                  bottom: '0',
+                };
+
+                const transitionStyles = {
+                  entering: { bottom: 0 },
+                  entered: { bottom: 0 },
+                  exiting: { bottom: '-130px' },
+                  exited: { bottom: '-130px' },
+                };
+                return (
+                  <Box
+                    position="absolute"
+                    width="full"
+                    height="130px"
+                    background="white"
+                    style={{ ...defaultStyle, ...transitionStyles[state] }}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    flexDirection="column"
+                    color="black"
+                  >
+                    <Box
+                      overflow="hidden"
+                      className="lineClamp3"
+                      fontSize={13}
+                      fontWeight="bold"
+                      color="GrayText"
+                      textAlign="center"
+                      width="80%"
+                    >
+                      {token.displayName}
+                    </Box>
+                    <Box
+                      color="gray.600"
+                      fontWeight="semibold"
+                      position="absolute"
+                      left="15px"
+                      bottom="10px"
+                    >
+                      x {token.quantity}
+                    </Box>
+                  </Box>
+                );
+              }}
+            </Transition>
+          </Box>
         )}
       </Box>
-    </Box>
+    </>
   );
-};
+});
 
 const Fallback = ({ name }) => {
   const [timedOut, setTimedOut] = React.useState(false);
   React.useEffect(() => {
     setTimeout(() => setTimedOut(true), 30000);
   }, []);
-  if (timedOut) return <Avatar name={name} />;
-  return <SkeletonCircle size="14" />;
+  if (timedOut) return <Avatar width="210px" height="210px" name={name} />;
+  return <Skeleton width="210px" height="210px" />;
 };
 
 export default Collectible;
