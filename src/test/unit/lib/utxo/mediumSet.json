@@ -787,7 +787,20 @@
     "amount": [
       {
         "unit": "lovelace",
-        "quantity": "1000000"
+        "quantity": "100000000"
+      }
+    ],
+    "block": "c4c32b2e215717f6c4849d388536789036fa0049793c099a6e9cde7ef668a6e9",
+    "data_hash": null
+  },
+  {
+    "tx_hash": "05ac3d837913afda2a4ea280532dde2f7e3889bae620a3654b81f58fc5dc7eba",
+    "tx_index": 0,
+    "output_index": 0,
+    "amount": [
+      {
+        "unit": "lovelace",
+        "quantity": "100000000"
       }
     ],
     "block": "c4c32b2e215717f6c4849d388536789036fa0049793c099a6e9cde7ef668a6e9",
