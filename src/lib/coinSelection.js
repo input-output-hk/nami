@@ -236,7 +236,7 @@ const CoinSelection = {
       selection: [],
       remaining: [...inputs], // Shallow copy
       subset: [],
-      amount: Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0')),
+      amount: createEmptyValue(),
     };
 
     let mergedOutputsAmounts = mergeOutputsAmounts(outputs);
@@ -531,7 +531,7 @@ function addAmounts(amounts, compiledAmounts) {
 function splitAmounts(amounts) {
   let splitAmounts = [];
 
-  if (amounts.multiasset()) {
+  if (amounts.multiasset() && amounts.multiasset().len() > 0) {
     let mA = amounts.multiasset();
 
     for (let i = 0; i < mA.keys().len(); i++) {
@@ -750,7 +750,7 @@ function compare(group, candidate) {
   let gQty = BigInt(group.coin().to_str());
   let cQty = BigInt(candidate.coin().to_str());
 
-  if (candidate.multiasset()) {
+  if (candidate.multiasset() && candidate.multiasset().len() > 0) {
     let cScriptHash = candidate.multiasset().keys().get(0);
     let cAssetName = candidate.multiasset().get(cScriptHash).keys().get(0);
 
@@ -774,6 +774,17 @@ function compare(group, candidate) {
   }
 
   return gQty >= cQty ? (gQty === cQty ? 0 : 1) : -1;
+}
+
+/**
+ * Initialise an empty Value with empty MultiAsset
+ * @return {Value} - Initialized empty value
+ */
+function createEmptyValue() {
+  const value = Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
+  const multiasset = Loader.Cardano.MultiAsset.new();
+  value.set_multiasset(multiasset);
+  return value;
 }
 
 export default CoinSelection;
