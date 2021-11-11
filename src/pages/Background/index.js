@@ -214,7 +214,7 @@ app.add(METHOD.submitTx, (request, sendResponse) => {
 });
 
 app.add(METHOD.isWhitelisted, async (request, sendResponse) => {
-  const whitelisted = await isWhitelisted(request.data);
+  const whitelisted = await isWhitelisted(request.origin);
   if (whitelisted) {
     sendResponse({
       data: whitelisted,
