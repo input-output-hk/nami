@@ -4549,5 +4549,18 @@
     ],
     "block": "c66acbf0ca1ac4e7e5e7f7fbf10d5bc1ab3b6a2dc74ffc74592ca464e29d978c",
     "data_hash": null
+  },
+  {
+    "tx_hash": "d024901593ac8f578dfc8d99ca863973f1cdfd01103031206456ccaac9bb255e",
+    "tx_index": 0,
+    "output_index": 0,
+    "amount": [
+      {
+        "unit": "lovelace",
+        "quantity": "5000000"
+      }
+    ],
+    "block": "1a5e4546cdf26855a536d82c37db6b0dbeb28a6a766c0f6f38a59607a0879c79",
+    "data_hash": null
   }
 ]

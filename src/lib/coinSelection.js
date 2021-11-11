@@ -319,6 +319,8 @@ const CoinSelection = {
       change: utxoSelection.amount.checked_sub(mergedOutputsAmounts),
     };
   },
+  splitAmounts: splitAmounts,
+  compare: compare,
 };
 
 /**
