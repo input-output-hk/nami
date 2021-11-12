@@ -49,7 +49,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     outputs.get(0).amount().multiasset()
   );
   CoinSelection.setProtocolParameters(
-    protocolParameters.minUtxo,
     protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
@@ -227,7 +226,6 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     )
   );
   CoinSelection.setProtocolParameters(
-    protocolParameters.minUtxo,
     protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
@@ -384,7 +382,6 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     )
   );
   CoinSelection.setProtocolParameters(
-    protocolParameters.minUtxo,
     protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
