@@ -893,16 +893,23 @@ const DelegationPopover = ({ account, delegation, children }) => {
               symbol={settings.adaSymbol}
             />
             <Box h="6" />
-            <Button
-              onClick={() =>
-                withdrawRef.current.initWithdrawal(account, delegation)
-              }
-              isDisabled={BigInt(delegation.rewards) < BigInt('2000000')}
-              colorScheme="teal"
-              size="sm"
+            <Tooltip
+              isDisabled={BigInt(delegation.rewards) >= BigInt('2000000')}
+              label="2 ADA minimum"
             >
-              Withdraw
-            </Button>
+              <span>
+                <Button
+                  onClick={() =>
+                    withdrawRef.current.initWithdrawal(account, delegation)
+                  }
+                  isDisabled={BigInt(delegation.rewards) < BigInt('2000000')}
+                  colorScheme="teal"
+                  size="sm"
+                >
+                  Withdraw
+                </Button>
+              </span>
+            </Tooltip>
             <Box h="2" />
           </PopoverBody>
         </PopoverContent>
