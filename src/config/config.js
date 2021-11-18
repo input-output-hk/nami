@@ -59,6 +59,10 @@ export const STORAGE = {
   migration: 'migration',
 };
 
+export const LOCAL_STORAGE = {
+  assets: 'assets',
+};
+
 export const NODE = {
   mainnet: 'https://cardano-mainnet.blockfrost.io/api/v0',
   testnet: 'https://cardano-testnet.blockfrost.io/api/v0',

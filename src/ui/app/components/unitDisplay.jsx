@@ -17,7 +17,7 @@ const UnitDisplay = ({ quantity, decimals, symbol, hide, ...props }) => {
       {quantity || quantity === 0 ? (
         <>
           {num}
-          {hide && hideZero(subNum).length <= 0 ? '' : '.'}
+          {(hide && hideZero(subNum).length <= 0) || decimals == 0 ? '' : '.'}
           <span style={{ fontSize: '75%' }}>
             {hide ? hideZero(subNum) : subNum}
           </span>{' '}

@@ -136,7 +136,6 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
                 w="50%"
                 h="30px"
                 rounded="xl"
-                shadow="md"
               >
                 {loadNext ? '...' : <ChevronDownIcon fontSize="30px" />}
               </Button>
