@@ -31,6 +31,7 @@ import {
   FaUserCheck,
   FaUsers,
   FaRegFileCode,
+  FaUserSlash,
 } from 'react-icons/fa';
 import { GiAnvilImpact } from 'react-icons/gi';
 import { Button } from '@chakra-ui/button';
@@ -54,6 +55,7 @@ const txTypeColor = {
   withdrawal: 'yellow.400',
   delegation: 'purple.500',
   stake: 'cyan.700',
+  unstake: 'red.500',
   poolUpdate: 'green.400',
   poolRetire: 'red.500',
   mint: 'cyan.500',
@@ -65,6 +67,7 @@ const txTypeLabel = {
   withdrawal: 'Withdrawal',
   delegation: 'Delegation',
   stake: 'Stake Registration',
+  unstake: 'Stake Deregistration',
   poolUpdate: 'Pool Update',
   poolRetire: 'Pool Retire',
   mint: 'Minting',
@@ -187,10 +190,16 @@ const Transaction = ({
                   />
                   {parseInt(displayInfo.detail.info.deposit) ? (
                     <>
-                      {' & Deposit: '}
+                      {parseInt(displayInfo.detail.info.deposit) > 0
+                        ? ' & Deposit: '
+                        : ' & Refund: '}
                       <UnitDisplay
                         display="inline-block"
-                        quantity={displayInfo.detail.info.deposit}
+                        quantity={
+                          parseInt(displayInfo.detail.info.deposit) > 0
+                            ? displayInfo.detail.info.deposit
+                            : parseInt(displayInfo.detail.info.deposit) * -1
+                        }
                         decimals={6}
                         symbol={settings.adaSymbol}
                       />
@@ -261,6 +270,7 @@ const TxIcon = ({ txType, extra }) => {
     withdrawal: FaCoins,
     delegation: FaPiggyBank,
     stake: FaUserCheck,
+    unstake: FaUserSlash,
     poolUpdate: FaRegEdit,
     poolRetire: FaTrashAlt,
     mint: GiAnvilImpact,
@@ -404,7 +414,11 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
     amounts: amounts,
     lovelace: ['internalIn', 'externalIn', 'multisig'].includes(type)
       ? lovelace
-      : lovelace + BigInt(detail.info.fees) + BigInt(detail.info.deposit),
+      : lovelace +
+        BigInt(detail.info.fees) +
+        (parseInt(detail.info.deposit) > 0
+          ? BigInt(detail.info.deposit)
+          : BigInt(0)),
     assets: assets.map((asset) => {
       const _policy = asset.unit.slice(0, 56);
       const _name = asset.unit.slice(56);
@@ -507,7 +521,9 @@ const getExtra = (info, txType) => {
     extra.push('withdrawal');
   if (info.delegation_count) extra.push('delegation');
   if (info.asset_mint_or_burn_count) extra.push('mint');
-  if (info.stake_cert_count) extra.push('stake');
+  if (info.stake_cert_count && parseInt(info.deposit) >= 0) extra.push('stake');
+  if (info.stake_cert_count && parseInt(info.deposit) < 0)
+    extra.push('unstake');
   if (info.pool_retire_count) extra.push('poolRetire');
   if (info.pool_update_count) extra.push('poolUpdate');
 
