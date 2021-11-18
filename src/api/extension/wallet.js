@@ -516,7 +516,6 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
     )
   );
   CoinSelection.setProtocolParameters(
-    protocolParameters.minUtxo,
     protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
