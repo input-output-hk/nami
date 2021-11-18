@@ -15,7 +15,7 @@ const migration = {
   info: [
     {
       title: 'Seperated assets view',
-      detail: 'Nami seperates now collectibles/NFTs and normal assets (FTs)',
+      detail: 'Nami now separates collectibles/NFTs and normal assets (FTs)',
     },
     {
       title: 'Improved Coin selection',
