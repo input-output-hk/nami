@@ -18,8 +18,6 @@ import Asset from './asset';
 import { Planet } from 'react-kawaii';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
-const storedAssets = {};
-
 const AssetsViewer = ({ assets }) => {
   const [assetsArray, setAssetsArray] = React.useState(null);
   const [search, setSearch] = React.useState('');
@@ -118,13 +116,7 @@ const AssetsGrid = ({ assets }) => {
               alignItems="center"
               justifyContent="center"
             >
-              <Asset
-                asset={asset}
-                onLoad={(fullAsset) =>
-                  (storedAssets[fullAsset.unit] = fullAsset)
-                }
-                storedAssets={storedAssets}
-              />
+              <Asset asset={asset} />
             </Box>
           </LazyLoadComponent>
         </Box>

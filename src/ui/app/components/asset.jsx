@@ -10,15 +10,11 @@ import {
 } from '@chakra-ui/react';
 import { useStoreActions, useStoreState } from 'easy-peasy';
 import React from 'react';
-import {
-  blockfrostRequest,
-  convertMetadataPropToString,
-  linkToSrc,
-} from '../../../api/util';
 import Copy from './copy';
 import UnitDisplay from './unitDisplay';
 import { useHistory } from 'react-router-dom';
 import { BsArrowUpRight } from 'react-icons/bs';
+import { getAsset } from '../../../api/extension';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -29,7 +25,7 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const Asset = ({ asset, onLoad, storedAssets, port }) => {
+const Asset = ({ asset }) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
   const background = useColorModeValue('gray.100', 'gray.700');
@@ -41,51 +37,12 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
   const history = useHistory();
 
   const fetchMetadata = async () => {
-    if (storedAssets[asset.unit]) {
-      setToken({ ...storedAssets[asset.unit], quantity: asset.quantity });
-      return;
-    }
-    const result = await blockfrostRequest(`/assets/${asset.unit}`);
-    const name =
-      (result.onchain_metadata && result.onchain_metadata.name) ||
-      (result.metadata && result.metadata.name) ||
-      asset.name;
-    let image =
-      (result.onchain_metadata &&
-        result.onchain_metadata.image &&
-        linkToSrc(
-          convertMetadataPropToString(result.onchain_metadata.image)
-        )) ||
-      (result.metadata && linkToSrc(result.metadata.logo, true)) ||
-      '';
-    setToken({ displayName: name, ...asset, image });
-
-    // Will be enabled again when ipfs-js is more reliable to use
-    // if (image && isIPFS.multihash(image)) {
-    //   const port = chrome.runtime.connect({
-    //     name: 'IPFS-' + asset.unit,
-    //   });
-    //   port.postMessage({
-    //     hash: image,
-    //   });
-    //   image = await new Promise((res, rej) =>
-    //     port.onMessage.addListener(function listener(url) {
-    //       port.onMessage.removeListener(listener);
-    //       res(url);
-    //       return;
-    //     })
-    //   );
-    // }
-    onLoad({
-      displayName: name,
-      image,
-      ...asset,
-    });
+    const detailedAsset = {
+      ...(await getAsset(asset.unit)),
+      quantity: asset.quantity,
+    };
     if (!isMounted.current) return;
-    setToken((t) => ({
-      ...t,
-      image,
-    }));
+    setToken(detailedAsset);
   };
 
   React.useEffect(() => {
@@ -112,7 +69,7 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
           alignItems="center"
           px={4}
         >
-          <Box width="50px" height="50px" rounded="full" overflow="hidden">
+          <Box width="44px" height="44px" rounded="full" overflow="hidden">
             <Image
               draggable={false}
               width="full"
@@ -138,7 +95,10 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
           </Box>
           <Box w={4} />
           <Box width="120px" textAlign="center">
-            <UnitDisplay quantity={token.quantity} decimals={0} />
+            <UnitDisplay
+              quantity={token.quantity}
+              decimals={token.decimals ? token.decimals : 0}
+            />
           </Box>
         </Box>
         <Box h={4} />
@@ -147,8 +107,8 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
             Policy
           </Box>
           <Box fontSize={10} width="340px" onClick={(e) => e.stopPropagation()}>
-            <Copy label="Copied policy" copy={asset.policy}>
-              {asset.policy}
+            <Copy label="Copied policy" copy={token.policy}>
+              {token.policy}
             </Copy>
           </Box>
         </Box>
@@ -158,8 +118,8 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
             Asset
           </Box>
           <Box fontSize={10} width="340px" onClick={(e) => e.stopPropagation()}>
-            <Copy label="Copied asset" copy={asset.fingerprint}>
-              {asset.fingerprint}
+            <Copy label="Copied asset" copy={token.fingerprint}>
+              {token.fingerprint}
             </Copy>
           </Box>
         </Box>
@@ -186,8 +146,9 @@ const Asset = ({ asset, onLoad, storedAssets, port }) => {
 
 const Fallback = ({ name }) => {
   const [timedOut, setTimedOut] = React.useState(false);
+  const isMounted = useIsMounted();
   React.useEffect(() => {
-    setTimeout(() => setTimedOut(true), 30000);
+    setTimeout(() => isMounted.current && setTimedOut(true), 30000);
   }, []);
   if (timedOut) return <Avatar name={name} />;
   return <Skeleton width="full" height="full" />;

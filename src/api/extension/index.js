@@ -4,6 +4,7 @@ import {
   ERROR,
   EVENT,
   HW,
+  LOCAL_STORAGE,
   NETWORK_ID,
   NODE,
   SENDER,
@@ -28,10 +29,13 @@ import {
   sumUtxos,
   txToLedger,
   txToTrezor,
+  linkToSrc,
+  convertMetadataPropToString,
 } from '../util';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import Ada, { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '../../../temporary_modules/trezor-connect';
+import AssetFingerprint from '@emurgo/cip14-js';
 
 export const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -141,6 +145,19 @@ export const getBalance = async () => {
   }
   const value = await assetsToValue(result.amount);
   return value;
+};
+
+export const getBalanceExtended = async () => {
+  const currentAccount = await getCurrentAccount();
+  const result = await blockfrostRequest(
+    `/addresses/${currentAccount.paymentAddr}/extended`
+  );
+  if (result.error) {
+    if (result.status_code === 400) throw APIError.InvalidRequest;
+    else if (result.status_code === 500) throw APIError.InternalError;
+    else return [];
+  }
+  return result.amount;
 };
 
 export const getFullBalance = async () => {
@@ -1285,12 +1302,63 @@ export const avatarToImage = (avatar) => {
   return URL.createObjectURL(blob);
 };
 
+export const getAsset = async (unit) => {
+  if (!window.assets) {
+    window.assets = JSON.parse(
+      localStorage.getItem(LOCAL_STORAGE.assets) || '{}'
+    );
+  }
+  const assets = window.assets;
+  const asset = assets[unit] || {};
+  const time = Date.now();
+  const h1 = 6000000;
+  if (asset && asset.time && time - asset.time <= h1 && !asset.mint) {
+    return asset;
+  } else {
+    asset.unit = unit;
+    asset.policy = unit.slice(0, 56);
+    asset.name = Buffer.from(unit.slice(56), 'hex').toString();
+    asset.fingerprint = new AssetFingerprint(
+      Buffer.from(asset.policy, 'hex'),
+      Buffer.from(asset.name)
+    ).fingerprint();
+    let result = await blockfrostRequest(`/assets/${unit}`);
+    if (!result || result.error) {
+      result = {};
+      asset.mint = true;
+    }
+    asset.displayName =
+      (result.onchain_metadata && result.onchain_metadata.name) ||
+      (result.metadata && result.metadata.name) ||
+      asset.name;
+    asset.image =
+      (result.onchain_metadata &&
+        result.onchain_metadata.image &&
+        linkToSrc(
+          convertMetadataPropToString(result.onchain_metadata.image)
+        )) ||
+      (result.metadata &&
+        result.metadata.logo &&
+        linkToSrc(result.metadata.logo, true)) ||
+      '';
+    asset.decimals = (result.metadata && result.metadata.decimals) || 0;
+    if (!asset.name) {
+      if (asset.displayName) asset.name = asset.displayName[0];
+      else asset.name = '-';
+    }
+    asset.time = Date.now();
+    assets[unit] = asset;
+    window.assets = assets;
+    localStorage.setItem(LOCAL_STORAGE.assets, JSON.stringify(assets));
+    return asset;
+  }
+};
+
 export const updateBalance = async (currentAccount, network) => {
   await Loader.load();
-  const amount = await getBalance();
+  const assets = await getBalanceExtended();
+  const amount = await assetsToValue(assets);
   await checkCollateral();
-
-  const assets = await valueToAssets(amount);
 
   if (assets.length > 0) {
     currentAccount[network.id].lovelace = assets.find(
@@ -1380,8 +1448,9 @@ export const updateAccount = async (forceUpdate = false) => {
 
   if (
     currentAccount[network.id].history.confirmed[0] ==
-      currentAccount[network.id].lastUpdate ||
-    forceUpdate
+      currentAccount[network.id].lastUpdate &&
+    !forceUpdate &&
+    !currentAccount[network.id].forceUpdate
   ) {
     if (currentAccount[network.id].lovelace == null) {
       // first initilization of account
@@ -1394,6 +1463,10 @@ export const updateAccount = async (forceUpdate = false) => {
     }
     return;
   }
+
+  // forcing acccount update for in case of breaking changes in an Nami update
+  if (currentAccount[network.id].forceUpdate)
+    delete currentAccount[network.id].forceUpdate;
 
   await updateBalance(currentAccount, network);
 
@@ -1424,9 +1497,14 @@ export const displayUnit = (quantity, decimals = 6) => {
 };
 
 export const toUnit = (amount, decimals = 6) => {
-  const result = parseFloat(amount.replace(/[,\s]/g, ''))
-    .toLocaleString('en-EN', { minimumFractionDigits: decimals })
-    .replace(/[.,\s]/g, '');
+  if (!amount) return '0';
+  let result = parseFloat(
+    amount.toString().replace(/[,\s]/g, '')
+  ).toLocaleString('en-EN', { minimumFractionDigits: decimals });
+  const split = result.split('.');
+  result =
+    split[0].replace(/[,\s]/g, '') +
+    (split[1] ? split[1].slice(0, decimals) : '');
   if (!result) return '0';
   else if (result == 'NaN') return '0';
   return result;

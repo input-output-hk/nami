@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import {
   displayUnit,
   getAccounts,
+  getAsset,
   getCurrentAccount,
   getUtxos,
   indexToHw,
@@ -204,7 +205,7 @@ const Send = () => {
         }
         output.amount.push({
           unit: asset.unit,
-          quantity: toUnit(asset.input, 0),
+          quantity: toUnit(asset.input, asset.decimals),
         });
       }
 
@@ -253,7 +254,6 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
-      console.log(e);
       prepareTx(v, a, count + 1);
     }
   };
@@ -471,28 +471,23 @@ const Send = () => {
                             prepareTx(v, undefined, 0);
                           }, 300);
                         }}
-                        onLoad={({ displayName, image }) => {
+                        onLoad={(decimals) => {
                           if (!assets.current[asset.unit]) return;
-                          clearTimeout(timer);
-                          if (!assets.current[asset.unit].loaded) {
-                            assets.current[asset.unit].loaded = true;
-                            assets.current[asset.unit].displayName =
-                              displayName;
-                            assets.current[asset.unit].image = image;
-                          }
-                          const v = value;
-                          v.assets = objectToArray(assets.current);
-                          setValue({ ...v, assets: v.assets });
+                          assets.current[asset.unit].decimals = decimals;
+                          // clearTimeout(timer);
+                          // const v = value;
+                          // v.assets = objectToArray(assets.current);
+                          // setValue({ ...v, assets: v.assets });
 
-                          timer = setTimeout(() => {
-                            if (usesStore.current) {
-                              usesStore.current = false;
-                              return;
-                            }
-                            prepareTx(v, undefined, 0);
-                          }, 300);
+                          // timer = setTimeout(() => {
+                          //   if (usesStore.current) {
+                          //     usesStore.current = false;
+                          //     return;
+                          //   }
+                          //   prepareTx(v, undefined, 0);
+                          // }, 300);
                         }}
-                        onInput={(val) => {
+                        onInput={async (val) => {
                           if (!assets.current[asset.unit]) return;
                           clearTimeout(timer);
                           assets.current[asset.unit].input = val;
@@ -876,7 +871,6 @@ const AssetsSelector = ({ assets, addAssets, value }) => {
   const [search, setSearch] = React.useState('');
   const select = React.useRef(false);
   const [choice, setChoice] = React.useState({});
-  const hoverColor = useColorModeValue('gray.100', 'gray.600');
 
   const filterAssets = () => {
     const filter1 = (asset) =>
@@ -1000,68 +994,14 @@ const AssetsSelector = ({ assets, addAssets, value }) => {
                         alignItems="center"
                         justifyContent="center"
                       >
-                        <Button
-                          background={choice[asset.unit] && hoverColor}
-                          _hover={{
-                            bgBlendMode: false,
-                            bg: !choice[asset.unit] && hoverColor,
-                          }}
-                          width="96%"
-                          onClick={() => {
-                            if (select.current) {
-                              select.current = false;
-                              return;
-                            }
-                            onClose();
-                            addAssets([asset]);
-                          }}
-                          mr="3"
-                          ml="4"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="start"
-                          variant="ghost"
-                        >
-                          <Stack
-                            width="100%"
-                            fontSize="xs"
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="start"
-                          >
-                            <Selection
-                              asset={asset}
-                              select={select}
-                              choice={choice}
-                              setChoice={setChoice}
-                            />
-
-                            <Box
-                              textAlign="left"
-                              width="200px"
-                              whiteSpace="nowrap"
-                              fontWeight="normal"
-                            >
-                              <Box mb="-1px">
-                                <MiddleEllipsis>
-                                  <span>{asset.name}</span>
-                                </MiddleEllipsis>
-                              </Box>
-                              <Box
-                                whiteSpace="nowrap"
-                                fontSize="xx-small"
-                                fontWeight="light"
-                              >
-                                <MiddleEllipsis>
-                                  <span>Policy: {asset.policy}</span>
-                                </MiddleEllipsis>
-                              </Box>
-                            </Box>
-                            <Box>
-                              <Text fontWeight="bold">{asset.quantity}</Text>
-                            </Box>
-                          </Stack>
-                        </Button>
+                        <Asset
+                          asset={asset}
+                          setChoice={setChoice}
+                          choice={choice}
+                          select={select}
+                          onClose={onClose}
+                          addAssets={addAssets}
+                        />
                       </Box>
                     );
                   }}
@@ -1098,6 +1038,88 @@ const AssetsSelector = ({ assets, addAssets, value }) => {
         </PopoverBody>
       </PopoverContent>
     </Popover>
+  );
+};
+
+const Asset = ({ asset, choice, select, setChoice, onClose, addAssets }) => {
+  const [token, setToken] = React.useState(null);
+  const isMounted = useIsMounted();
+  const hoverColor = useColorModeValue('gray.100', 'gray.600');
+
+  const fetchData = async () => {
+    const detailedAsset = {
+      ...(await getAsset(asset.unit)),
+      quantity: asset.quantity,
+    };
+    if (!isMounted.current) return;
+    setToken(detailedAsset);
+  };
+
+  React.useEffect(() => {
+    fetchData();
+  }, []);
+
+  return (
+    <Button
+      background={choice[asset.unit] && hoverColor}
+      _hover={{
+        bgBlendMode: false,
+        bg: !choice[asset.unit] && hoverColor,
+      }}
+      width="96%"
+      onClick={() => {
+        if (select.current) {
+          select.current = false;
+          return;
+        }
+        onClose();
+        addAssets([asset]);
+      }}
+      mr="3"
+      ml="4"
+      display="flex"
+      alignItems="center"
+      justifyContent="start"
+      variant="ghost"
+    >
+      {token && (
+        <Stack
+          width="100%"
+          fontSize="xs"
+          direction="row"
+          alignItems="center"
+          justifyContent="start"
+        >
+          <Selection
+            asset={asset}
+            select={select}
+            choice={choice}
+            setChoice={setChoice}
+          />
+
+          <Box
+            textAlign="left"
+            width="200px"
+            whiteSpace="nowrap"
+            fontWeight="normal"
+          >
+            <Box mb="-1px">
+              <MiddleEllipsis>
+                <span>{token.name}</span>
+              </MiddleEllipsis>
+            </Box>
+            <Box whiteSpace="nowrap" fontSize="xx-small" fontWeight="light">
+              <MiddleEllipsis>
+                <span>Policy: {token.policy}</span>
+              </MiddleEllipsis>
+            </Box>
+          </Box>
+          <Box>
+            <UnitDisplay quantity={token.quantity} decimals={token.decimals} />
+          </Box>
+        </Stack>
+      )}
+    </Button>
   );
 };
 
