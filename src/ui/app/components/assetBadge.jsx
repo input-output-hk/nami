@@ -10,14 +10,9 @@ import {
   InputRightElement,
   SkeletonCircle,
 } from '@chakra-ui/react';
-import { isIPFS } from 'ipfs';
 import React from 'react';
-import { toUnit } from '../../../api/extension';
-import {
-  blockfrostRequest,
-  convertMetadataPropToString,
-  linkToSrc,
-} from '../../../api/util';
+import { getAsset, toUnit } from '../../../api/extension';
+
 import AssetPopover from './assetPopover';
 
 const useIsMounted = () => {
@@ -37,58 +32,23 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const [width, setWidth] = React.useState(initialWidth);
   const [token, setToken] = React.useState(null);
 
-  const fetchMetadata = async () => {
-    if (asset && asset.loaded) {
-      onLoad({ ...asset });
-      setToken({ ...asset });
-      return;
-    }
-    const result = await blockfrostRequest(`/assets/${asset.unit}`);
-    const name =
-      (result.onchain_metadata && result.onchain_metadata.name) ||
-      (result.metadata && result.metadata.name) ||
-      asset.name;
-    let image =
-      (result.onchain_metadata &&
-        result.onchain_metadata.image &&
-        linkToSrc(
-          convertMetadataPropToString(result.onchain_metadata.image)
-        )) ||
-      (result.metadata && linkToSrc(result.metadata.logo)) ||
-      '';
-
-    setToken({ displayName: name, ...asset, image: 'loading' });
-
-    // Will be enabled again when ipfs-js is more reliable to use
-    // if (image && isIPFS.multihash(image)) {
-    //   const port = chrome.runtime.connect({
-    //     name: 'IPFS-' + asset.unit,
-    //   });
-    //   port.postMessage({
-    //     hash: image,
-    //   });
-    //   image = await new Promise((res, rej) =>
-    //     port.onMessage.addListener(function listener(url) {
-    //       port.onMessage.removeListener(listener);
-    //       res(url);
-    //       return;
-    //     })
-    //   );
-    // }
-    onLoad({ displayName: name, image });
+  const fetchData = async () => {
+    const detailedAsset = {
+      ...(await getAsset(asset.unit)),
+      quantity: asset.quantity,
+    };
     if (!isMounted.current) return;
-    setToken((t) => ({
-      ...t,
-      image,
-    }));
+    onLoad(detailedAsset.decimals);
+    setToken(detailedAsset);
   };
 
   React.useEffect(() => {
-    fetchMetadata();
+    fetchData();
     const initialWidth = BigInt(asset.quantity) <= 1 ? 60 : 85;
     setInitialWidth(initialWidth);
     setWidth(initialWidth);
     if (BigInt(asset.quantity) <= 1) onInput(asset.quantity);
+    else onInput();
   }, [asset]);
   return (
     <Box m="0.5">
@@ -154,16 +114,25 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
           fontSize="xs"
           placeholder="Qty"
           onInput={(e) => {
-            if (!e.target.value.match(/^\d*[0-9]\d*$/) && e.target.value)
+            const val = e.target.value;
+            if (
+              token.decimals == 0 &&
+              !e.target.value.match(/^\d*[0-9]\d*$/) &&
+              e.target.value
+            )
               return;
-            // if (!e.target.value.match(/^\d*[0-9,.]\d*$/) && e.target.value) return; -- decimals not supported yet for assets
-            setWidth(initialWidth + e.target.value.length * 4);
-            onInput(e.target.value);
+            if (!val.match(/^\d*[0-9,.]\d*$/) && val) return;
+            if (val.split('.')[1] && val.split('.')[1].length > token.decimals)
+              return;
+            setWidth(initialWidth + val.length * 4);
+            onInput(val);
           }}
           isInvalid={
+            token &&
             asset.input &&
-            (BigInt(toUnit(asset.input, 0)) > BigInt(asset.quantity) ||
-              BigInt(toUnit(asset.input, 0)) <= 0)
+            (BigInt(toUnit(asset.input, token.decimals)) >
+              BigInt(asset.quantity) ||
+              BigInt(toUnit(asset.input, token.decimals)) <= 0)
           }
         />
         <InputRightElement
@@ -179,8 +148,9 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
 
 const Fallback = ({ name }) => {
   const [timedOut, setTimedOut] = React.useState(false);
+  const isMounted = useIsMounted();
   React.useEffect(() => {
-    setTimeout(() => setTimedOut(true), 30000);
+    setTimeout(() => isMounted.current && setTimedOut(true), 30000);
   }, []);
   if (timedOut) return <Avatar size="xs" name={name} />;
   return <SkeletonCircle size="5" />;

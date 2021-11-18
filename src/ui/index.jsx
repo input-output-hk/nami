@@ -4,12 +4,15 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import './app/components/styles.css';
 import Theme from './theme';
 import StoreProvider from './store';
-import { Box } from '@chakra-ui/react';
+import { Box, IconButton } from '@chakra-ui/react';
+import { ChevronUpIcon } from '@chakra-ui/icons';
 
 const isMain = window.document.querySelector(`#${POPUP.main}`);
 const isTab = window.document.querySelector(`#${TAB.hw}`);
 
 const Main = ({ children }) => {
+  const [scroll, setScroll] = React.useState({ el: null, y: 0 });
+
   React.useEffect(() => {
     window.document.body.addEventListener(
       'keydown',
@@ -31,8 +34,30 @@ const Main = ({ children }) => {
     >
       <Theme>
         <StoreProvider>
-          <Scrollbars style={{ width: '100vw', height: '100vh' }} autoHide>
+          <Scrollbars
+            id="scroll"
+            style={{ width: '100vw', height: '100vh' }}
+            autoHide
+            onScroll={(e) => {
+              setScroll({ el: e.target, y: e.target.scrollTop });
+            }}
+          >
             {children}
+            {scroll.y > 1200 && (
+              <IconButton
+                onClick={() => {
+                  scroll.el.scrollTo({ behavior: 'smooth', top: 0 });
+                }}
+                position="fixed"
+                bottom="15px"
+                right="15px"
+                size="sm"
+                rounded="xl"
+                colorScheme="teal"
+                opacity={0.85}
+                icon={<ChevronUpIcon />}
+              ></IconButton>
+            )}
           </Scrollbars>
         </StoreProvider>
       </Theme>
