@@ -17,23 +17,6 @@ import { compileOutputs } from '../../../api/util';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import ReactTimeAgo from 'react-time-ago';
-import {
-  TiArrowForward,
-  TiArrowBack,
-  TiArrowShuffle,
-  TiArrowLoop,
-} from 'react-icons/ti';
-import {
-  FaCoins,
-  FaPiggyBank,
-  FaTrashAlt,
-  FaRegEdit,
-  FaUserCheck,
-  FaUsers,
-  FaRegFileCode,
-  FaUserSlash,
-} from 'react-icons/fa';
-import { GiAnvilImpact } from 'react-icons/gi';
 import { Button } from '@chakra-ui/button';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -43,6 +26,21 @@ import AssetFingerprint from '@emurgo/cip14-js';
 import { hexToAscii } from '../../../api/util';
 import { NETWORK_ID } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
+import {
+  FaCoins,
+  FaPiggyBank,
+  FaTrashAlt,
+  FaRegEdit,
+  FaUserCheck,
+  FaUsers,
+  FaRegFileCode,
+  IoRemoveCircleSharp,
+  TiArrowForward,
+  TiArrowBack,
+  TiArrowShuffle,
+  TiArrowLoop,
+  GiAnvilImpact,
+} from 'react-icons/all';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -55,9 +53,9 @@ const txTypeColor = {
   withdrawal: 'yellow.400',
   delegation: 'purple.500',
   stake: 'cyan.700',
-  unstake: 'red.500',
+  unstake: 'red.400',
   poolUpdate: 'green.400',
-  poolRetire: 'red.500',
+  poolRetire: 'red.400',
   mint: 'cyan.500',
   multisig: 'pink.400',
   contract: 'teal.400',
@@ -270,7 +268,7 @@ const TxIcon = ({ txType, extra }) => {
     withdrawal: FaCoins,
     delegation: FaPiggyBank,
     stake: FaUserCheck,
-    unstake: FaUserSlash,
+    unstake: IoRemoveCircleSharp,
     poolUpdate: FaRegEdit,
     poolRetire: FaTrashAlt,
     mint: GiAnvilImpact,
