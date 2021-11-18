@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   bytesAddressToBinary,
+  getAsset,
   getCurrentAccount,
   getUtxos,
   signTx,
@@ -429,7 +430,7 @@ const SignTx = ({ request, controller }) => {
                     justifyContent="center"
                     fontSize="2xl"
                     fontWeight="bold"
-                    color={lovelace <= 0 ? 'green.500' : 'red.500'}
+                    color={lovelace <= 0 ? 'teal.500' : 'red.300'}
                   >
                     <Text>{lovelace <= 0 ? '+' : '-'}</Text>
                     <UnitDisplay
@@ -454,7 +455,7 @@ const SignTx = ({ request, controller }) => {
                         fontWeight="bold"
                       >
                         {assets.filter((v) => v.quantity > 0).length > 0 && (
-                          <Text color="red.500">
+                          <Text color="red.300">
                             - {assets.filter((v) => v.quantity > 0).length}{' '}
                           </Text>
                         )}
@@ -463,7 +464,7 @@ const SignTx = ({ request, controller }) => {
                             <Text>|</Text>
                           )}
                         {assets.filter((v) => v.quantity < 0).length > 0 && (
-                          <Text color="green.500">
+                          <Text color="teal.500">
                             + {assets.filter((v) => v.quantity < 0).length}
                           </Text>
                         )}
@@ -762,73 +763,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
                         alignItems="center"
                         justifyContent="center"
                       >
-                        <Box
-                          width="100%"
-                          ml="3"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="start"
-                        >
-                          <Stack
-                            width="100%"
-                            fontSize="xs"
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="start"
-                          >
-                            <Avatar
-                              userSelect="none"
-                              size="xs"
-                              name={asset.name}
-                            />
-
-                            <Box
-                              textAlign="left"
-                              width="200px"
-                              whiteSpace="nowrap"
-                              fontWeight="normal"
-                            >
-                              <Copy
-                                label="Copied asset"
-                                copy={asset.fingerprint}
-                              >
-                                <Box mb="-0.5">
-                                  <MiddleEllipsis>
-                                    <span>{asset.name}</span>
-                                  </MiddleEllipsis>
-                                </Box>
-                                <Box
-                                  whiteSpace="nowrap"
-                                  fontSize="xx-small"
-                                  fontWeight="light"
-                                >
-                                  <MiddleEllipsis>
-                                    <span>Policy: {asset.policy}</span>
-                                  </MiddleEllipsis>
-                                </Box>
-                              </Copy>
-                            </Box>
-                            <Box>
-                              <Text
-                                fontWeight="bold"
-                                color={
-                                  isDifference
-                                    ? asset.quantity <= 0
-                                      ? 'green.500'
-                                      : 'red.500'
-                                    : 'inherit'
-                                }
-                              >
-                                {isDifference
-                                  ? asset.quantity <= 0
-                                    ? '+'
-                                    : '-'
-                                  : ''}{' '}
-                                {abs(asset.quantity).toString()}
-                              </Text>
-                            </Box>
-                          </Stack>
-                        </Box>
+                        <Asset asset={asset} isDifference={isDifference} />
                       </Box>
                     );
                   }}
@@ -840,6 +775,97 @@ const AssetsPopover = ({ assets, isDifference }) => {
       </Portal>
     </Popover>
   );
+};
+
+const Asset = ({ asset, isDifference }) => {
+  const [token, setToken] = React.useState(null);
+  const isMounted = useIsMounted();
+
+  const fetchData = async () => {
+    const detailedAsset = {
+      ...(await getAsset(asset.unit)),
+      quantity: asset.quantity,
+    };
+    if (!isMounted.current) return;
+    setToken(detailedAsset);
+  };
+
+  React.useEffect(() => {
+    fetchData();
+  }, []);
+
+  return (
+    <Box
+      width="100%"
+      ml="3"
+      display="flex"
+      alignItems="center"
+      justifyContent="start"
+    >
+      {token && (
+        <Stack
+          width="100%"
+          fontSize="xs"
+          direction="row"
+          alignItems="center"
+          justifyContent="start"
+        >
+          <Avatar userSelect="none" size="xs" name={asset.name} />
+
+          <Box
+            textAlign="left"
+            width="200px"
+            whiteSpace="nowrap"
+            fontWeight="normal"
+          >
+            <Copy label="Copied asset" copy={asset.fingerprint}>
+              <Box mb="-0.5">
+                <MiddleEllipsis>
+                  <span>{asset.name}</span>
+                </MiddleEllipsis>
+              </Box>
+              <Box whiteSpace="nowrap" fontSize="xx-small" fontWeight="light">
+                <MiddleEllipsis>
+                  <span>Policy: {asset.policy}</span>
+                </MiddleEllipsis>
+              </Box>
+            </Copy>
+          </Box>
+          <Box>
+            <Box
+              fontWeight="bold"
+              color={
+                isDifference
+                  ? token.quantity <= 0
+                    ? 'red.300'
+                    : 'teal.500'
+                  : 'inherit'
+              }
+            >
+              <Box display="flex" alignItems="center">
+                <Box mr="0.5">
+                  {isDifference ? (token.quantity <= 0 ? '-' : '+') : '+'}{' '}
+                </Box>
+                <UnitDisplay
+                  quantity={abs(token.quantity).toString()}
+                  decimals={token.decimals}
+                />
+              </Box>
+            </Box>
+          </Box>
+        </Stack>
+      )}
+    </Box>
+  );
+};
+
+const useIsMounted = () => {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  return isMounted;
 };
 
 export default SignTx;

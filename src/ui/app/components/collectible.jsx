@@ -1,13 +1,9 @@
 import { Box } from '@chakra-ui/layout';
 import { Avatar, Image, Skeleton, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
-import {
-  blockfrostRequest,
-  convertMetadataPropToString,
-  linkToSrc,
-} from '../../../api/util';
 import './styles.css';
 import { Transition } from 'react-transition-group';
+import { getAsset } from '../../../api/extension';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -18,58 +14,19 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const Collectible = React.forwardRef(({ asset, onLoad, storedAssets }, ref) => {
+const Collectible = React.forwardRef(({ asset }, ref) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
   const background = useColorModeValue('gray.300', 'white');
   const [showInfo, setShowInfo] = React.useState(false);
 
   const fetchMetadata = async () => {
-    if (storedAssets[asset.unit]) {
-      setToken({ ...storedAssets[asset.unit], quantity: asset.quantity });
-      return;
-    }
-    const result = await blockfrostRequest(`/assets/${asset.unit}`);
-    const name =
-      (result.onchain_metadata && result.onchain_metadata.name) ||
-      (result.metadata && result.metadata.name) ||
-      asset.name;
-    let image =
-      (result.onchain_metadata &&
-        result.onchain_metadata.image &&
-        linkToSrc(
-          convertMetadataPropToString(result.onchain_metadata.image)
-        )) ||
-      (result.metadata && linkToSrc(result.metadata.logo, true)) ||
-      '';
-    setToken({ displayName: name, ...asset, image });
-
-    // Will be enabled again when ipfs-js is more reliable to use
-    // if (image && isIPFS.multihash(image)) {
-    //   const port = chrome.runtime.connect({
-    //     name: 'IPFS-' + asset.unit,
-    //   });
-    //   port.postMessage({
-    //     hash: image,
-    //   });
-    //   image = await new Promise((res, rej) =>
-    //     port.onMessage.addListener(function listener(url) {
-    //       port.onMessage.removeListener(listener);
-    //       res(url);
-    //       return;
-    //     })
-    //   );
-    // }
-    onLoad({
-      displayName: name,
-      image,
-      ...asset,
-    });
+    const detailedAsset = {
+      ...(await getAsset(asset.unit)),
+      quantity: asset.quantity,
+    };
     if (!isMounted.current) return;
-    setToken((t) => ({
-      ...t,
-      image,
-    }));
+    setToken(detailedAsset);
   };
 
   React.useEffect(() => {
@@ -183,8 +140,9 @@ const Collectible = React.forwardRef(({ asset, onLoad, storedAssets }, ref) => {
 
 const Fallback = ({ name }) => {
   const [timedOut, setTimedOut] = React.useState(false);
+  const isMounted = useIsMounted();
   React.useEffect(() => {
-    setTimeout(() => setTimedOut(true), 30000);
+    setTimeout(() => isMounted.current && setTimedOut(true), 30000);
   }, []);
   if (timedOut) return <Avatar width="210px" height="210px" name={name} />;
   return <Skeleton width="210px" height="210px" />;

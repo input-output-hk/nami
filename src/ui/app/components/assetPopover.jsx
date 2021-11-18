@@ -8,13 +8,12 @@ import {
   Box,
   Portal,
   Image,
-  Spinner,
   Avatar,
   Text,
 } from '@chakra-ui/react';
-import MiddleEllipsis from 'react-middle-ellipsis';
 import React from 'react';
 import Copy from './copy';
+import UnitDisplay from './unitDisplay';
 
 const AssetPopover = ({ asset, gutter, ...props }) => {
   return (
@@ -70,7 +69,10 @@ const AssetPopover = ({ asset, gutter, ...props }) => {
                 </Copy>
                 <Box h="2" />
                 <Text fontSize="xs" fontWeight="bold">
-                  {asset.quantity}
+                  <UnitDisplay
+                    quantity={asset.quantity}
+                    decimals={asset.decimals}
+                  />
                 </Text>
                 <Box h="2" />
                 <Copy label="Copied policy" copy={asset.policy}>

@@ -14,7 +14,6 @@ import {
   useDisclosure,
   Modal,
   ModalContent,
-  ModalFooter,
   ModalBody,
   Avatar,
   Image,
@@ -31,8 +30,6 @@ import Copy from './copy';
 import { useStoreActions, useStoreState } from 'easy-peasy';
 import { useHistory } from 'react-router-dom';
 import { BsArrowUpRight } from 'react-icons/bs';
-
-const storedAssets = {};
 
 const CollectiblesViewer = ({ assets }) => {
   const [assetsArray, setAssetsArray] = React.useState(null);
@@ -119,6 +116,7 @@ const CollectiblesViewer = ({ assets }) => {
 export const CollectibleModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [asset, setAsset] = React.useState(null);
+  const [fallback, setFallback] = React.useState(false); // remove short flickering where image is not instantly loaded
   const background = useColorModeValue('white', 'gray.800');
   const dividerColor = useColorModeValue('gray.200', 'gray.700');
   const [value, setValue] = [
@@ -126,13 +124,17 @@ export const CollectibleModal = React.forwardRef((props, ref) => {
     useStoreActions((actions) => actions.globalModel.sendStore.setValue),
   ];
   const history = useHistory();
+  const timer = React.useRef();
 
   React.useImperativeHandle(ref, () => ({
     openModal(asset) {
       setAsset(asset);
+      timer.current = setTimeout(() => setFallback(true));
       onOpen();
     },
     closeModal() {
+      clearTimeout(timer.current);
+      setFallback(false);
       onClose();
     },
   }));
@@ -146,7 +148,7 @@ export const CollectibleModal = React.forwardRef((props, ref) => {
       {asset && (
         <ModalContent
           background={background}
-          onClick={onClose}
+          onClick={ref.current.closeModal}
           m={0}
           rounded="none"
         >
@@ -157,20 +159,31 @@ export const CollectibleModal = React.forwardRef((props, ref) => {
             mb={6}
           >
             <Box h={8} />
-            <Image
-              src={asset.image}
-              height="260px"
-              width="full"
-              objectFit="contain"
-              fallback={
-                <Avatar
-                  rounded="lg"
-                  width="full"
-                  height="260px"
-                  name={asset.name}
-                />
-              }
-            />
+            {asset.image ? (
+              <Image
+                src={asset.image}
+                height="260px"
+                width="full"
+                objectFit="contain"
+                fallback={
+                  fallback && (
+                    <Avatar
+                      rounded="lg"
+                      width="full"
+                      height="260px"
+                      name={asset.name}
+                    />
+                  )
+                }
+              />
+            ) : (
+              <Avatar
+                rounded="lg"
+                width="full"
+                height="260px"
+                name={asset.name}
+              />
+            )}
             <Box h={6} />
             <Box
               textAlign="center"
@@ -244,14 +257,7 @@ const AssetsGrid = React.forwardRef(({ assets }, ref) => {
         {assets.map((asset, index) => (
           <Box key={index}>
             <LazyLoadComponent>
-              <Collectible
-                ref={ref}
-                asset={asset}
-                onLoad={(fullAsset) =>
-                  (storedAssets[fullAsset.unit] = fullAsset)
-                }
-                storedAssets={storedAssets}
-              />
+              <Collectible ref={ref} asset={asset} />
             </LazyLoadComponent>
           </Box>
         ))}
