@@ -21,7 +21,12 @@ import {
 } from '../../../api/extension';
 import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
 
-import { BsArrowDownRight, BsArrowUpRight } from 'react-icons/bs';
+import {
+  BsArrowDownRight,
+  BsArrowUpRight,
+  BsClockHistory,
+  BsFillCollectionFill,
+} from 'react-icons/bs';
 import {
   Icon,
   Image,
@@ -88,12 +93,15 @@ import { currencyToSymbol } from '../../../api/util';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID, TAB } from '../../../config/config';
 import { BalanceWarning } from '../components/balanceWarning';
-import { FaRegFileCode } from 'react-icons/fa';
+import { FaGamepad, FaRegFileCode } from 'react-icons/fa';
 import { BiWallet } from 'react-icons/bi';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
-import { GiUsbKey } from 'react-icons/gi';
+import { GiTwoCoins, GiUsbKey } from 'react-icons/gi';
+import CollectiblesViewer from '../components/collectiblesViewer';
+import { MdVideogameAsset } from 'react-icons/md';
+import AssetFingerprint from '@emurgo/cip14-js';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -156,6 +164,19 @@ const Wallet = () => {
     await updateAccount(forceUpdate);
     const allAccounts = await getAccounts();
     const currentAccount = allAccounts[currentIndex];
+    currentAccount.ft = [];
+    currentAccount.nft = [];
+    currentAccount.assets.forEach((asset) => {
+      asset.policy = asset.unit.slice(0, 56);
+      asset.name = Buffer.from(asset.unit.slice(56), 'hex').toString();
+      asset.fingerprint = new AssetFingerprint(
+        Buffer.from(asset.policy, 'hex'),
+        Buffer.from(asset.name)
+      ).fingerprint();
+      if (asset.has_nft_onchain_metadata === true)
+        currentAccount.nft.push(asset);
+      else currentAccount.ft.push(asset);
+    });
     const fiatPrice = await provider.api.price(settings.currency);
     const network = await getNetwork();
     const delegation = await getDelegation();
@@ -640,12 +661,22 @@ const Wallet = () => {
           colorScheme="teal"
         >
           <TabList>
-            <Tab>Assets</Tab>
-            <Tab>History</Tab>
+            <Tab mr={2}>
+              <Icon as={GiTwoCoins} boxSize={5} />
+            </Tab>
+            <Tab mr={2}>
+              <Icon as={FaGamepad} boxSize={5} />
+            </Tab>
+            <Tab>
+              <Icon as={BsClockHistory} boxSize={5} />
+            </Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
-              <AssetsViewer assets={state.account && state.account.assets} />
+              <AssetsViewer assets={state.account && state.account.ft} />
+            </TabPanel>
+            <TabPanel>
+              <CollectiblesViewer assets={state.account && state.account.nft} />
             </TabPanel>
             <TabPanel>
               <HistoryViewer

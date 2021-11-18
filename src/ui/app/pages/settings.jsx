@@ -19,6 +19,7 @@ import {
   ChevronRightIcon,
   SunIcon,
   SmallCloseIcon,
+  RepeatIcon,
 } from '@chakra-ui/icons';
 import React from 'react';
 import {
@@ -26,6 +27,7 @@ import {
   getWhitelisted,
   removeWhitelisted,
   resetStorage,
+  setAccountAvatar,
   setAccountName,
 } from '../../../api/extension';
 import Account from '../components/account';
@@ -34,6 +36,7 @@ import { NETWORK_ID, NODE } from '../../../config/config';
 import ConfirmModal from '../components/confirmModal';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import { MdModeEdit } from 'react-icons/md';
+import AvatarLoader from '../components/avatarLoader';
 
 const Settings = () => {
   const history = useHistory();
@@ -126,21 +129,29 @@ const GeneralSettings = ({ accountRef }) => {
   const setSettings = useStoreActions(
     (actions) => actions.settings.setSettings
   );
-  const [name, setName] = React.useState('');
+  const [account, setAccount] = React.useState({ name: '', avatar: '' });
   const [originalName, setOriginalName] = React.useState('');
   const { colorMode, toggleColorMode } = useColorMode();
   const ref = React.useRef();
 
-  const handler = async () => {
-    await setAccountName(name);
-    setOriginalName(name);
+  const nameHandler = async () => {
+    await setAccountName(account.name);
+    setOriginalName(account.name);
+    accountRef.current.updateAccount();
+  };
+
+  const avatarHandler = async () => {
+    const avatar = Math.random().toString();
+    account.avatar = avatar;
+    await setAccountAvatar(account.avatar);
+    setAccount({ ...account });
     accountRef.current.updateAccount();
   };
 
   React.useEffect(() => {
     getCurrentAccount().then((account) => {
       setOriginalName(account.name);
-      setName(account.name);
+      setAccount(account);
     });
   }, []);
 
@@ -154,29 +165,51 @@ const GeneralSettings = ({ accountRef }) => {
       <InputGroup size="md" width="210px">
         <Input
           onKeyDown={(e) => {
-            if (e.key == 'Enter' && name.length > 0 && name != originalName)
-              handler();
+            if (
+              e.key == 'Enter' &&
+              account.name.length > 0 &&
+              account.name != originalName
+            )
+              nameHandler();
           }}
           placeholder="Change name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={account.name}
+          onChange={(e) => {
+            account.name = e.target.value;
+            setAccount({ ...account });
+          }}
           pr="4.5rem"
         />
         <InputRightElement width="4.5rem">
-          {name == originalName ? (
+          {account.name == originalName ? (
             <Icon mr="-4" as={MdModeEdit} />
           ) : (
             <Button
-              isDisabled={name.length <= 0}
+              isDisabled={account.name.length <= 0}
               h="1.75rem"
               size="sm"
-              onClick={handler}
+              onClick={nameHandler}
             >
               Apply
             </Button>
           )}
         </InputRightElement>
       </InputGroup>
+      <Box height="6" />
+      <Box display="flex" alignItems="center">
+        <Box width="65px" height="65px">
+          <AvatarLoader forceUpdate avatar={account.avatar} width="full" />
+        </Box>
+        <Box w={4} />
+        <IconButton
+          onClick={() => {
+            avatarHandler();
+          }}
+          rounded="md"
+          size="sm"
+          icon={<RepeatIcon />}
+        />
+      </Box>
       <Box height="6" />
       <Button
         size="sm"
