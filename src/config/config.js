@@ -128,6 +128,10 @@ export const APIError = {
     code: -3,
     info: 'The request was refused due to lack of access - e.g. wallet disconnects.',
   },
+  AccountChange: {
+    code: -4,
+    info: 'The account has changed. The dApp should call `wallet.enable()` to reestablish connection to the new account. The wallet should not ask for confirmation as the user was the one who initiated the account change in the first place.',
+  },
 };
 
 export const DataSignError = {
