@@ -441,7 +441,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               <Box mb="3" width="full" textAlign="center">
                 <b style={{ fontSize: 16 }}>5 {settings.adaSymbol}</b>
               </Box>{' '}
-              The amount is separated from your accound balance, you can choose
+              The amount is separated from your account balance, you can choose
               to return it to your balance at any time.
               <br />
               <Link
