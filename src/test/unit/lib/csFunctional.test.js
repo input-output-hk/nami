@@ -14,6 +14,7 @@ const protocolParameters = {
   },
   coinsPerUtxoWord: '34482',
   maxTxSize: '16384',
+  maxValSize: 5000,
 };
 
 const PRESETS = {
@@ -41,7 +42,8 @@ beforeAll(async () => {
     protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
-    protocolParameters.maxTxSize.toString()
+    protocolParameters.maxTxSize.toString(),
+    protocolParameters.maxValSize.toString()
   );
 });
 

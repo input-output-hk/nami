@@ -52,7 +52,8 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
-    protocolParameters.maxTxSize.toString()
+    protocolParameters.maxTxSize.toString(),
+    protocolParameters.maxValSize.toString()
   );
   const selection = await CoinSelection.randomImprove(
     utxos,
@@ -229,7 +230,8 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
-    protocolParameters.maxTxSize.toString()
+    protocolParameters.maxTxSize.toString(),
+    protocolParameters.maxValSize.toString()
   );
   const selection = await CoinSelection.randomImprove(utxos, outputs, 20);
 
@@ -385,7 +387,8 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     protocolParameters.coinsPerUtxoWord,
     protocolParameters.linearFee.minFeeA,
     protocolParameters.linearFee.minFeeB,
-    protocolParameters.maxTxSize.toString()
+    protocolParameters.maxTxSize.toString(),
+    protocolParameters.maxValSize.toString()
   );
   const selection = await CoinSelection.randomImprove(utxos, outputs, 20);
   const inputs = selection.input;

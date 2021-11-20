@@ -207,13 +207,21 @@ const CoinSelection = {
    * @param {string} minFeeA
    * @param {string} minFeeB
    * @param {string} maxTxSize
+   * @param {string} maxValSize
    */
-  setProtocolParameters: (coinsPerUtxoWord, minFeeA, minFeeB, maxTxSize) => {
+  setProtocolParameters: (
+    coinsPerUtxoWord,
+    minFeeA,
+    minFeeB,
+    maxTxSize,
+    maxValSize
+  ) => {
     protocolParameters = {
       coinsPerUtxoWord: coinsPerUtxoWord,
       minFeeA: minFeeA,
       minFeeB: minFeeB,
       maxTxSize: maxTxSize,
+      maxValSize: maxValSize,
     };
   },
   /**
@@ -288,6 +296,29 @@ const CoinSelection = {
           Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
         )
       );
+
+      // Cover for change split
+      const changeMultiAssets = change.multiasset();
+
+      // check if change value is too big for single output
+      if (
+        changeMultiAssets &&
+        change.to_bytes().length * 2 > protocolParameters.maxValSize
+      ) {
+        minAmount = minAmount.checked_add(
+          Loader.Cardano.Value.new(
+            Loader.Cardano.min_ada_required(
+              Loader.Cardano.Value.new(
+                Loader.Cardano.BigNum.from_str('1000000')
+              ),
+              false,
+              Loader.Cardano.BigNum.from_str(
+                protocolParameters.coinsPerUtxoWord
+              )
+            )
+          )
+        );
+      }
 
       let maxFee =
         BigInt(protocolParameters.minFeeA) *
