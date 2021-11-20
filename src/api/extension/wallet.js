@@ -85,67 +85,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
 
   txBuilder.add_output(outputs.get(0));
 
-  const change = selection.change;
-  const changeMultiAssets = change.multiasset();
-
-  // check if change value is too big for single output
-  if (
-    changeMultiAssets &&
-    change.to_bytes().length * 2 > protocolParameters.maxValSize
-  ) {
-    const partialChange = Loader.Cardano.Value.new(
-      Loader.Cardano.BigNum.from_str('0')
-    );
-
-    const partialMultiAssets = Loader.Cardano.MultiAsset.new();
-    const policies = changeMultiAssets.keys();
-    const makeSplit = () => {
-      for (let j = 0; j < changeMultiAssets.len(); j++) {
-        const policy = policies.get(j);
-        const policyAssets = changeMultiAssets.get(policy);
-        const assetNames = policyAssets.keys();
-        const assets = Loader.Cardano.Assets.new();
-        for (let k = 0; k < assetNames.len(); k++) {
-          const policyAsset = assetNames.get(k);
-          const quantity = policyAssets.get(policyAsset);
-          assets.insert(policyAsset, quantity);
-          //check size
-          const checkMultiAssets = Loader.Cardano.MultiAsset.from_bytes(
-            partialMultiAssets.to_bytes()
-          );
-          checkMultiAssets.insert(policy, assets);
-          const checkValue = Loader.Cardano.Value.new(
-            Loader.Cardano.BigNum.from_str('0')
-          );
-          checkValue.set_multiasset(checkMultiAssets);
-          if (
-            checkValue.to_bytes().length * 2 >=
-            protocolParameters.maxValSize
-          ) {
-            partialMultiAssets.insert(policy, assets);
-            return;
-          }
-        }
-        partialMultiAssets.insert(policy, assets);
-      }
-    };
-    makeSplit();
-    partialChange.set_multiasset(partialMultiAssets);
-    const minAda = Loader.Cardano.min_ada_required(
-      partialChange,
-      false,
-      Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
-    );
-    partialChange.set_coin(minAda);
-
-    txBuilder.add_output(
-      Loader.Cardano.TransactionOutput.new(
-        Loader.Cardano.Address.from_bech32(account.paymentAddr),
-        partialChange
-      )
-    );
-  }
-
   txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
   txBuilder.add_change_if_needed(
     Loader.Cardano.Address.from_bech32(account.paymentAddr)

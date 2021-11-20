@@ -298,13 +298,11 @@ const CoinSelection = {
       );
 
       // Cover for change split
-      const changeMultiAssets = change.multiasset();
+      const factor = Math.floor(
+        change.to_bytes().length / protocolParameters.maxValSize
+      );
 
-      // check if change value is too big for single output
-      if (
-        changeMultiAssets &&
-        change.to_bytes().length * 2 > protocolParameters.maxValSize
-      ) {
+      for (let i = 0; i < factor; i++) {
         minAmount = minAmount.checked_add(
           Loader.Cardano.Value.new(
             Loader.Cardano.min_ada_required(
