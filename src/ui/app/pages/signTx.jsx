@@ -836,7 +836,7 @@ const Asset = ({ asset, isDifference }) => {
               fontWeight="bold"
               color={
                 isDifference
-                  ? token.quantity <= 0
+                  ? token.quantity > 0
                     ? 'red.300'
                     : 'teal.500'
                   : 'inherit'
@@ -844,7 +844,7 @@ const Asset = ({ asset, isDifference }) => {
             >
               <Box display="flex" alignItems="center">
                 <Box mr="0.5">
-                  {isDifference ? (token.quantity <= 0 ? '-' : '+') : '+'}{' '}
+                  {isDifference ? (token.quantity > 0 ? '-' : '+') : '+'}{' '}
                 </Box>
                 <UnitDisplay
                   quantity={abs(token.quantity).toString()}
