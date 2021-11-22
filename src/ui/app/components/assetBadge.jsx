@@ -48,7 +48,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
     setInitialWidth(initialWidth);
     setWidth(initialWidth);
     if (BigInt(asset.quantity) <= 1) onInput(asset.quantity);
-    else onInput();
+    else onInput(asset.input);
   }, [asset]);
   return (
     <Box m="0.5">
