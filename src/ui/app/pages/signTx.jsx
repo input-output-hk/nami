@@ -340,24 +340,39 @@ const SignTx = ({ request, controller }) => {
     setKeyHashes({ key: requiredKeyHashes, kind: keyKind });
   };
 
-  const checkCollateral = (tx, account) => {
+  const checkCollateral = (tx, utxos, account) => {
     const collateralInputs = tx.body().collateral();
     if (!collateralInputs) return;
-    if (!account.collateral) {
-      setIsLoading((l) => ({ ...l, error: 'Collateral not set' }));
-      return;
-    }
+
+    // checking all wallet utxos if used as collateral
     for (let i = 0; i < collateralInputs.len(); i++) {
       const collateral = collateralInputs.get(i);
-      if (
-        !(
-          Buffer.from(collateral.transaction_id().to_bytes()).toString('hex') ==
-            account.collateral.txHash &&
-          collateral.index() == account.collateral.txId
-        )
-      ) {
-        setIsLoading((l) => ({ ...l, error: 'Invalid collateral used' }));
-        break;
+      for (let j = 0; j < utxos.length; j++) {
+        const input = utxos[j].input();
+        if (
+          Buffer.from(input.transaction_id().to_bytes()).toString('hex') ==
+            Buffer.from(collateral.transaction_id().to_bytes()).toString(
+              'hex'
+            ) &&
+          input.index() == collateral.index()
+        ) {
+          if (!account.collateral) {
+            setIsLoading((l) => ({ ...l, error: 'Collateral not set' }));
+            return;
+          }
+
+          if (
+            !(
+              Buffer.from(collateral.transaction_id().to_bytes()).toString(
+                'hex'
+              ) == account.collateral.txHash &&
+              collateral.index() == account.collateral.txId
+            )
+          ) {
+            setIsLoading((l) => ({ ...l, error: 'Invalid collateral used' }));
+            return;
+          }
+        }
       }
     }
   };
@@ -372,7 +387,7 @@ const SignTx = ({ request, controller }) => {
     );
     getFee(tx);
     await getValue(tx, utxos, currentAccount);
-    checkCollateral(tx, currentAccount);
+    checkCollateral(tx, utxos, currentAccount);
     getKeyHashes(tx, utxos, currentAccount);
     getProperties(tx);
     setIsLoading((l) => ({ ...l, loading: false }));
