@@ -64,6 +64,7 @@ import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
 import { action, useStoreActions, useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
+import NumberFormat from 'react-number-format';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -391,7 +392,32 @@ const Send = () => {
                       )
                     }
                   />
-                  <Input
+                  <NumberFormat
+                    allowNegative={false}
+                    thousandsGroupStyle="thousand"
+                    value={value.ada || 0}
+                    decimalSeparator="."
+                    displayType="input"
+                    type="text"
+                    thousandSeparator={true}
+                    decimalScale={6}
+                    allowEmptyFormatting={true}
+                    fixedDecimalScale={true}
+                    onValueChange={({ formattedValue }) => {
+                      clearTimeout(timer);
+                      value.ada = formattedValue;
+                      value.personalAda = formattedValue;
+                      const v = value;
+                      setValue({
+                        ...v,
+                        ada: formattedValue,
+                        personalAda: formattedValue,
+                      });
+                      timer = setTimeout(() => {
+                        prepareTx(v, undefined, 0);
+                      }, 800);
+                    }}
+                    borderLeftRadius="none"
                     variant="filled"
                     isDisabled={isLoading}
                     isInvalid={
@@ -402,40 +428,8 @@ const Send = () => {
                           BigInt(txInfo.balance.lovelace || '0'))
                     }
                     onFocus={() => (focus.current = true)}
-                    onBlur={(e) => {
-                      if (
-                        !e.target.value ||
-                        !e.target.value.match(/^,+|(,)+|d*[0-9,.]\d*$/)
-                      )
-                        return;
-                      const displayAda = parseFloat(
-                        e.target.value.replace(/[,\s]/g, '')
-                      ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
-                      setValue({ ...value, ada: displayAda });
-                      focus.current = false;
-                    }}
-                    value={value.ada}
-                    onInput={(e) => {
-                      clearTimeout(timer);
-                      if (
-                        e.target.value &&
-                        !e.target.value.match(/^,+|(,)+|d*[0-9,.]\d*$/)
-                      )
-                        return;
-
-                      value.ada = e.target.value;
-                      value.personalAda = e.target.value;
-                      const v = value;
-                      setValue({
-                        ...v,
-                        ada: e.target.value,
-                        personalAda: e.target.value,
-                      });
-                      timer = setTimeout(() => {
-                        prepareTx(v, undefined, 0);
-                      }, 800);
-                    }}
                     placeholder="0.000000"
+                    customInput={Input}
                   />
                 </InputGroup>
                 <AssetsSelector

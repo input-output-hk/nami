@@ -14,6 +14,7 @@ import React from 'react';
 import { getAsset, toUnit } from '../../../api/extension';
 
 import AssetPopover from './assetPopover';
+import NumberFormat from 'react-number-format';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -48,7 +49,10 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
     setInitialWidth(initialWidth);
     setWidth(initialWidth);
     if (BigInt(asset.quantity) <= 1) onInput(asset.quantity);
-    else onInput(asset.input);
+    else {
+      onInput(asset.input);
+      asset.input && setWidth(initialWidth + asset.input.length * 4);
+    }
   }, [asset]);
   return (
     <Box m="0.5">
@@ -104,7 +108,17 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
             </Box>
           }
         />
-        <Input
+        <NumberFormat
+          allowNegative={false}
+          px="8"
+          thousandsGroupStyle="thousand"
+          decimalSeparator="."
+          displayType="input"
+          type="text"
+          thousandSeparator={true}
+          decimalScale={token ? token.decimals : 0}
+          allowEmptyFormatting={true}
+          fixedDecimalScale={true}
           width={`${width}px`}
           maxWidth="130px"
           isReadOnly={BigInt(asset.quantity) <= 1}
@@ -113,19 +127,9 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
           variant="filled"
           fontSize="xs"
           placeholder="Qty"
-          onInput={(e) => {
-            const val = e.target.value;
-            if (
-              token.decimals == 0 &&
-              !e.target.value.match(/^\d*[0-9]\d*$/) &&
-              e.target.value
-            )
-              return;
-            if (!val.match(/^\d*[0-9,.]\d*$/) && val) return;
-            if (val.split('.')[1] && val.split('.')[1].length > token.decimals)
-              return;
-            setWidth(initialWidth + val.length * 4);
-            onInput(val);
+          onValueChange={({ formattedValue }) => {
+            setWidth(initialWidth + formattedValue.length * 4);
+            onInput(formattedValue);
           }}
           isInvalid={
             token &&
@@ -134,6 +138,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
               BigInt(asset.quantity) ||
               BigInt(toUnit(asset.input, token.decimals)) <= 0)
           }
+          customInput={Input}
         />
         <InputRightElement
           rounded="lg"
