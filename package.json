@@ -58,6 +58,7 @@
     "react-lazy-load-image-component": "^1.5.1",
     "react-leaf-carousel": "^2.0.3",
     "react-middle-ellipsis": "^1.2.1",
+    "react-number-format": "^4.8.0",
     "react-router-dom": "^5.2.0",
     "react-slick": "^0.28.1",
     "react-syntax-highlighter": "^15.4.3",
