@@ -200,7 +200,10 @@ const Send = () => {
       };
 
       for (const asset of _value.assets) {
-        if (!asset.input || BigInt(asset.input || '0') < 1) {
+        if (
+          !asset.input ||
+          BigInt(toUnit(asset.input, asset.decimals) || '0') < 1
+        ) {
           setFee({ error: 'Asset quantity not set' });
           return;
         }
