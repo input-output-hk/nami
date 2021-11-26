@@ -467,13 +467,13 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             <UnorderedList mt="10px">
               <ListItem>You will no longer receive rewards.</ListItem>
               <ListItem>
-                Rewards from the 2 previous epoch will be lost
+                Rewards from the 2 previous epoch will be lost.
               </ListItem>
-              <ListItem>Full reward balance will be withdrawn</ListItem>
-              <ListItem>The 2 ADA deposit will be refunded</ListItem>
+              <ListItem>Full reward balance will be withdrawn.</ListItem>
+              <ListItem>The 2 ADA deposit will be refunded.</ListItem>
               <ListItem>
                 You will have to re-register and wait 20 days to receive rewards
-                again
+                again.
               </ListItem>
             </UnorderedList>
             <Box h="6" />
