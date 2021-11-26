@@ -465,7 +465,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               Going forward with deregistration will have the following effects:
             </Text>
             <UnorderedList mt="10px">
-              <ListItem>You will no longer receive rewards</ListItem>
+              <ListItem>You will no longer receive rewards.</ListItem>
               <ListItem>
                 Rewards from the 2 previous epoch will be lost
               </ListItem>
