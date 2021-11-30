@@ -1,4 +1,5 @@
 import {
+  ADA_HANDLE,
   APIError,
   DataSignError,
   ERROR,
@@ -1209,6 +1210,20 @@ export const initHW = async ({ device, id }) => {
       });
     } catch (e) {}
   }
+};
+
+/**
+ *
+ * @param {string} assetName utf8 encoded
+ */
+export const getAdaHandle = async (assetName) => {
+  const network = await getNetwork();
+  const assetNameHex = Buffer.from(assetName).toString('hex');
+  const policy = ADA_HANDLE[network.id];
+  const asset = policy + assetNameHex;
+  const resolvedAddress = await blockfrostRequest(`/assets/${asset}/addresses`);
+  if (!resolvedAddress || resolvedAddress.error) return null;
+  return resolvedAddress[0].address;
 };
 
 export const createWallet = async (name, seedPhrase, password) => {
