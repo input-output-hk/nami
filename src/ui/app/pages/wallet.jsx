@@ -925,6 +925,7 @@ const DelegationPopover = ({ account, delegation, children }) => {
             />
             <Box h="4" />
             <Tooltip
+              placement="top"
               isDisabled={BigInt(delegation.rewards) >= BigInt('2000000')}
               label="2 ADA minimum"
             >
