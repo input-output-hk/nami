@@ -378,9 +378,9 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                   justifyContent="center"
                 >
                   <UnitDisplay
-                    fontSize="md"
+                    fontSize="xl"
                     fontWeight="bold"
-                    color="green.500"
+                    color="teal.500"
                     hide
                     quantity={data.rewards}
                     decimals={6}
