@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import {
   displayUnit,
   getAccounts,
+  getAdaHandle,
   getAsset,
   getCurrentAccount,
   getUtxos,
@@ -80,7 +81,7 @@ let timer = null;
 const initialState = {
   fee: { fee: '0' },
   value: { ada: '', assets: [], personalAda: '', minAda: '0' },
-  address: { result: '' },
+  address: { result: '', display: '' },
   tx: null,
   txInfo: {
     protocolParameters: null,
@@ -370,7 +371,7 @@ const Send = () => {
               />
               {address.error && (
                 <Text width="full" textAlign="left" color="red.300">
-                  Address is invalid
+                  {address.error}
                 </Text>
               )}
               <Box height="5" />
@@ -618,6 +619,7 @@ const Send = () => {
 // Address Popup
 const AddressPopup = ({ setAddress, address, prepareTx }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const checkColor = useColorModeValue('teal.500', 'teal.200');
   const ref = React.useRef(false);
   const [state, setState] = React.useState({
     currentAccount: null,
@@ -658,44 +660,79 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
       gutter={1}
     >
       <PopoverTrigger>
-        <Input
-          // focusBorderColor={inputColor}
-          variant="filled"
-          autoComplete="off"
-          value={address.result}
-          spellCheck={false}
-          onBlur={async (e) => {
-            await new Promise((res, rej) => setTimeout(() => res()));
-            if (ref.current) {
-              ref.current = false;
-              return;
-            }
-            onClose();
-            setTimeout(() => e.target.blur());
-          }}
-          fontSize="xs"
-          placeholder="Recipient"
-          onInput={async (e) => {
-            clearTimeout(timer);
-            const val = e.target.value;
-            let addr;
-            addr = { result: val };
-            if (!e.target.value) {
-              addr = { result: '' };
-            } else if (await isValidAddress(val)) {
+        <InputGroup>
+          <Input
+            variant="filled"
+            autoComplete="off"
+            value={address.display}
+            spellCheck={false}
+            onBlur={async (e) => {
+              await new Promise((res, rej) => setTimeout(() => res()));
+              if (ref.current) {
+                ref.current = false;
+                return;
+              }
+              onClose();
+              setTimeout(() => e.target.blur());
+            }}
+            fontSize="xs"
+            placeholder="Address or $handle"
+            onInput={async (e) => {
+              clearTimeout(timer);
+              const val = e.target.value;
+              let addr;
+              let isHandle = false;
               addr = { result: val };
-            } else {
-              addr = { result: val, error: 'Address is invalid' };
-            }
-            setAddress(addr);
-            onClose();
+              if (!e.target.value) {
+                addr = { result: '', display: '' };
+              } else if (val.startsWith('$')) {
+                isHandle = true;
+                addr = { display: val };
+              } else if (await isValidAddress(val)) {
+                addr = { result: val, display: val };
+              } else {
+                addr = {
+                  result: val,
+                  display: val,
+                  error: 'Address is invalid',
+                };
+              }
+              setAddress(addr);
+              onClose();
 
-            timer = setTimeout(() => {
-              prepareTx(undefined, addr, 0);
-            }, 300);
-          }}
-          isInvalid={address.error}
-        />
+              timer = setTimeout(async () => {
+                // checking for Ada handle after 300ms
+                if (isHandle) {
+                  const resolvedAddress = await getAdaHandle(
+                    e.target.value.slice(1)
+                  );
+                  if (
+                    e.target.value.length > 1 &&
+                    (await isValidAddress(resolvedAddress))
+                  ) {
+                    addr = { result: resolvedAddress, display: e.target.value };
+                  } else {
+                    addr = {
+                      result: e.target.value,
+                      display: e.target.value,
+                      error: '$handle not found',
+                    };
+                  }
+                  setAddress(addr);
+                  onClose();
+                }
+
+                prepareTx(undefined, addr, 0);
+              }, 300);
+            }}
+            isInvalid={address.error}
+          />
+          {address.result && !address.error && (
+            <InputRightElement
+              children={<CheckIcon boxSize="3" color={checkColor} />}
+            />
+          )}
+        </InputGroup>
       </PopoverTrigger>
       <PopoverContent
         onClick={() => {
@@ -730,10 +767,15 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
                     const address = state.recentAddress;
                     setAddress({
                       result: address,
+                      display: address,
                     });
                     onClose();
                     timer = setTimeout(() => {
-                      prepareTx(undefined, { result: address }, 0);
+                      prepareTx(
+                        undefined,
+                        { result: address, display: address },
+                        0
+                      );
                     }, 300);
                   }}
                 >
@@ -783,14 +825,20 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
                           variant="ghost"
                           onClick={() => {
                             clearTimeout(timer);
+                            const addr = account.paymentAddr;
                             setAddress({
-                              result: account.paymentAddr,
+                              result: addr,
+                              display: addr,
                             });
                             onClose();
                             timer = setTimeout(() => {
+                              const addr = account.paymentAddr;
                               prepareTx(
                                 undefined,
-                                { result: account.paymentAddr },
+                                {
+                                  result: addr,
+                                  display: addr,
+                                },
                                 0
                               );
                             }, 300);
