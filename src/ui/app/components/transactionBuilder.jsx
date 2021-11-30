@@ -7,6 +7,7 @@ import {
   signAndSubmit,
   withdrawalTx,
   signAndSubmitHW,
+  undelegateTx,
 } from '../../../api/extension/wallet';
 import ConfirmModal from './confirmModal';
 import UnitDisplay from './unitDisplay';
@@ -22,8 +23,10 @@ import {
   Button,
   useToast,
   Icon,
+  UnorderedList,
+  ListItem,
 } from '@chakra-ui/react';
-
+import { GoStop } from 'react-icons/Go';
 // Assets
 import Berry from '../../../assets/img/berry.svg';
 import { ERROR } from '../../../config/config';
@@ -58,6 +61,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
   const COLLATERAL = '5';
   const delegationRef = React.useRef();
   const withdrawRef = React.useRef();
+  const undelegateRef = React.useRef();
   const collateralRef = React.useRef();
   const accountIndex = React.useRef();
   React.useImperativeHandle(ref, () => ({
@@ -128,6 +132,31 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         setData((d) => ({
           ...d,
           error: 'Transaction not possible (maybe reward amount too small)',
+        }));
+      }
+    },
+    async initUndelegate(account, delegation) {
+      setData({
+        fee: '',
+        stakeRegistration: '',
+        rewards: '',
+        ready: false,
+        error: '',
+      });
+      undelegateRef.current.openModal(account.index);
+      const protocolParameters = await initTx();
+      try {
+        const tx = await undelegateTx(account, delegation, protocolParameters);
+        setData({
+          tx,
+          account,
+          fee: tx.body().fee().to_str(),
+          ready: true,
+        });
+      } catch (e) {
+        setData((d) => ({
+          ...d,
+          error: 'Transaction not possible (maybe account balance too low)',
         }));
       }
     },
@@ -374,6 +403,109 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           </Box>
         }
         ref={withdrawRef}
+      />
+      <ConfirmModal
+        ready={data.ready}
+        title="Stake deregistration"
+        sign={async (password, hw) => {
+          if (hw)
+            return await signAndSubmitHW(data.tx, {
+              keyHashes: [
+                data.account.paymentKeyHash,
+                data.account.stakeKeyHash,
+              ],
+              account: data.account,
+              hw,
+            });
+          return await signAndSubmit(
+            data.tx,
+            {
+              keyHashes: [
+                data.account.paymentKeyHash,
+                data.account.stakeKeyHash,
+              ],
+              accountIndex: data.account.index,
+            },
+            password
+          );
+        }}
+        onConfirm={(status, signedTx) => {
+          if (status === true)
+            toast({
+              title: 'Deregistration submitted',
+              status: 'success',
+              duration: 4000,
+            });
+          else if (signedTx === ERROR.fullMempool) {
+            toast({
+              title: 'Transaction failed',
+              description: 'Mempool full. Try again.',
+              status: 'error',
+              duration: 3000,
+            });
+          } else
+            toast({
+              title: 'Transaction failed',
+              status: 'error',
+              duration: 3000,
+            });
+          undelegateRef.current.closeModal();
+        }}
+        info={
+          <Box
+            width="100%"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            flexDirection="column"
+          >
+            <Icon as={GoStop} w={50} h={50} color="red.500" />
+            <Box h="4" />
+            <Text fontSize="sm">
+              Going forward with deregistration will have the following effects:
+            </Text>
+            <UnorderedList mt="10px">
+              <ListItem>You will no longer receive rewards.</ListItem>
+              <ListItem>
+                Rewards from the 2 previous epoch will be lost.
+              </ListItem>
+              <ListItem>Full reward balance will be withdrawn.</ListItem>
+              <ListItem>The 2 ADA deposit will be refunded.</ListItem>
+              <ListItem>
+                You will have to re-register and wait 20 days to receive rewards
+                again.
+              </ListItem>
+            </UnorderedList>
+            <Box h="6" />
+            {data.error ? (
+              <Box textAlign="center" mb="4" color="red.300">
+                {data.error}
+              </Box>
+            ) : (
+              <Box fontSize="sm">
+                <Box
+                  mt="1"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Text fontWeight="bold">+ Stake Deregistration</Text>
+                </Box>
+                <Box display="flex" alignItems="center" justifyContent="center">
+                  <Text fontWeight="bold">+ Fee:</Text>
+                  <Box w="1" />
+                  <UnitDisplay
+                    quantity={data.fee}
+                    decimals={6}
+                    symbol={settings.adaSymbol}
+                  />
+                </Box>
+                <Box h="4" />
+              </Box>
+            )}
+          </Box>
+        }
+        ref={undelegateRef}
       />
       <ConfirmModal
         ready={data.ready && !isHW(data.account.index)} // TODO plutus not supported yet by HW
