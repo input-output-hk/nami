@@ -15,6 +15,6 @@
     "noEmit": false,
     "jsx": "react"
   },
-  "include": ["src"],
+  "include": ["src", "index.d.ts"],
   "exclude": ["build", "node_modules"]
 }
