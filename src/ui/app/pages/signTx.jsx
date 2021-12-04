@@ -137,6 +137,7 @@ const SignTx = ({ request, controller }) => {
       Loader.Cardano.BigNum.from_str('0')
     );
     const externalOutputs = {};
+    const externalDatum = {};
     if (!outputs) return;
     for (let i = 0; i < outputs.len(); i++) {
       const output = outputs.get(i);
@@ -146,6 +147,16 @@ const SignTx = ({ request, controller }) => {
         ownOutputValue = ownOutputValue.checked_add(output.amount());
       } else {
         //external
+        if(output.data_hash()){
+            // store data separately
+            //console.log(output.data_hash().to_bech32());
+            const datumh = Buffer.from(
+                output.data_hash().to_bytes()
+            ).toString('hex');
+            console.log(datumh);
+
+            externalDatum[address] = datumh;
+        }
         if (!externalOutputs[address]) {
           const value = Loader.Cardano.Value.new(output.amount().coin());
           if (output.amount().multiasset())
@@ -194,6 +205,11 @@ const SignTx = ({ request, controller }) => {
     const externalValue = {};
     for (const address of Object.keys(externalOutputs)) {
       externalValue[address] = await valueToAssets(externalOutputs[address]);
+      if(externalDatum[address]){
+        externalValue[address].push({
+            unit: 'datum', quantity: externalDatum[address]
+        })
+      }
     }
 
     const ownValue = ownOutputValueDifference.filter((v) => v.quantity != 0);
@@ -434,6 +450,7 @@ const SignTx = ({ request, controller }) => {
             (() => {
               let lovelace = value.ownValue.find((v) => v.unit === 'lovelace');
               lovelace = lovelace ? lovelace.quantity : '0';
+              console.log(value);
               const assets = value.ownValue.filter(
                 (v) => v.unit !== 'lovelace'
               );
@@ -526,8 +543,11 @@ const SignTx = ({ request, controller }) => {
                   (v) => v.unit === 'lovelace'
                 ).quantity;
                 const assets = value.externalValue[address].filter(
-                  (v) => v.unit !== 'lovelace'
+                  (v) => v.unit !== 'lovelace' && v.unit !== 'datum'
                 );
+                const datum = value.externalValue[address].find(
+                  (v) => v.unit === 'datum'
+                ).quantity;
                 return (
                   <Box key={index} mb="2">
                     <Stack direction="row" alignItems="center" mr="4">
@@ -554,6 +574,14 @@ const SignTx = ({ request, controller }) => {
                             + {assets.length}{' '}
                             {assets.length > 1 ? 'Assets' : 'Asset'}{' '}
                             <AssetsPopover assets={assets} />
+                          </Text>
+                        )}
+                         
+                        {datum && (
+                          <Text mt="-1" fontWeight="bold">
+                            + 1 {' '}
+                            {'DatumHash'}{' '}
+                            <DatumPopover datum={datum} />
                           </Text>
                         )}
                       </Box>
@@ -791,6 +819,67 @@ const AssetsPopover = ({ assets, isDifference }) => {
     </Popover>
   );
 };
+const DatumPopover = ({ datum }) => {
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <Button
+          style={{
+            all: 'revert',
+            background: 'none',
+            border: 'none',
+            outline: 'none',
+            cursor: 'pointer',
+            color: 'inherit',
+          }}
+        >
+          <ChevronDownIcon cursor="pointer" />
+        </Button>
+      </PopoverTrigger>
+      <Portal>
+        <PopoverContent w="98%">
+          <PopoverArrow ml="4px" />
+          <PopoverCloseButton />
+          <PopoverHeader fontWeight="bold">DatumHash</PopoverHeader>
+          <PopoverBody p="-2">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              flexDirection="column"
+              my="1"
+            >
+              {datum && (
+                <List
+                  outerElementType={CustomScrollbarsVirtualList}
+                  height={200}
+                  itemCount={1}
+                  itemSize={45}
+                  width={385}
+                  layout="vertical"
+                >
+                  {({ index, style }) => {
+                    return (
+                      <Box
+                        key={index}
+                        style={style}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <DatumHash datum={datum}/>
+                      </Box>
+                    );
+                  }}
+                </List>
+              )}
+            </Box>
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
+    </Popover>
+  );
+};
 
 const Asset = ({ asset, isDifference }) => {
   const [token, setToken] = React.useState(null);
@@ -866,6 +955,43 @@ const Asset = ({ asset, isDifference }) => {
                   decimals={token.decimals}
                 />
               </Box>
+            </Box>
+          </Box>
+        </Stack>
+      )}
+    </Box>
+  );
+};
+const DatumHash = ({ datum }) => {
+
+  return (
+    <Box
+      width="100%"
+      ml="3"
+      display="flex"
+      alignItems="center"
+      justifyContent="start"
+    >
+      {datum && (
+        <Stack
+          width="100%"
+          fontSize="xs"
+          direction="row"
+          alignItems="center"
+          justifyContent="start"
+        >
+          <Box
+            textAlign="left"
+            width="200px"
+            whiteSpace="nowrap"
+            fontWeight="normal"
+          >
+            <Box mb="-0.5">
+            <MiddleEllipsis>
+                <Copy label="Copied datum hash" copy={datum}>
+                    <span>{datum}</span>
+                </Copy>
+            </MiddleEllipsis>
             </Box>
           </Box>
         </Stack>
