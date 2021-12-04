@@ -149,12 +149,9 @@ const SignTx = ({ request, controller }) => {
         //external
         if(output.data_hash()){
             // store data separately
-            //console.log(output.data_hash().to_bech32());
             const datumh = Buffer.from(
                 output.data_hash().to_bytes()
             ).toString('hex');
-            console.log(datumh);
-
             externalDatum[address] = datumh;
         }
         if (!externalOutputs[address]) {
@@ -450,7 +447,6 @@ const SignTx = ({ request, controller }) => {
             (() => {
               let lovelace = value.ownValue.find((v) => v.unit === 'lovelace');
               lovelace = lovelace ? lovelace.quantity : '0';
-              console.log(value);
               const assets = value.ownValue.filter(
                 (v) => v.unit !== 'lovelace'
               );
