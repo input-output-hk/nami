@@ -55,7 +55,6 @@ const SignTx = ({ request, controller }) => {
     minting: false,
     script: false,
     contract: false,
-    datum: false,
   });
   // key kind can be payment and stake
   const [keyHashes, setKeyHashes] = React.useState({ kind: null, key: [] });
@@ -75,13 +74,11 @@ const SignTx = ({ request, controller }) => {
     const withdrawal = tx.body().withdrawals();
     const minting = tx.body().multiassets();
     const script = tx.witness_set().native_scripts();
-    let datum;
     let contract = tx.body().script_data_hash();
     const outputs = tx.body().outputs();
     for (let i = 0; i < outputs.len(); i++) {
       const output = outputs.get(i);
       if (output.data_hash()) {
-        datum = true;
         const prefix = bytesAddressToBinary(output.address().to_bytes()).slice(
           0,
           4
@@ -106,7 +103,6 @@ const SignTx = ({ request, controller }) => {
       minting,
       contract,
       script,
-      datum,
     });
   };
 
@@ -447,6 +443,7 @@ const SignTx = ({ request, controller }) => {
             (() => {
               let lovelace = value.ownValue.find((v) => v.unit === 'lovelace');
               lovelace = lovelace ? lovelace.quantity : '0';
+              console.log(value);
               const assets = value.ownValue.filter(
                 (v) => v.unit !== 'lovelace'
               );
@@ -631,11 +628,6 @@ const SignTx = ({ request, controller }) => {
                     {property.script && (
                       <Text>
                         <b>Script</b>
-                      </Text>
-                    )}
-                    {property.datum && (
-                      <Text>
-                        <b>Datum</b>
                       </Text>
                     )}
                   </>
@@ -978,17 +970,17 @@ const DatumHash = ({ datum }) => {
         >
           <Box
             textAlign="left"
-            width="200px"
+            width="350px"
             whiteSpace="nowrap"
             fontWeight="normal"
           >
-            <Box mb="-0.5">
-            <MiddleEllipsis>
-                <Copy label="Copied datum hash" copy={datum}>
-                    <span>{datum}</span>
-                </Copy>
-            </MiddleEllipsis>
-            </Box>
+            <Copy label="Copied datum hash" copy={datum}>
+                <Box mb="-0.5">
+                    <MiddleEllipsis>
+                        <span>{datum}</span>
+                    </MiddleEllipsis>
+                </Box>
+            </Copy>
           </Box>
         </Stack>
       )}
