@@ -316,6 +316,9 @@ export const valueToAssets = async (value) => {
       }
     }
   }
+  if(value.datum){
+    assets.push({ unit: 'datum', quantity: value.datum });
+  }
   // if (value.coin().to_str() == '0') return [];
   return assets;
 };
