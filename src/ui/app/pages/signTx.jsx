@@ -840,7 +840,7 @@ const DatumPopover = ({ datum }) => {
               {datum && (
                 <List
                   outerElementType={CustomScrollbarsVirtualList}
-                  height={200}
+                  height={50}
                   itemCount={1}
                   itemSize={45}
                   width={385}
@@ -970,7 +970,7 @@ const DatumHash = ({ datum }) => {
         >
           <Box
             textAlign="left"
-            width="350px"
+            width="375px"
             whiteSpace="nowrap"
             fontWeight="normal"
           >
