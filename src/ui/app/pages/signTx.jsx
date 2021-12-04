@@ -443,7 +443,6 @@ const SignTx = ({ request, controller }) => {
             (() => {
               let lovelace = value.ownValue.find((v) => v.unit === 'lovelace');
               lovelace = lovelace ? lovelace.quantity : '0';
-              console.log(value);
               const assets = value.ownValue.filter(
                 (v) => v.unit !== 'lovelace'
               );
