@@ -87,7 +87,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
   // TODO: bring split function into serialization-lib
   if (
     changeMultiAssets &&
-    change.to_bytes().length * 2 > protocolParameters.maxValSize
+    change.to_bytes().length * 3 > protocolParameters.maxValSize
   ) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
@@ -102,6 +102,7 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
       let assets = Loader.Cardano.Assets.new();
       let isFull = false;
       for (let k = 0; k < assetNames.len(); k++) {
+        isFull = false;
         const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset);
         assets.insert(policyAsset, quantity);
@@ -139,6 +140,22 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
       }
       if (!isFull) partialMultiAssets.insert(policy, assets);
     }
+    if (partialMultiAssets.len() > 0) {
+      partialChange.set_multiasset(partialMultiAssets);
+      const minAda = Loader.Cardano.min_ada_required(
+        partialChange,
+        false,
+        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
+      );
+      partialChange.set_coin(minAda);
+
+      txBuilder.add_output(
+        Loader.Cardano.TransactionOutput.new(
+          Loader.Cardano.Address.from_bech32(account.paymentAddr),
+          partialChange
+        )
+      );
+    }
   }
 
   txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
@@ -150,10 +167,6 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
     txBuilder.build(),
     Loader.Cardano.TransactionWitnessSet.new()
   );
-
-  const size = transaction.to_bytes().length;
-  console.log(size);
-  if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 
   return transaction;
 };
@@ -284,7 +297,7 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
   // TODO: bring split function into serialization-lib
   if (
     changeMultiAssets &&
-    change.to_bytes().length * 2 > protocolParameters.maxValSize
+    change.to_bytes().length * 3 > protocolParameters.maxValSize
   ) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
@@ -299,6 +312,7 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
       let assets = Loader.Cardano.Assets.new();
       let isFull = false;
       for (let k = 0; k < assetNames.len(); k++) {
+        isFull = false;
         const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset);
         assets.insert(policyAsset, quantity);
@@ -336,6 +350,22 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
       }
       if (!isFull) partialMultiAssets.insert(policy, assets);
     }
+    if (partialMultiAssets.len() > 0) {
+      partialChange.set_multiasset(partialMultiAssets);
+      const minAda = Loader.Cardano.min_ada_required(
+        partialChange,
+        false,
+        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
+      );
+      partialChange.set_coin(minAda);
+
+      txBuilder.add_output(
+        Loader.Cardano.TransactionOutput.new(
+          Loader.Cardano.Address.from_bech32(account.paymentAddr),
+          partialChange
+        )
+      );
+    }
   }
 
   txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
@@ -347,9 +377,6 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     txBuilder.build(),
     Loader.Cardano.TransactionWitnessSet.new()
   );
-
-  const size = transaction.to_bytes().length * 2;
-  if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 
   return transaction;
 };
@@ -414,7 +441,7 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
   // TODO: bring split function into serialization-lib
   if (
     changeMultiAssets &&
-    change.to_bytes().length * 2 > protocolParameters.maxValSize
+    change.to_bytes().length * 3 > protocolParameters.maxValSize
   ) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
@@ -429,6 +456,7 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
       let assets = Loader.Cardano.Assets.new();
       let isFull = false;
       for (let k = 0; k < assetNames.len(); k++) {
+        isFull = false;
         const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset);
         assets.insert(policyAsset, quantity);
@@ -466,6 +494,22 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
       }
       if (!isFull) partialMultiAssets.insert(policy, assets);
     }
+    if (partialMultiAssets.len() > 0) {
+      partialChange.set_multiasset(partialMultiAssets);
+      const minAda = Loader.Cardano.min_ada_required(
+        partialChange,
+        false,
+        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
+      );
+      partialChange.set_coin(minAda);
+
+      txBuilder.add_output(
+        Loader.Cardano.TransactionOutput.new(
+          Loader.Cardano.Address.from_bech32(account.paymentAddr),
+          partialChange
+        )
+      );
+    }
   }
 
   txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
@@ -477,9 +521,6 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     txBuilder.build(),
     Loader.Cardano.TransactionWitnessSet.new()
   );
-
-  const size = transaction.to_bytes().length * 2;
-  if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 
   return transaction;
 };
@@ -561,7 +602,7 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
   // TODO: bring split function into serialization-lib
   if (
     changeMultiAssets &&
-    change.to_bytes().length * 2 > protocolParameters.maxValSize
+    change.to_bytes().length * 3 > protocolParameters.maxValSize
   ) {
     const partialChange = Loader.Cardano.Value.new(
       Loader.Cardano.BigNum.from_str('0')
@@ -576,6 +617,7 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
       let assets = Loader.Cardano.Assets.new();
       let isFull = false;
       for (let k = 0; k < assetNames.len(); k++) {
+        isFull = false;
         const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset);
         assets.insert(policyAsset, quantity);
@@ -613,6 +655,22 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
       }
       if (!isFull) partialMultiAssets.insert(policy, assets);
     }
+    if (partialMultiAssets.len() > 0) {
+      partialChange.set_multiasset(partialMultiAssets);
+      const minAda = Loader.Cardano.min_ada_required(
+        partialChange,
+        false,
+        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
+      );
+      partialChange.set_coin(minAda);
+
+      txBuilder.add_output(
+        Loader.Cardano.TransactionOutput.new(
+          Loader.Cardano.Address.from_bech32(account.paymentAddr),
+          partialChange
+        )
+      );
+    }
   }
 
   txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
@@ -624,9 +682,6 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
     txBuilder.build(),
     Loader.Cardano.TransactionWitnessSet.new()
   );
-
-  const size = transaction.to_bytes().length * 2;
-  if (size > protocolParameters.maxTxSize) throw ERROR.txTooBig;
 
   return transaction;
 };
