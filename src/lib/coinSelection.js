@@ -289,17 +289,6 @@ const CoinSelection = {
         )
       );
 
-      let maxFee =
-        BigInt(protocolParameters.minFeeA) *
-          BigInt(protocolParameters.maxTxSize) +
-        BigInt(protocolParameters.minFeeB);
-
-      maxFee = Loader.Cardano.Value.new(
-        Loader.Cardano.BigNum.from_str(maxFee.toString())
-      );
-
-      minAmount = minAmount.checked_add(maxFee);
-
       if (compare(change, minAmount) < 0) {
         // Not enough, add missing amount and run select one last time
         const minAda = minAmount
@@ -676,7 +665,7 @@ function createSubSet(utxoSelection, output) {
 function isQtyFulfilled(outputAmount, cumulatedAmount, nbFreeUTxO) {
   let amount = outputAmount;
 
-  if (BigInt(outputAmount.coin().to_str()) > 0) {
+  if (!outputAmount.multiasset() || outputAmount.multiasset().len() <= 0) {
     let minAmount = Loader.Cardano.Value.new(
       Loader.Cardano.min_ada_required(
         cumulatedAmount,
