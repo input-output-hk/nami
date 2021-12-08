@@ -533,9 +533,7 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
   outputs.add(
     Loader.Cardano.TransactionOutput.new(
       Loader.Cardano.Address.from_bech32(account.paymentAddr),
-      Loader.Cardano.Value.new(
-        Loader.Cardano.BigNum.from_str(protocolParameters.minUtxo)
-      )
+      Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'))
     )
   );
   CoinSelection.setProtocolParameters(
