@@ -1,4 +1,3 @@
-import { TransactionUnspentOutput } from '@emurgo/cardano-serialization-lib-browser';
 import {
   getStorage,
   encryptWithPassword,
