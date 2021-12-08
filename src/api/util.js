@@ -30,11 +30,23 @@ import {
   CardanoTxSigningMode,
 } from '../../temporary_modules/trezor-connect/';
 
-export const blockfrostRequest = async (endpoint, headers, body) => {
-  const network = await getNetwork();
+export async function delay(delayInMs) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, delayInMs);
+  });
+}
 
-  return await new Promise(async (res, rej) => {
-    const result = await fetch(provider.api.base(network.node) + endpoint, {
+export async function blockfrostRequest(endpoint, headers, body) {
+  const network = await getNetwork();
+  let result;
+
+  while (!result || result.status_code === 500) {
+    if (result) {
+      await delay(100);
+    }
+    const rawResult = await fetch(provider.api.base(network.node) + endpoint, {
       headers: {
         ...provider.api.key(network.id),
         ...headers,
@@ -43,29 +55,12 @@ export const blockfrostRequest = async (endpoint, headers, body) => {
       },
       method: body ? 'POST' : 'GET',
       body,
-    }).then((res) => res.json());
-    // in case blockfrost throws error 500 => loop until result in 100ms interval
-    if (result.status_code === 500) {
-      const interval = setInterval(async () => {
-        const result = await fetch(provider.api.base(network.node) + endpoint, {
-          headers: {
-            ...provider.api.key(network.id),
-            ...headers,
-            'User-Agent': 'nami-wallet',
-          },
-          method: body ? 'POST' : 'GET',
-          body,
-        }).then((res) => res.json());
-        if (result.status_code !== 500) {
-          clearInterval(interval);
-          return res(result);
-        }
-      }, 100);
-    } else {
-      res(result);
-    }
-  });
-};
+    });
+    result = rawResult.json();
+  }
+
+  return result;
+}
 
 /**
  *
