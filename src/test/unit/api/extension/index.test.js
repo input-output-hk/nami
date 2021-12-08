@@ -17,13 +17,13 @@ import {
 import Loader from '../../../../api/loader';
 import { ERROR, NODE, STORAGE } from '../../../../config/config';
 
-beforeAll(() => {
+beforeAll(async () => {
   const seed =
     'midnight draft salt dirt woman tragic cause immense dad later jaguar finger nerve nerve sign job erase citizen cube neglect token bracket orient narrow';
   const name = 'Wallet 1';
   const password = 'password123';
-  Loader.load();
-  createWallet(name, seed, password);
+  await Loader.load();
+  await createWallet(name, seed, password);
 });
 
 test('storage initialized correctly', async () => {
@@ -97,13 +97,6 @@ test('expect testnet address', async () => {
   await setNetwork({ id: 'testnet', node: NODE.testnet });
   const account = await getCurrentAccount();
   expect(account.paymentAddr).toContain('addr_');
-});
-
-test('expect TransactionUnspentOutput array', async () => {
-  const utxos = await getUtxos();
-  expect(utxos).toBeInstanceOf(Array);
-  if (utxos.length > 0)
-    expect(utxos[0]).toBeInstanceOf(TransactionUnspentOutput);
 });
 
 test('should encrypt/decrypt root key correctly', async () => {
