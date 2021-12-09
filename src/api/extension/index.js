@@ -1131,12 +1131,46 @@ export const createHWAccounts = async (accounts) => {
     const publicKey = Loader.Cardano.Bip32PublicKey.from_bytes(
       Buffer.from(account.publicKey, 'hex')
     );
-    const paymentKeyHash = Buffer.from(
-      publicKey.derive(0).derive(0).to_raw_key().hash().to_bytes()
-    ).toString('hex');
-    const stakeKeyHash = Buffer.from(
-      publicKey.derive(2).derive(0).to_raw_key().hash().to_bytes()
-    ).toString('hex');
+
+    const paymentKeyHashRaw = publicKey.derive(0).derive(0).to_raw_key().hash();
+    const stakeKeyHashRaw = publicKey.derive(2).derive(0).to_raw_key().hash();
+
+    const paymentKeyHash = Buffer.from(paymentKeyHashRaw.to_bytes()).toString(
+      'hex'
+    );
+    const stakeKeyHash = Buffer.from(stakeKeyHashRaw.to_bytes()).toString(
+      'hex'
+    );
+
+    const paymentAddrMainnet = Loader.Cardano.BaseAddress.new(
+      Loader.Cardano.NetworkInfo.mainnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHashRaw),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHashRaw)
+    )
+      .to_address()
+      .to_bech32();
+
+    const rewardAddrMainnet = Loader.Cardano.RewardAddress.new(
+      Loader.Cardano.NetworkInfo.mainnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHashRaw)
+    )
+      .to_address()
+      .to_bech32();
+
+    const paymentAddrTestnet = Loader.Cardano.BaseAddress.new(
+      Loader.Cardano.NetworkInfo.testnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHashRaw),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHashRaw)
+    )
+      .to_address()
+      .to_bech32();
+
+    const rewardAddrTestnet = Loader.Cardano.RewardAddress.new(
+      Loader.Cardano.NetworkInfo.testnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHashRaw)
+    )
+      .to_address()
+      .to_bech32();
 
     const index = account.accountIndex;
     const name = account.name;
@@ -1154,8 +1188,16 @@ export const createHWAccounts = async (accounts) => {
       paymentKeyHash,
       stakeKeyHash,
       name,
-      [NETWORK_ID.mainnet]: networkDefault,
-      [NETWORK_ID.testnet]: networkDefault,
+      [NETWORK_ID.mainnet]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrMainnet,
+        rewardAddr: rewardAddrMainnet,
+      },
+      [NETWORK_ID.testnet]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
       avatar: Math.random().toString(),
     };
   });
