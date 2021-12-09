@@ -577,7 +577,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         const amount = assets.get(assetName);
         tokens.push({
           assetNameBytes: Buffer.from(assetName.name()).toString('hex'),
-          amount: amount.is_positive()
+          mintAmount: amount.is_positive()
             ? amount.as_positive().to_str()
             : amount.as_negative().to_str(),
         });

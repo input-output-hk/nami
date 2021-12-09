@@ -22,9 +22,17 @@ const TrezorWidget = React.forwardRef((props, ref) => {
       isCentered
     >
       <ModalOverlay />
-      <ModalContent background="transparent" shadow="none">
+      <ModalContent
+        background="transparent"
+        shadow="none"
+        m={0}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        width="full"
+      >
         <Box
-          width="full"
+          width="370px"
           height="full"
           display="flex"
           alignItems="center"
@@ -36,7 +44,7 @@ const TrezorWidget = React.forwardRef((props, ref) => {
             onClick={onClose}
             position="absolute"
             top="20px"
-            right="70px"
+            right="30px"
             color="black"
             zIndex={1}
           />
@@ -45,7 +53,7 @@ const TrezorWidget = React.forwardRef((props, ref) => {
               src={chrome.runtime.getURL('Trezor/popup.html')}
               id="trezorPopupNami"
               width="360px"
-              height="500px"
+              height="560px"
             />
           </Box>
         </Box>

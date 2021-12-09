@@ -15,7 +15,7 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
  * Initial settings for connect.
  * It could be changed by passing values into TrezorConnect.init(...) method
  */
-var VERSION = '8.2.2-beta.1';
+var VERSION = '8.2.3';
 var versionN = VERSION.split('.').map(function (s) {
   return parseInt(s, 10);
 }); // const DIRECTORY = `${ versionN[0] }${ (versionN[1] > 0 ? `.${versionN[1]}` : '') }/`;

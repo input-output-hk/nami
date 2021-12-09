@@ -1302,40 +1302,50 @@ section > div .divider span:after {
   width: 90%;
   margin: 0 auto 20px auto;
 }
-.select-account.normal .select-account-list.normal {
+.select-account.p2wpkh .select-account-list.p2wpkh {
   display: block;
 }
-.select-account.normal .tab-selection.normal {
+.select-account.p2wpkh .tab-selection.p2wpkh {
   cursor: pointer;
   color: #01B757;
 }
-.select-account.normal .tab-selection.normal:after {
+.select-account.p2wpkh .tab-selection.p2wpkh:after {
   border-color: #01B757;
 }
-.select-account.segwit .select-account-list.segwit {
+.select-account.p2tr .select-account-list.p2tr {
   display: block;
 }
-.select-account.segwit .bech32-warning {
-  display: none;
-}
-.select-account.segwit .tab-selection.segwit {
+.select-account.p2tr .tab-selection.p2tr {
   cursor: pointer;
   color: #01B757;
 }
-.select-account.segwit .tab-selection.segwit:after {
+.select-account.p2tr .tab-selection.p2tr:after {
   border-color: #01B757;
 }
-.select-account.legacy .select-account-list.legacy {
+.select-account.p2sh .select-account-list.p2sh {
   display: block;
 }
-.select-account.legacy .bech32-warning {
+.select-account.p2sh .bech32-warning {
   display: none;
 }
-.select-account.legacy .tab-selection.legacy {
+.select-account.p2sh .tab-selection.p2sh {
   cursor: pointer;
   color: #01B757;
 }
-.select-account.legacy .tab-selection.legacy:after {
+.select-account.p2sh .tab-selection.p2sh:after {
+  border-color: #01B757;
+}
+.select-account.p2pkh .select-account-list.p2pkh {
+  display: block;
+}
+.select-account.p2pkh .bech32-warning {
+  display: none;
+}
+.select-account.p2pkh .tab-selection.p2pkh {
+  cursor: pointer;
+  color: #01B757;
+}
+.select-account.p2pkh .tab-selection.p2pkh:after {
   border-color: #01B757;
 }
 .select-account .select-account-list {
