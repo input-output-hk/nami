@@ -1,113 +1,4 @@
 // This file is auto generated from data/messages/message.json
-export enum Enum_InputScriptType {
-    SPENDADDRESS = 0,
-    SPENDMULTISIG = 1,
-    EXTERNAL = 2,
-    SPENDWITNESS = 3,
-    SPENDP2SHWITNESS = 4,
-}
-export type InputScriptType = keyof typeof Enum_InputScriptType;
-
-export enum Enum_OutputScriptType {
-    PAYTOADDRESS = 0,
-    PAYTOSCRIPTHASH = 1,
-    PAYTOMULTISIG = 2,
-    PAYTOOPRETURN = 3,
-    PAYTOWITNESS = 4,
-    PAYTOP2SHWITNESS = 5,
-}
-export type OutputScriptType = keyof typeof Enum_OutputScriptType;
-
-export enum DecredStakingSpendType {
-    SSGen = 0,
-    SSRTX = 1,
-}
-
-export enum AmountUnit {
-    BITCOIN = 0,
-    MILLIBITCOIN = 1,
-    MICROBITCOIN = 2,
-    SATOSHI = 3,
-}
-
-export enum CardanoAddressType {
-    BASE = 0,
-    BASE_SCRIPT_KEY = 1,
-    BASE_KEY_SCRIPT = 2,
-    BASE_SCRIPT_SCRIPT = 3,
-    POINTER = 4,
-    POINTER_SCRIPT = 5,
-    ENTERPRISE = 6,
-    ENTERPRISE_SCRIPT = 7,
-    BYRON = 8,
-    REWARD = 14,
-    REWARD_SCRIPT = 15,
-}
-
-export enum CardanoNativeScriptType {
-    PUB_KEY = 0,
-    ALL = 1,
-    ANY = 2,
-    N_OF_K = 3,
-    INVALID_BEFORE = 4,
-    INVALID_HEREAFTER = 5,
-}
-
-export enum CardanoNativeScriptHashDisplayFormat {
-    HIDE = 0,
-    BECH32 = 1,
-    POLICY_ID = 2,
-}
-
-export enum CardanoCertificateType {
-    STAKE_REGISTRATION = 0,
-    STAKE_DEREGISTRATION = 1,
-    STAKE_DELEGATION = 2,
-    STAKE_POOL_REGISTRATION = 3,
-}
-
-export enum CardanoPoolRelayType {
-    SINGLE_HOST_IP = 0,
-    SINGLE_HOST_NAME = 1,
-    MULTIPLE_HOST_NAME = 2,
-}
-
-export enum CardanoTxAuxiliaryDataSupplementType {
-    NONE = 0,
-    CATALYST_REGISTRATION_SIGNATURE = 1,
-}
-
-export enum CardanoTxSigningMode {
-    ORDINARY_TRANSACTION = 0,
-    POOL_REGISTRATION_AS_OWNER = 1,
-    MULTISIG_TRANSACTION = 2,
-}
-
-export enum CardanoTxWitnessType {
-    BYRON_WITNESS = 0,
-    SHELLEY_WITNESS = 1,
-}
-
-export enum Enum_BackupType {
-    Bip39 = 0,
-    Slip39_Basic = 1,
-    Slip39_Advanced = 2,
-}
-export type BackupType = keyof typeof Enum_BackupType;
-
-export enum Enum_SafetyCheckLevel {
-    Strict = 0,
-    PromptAlways = 1,
-    PromptTemporarily = 2,
-}
-export type SafetyCheckLevel = keyof typeof Enum_SafetyCheckLevel;
-
-export enum StellarAssetType {
-    NATIVE = 0,
-    ALPHANUM4 = 1,
-    ALPHANUM12 = 2,
-}
-
 // BinanceGetAddress
 export type BinanceGetAddress = {
     address_n: number[];
@@ -205,6 +96,39 @@ export type BinanceSignedTx = {
     public_key: string;
 };
 
+export enum Enum_InputScriptType {
+    SPENDADDRESS = 0,
+    SPENDMULTISIG = 1,
+    EXTERNAL = 2,
+    SPENDWITNESS = 3,
+    SPENDP2SHWITNESS = 4,
+    SPENDTAPROOT = 5,
+}
+export type InputScriptType = keyof typeof Enum_InputScriptType;
+
+export enum Enum_OutputScriptType {
+    PAYTOADDRESS = 0,
+    PAYTOSCRIPTHASH = 1,
+    PAYTOMULTISIG = 2,
+    PAYTOOPRETURN = 3,
+    PAYTOWITNESS = 4,
+    PAYTOP2SHWITNESS = 5,
+    PAYTOTAPROOT = 6,
+}
+export type OutputScriptType = keyof typeof Enum_OutputScriptType;
+
+export enum DecredStakingSpendType {
+    SSGen = 0,
+    SSRTX = 1,
+}
+
+export enum AmountUnit {
+    BITCOIN = 0,
+    MILLIBITCOIN = 1,
+    MICROBITCOIN = 2,
+    SATOSHI = 3,
+}
+
 // HDNodeType
 export type HDNodeType = {
     depth: number;
@@ -280,6 +204,7 @@ export type SignMessage = {
     message: string;
     coin_name?: string;
     script_type?: InputScriptType;
+    no_script_type?: boolean;
 };
 
 // MessageSignature
@@ -359,6 +284,7 @@ export type TxInputType = {
     orig_hash?: string;
     orig_index?: number;
     decred_staking_spend?: DecredStakingSpendType;
+    script_pubkey?: string;
 };
 
 export type TxOutputBinType = {
@@ -418,6 +344,7 @@ export type TxInput = {
     orig_hash?: string;
     orig_index?: number;
     decred_staking_spend?: DecredStakingSpendType;
+    script_pubkey?: string;
 };
 
 // TxOutput
@@ -587,6 +514,70 @@ export type SelfTest = {
     payload?: string;
 };
 
+export enum CardanoDerivationType {
+    LEDGER = 0,
+    ICARUS = 1,
+    ICARUS_TREZOR = 2,
+}
+
+export enum CardanoAddressType {
+    BASE = 0,
+    BASE_SCRIPT_KEY = 1,
+    BASE_KEY_SCRIPT = 2,
+    BASE_SCRIPT_SCRIPT = 3,
+    POINTER = 4,
+    POINTER_SCRIPT = 5,
+    ENTERPRISE = 6,
+    ENTERPRISE_SCRIPT = 7,
+    BYRON = 8,
+    REWARD = 14,
+    REWARD_SCRIPT = 15,
+}
+
+export enum CardanoNativeScriptType {
+    PUB_KEY = 0,
+    ALL = 1,
+    ANY = 2,
+    N_OF_K = 3,
+    INVALID_BEFORE = 4,
+    INVALID_HEREAFTER = 5,
+}
+
+export enum CardanoNativeScriptHashDisplayFormat {
+    HIDE = 0,
+    BECH32 = 1,
+    POLICY_ID = 2,
+}
+
+export enum CardanoCertificateType {
+    STAKE_REGISTRATION = 0,
+    STAKE_DEREGISTRATION = 1,
+    STAKE_DELEGATION = 2,
+    STAKE_POOL_REGISTRATION = 3,
+}
+
+export enum CardanoPoolRelayType {
+    SINGLE_HOST_IP = 0,
+    SINGLE_HOST_NAME = 1,
+    MULTIPLE_HOST_NAME = 2,
+}
+
+export enum CardanoTxAuxiliaryDataSupplementType {
+    NONE = 0,
+    CATALYST_REGISTRATION_SIGNATURE = 1,
+}
+
+export enum CardanoTxSigningMode {
+    ORDINARY_TRANSACTION = 0,
+    POOL_REGISTRATION_AS_OWNER = 1,
+    MULTISIG_TRANSACTION = 2,
+}
+
+export enum CardanoTxWitnessType {
+    BYRON_WITNESS = 0,
+    SHELLEY_WITNESS = 1,
+}
+
 // CardanoBlockchainPointerType
 export type CardanoBlockchainPointerType = {
     block_index: number;
@@ -609,6 +600,7 @@ export type CardanoNativeScript = {
 export type CardanoGetNativeScriptHash = {
     script: CardanoNativeScript;
     display_format: CardanoNativeScriptHashDisplayFormat;
+    derivation_type: CardanoDerivationType;
 };
 
 // CardanoNativeScriptHash
@@ -633,6 +625,7 @@ export type CardanoGetAddress = {
     protocol_magic: number;
     network_id: number;
     address_parameters: CardanoAddressParametersType;
+    derivation_type: CardanoDerivationType;
 };
 
 // CardanoAddress
@@ -644,6 +637,7 @@ export type CardanoAddress = {
 export type CardanoGetPublicKey = {
     address_n: number[];
     show_display?: boolean;
+    derivation_type: CardanoDerivationType;
 };
 
 // CardanoPublicKey
@@ -667,6 +661,7 @@ export type CardanoSignTxInit = {
     validity_interval_start?: string | number;
     witness_requests_count: number;
     minting_asset_groups_count: number;
+    derivation_type: CardanoDerivationType;
 };
 
 // CardanoTxInput
@@ -1078,6 +1073,13 @@ export type DebugLinkGetState = {
     wait_layout?: boolean;
 };
 
+export enum Enum_BackupType {
+    Bip39 = 0,
+    Slip39_Basic = 1,
+    Slip39_Advanced = 2,
+}
+export type BackupType = keyof typeof Enum_BackupType;
+
 // DebugLinkState
 export type DebugLinkState = {
     layout?: string;
@@ -1322,6 +1324,62 @@ export type EosSignedTx = {
     signature: string;
 };
 
+// EthereumSignTypedData
+export type EthereumSignTypedData = {
+    address_n: number[];
+    primary_type: string;
+    metamask_v4_compat?: boolean;
+};
+
+// EthereumTypedDataStructRequest
+export type EthereumTypedDataStructRequest = {
+    name: string;
+};
+
+export enum EthereumDataType {
+    UINT = 1,
+    INT = 2,
+    BYTES = 3,
+    STRING = 4,
+    BOOL = 5,
+    ADDRESS = 6,
+    ARRAY = 7,
+    STRUCT = 8,
+}
+
+export type EthereumFieldType = {
+    data_type: EthereumDataType;
+    size?: number;
+    entry_type?: EthereumFieldType;
+    struct_name?: string;
+};
+
+export type EthereumStructMember = {
+    type: EthereumFieldType;
+    name: string;
+};
+
+// EthereumTypedDataStructAck
+export type EthereumTypedDataStructAck = {
+    members: EthereumStructMember[];
+};
+
+// EthereumTypedDataValueRequest
+export type EthereumTypedDataValueRequest = {
+    member_path: number[];
+};
+
+// EthereumTypedDataValueAck
+export type EthereumTypedDataValueAck = {
+    value: string;
+};
+
+// EthereumTypedDataSignature
+export type EthereumTypedDataSignature = {
+    signature: string;
+    address: string;
+};
+
 // EthereumGetPublicKey
 export type EthereumGetPublicKey = {
     address_n: number[];
@@ -1412,9 +1470,18 @@ export type EthereumVerifyMessage = {
     address: string;
 };
 
+export enum Enum_SafetyCheckLevel {
+    Strict = 0,
+    PromptAlways = 1,
+    PromptTemporarily = 2,
+}
+export type SafetyCheckLevel = keyof typeof Enum_SafetyCheckLevel;
+
 // Initialize
 export type Initialize = {
     session_id?: string;
+    _skip_passphrase?: boolean;
+    derive_cardano?: boolean;
 };
 
 // GetFeatures
@@ -1458,6 +1525,7 @@ export type Features = {
     bootloader_hash: string | null;
     imported: boolean | null;
     unlocked: boolean | null;
+    _passphrase_cached?: boolean;
     firmware_present: boolean | null;
     needs_backup: boolean | null;
     flags: number | null;
@@ -1495,6 +1563,7 @@ export type ApplySettings = {
     label?: string;
     use_passphrase?: boolean;
     homescreen?: string;
+    _passphrase_source?: number;
     auto_lock_delay_ms?: number;
     display_rotation?: number;
     passphrase_always_on_device?: boolean;
@@ -1821,6 +1890,12 @@ export type RippleSignedTx = {
     serialized_tx: string;
 };
 
+export enum StellarAssetType {
+    NATIVE = 0,
+    ALPHANUM4 = 1,
+    ALPHANUM12 = 2,
+}
+
 // StellarAsset
 export type StellarAsset = {
     type: StellarAssetType;
@@ -1881,8 +1956,8 @@ export type StellarCreateAccountOp = {
     starting_balance: string | number;
 };
 
-// StellarPathPaymentOp
-export type StellarPathPaymentOp = {
+// StellarPathPaymentStrictReceiveOp
+export type StellarPathPaymentStrictReceiveOp = {
     source_account?: string;
     send_asset: StellarAsset;
     send_max: string | number;
@@ -1892,8 +1967,19 @@ export type StellarPathPaymentOp = {
     paths?: StellarAsset[];
 };
 
-// StellarManageOfferOp
-export type StellarManageOfferOp = {
+// StellarPathPaymentStrictSendOp
+export type StellarPathPaymentStrictSendOp = {
+    source_account?: string;
+    send_asset: StellarAsset;
+    send_amount: string | number;
+    destination_account: string;
+    destination_asset: StellarAsset;
+    destination_min: string | number;
+    paths?: StellarAsset[];
+};
+
+// StellarManageSellOfferOp
+export type StellarManageSellOfferOp = {
     source_account?: string;
     selling_asset: StellarAsset;
     buying_asset: StellarAsset;
@@ -1903,8 +1989,19 @@ export type StellarManageOfferOp = {
     offer_id: string | number;
 };
 
-// StellarCreatePassiveOfferOp
-export type StellarCreatePassiveOfferOp = {
+// StellarManageBuyOfferOp
+export type StellarManageBuyOfferOp = {
+    source_account?: string;
+    selling_asset: StellarAsset;
+    buying_asset: StellarAsset;
+    amount: string | number;
+    price_n: number;
+    price_d: number;
+    offer_id: string | number;
+};
+
+// StellarCreatePassiveSellOfferOp
+export type StellarCreatePassiveSellOfferOp = {
     source_account?: string;
     selling_asset: StellarAsset;
     buying_asset: StellarAsset;

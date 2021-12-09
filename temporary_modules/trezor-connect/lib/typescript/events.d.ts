@@ -2,7 +2,7 @@ import { TRANSPORT, UI, IFRAME, POPUP } from './constants';
 import { ConnectSettings } from './params';
 import { Device } from './trezor/device';
 import { ButtonRequest, PinMatrixRequestType, WordRequestType } from './trezor/protobuf';
-import { DiscoveryAccount, SelectFeeLevel } from './account';
+import { DiscoveryAccount, DiscoveryAccountType, SelectFeeLevel } from './account';
 import { CoinInfo, BitcoinNetworkInfo } from './networks/coinInfo';
 
 export interface BridgeInfo {
@@ -212,7 +212,8 @@ export interface SelectAccount {
     payload: {
         type: 'start' | 'progress' | 'end';
         coinInfo: CoinInfo;
-        accountTypes?: Array<'normal' | 'segwit' | 'legacy'>;
+        accountTypes?: DiscoveryAccountType[];
+        defaultAccountType?: DiscoveryAccountType;
         accounts?: DiscoveryAccount[];
         preventEmpty?: boolean;
     };

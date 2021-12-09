@@ -83,6 +83,7 @@ export type TransactionOptions = {|
     version_group_id?: number,
     timestamp?: number,
     branch_id?: number,
+    decred_staking_ticket?: boolean,
 |};
 
 // signTransaction params
@@ -106,6 +107,7 @@ export type SignTransaction = {
     overwintered?: boolean,
     versionGroupId?: number,
     branchId?: number,
+    decredStakingTicket?: boolean,
     push?: boolean,
 };
 export type SignedTransaction = {

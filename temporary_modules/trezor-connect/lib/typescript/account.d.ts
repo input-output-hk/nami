@@ -1,6 +1,8 @@
 import { TxInputType, TxOutputType } from './trezor/protobuf';
 import { VinVout, BlockbookTransaction } from './backend/transactions';
 
+export type DiscoveryAccountType = 'p2pkh' | 'p2sh' | 'p2tr' | 'p2wpkh';
+
 // getAccountInfo params
 export interface GetAccountInfo {
     coin: string;
@@ -18,7 +20,7 @@ export interface GetAccountInfo {
         ledger: number;
         seq: number;
     };
-    defaultAccountType?: 'normal' | 'segwit' | 'legacy';
+    defaultAccountType?: DiscoveryAccountType;
 }
 
 export interface TokenInfo {
@@ -237,8 +239,6 @@ export interface ComposeParams {
     push?: boolean;
     sequence?: number;
 }
-
-export type DiscoveryAccountType = 'normal' | 'segwit' | 'legacy';
 
 export interface DiscoveryAccount {
     type: DiscoveryAccountType;

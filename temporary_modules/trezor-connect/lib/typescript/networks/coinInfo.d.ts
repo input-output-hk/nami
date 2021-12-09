@@ -4,10 +4,10 @@ export interface CoinSupport {
     trezor2: string;
 }
 
-// copy-paste from 'bitcoinjs-lib-zcash' module
+// copy-paste from '@trezor/utxo-lib' module
 export interface Network {
     messagePrefix: string;
-    bech32?: string;
+    bech32: string;
     bip32: {
         public: number;
         private: number;
@@ -15,9 +15,8 @@ export interface Network {
     pubKeyHash: number;
     scriptHash: number;
     wif: number;
-    dustThreshold: number;
-    coin: string;
-    consensusBranchId?: {[key: string]: number};
+    consensusBranchId?: { [version: number]: number };
+    forkId?: number;
 }
 
 export interface BlockchainLink {
@@ -47,7 +46,6 @@ export interface BitcoinNetworkInfo extends Common {
     curveName: string;
     dustLimit: number;
     forceBip143: boolean;
-    forkid?: number;
     hashGenesisBlock: string;
     maxAddressLength: number;
     maxFeeSatoshiKb: number;
@@ -59,6 +57,7 @@ export interface BitcoinNetworkInfo extends Common {
     xPubMagic: number;
     xPubMagicSegwitNative?: number;
     xPubMagicSegwit?: number;
+    taproot?: boolean;
 
     // custom
     network: Network;
