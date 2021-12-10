@@ -776,6 +776,18 @@ export const signTx = async (
     vkeyWitnesses.add(vkey);
   });
 
+  if (rawTx.witness_set().plutus_scripts()) {
+    txWitnessSet.set_plutus_scripts(rawTx.witness_set().plutus_scripts());
+  }
+
+  if (rawTx.witness_set().plutus_data()) {
+    txWitnessSet.set_plutus_data(rawTx.witness_set().plutus_data());
+  }
+
+  if (rawTx.witness_set().redeemers()) {
+    txWitnessSet.set_redeemers(rawTx.witness_set().redeemers());
+  }
+
   stakeKey.free();
   stakeKey = null;
   paymentKey.free();
