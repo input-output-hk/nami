@@ -6,10 +6,12 @@ import {
   getAdaHandle,
   getAsset,
   getCurrentAccount,
+  getNetwork,
   getUtxos,
   indexToHw,
   isHW,
   isValidAddress,
+  isValidEthAddress,
   toUnit,
   updateRecentSentToAddress,
 } from '../../../api/extension';
@@ -24,6 +26,7 @@ import {
   ChevronLeftIcon,
   CloseIcon,
   Icon,
+  InfoOutlineIcon,
   SmallCloseIcon,
 } from '@chakra-ui/icons';
 import { BsArrowUpRight } from 'react-icons/bs';
@@ -54,10 +57,11 @@ import {
 import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
-import { ERROR } from '../../../config/config';
+import { ERROR, MILKOMEDA } from '../../../config/config';
 import {
   InputRightElement,
   Spinner,
+  Tooltip,
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
@@ -139,6 +143,7 @@ const Send = () => {
     useStoreState((state) => state.globalModel.sendStore.tx),
     useStoreActions((actions) => actions.globalModel.sendStore.setTx),
   ];
+
   const utxos = React.useRef(null);
   const assets = React.useRef({});
   const account = React.useRef(null);
@@ -152,6 +157,8 @@ const Send = () => {
   const ref = React.useRef();
   const [isLoading, setIsLoading] = React.useState(true);
   const focus = React.useRef(false);
+
+  const network = React.useRef();
 
   const prepareTx = async (v, a, count) => {
     if (!isMounted.current) return;
@@ -249,11 +256,38 @@ const Send = () => {
         )
       );
 
+      let auxiliaryData;
+
+      // setting metadata for MilkomedaM1
+      if (_address.isM1) {
+        auxiliaryData = Loader.Cardano.AuxiliaryData.new();
+        const generalMetadata = Loader.Cardano.GeneralTransactionMetadata.new();
+        const m1Address = _address.display;
+        if (!isValidEthAddress(m1Address))
+          throw new Error('Not a valid ETH address');
+        generalMetadata.insert(
+          Loader.Cardano.BigNum.from_str('87'),
+          Loader.Cardano.encode_json_str_to_metadatum(
+            JSON.stringify(MILKOMEDA[network.current.id].protocol),
+            0
+          )
+        );
+        generalMetadata.insert(
+          Loader.Cardano.BigNum.from_str('88'),
+          Loader.Cardano.encode_json_str_to_metadatum(
+            JSON.stringify(_address.display),
+            0
+          )
+        );
+        auxiliaryData.set_metadata(generalMetadata);
+      }
+
       const tx = await buildTx(
         account.current,
         utxos.current,
         outputs,
-        txInfo.protocolParameters
+        txInfo.protocolParameters,
+        auxiliaryData
       );
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
@@ -267,6 +301,8 @@ const Send = () => {
     addAssets(value.assets);
     await Loader.load();
     const currentAccount = await getCurrentAccount();
+    const _network = await getNetwork();
+    network.current = _network;
     account.current = currentAccount;
     if (txInfo.protocolParameters) {
       // if there are no assets, the onLoad and onInput functions are not triggered. No need to set usesStore to true then
@@ -305,6 +341,11 @@ const Send = () => {
     });
     const assetsList = objectToArray(assets.current);
     setValue({ ...value, assets: assetsList });
+  };
+
+  const removeAllAssets = () => {
+    assets.current = {};
+    setValue({ ...value, assets: [] });
   };
 
   const removeAsset = (asset) => {
@@ -364,14 +405,29 @@ const Send = () => {
               width="80%"
             >
               <AddressPopup
+                value={value}
                 setAddress={setAddress}
                 address={address}
+                network={network.current}
                 prepareTx={prepareTx}
+                removeAllAssets={removeAllAssets}
               />
               {address.error && (
-                <Text width="full" textAlign="left" color="red.300">
+                <Text mt={1} width="full" textAlign="left" color="red.300">
                   {address.error}
                 </Text>
+              )}
+              {!address.error && address.isM1 && (
+                <Box mt={1} width="full" display="flex" alignItems="center">
+                  <Box>Milkomeda Mode</Box>{' '}
+                  <Tooltip
+                    offset={[40, 8]}
+                    hasArrow
+                    label="Transfer ADA from your Cardano wallet to an address on MilkomedaM1."
+                  >
+                    <InfoOutlineIcon ml="1" cursor="help" />
+                  </Tooltip>
+                </Box>
               )}
               <Box height="5" />
               <Stack
@@ -441,6 +497,7 @@ const Send = () => {
                   assets={txInfo.balance.assets}
                   setValue={setValue}
                   value={value}
+                  isM1={address.isM1}
                 />
               </Stack>
               <Box height="6" />
@@ -617,7 +674,14 @@ const Send = () => {
 };
 
 // Address Popup
-const AddressPopup = ({ setAddress, address, prepareTx }) => {
+const AddressPopup = ({
+  value,
+  setAddress,
+  address,
+  prepareTx,
+  network,
+  removeAllAssets,
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const checkColor = useColorModeValue('teal.500', 'teal.200');
   const ref = React.useRef(false);
@@ -676,7 +740,7 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
               setTimeout(() => e.target.blur());
             }}
             fontSize="xs"
-            placeholder="Address or $handle"
+            placeholder="Address, $handle or Milkomeda"
             onInput={async (e) => {
               clearTimeout(timer);
               const val = e.target.value;
@@ -688,6 +752,22 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
               } else if (val.startsWith('$')) {
                 isHandle = true;
                 addr = { display: val };
+              } else if (val.startsWith('0x')) {
+                if (isValidEthAddress(val)) {
+                  addr = {
+                    result: MILKOMEDA[network.id].address,
+                    display: val,
+                    isM1: true,
+                  };
+                  value.assets = [];
+                  removeAllAssets();
+                } else {
+                  addr = {
+                    result: val,
+                    display: val,
+                    error: 'Address is invalid (Milkomeda)',
+                  };
+                }
               } else if (await isValidAddress(val)) {
                 addr = { result: val, display: val };
               } else {
@@ -722,7 +802,7 @@ const AddressPopup = ({ setAddress, address, prepareTx }) => {
                   onClose();
                 }
 
-                prepareTx(undefined, addr, 0);
+                prepareTx(value, addr, 0);
               }, 300);
             }}
             isInvalid={address.error}
@@ -911,7 +991,7 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
   <CustomScrollbars {...props} forwardedRef={ref} />
 ));
 
-const AssetsSelector = ({ assets, addAssets, value }) => {
+const AssetsSelector = ({ assets, addAssets, value, isM1 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [search, setSearch] = React.useState('');
   const select = React.useRef(false);
@@ -938,6 +1018,7 @@ const AssetsSelector = ({ assets, addAssets, value }) => {
     >
       <PopoverTrigger>
         <Button
+          isDisabled={isM1}
           flex={1}
           variant="ghost"
           size="sm"
