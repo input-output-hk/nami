@@ -255,7 +255,6 @@ const Send = () => {
         outputs,
         txInfo.protocolParameters
       );
-
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
@@ -407,15 +406,16 @@ const Send = () => {
                     decimalScale={6}
                     allowEmptyFormatting={true}
                     fixedDecimalScale={true}
-                    onValueChange={({ formattedValue }) => {
+                    onInput={(e) => {
+                      const val = e.target.value;
                       clearTimeout(timer);
-                      value.ada = formattedValue;
-                      value.personalAda = formattedValue;
+                      value.ada = val;
+                      value.personalAda = val;
                       const v = value;
                       setValue({
                         ...v,
-                        ada: formattedValue,
-                        personalAda: formattedValue,
+                        ada: val,
+                        personalAda: val,
                       });
                       timer = setTimeout(() => {
                         prepareTx(v, undefined, 0);

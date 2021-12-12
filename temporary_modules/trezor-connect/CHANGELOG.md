@@ -1,4 +1,25 @@
-# 8.2.2 (not released)
+# 8.2.4 (not released)
+
+# 8.2.3
+
+### Added
+- Bitcoin Taproot support.
+- Stellar: support for StellarManageBuyOfferOp and StellarPathPaymentStrictSendOp.
+- Decred support.
+- Stellar: support for StellarPathPaymentStrictReceiveOp operation
+- Stellar: support for StellarPathPaymentStrictSendOp operation
+- GetFeatures: experimental_features parameter
+- 1.10.4 and 2.4.3 FW releases
+
+### Changed
+- @trezor/utxo-lib dependency from monorepo: https://github.com/trezor/trezor-suite/tree/develop/packages/utxo-lib
+- major refactor of trezor-link dependency https://github.com/trezor/trezor-link/pull/44
+- removed multiple instances of messages.json (protobuf descriptors). connect now holds only one set of descriptors and should keep backwards compatibility with older devices.
+
+### Fixed
+- Doge: fees calculation
+
+# 8.2.2
 
 ### Added
 - Cardano: `getNativeScriptHash` call
@@ -7,9 +28,14 @@
 - Cardano: support for token minting and burning
 - Cardano: support for multi-sig transactions using native scripts
 
+### Fixed:
+- Ethereum:ethereumSignTransaction eip1559 support for T1
+
 ### Changed
 - Updated dependencies.
 - Fixed missing `hex` field in SignMessage and VerifyMessage types.
+- Stellar: ensure type correctness; stricter types.
+- Deps: general update of dependencies
 
 # 8.2.1
 

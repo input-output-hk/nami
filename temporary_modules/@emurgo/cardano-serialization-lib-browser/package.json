@@ -4,7 +4,7 @@
     "EMURGO"
   ],
   "description": "(De)serialization functions for the Cardano blockchain along with related utility functions",
-  "version": "9.1.1",
+  "version": "9.1.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
   "files": [
     "cardano_serialization_lib_bg.wasm",
     "cardano_serialization_lib.js",
+    "cardano_serialization_lib_bg.js",
     "cardano_serialization_lib.d.ts"
   ],
   "module": "cardano_serialization_lib.js",

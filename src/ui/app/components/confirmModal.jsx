@@ -105,7 +105,7 @@ const ConfirmModalNormal = ({ props, isOpen, onClose }) => {
   return (
     <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent m={0}>
         <ModalHeader fontSize="md">
           {props.title ? props.title : 'Confirm with password'}
         </ModalHeader>
@@ -193,7 +193,7 @@ const ConfirmModalHw = ({ props, isOpen, onClose, hw }) => {
     <>
       <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent m={0}>
           <ModalHeader fontSize="md">
             {props.title ? props.title : `Confirm with device`}
           </ModalHeader>

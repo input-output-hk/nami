@@ -18,4 +18,5 @@
 .history
 
 # secrets
-secrets.*.js
+secrets.production.js
+secrets.development.js

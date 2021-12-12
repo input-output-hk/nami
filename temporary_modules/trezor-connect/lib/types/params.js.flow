@@ -60,6 +60,7 @@ export type CommonParams = {
     allowSeedlessDevice?: boolean,
     keepSession?: boolean,
     skipFinalReload?: boolean,
+    useCardanoDerivaton?: boolean,
 };
 
 export type Bundle<T> = {

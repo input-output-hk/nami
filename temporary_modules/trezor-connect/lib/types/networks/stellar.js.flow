@@ -9,9 +9,11 @@ import type {
     StellarMemoType,
     StellarPaymentOp,
     StellarCreateAccountOp,
-    StellarPathPaymentOp,
-    StellarManageOfferOp,
-    StellarCreatePassiveOfferOp,
+    StellarPathPaymentStrictSendOp,
+    StellarPathPaymentStrictReceiveOp,
+    StellarCreatePassiveSellOfferOp,
+    StellarManageBuyOfferOp,
+    StellarManageSellOfferOp,
     StellarSetOptionsOp,
     StellarChangeTrustOp,
     StellarAllowTrustOp,
@@ -41,8 +43,8 @@ export type StellarPaymentOperation = {
     amount: string, // Proto: ok
 };
 
-export type StellarPathPaymentOperation = {
-    type: 'pathPayment', // Proto: "StellarPathPaymentOp"
+export type StellarPathPaymentStrictReceiveOperation = {
+    type: 'pathPaymentStrictReceive', // Proto: "StellarPathPaymentStrictReceiveOp"
     source?: string, // Proto: "source_account"
     sendAsset: StellarAsset, // Proto: "send_asset"
     sendMax: string, // Proto: "send_max"
@@ -52,8 +54,19 @@ export type StellarPathPaymentOperation = {
     path?: StellarAsset[], // Proto: "paths"
 };
 
-export type StellarPassiveOfferOperation = {
-    type: 'createPassiveOffer', // Proto: "StellarCreatePassiveOfferOp"
+export type StellarPathPaymentStrictSendOperation = {
+    type: 'pathPaymentStrictSend', // Proto: "StellarPathPaymentStrictSendOp"
+    source?: string, // Proto: "source_account"
+    sendAsset: StellarAsset, // Proto: "send_asset"
+    sendAmount: string, // Proto: "send_amount"
+    destination: string, // Proto: "destination_account"
+    destAsset: StellarAsset, // Proto: "destination_asset"
+    destMin: string, // Proto "destination_min"
+    path?: StellarAsset[], // Proto: "paths"
+};
+
+export type StellarPassiveSellOfferOperation = {
+    type: 'createPassiveSellOffer', // Proto: "StellarCreatePassiveSellOfferOp"
     source?: string, // Proto: "source_account"
     buying: StellarAsset, // Proto: "buying_asset"
     selling: StellarAsset, // Proto: "selling_asset"
@@ -61,8 +74,18 @@ export type StellarPassiveOfferOperation = {
     price: { n: number, d: number }, // Proto: "price_n" and "price_d"
 };
 
-export type StellarManageOfferOperation = {
-    type: 'manageOffer', // Proto: "StellarManageOfferOp"
+export type StellarManageSellOfferOperation = {
+    type: 'manageSellOffer', // Proto: "StellarManageSellOfferOp"
+    source?: string, // Proto: "source_account"
+    buying: StellarAsset, // Proto: "buying_asset"
+    selling: StellarAsset, // Proto: "selling_asset"
+    amount: string, // Proto: ok
+    offerId?: string, // Proto: "offer_id" // not found in stellar-sdk
+    price: { n: number, d: number }, // Proto: "price_n" and "price_d"
+};
+
+export type StellarManageBuyOfferOperation = {
+    type: 'manageBuyOffer', // Proto: "StellarManageBuyOfferOp"
     source?: string, // Proto: "source_account"
     buying: StellarAsset, // Proto: "buying_asset"
     selling: StellarAsset, // Proto: "selling_asset"
@@ -134,9 +157,11 @@ export type StellarInflationOperation = {
 export type StellarOperation =
     | StellarCreateAccountOperation
     | StellarPaymentOperation
-    | StellarPathPaymentOperation
-    | StellarPassiveOfferOperation
-    | StellarManageOfferOperation
+    | StellarPathPaymentStrictReceiveOperation
+    | StellarPathPaymentStrictSendOperation
+    | StellarPassiveSellOfferOperation
+    | StellarManageSellOfferOperation
+    | StellarManageBuyOfferOperation
     | StellarSetOptionsOperation
     | StellarChangeTrustOperation
     | StellarAllowTrustOperation
@@ -176,14 +201,20 @@ export type StellarOperationMessage =
           type: 'StellarPaymentOp',
       } & StellarPaymentOp)
     | ({
-          type: 'StellarPathPaymentOp',
-      } & StellarPathPaymentOp)
+          type: 'StellarPathPaymentStrictReceiveOp',
+      } & StellarPathPaymentStrictReceiveOp)
     | ({
-          type: 'StellarManageOfferOp',
-      } & StellarManageOfferOp)
+          type: 'StellarPathPaymentStrictSendOp',
+      } & StellarPathPaymentStrictSendOp)
     | ({
-          type: 'StellarCreatePassiveOfferOp',
-      } & StellarCreatePassiveOfferOp)
+          type: 'StellarManageSellOfferOp',
+      } & StellarManageSellOfferOp)
+    | ({
+          type: 'StellarManageBuyOfferOp',
+      } & StellarManageBuyOfferOp)
+    | ({
+          type: 'StellarCreatePassiveSellOfferOp',
+      } & StellarCreatePassiveSellOfferOp)
     | ({
           type: 'StellarSetOptionsOp',
       } & StellarSetOptionsOp)

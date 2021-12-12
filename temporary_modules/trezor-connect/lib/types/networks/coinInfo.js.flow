@@ -1,7 +1,9 @@
 /* @flow */
-type Network = {
+
+// copy-paste from '@trezor/utxo-lib' module
+export type Network = {
     messagePrefix: string,
-    bech32: ?string,
+    bech32: string,
     bip32: {
         public: number,
         private: number,
@@ -9,9 +11,8 @@ type Network = {
     pubKeyHash: number,
     scriptHash: number,
     wif: number,
-    dustThreshold: number,
-    coin: string,
-    consensusBranchId?: { [key: string]: number },
+    consensusBranchId?: { [version: number]: number },
+    forkId?: number,
 };
 
 type CoinSupport = {
@@ -46,7 +47,6 @@ export type BitcoinNetworkInfo = Common & {
     curveName: string,
     dustLimit: number,
     forceBip143: boolean,
-    forkid?: number,
     hashGenesisBlock: string,
     maxAddressLength: number,
     maxFeeSatoshiKb: number,
@@ -58,6 +58,7 @@ export type BitcoinNetworkInfo = Common & {
     xPubMagic: number,
     xPubMagicSegwitNative?: number,
     xPubMagicSegwit?: number,
+    taproot?: boolean,
 
     // custom
     network: Network,

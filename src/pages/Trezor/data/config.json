@@ -50,33 +50,9 @@
     ],
     "messages": [
         {
-            "name": "v6",
-            "range": {
-                "min": ["1.0.0", "2.0.0"],
-                "max": ["1.7.3", "2.0.10"]
-            },
-            "json": "./data/messages/messages-v6.json"
-        },
-        {
-            "name": "v7",
-            "range": {
-                "min": ["1.7.4", "2.1.0"],
-                "max": ["1.8.1", "2.1.1"]
-            },
-            "json": "./data/messages/messages-v7.json"
-        },
-        {
-            "name": "v8",
-            "range": {
-                "min": ["1.8.2", "2.1.2"],
-                "max": ["1.8.9", "2.2.9"]
-            },
-            "json": "./data/messages/messages-v8.json"
-        },
-        {
             "name": "default",
             "range": {
-                "min": ["1.9.0", "2.3.0"]
+                "min": ["1.0.0", "2.0.0"]
             },
             "json": "./data/messages/messages.json"
         }
@@ -111,6 +87,16 @@
             "comment": ["Since firmware 2.1.0 there is a new protobuf field 'destination_tag' in RippleSignTx"]
         },
         {
+            "coin": ["bnb"],
+            "min": ["1.9.0", "2.3.0"],
+            "comment": ["There were protobuf backwards incompatible changes with introduction of 1.9.0/2.3.0 firmwares"]
+        },
+        {
+            "coin": ["eth", "trop"],
+            "min": ["1.8.0", "2.1.0"],
+            "comment": ["There were protobuf backwards incompatible changes."]
+        },
+        {
             "methods": [
                 "rippleGetAddress",
                 "rippleSignTransaction"
@@ -142,6 +128,13 @@
             "comment": ["Since 2.1.8 there are new protobuf fields in tezos transaction (Babylon fork)"]
         },
         {
+            "methods": [
+                "stellarSignTransaction"
+            ],
+            "min": ["1.9.0", "2.3.0"],
+            "comment": ["There were protobuf backwards incompatible changes with introduction of 1.9.0/2.3.0 firmwares"]
+        },
+        {
             "capabilities": ["replaceTransaction"],
             "min": ["1.9.4", "2.3.5"],
             "comment": ["new sign tx process since 1.9.4/2.3.5"]
@@ -149,12 +142,26 @@
         {
             "capabilities": ["decreaseOutput"],
             "min": ["1.10.0", "2.4.0"],
-            "comment": ["allow reduce output in RBF transaction since /2.4.0"]
+            "comment": ["allow reduce output in RBF transaction since 1.10.0/2.4.0"]
         },
         {
             "capabilities": ["eip1559"],
-            "min": ["0", "2.4.2"],
-            "comment": ["new eth transaction pricing mechanism (EIP1559) since 2.4.2"]
+            "min": ["1.10.4", "2.4.2"],
+            "comment": ["new eth transaction pricing mechanism (EIP1559) since 1.10.4/2.4.2"]
+        },
+        {
+            "capabilities": ["taproot", "aopp"],
+            "min": ["1.10.4", "2.4.3"],
+            "comment": [
+                "new btc accounts taproot since 1.10.4/2.4.3 (BTC + TEST only)",
+                "SignMessage with AOPP support"
+            ]
+        },
+        {
+            "coin": ["dcr", "tdcr"],
+            "methods": ["signTransaction"],
+            "min": ["1.10.1", "2.4.0"],
+            "comment": [""]
         }
     ]
 }
