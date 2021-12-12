@@ -56,7 +56,7 @@ export async function blockfrostRequest(endpoint, headers, body) {
       method: body ? 'POST' : 'GET',
       body,
     });
-    result = rawResult.json();
+    result = await rawResult.json();
   }
 
   return result;
