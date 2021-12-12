@@ -318,7 +318,7 @@ export namespace TrezorConnect {
     /**
      * Applies device setup
      */
-    function applySettings(params: P.CommonParams & Mgmnt.ApplySettings): P.Response<P.DefaultMessage>;
+    function applySettings(params: P.CommonParams & Protobuf.ApplySettings): P.Response<P.DefaultMessage>;
 
     /**
      * Increment saved flag on device

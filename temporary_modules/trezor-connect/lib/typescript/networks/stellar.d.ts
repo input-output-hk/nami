@@ -24,8 +24,8 @@ export interface StellarPaymentOperation {
     amount: string; // Proto: ok
 }
 
-export interface StellarPathPaymentOperation {
-    type: 'pathPayment'; // Proto: "StellarPathPaymentOp"
+export interface StellarPathPaymentStrictReceiveOperation {
+    type: 'pathPaymentStrictReceive'; // Proto: "StellarPathPaymentStrictReceiveOp"
     source?: string; // Proto: "source_account"
     sendAsset: StellarAsset; // Proto: "send_asset"
     sendMax: string; // Proto: "send_max"
@@ -35,8 +35,19 @@ export interface StellarPathPaymentOperation {
     path?: StellarAsset[]; // Proto: "paths"
 }
 
-export interface StellarPassiveOfferOperation {
-    type: 'createPassiveOffer'; // Proto: "StellarCreatePassiveOfferOp"
+export interface StellarPathPaymentStrictSendOperation {
+    type: 'pathPaymentStrictSend'; // Proto: "StellarPathPaymentStrictSendOp"
+    source?: string; // Proto: "source_account"
+    sendAsset: StellarAsset; // Proto: "send_asset"
+    sendAmount: string; // Proto: "send_amount"
+    destination: string; // Proto: "destination_account"
+    destAsset: StellarAsset; // Proto: "destination_asset"
+    destMin: string; // Proto "destination_min"
+    path?: StellarAsset[]; // Proto: "paths"
+}
+
+export interface StellarPassiveSellOfferOperation {
+    type: 'createPassiveSellOffer'; // Proto: "StellarCreatePassiveSellOfferOp"
     source?: string; // Proto: "source_account"
     buying: StellarAsset; // Proto: "buying_asset"
     selling: StellarAsset; // Proto: "selling_asset"
@@ -44,8 +55,18 @@ export interface StellarPassiveOfferOperation {
     price: { n: number; d: number }; // Proto: "price_n" and "price_d"
 }
 
-export interface StellarManageOfferOperation {
-    type: 'manageOffer'; // Proto: "StellarManageOfferOp"
+export interface StellarManageSellOfferOperation {
+    type: 'manageSellOffer'; // Proto: "StellarManageSellOfferOp"
+    source?: string; // Proto: "source_account"
+    buying: StellarAsset; // Proto: "buying_asset"
+    selling: StellarAsset; // Proto: "selling_asset"
+    amount: string; // Proto: ok
+    offerId?: string; // Proto: "offer_id" // not found in stellar-sdk
+    price: { n: number; d: number }; // Proto: "price_n" and "price_d"
+}
+
+export interface StellarManageBuyOfferOperation {
+    type: 'manageBuyOffer'; // Proto: "StellarManageBuyOfferOp"
     source?: string; // Proto: "source_account"
     buying: StellarAsset; // Proto: "buying_asset"
     selling: StellarAsset; // Proto: "selling_asset"
@@ -117,9 +138,11 @@ export interface StellarInflationOperation {
 export type StellarOperation =
     | StellarCreateAccountOperation
     | StellarPaymentOperation
-    | StellarPathPaymentOperation
-    | StellarPassiveOfferOperation
-    | StellarManageOfferOperation
+    | StellarPathPaymentStrictReceiveOperation
+    | StellarPathPaymentStrictSendOperation
+    | StellarPassiveSellOfferOperation
+    | StellarManageSellOfferOperation
+    | StellarManageBuyOfferOperation
     | StellarSetOptionsOperation
     | StellarChangeTrustOperation
     | StellarAllowTrustOperation

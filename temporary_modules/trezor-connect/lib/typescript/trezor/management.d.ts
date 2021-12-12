@@ -11,15 +11,6 @@ export interface ResetDevice {
     backup_type?: 0 | 1;
 }
 
-export interface ApplySettings {
-    homescreen?: string;
-    display_rotation?: 0 | 90 | 180 | 270;
-    use_passphrase?: boolean;
-    label?: string;
-    auto_lock_delay_ms?: number;
-    safety_checks?: SafetyCheckLevel;
-}
-
 export interface ApplyFlags {
     flags: number;
 }

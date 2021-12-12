@@ -330,13 +330,22 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
   return converted;
 };
 
-const checkCollateral = async () => {
-  const currentAccount = await getCurrentAccount();
+const checkCollateral = async (currentAccount, network, checkTx) => {
+  if (checkTx) {
+    const transactions = await getTransactions();
+    if (
+      transactions.length <= 0 ||
+      currentAccount[network.id].history.confirmed.includes(
+        transactions[0].txHash
+      )
+    )
+      return;
+  }
   let result = [];
   let page = 1;
   while (true) {
     let pageResult = await blockfrostRequest(
-      `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}`
+      `/addresses/${currentAccount[network.id].paymentAddr}/utxos?page=${page}`
     );
     if (pageResult.error) {
       if (result.status_code === 400) throw APIError.InvalidRequest;
@@ -351,25 +360,33 @@ const checkCollateral = async () => {
   }
 
   // exclude collateral input from overall utxo set
-  if (currentAccount.collateral) {
+  if (currentAccount[network.id].collateral) {
     const initialSize = result.length;
     result = result.filter(
       (utxo) =>
         !(
-          utxo.tx_hash === currentAccount.collateral.txHash &&
-          utxo.output_index === currentAccount.collateral.txId
+          utxo.tx_hash === currentAccount[network.id].collateral.txHash &&
+          utxo.output_index === currentAccount[network.id].collateral.txId
         )
     );
+
     if (initialSize == result.length) {
-      removeCollateral(); // assume utxo was spent
+      delete currentAccount[network.id].collateral;
+      return true;
     }
   }
 };
 
 export const getCollateral = async () => {
   await Loader.load();
-  const currentAccount = await getCurrentAccount();
-  const collateral = currentAccount.collateral;
+  const currentIndex = await getCurrentAccountIndex();
+  const accounts = await getStorage(STORAGE.accounts);
+  const currentAccount = accounts[currentIndex];
+  const network = await getNetwork();
+  if (await checkCollateral(currentAccount, network, true)) {
+    await setStorage({ [STORAGE.accounts]: accounts });
+  }
+  const collateral = currentAccount[network.id].collateral;
   if (collateral) {
     const collateralUtxo = Loader.Cardano.TransactionUnspentOutput.new(
       Loader.Cardano.TransactionInput.new(
@@ -379,7 +396,9 @@ export const getCollateral = async () => {
         collateral.txId
       ),
       Loader.Cardano.TransactionOutput.new(
-        Loader.Cardano.Address.from_bech32(currentAccount.paymentAddr),
+        Loader.Cardano.Address.from_bech32(
+          currentAccount[network.id].paymentAddr
+        ),
         Loader.Cardano.Value.new(
           Loader.Cardano.BigNum.from_str(collateral.lovelace)
         )
@@ -434,39 +453,15 @@ export const setNetwork = async (network) => {
   return true;
 };
 
-const accountToNetworkSpecific = async (account, network) => {
-  await Loader.load();
-  const paymentKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
-    Buffer.from(account.paymentKeyHash, 'hex')
-  );
-  const stakeKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
-    Buffer.from(account.stakeKeyHash, 'hex')
-  );
-  const paymentAddr = Loader.Cardano.BaseAddress.new(
-    network.id === NETWORK_ID.mainnet
-      ? Loader.Cardano.NetworkInfo.mainnet().network_id()
-      : Loader.Cardano.NetworkInfo.testnet().network_id(),
-    Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHash),
-    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
-  )
-    .to_address()
-    .to_bech32();
-
-  const rewardAddr = Loader.Cardano.RewardAddress.new(
-    network.id === NETWORK_ID.mainnet
-      ? Loader.Cardano.NetworkInfo.mainnet().network_id()
-      : Loader.Cardano.NetworkInfo.testnet().network_id(),
-    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
-  )
-    .to_address()
-    .to_bech32();
-
+const accountToNetworkSpecific = (account, network) => {
   const assets = account[network.id].assets;
   const lovelace = account[network.id].lovelace;
   const history = account[network.id].history;
   const minAda = account[network.id].minAda;
   const collateral = account[network.id].collateral;
   const recentSendToAddresses = account[network.id].recentSendToAddresses;
+  const paymentAddr = account[network.id].paymentAddr;
+  const rewardAddr = account[network.id].rewardAddr;
 
   return {
     ...account,
@@ -486,7 +481,7 @@ export const getCurrentAccount = async () => {
   const currentAccountIndex = await getCurrentAccountIndex();
   const accounts = await getStorage(STORAGE.accounts);
   const network = await getNetwork();
-  return await accountToNetworkSpecific(accounts[currentAccountIndex], network);
+  return accountToNetworkSpecific(accounts[currentAccountIndex], network);
 };
 
 /** Returns accounts with network specific settings (e.g. address, reward address, etc.) */
@@ -1066,6 +1061,36 @@ export const createAccount = async (name, password, accountIndex = null) => {
     'hex'
   ).toString('hex');
 
+  const paymentAddrMainnet = Loader.Cardano.BaseAddress.new(
+    Loader.Cardano.NetworkInfo.mainnet().network_id(),
+    Loader.Cardano.StakeCredential.from_keyhash(paymentKeyPub.hash()),
+    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.hash())
+  )
+    .to_address()
+    .to_bech32();
+
+  const rewardAddrMainnet = Loader.Cardano.RewardAddress.new(
+    Loader.Cardano.NetworkInfo.mainnet().network_id(),
+    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.hash())
+  )
+    .to_address()
+    .to_bech32();
+
+  const paymentAddrTestnet = Loader.Cardano.BaseAddress.new(
+    Loader.Cardano.NetworkInfo.testnet().network_id(),
+    Loader.Cardano.StakeCredential.from_keyhash(paymentKeyPub.hash()),
+    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.hash())
+  )
+    .to_address()
+    .to_bech32();
+
+  const rewardAddrTestnet = Loader.Cardano.RewardAddress.new(
+    Loader.Cardano.NetworkInfo.testnet().network_id(),
+    Loader.Cardano.StakeCredential.from_keyhash(stakeKeyPub.hash())
+  )
+    .to_address()
+    .to_bech32();
+
   const networkDefault = {
     lovelace: null,
     minAda: 0,
@@ -1080,8 +1105,16 @@ export const createAccount = async (name, password, accountIndex = null) => {
       paymentKeyHash,
       stakeKeyHash,
       name,
-      [NETWORK_ID.mainnet]: networkDefault,
-      [NETWORK_ID.testnet]: networkDefault,
+      [NETWORK_ID.mainnet]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrMainnet,
+        rewardAddr: rewardAddrMainnet,
+      },
+      [NETWORK_ID.testnet]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
       avatar: Math.random().toString(),
     },
   };
@@ -1099,12 +1132,46 @@ export const createHWAccounts = async (accounts) => {
     const publicKey = Loader.Cardano.Bip32PublicKey.from_bytes(
       Buffer.from(account.publicKey, 'hex')
     );
-    const paymentKeyHash = Buffer.from(
-      publicKey.derive(0).derive(0).to_raw_key().hash().to_bytes()
-    ).toString('hex');
-    const stakeKeyHash = Buffer.from(
-      publicKey.derive(2).derive(0).to_raw_key().hash().to_bytes()
-    ).toString('hex');
+
+    const paymentKeyHashRaw = publicKey.derive(0).derive(0).to_raw_key().hash();
+    const stakeKeyHashRaw = publicKey.derive(2).derive(0).to_raw_key().hash();
+
+    const paymentKeyHash = Buffer.from(paymentKeyHashRaw.to_bytes()).toString(
+      'hex'
+    );
+    const stakeKeyHash = Buffer.from(stakeKeyHashRaw.to_bytes()).toString(
+      'hex'
+    );
+
+    const paymentAddrMainnet = Loader.Cardano.BaseAddress.new(
+      Loader.Cardano.NetworkInfo.mainnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHashRaw),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHashRaw)
+    )
+      .to_address()
+      .to_bech32();
+
+    const rewardAddrMainnet = Loader.Cardano.RewardAddress.new(
+      Loader.Cardano.NetworkInfo.mainnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHashRaw)
+    )
+      .to_address()
+      .to_bech32();
+
+    const paymentAddrTestnet = Loader.Cardano.BaseAddress.new(
+      Loader.Cardano.NetworkInfo.testnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHashRaw),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHashRaw)
+    )
+      .to_address()
+      .to_bech32();
+
+    const rewardAddrTestnet = Loader.Cardano.RewardAddress.new(
+      Loader.Cardano.NetworkInfo.testnet().network_id(),
+      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHashRaw)
+    )
+      .to_address()
+      .to_bech32();
 
     const index = account.accountIndex;
     const name = account.name;
@@ -1122,8 +1189,16 @@ export const createHWAccounts = async (accounts) => {
       paymentKeyHash,
       stakeKeyHash,
       name,
-      [NETWORK_ID.mainnet]: networkDefault,
-      [NETWORK_ID.testnet]: networkDefault,
+      [NETWORK_ID.mainnet]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrMainnet,
+        rewardAddr: rewardAddrMainnet,
+      },
+      [NETWORK_ID.testnet]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
       avatar: Math.random().toString(),
     };
   });
@@ -1373,7 +1448,7 @@ export const updateBalance = async (currentAccount, network) => {
   await Loader.load();
   const assets = await getBalanceExtended();
   const amount = await assetsToValue(assets);
-  await checkCollateral();
+  await checkCollateral(currentAccount, network);
 
   if (assets.length > 0) {
     currentAccount[network.id].lovelace = assets.find(
@@ -1446,6 +1521,7 @@ export const removeCollateral = async () => {
   const network = await getNetwork();
   const accounts = await getStorage(STORAGE.accounts);
   delete accounts[currentIndex][network.id].collateral;
+
   return await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
