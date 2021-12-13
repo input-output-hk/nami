@@ -1,6 +1,28 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+* @param {Uint8Array} bytes
+* @returns {TransactionMetadatum}
+*/
+export function encode_arbitrary_bytes_as_metadatum(bytes: Uint8Array): TransactionMetadatum;
+/**
+* @param {TransactionMetadatum} metadata
+* @returns {Uint8Array}
+*/
+export function decode_arbitrary_bytes_from_metadatum(metadata: TransactionMetadatum): Uint8Array;
+/**
+* @param {string} json
+* @param {number} schema
+* @returns {TransactionMetadatum}
+*/
+export function encode_json_str_to_metadatum(json: string, schema: number): TransactionMetadatum;
+/**
+* @param {TransactionMetadatum} metadatum
+* @param {number} schema
+* @returns {string}
+*/
+export function decode_metadatum_to_json_str(metadatum: TransactionMetadatum, schema: number): string;
+/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key
@@ -79,28 +101,6 @@ export function min_ada_required(assets: Value, has_data_hash: boolean, coins_pe
 */
 export function encode_json_str_to_native_script(json: string, self_xpub: string, schema: number): NativeScript;
 /**
-* @param {Uint8Array} bytes
-* @returns {TransactionMetadatum}
-*/
-export function encode_arbitrary_bytes_as_metadatum(bytes: Uint8Array): TransactionMetadatum;
-/**
-* @param {TransactionMetadatum} metadata
-* @returns {Uint8Array}
-*/
-export function decode_arbitrary_bytes_from_metadatum(metadata: TransactionMetadatum): Uint8Array;
-/**
-* @param {string} json
-* @param {number} schema
-* @returns {TransactionMetadatum}
-*/
-export function encode_json_str_to_metadatum(json: string, schema: number): TransactionMetadatum;
-/**
-* @param {TransactionMetadatum} metadatum
-* @param {number} schema
-* @returns {string}
-*/
-export function decode_metadatum_to_json_str(metadatum: TransactionMetadatum, schema: number): string;
-/**
 * @param {Transaction} tx
 * @param {LinearFee} linear_fee
 * @returns {BigNum}
@@ -176,13 +176,6 @@ export enum NetworkIdKind {
   Mainnet,
 }
 /**
-* Used to choosed the schema for a script JSON string
-*/
-export enum ScriptSchema {
-  Wallet,
-  Node,
-}
-/**
 */
 export enum TransactionMetadatumKind {
   MetadataMap,
@@ -199,16 +192,11 @@ export enum MetadataJsonSchema {
   DetailedSchema,
 }
 /**
+* Used to choosed the schema for a script JSON string
 */
-export enum StakeCredKind {
-  Key,
-  Script,
-}
-/**
-*/
-export enum CoinSelectionStrategyCIP2 {
-  LargestFirst,
-  RandomImprove,
+export enum ScriptSchema {
+  Wallet,
+  Node,
 }
 /**
 */
@@ -234,6 +222,18 @@ export enum RedeemerTagKind {
 }
 /**
 */
+export enum StakeCredKind {
+  Key,
+  Script,
+}
+/**
+*/
+export enum CoinSelectionStrategyCIP2 {
+  LargestFirst,
+  RandomImprove,
+}
+/**
+*/
 export class Address {
   free(): void;
 /**
@@ -241,6 +241,15 @@ export class Address {
 * @returns {Address}
 */
   static from_bytes(data: Uint8Array): Address;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Address}
+*/
+  static from_hex(hex_str: string): Address;
 /**
 * @returns {Uint8Array}
 */
@@ -274,6 +283,15 @@ export class AssetName {
 */
   static from_bytes(bytes: Uint8Array): AssetName;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {AssetName}
+*/
+  static from_hex(hex_str: string): AssetName;
+/**
 * @param {Uint8Array} name
 * @returns {AssetName}
 */
@@ -296,6 +314,15 @@ export class AssetNames {
 * @returns {AssetNames}
 */
   static from_bytes(bytes: Uint8Array): AssetNames;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {AssetNames}
+*/
+  static from_hex(hex_str: string): AssetNames;
 /**
 * @returns {AssetNames}
 */
@@ -327,6 +354,15 @@ export class Assets {
 * @returns {Assets}
 */
   static from_bytes(bytes: Uint8Array): Assets;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Assets}
+*/
+  static from_hex(hex_str: string): Assets;
 /**
 * @returns {Assets}
 */
@@ -364,6 +400,15 @@ export class AuxiliaryData {
 * @returns {AuxiliaryData}
 */
   static from_bytes(bytes: Uint8Array): AuxiliaryData;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {AuxiliaryData}
+*/
+  static from_hex(hex_str: string): AuxiliaryData;
 /**
 * @returns {AuxiliaryData}
 */
@@ -411,6 +456,15 @@ export class AuxiliaryDataHash {
 * @returns {AuxiliaryDataHash}
 */
   static from_bech32(bech_str: string): AuxiliaryDataHash;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {AuxiliaryDataHash}
+*/
+  static from_hex(hex_str: string): AuxiliaryDataHash;
 /**
 * @param {Uint8Array} bytes
 * @returns {AuxiliaryDataHash}
@@ -488,6 +542,15 @@ export class BigInt {
 */
   static from_bytes(bytes: Uint8Array): BigInt;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {BigInt}
+*/
+  static from_hex(hex_str: string): BigInt;
+/**
 * @returns {BigNum | undefined}
 */
   as_u64(): BigNum | undefined;
@@ -514,6 +577,15 @@ export class BigNum {
 * @returns {BigNum}
 */
   static from_bytes(bytes: Uint8Array): BigNum;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {BigNum}
+*/
+  static from_hex(hex_str: string): BigNum;
 /**
 * @param {string} string
 * @returns {BigNum}
@@ -643,6 +715,15 @@ export class Bip32PrivateKey {
 * @returns {Uint8Array}
 */
   chaincode(): Uint8Array;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Bip32PrivateKey}
+*/
+  static from_hex(hex_str: string): Bip32PrivateKey;
 }
 /**
 */
@@ -702,6 +783,15 @@ export class Bip32PublicKey {
 * @returns {Uint8Array}
 */
   chaincode(): Uint8Array;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Bip32PublicKey}
+*/
+  static from_hex(hex_str: string): Bip32PublicKey;
 }
 /**
 */
@@ -716,6 +806,15 @@ export class Block {
 * @returns {Block}
 */
   static from_bytes(bytes: Uint8Array): Block;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Block}
+*/
+  static from_hex(hex_str: string): Block;
 /**
 * @returns {Header}
 */
@@ -765,6 +864,15 @@ export class BlockHash {
 */
   static from_bech32(bech_str: string): BlockHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {BlockHash}
+*/
+  static from_hex(hex_str: string): BlockHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {BlockHash}
 */
@@ -783,6 +891,15 @@ export class BootstrapWitness {
 * @returns {BootstrapWitness}
 */
   static from_bytes(bytes: Uint8Array): BootstrapWitness;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {BootstrapWitness}
+*/
+  static from_hex(hex_str: string): BootstrapWitness;
 /**
 * @returns {Vkey}
 */
@@ -901,6 +1018,15 @@ export class Certificate {
 */
   static from_bytes(bytes: Uint8Array): Certificate;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Certificate}
+*/
+  static from_hex(hex_str: string): Certificate;
+/**
 * @param {StakeRegistration} stake_registration
 * @returns {Certificate}
 */
@@ -982,6 +1108,15 @@ export class Certificates {
 */
   static from_bytes(bytes: Uint8Array): Certificates;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Certificates}
+*/
+  static from_hex(hex_str: string): Certificates;
+/**
 * @returns {Certificates}
 */
   static new(): Certificates;
@@ -1013,6 +1148,15 @@ export class ConstrPlutusData {
 */
   static from_bytes(bytes: Uint8Array): ConstrPlutusData;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ConstrPlutusData}
+*/
+  static from_hex(hex_str: string): ConstrPlutusData;
+/**
 * @returns {BigNum}
 */
   alternative(): BigNum;
@@ -1040,6 +1184,15 @@ export class CostModel {
 * @returns {CostModel}
 */
   static from_bytes(bytes: Uint8Array): CostModel;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {CostModel}
+*/
+  static from_hex(hex_str: string): CostModel;
 /**
 * @returns {CostModel}
 */
@@ -1069,6 +1222,15 @@ export class Costmdls {
 * @returns {Costmdls}
 */
   static from_bytes(bytes: Uint8Array): Costmdls;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Costmdls}
+*/
+  static from_hex(hex_str: string): Costmdls;
 /**
 * @returns {Costmdls}
 */
@@ -1107,6 +1269,15 @@ export class DNSRecordAorAAAA {
 */
   static from_bytes(bytes: Uint8Array): DNSRecordAorAAAA;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {DNSRecordAorAAAA}
+*/
+  static from_hex(hex_str: string): DNSRecordAorAAAA;
+/**
 * @param {string} dns_name
 * @returns {DNSRecordAorAAAA}
 */
@@ -1129,6 +1300,15 @@ export class DNSRecordSRV {
 * @returns {DNSRecordSRV}
 */
   static from_bytes(bytes: Uint8Array): DNSRecordSRV;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {DNSRecordSRV}
+*/
+  static from_hex(hex_str: string): DNSRecordSRV;
 /**
 * @param {string} dns_name
 * @returns {DNSRecordSRV}
@@ -1158,6 +1338,15 @@ export class DataHash {
 */
   static from_bech32(bech_str: string): DataHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {DataHash}
+*/
+  static from_hex(hex_str: string): DataHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {DataHash}
 */
@@ -1182,6 +1371,15 @@ export class Ed25519KeyHash {
 */
   static from_bech32(bech_str: string): Ed25519KeyHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Ed25519KeyHash}
+*/
+  static from_hex(hex_str: string): Ed25519KeyHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {Ed25519KeyHash}
 */
@@ -1200,6 +1398,15 @@ export class Ed25519KeyHashes {
 * @returns {Ed25519KeyHashes}
 */
   static from_bytes(bytes: Uint8Array): Ed25519KeyHashes;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Ed25519KeyHashes}
+*/
+  static from_hex(hex_str: string): Ed25519KeyHashes;
 /**
 * @returns {Ed25519KeyHashes}
 */
@@ -1288,6 +1495,15 @@ export class ExUnitPrices {
 */
   static from_bytes(bytes: Uint8Array): ExUnitPrices;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ExUnitPrices}
+*/
+  static from_hex(hex_str: string): ExUnitPrices;
+/**
 * @returns {UnitInterval}
 */
   mem_price(): UnitInterval;
@@ -1316,6 +1532,15 @@ export class ExUnits {
 */
   static from_bytes(bytes: Uint8Array): ExUnits;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ExUnits}
+*/
+  static from_hex(hex_str: string): ExUnits;
+/**
 * @returns {BigNum}
 */
   mem(): BigNum;
@@ -1343,6 +1568,15 @@ export class GeneralTransactionMetadata {
 * @returns {GeneralTransactionMetadata}
 */
   static from_bytes(bytes: Uint8Array): GeneralTransactionMetadata;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {GeneralTransactionMetadata}
+*/
+  static from_hex(hex_str: string): GeneralTransactionMetadata;
 /**
 * @returns {GeneralTransactionMetadata}
 */
@@ -1386,6 +1620,15 @@ export class GenesisDelegateHash {
 */
   static from_bech32(bech_str: string): GenesisDelegateHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {GenesisDelegateHash}
+*/
+  static from_hex(hex_str: string): GenesisDelegateHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {GenesisDelegateHash}
 */
@@ -1410,6 +1653,15 @@ export class GenesisHash {
 */
   static from_bech32(bech_str: string): GenesisHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {GenesisHash}
+*/
+  static from_hex(hex_str: string): GenesisHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {GenesisHash}
 */
@@ -1428,6 +1680,15 @@ export class GenesisHashes {
 * @returns {GenesisHashes}
 */
   static from_bytes(bytes: Uint8Array): GenesisHashes;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {GenesisHashes}
+*/
+  static from_hex(hex_str: string): GenesisHashes;
 /**
 * @returns {GenesisHashes}
 */
@@ -1459,6 +1720,15 @@ export class GenesisKeyDelegation {
 * @returns {GenesisKeyDelegation}
 */
   static from_bytes(bytes: Uint8Array): GenesisKeyDelegation;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {GenesisKeyDelegation}
+*/
+  static from_hex(hex_str: string): GenesisKeyDelegation;
 /**
 * @returns {GenesisHash}
 */
@@ -1493,6 +1763,15 @@ export class Header {
 */
   static from_bytes(bytes: Uint8Array): Header;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Header}
+*/
+  static from_hex(hex_str: string): Header;
+/**
 * @returns {HeaderBody}
 */
   header_body(): HeaderBody;
@@ -1520,6 +1799,15 @@ export class HeaderBody {
 * @returns {HeaderBody}
 */
   static from_bytes(bytes: Uint8Array): HeaderBody;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {HeaderBody}
+*/
+  static from_hex(hex_str: string): HeaderBody;
 /**
 * @returns {number}
 */
@@ -1663,6 +1951,15 @@ export class Ipv4 {
 */
   static from_bytes(bytes: Uint8Array): Ipv4;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Ipv4}
+*/
+  static from_hex(hex_str: string): Ipv4;
+/**
 * @param {Uint8Array} data
 * @returns {Ipv4}
 */
@@ -1685,6 +1982,15 @@ export class Ipv6 {
 * @returns {Ipv6}
 */
   static from_bytes(bytes: Uint8Array): Ipv6;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Ipv6}
+*/
+  static from_hex(hex_str: string): Ipv6;
 /**
 * @param {Uint8Array} data
 * @returns {Ipv6}
@@ -1728,6 +2034,15 @@ export class KESVKey {
 */
   static from_bech32(bech_str: string): KESVKey;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {KESVKey}
+*/
+  static from_hex(hex_str: string): KESVKey;
+/**
 * @param {Uint8Array} bytes
 * @returns {KESVKey}
 */
@@ -1746,6 +2061,15 @@ export class Language {
 * @returns {Language}
 */
   static from_bytes(bytes: Uint8Array): Language;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Language}
+*/
+  static from_hex(hex_str: string): Language;
 /**
 * @returns {Language}
 */
@@ -1828,6 +2152,15 @@ export class MIRToStakeCredentials {
 */
   static from_bytes(bytes: Uint8Array): MIRToStakeCredentials;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {MIRToStakeCredentials}
+*/
+  static from_hex(hex_str: string): MIRToStakeCredentials;
+/**
 * @returns {MIRToStakeCredentials}
 */
   static new(): MIRToStakeCredentials;
@@ -1865,6 +2198,15 @@ export class MetadataList {
 */
   static from_bytes(bytes: Uint8Array): MetadataList;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {MetadataList}
+*/
+  static from_hex(hex_str: string): MetadataList;
+/**
 * @returns {MetadataList}
 */
   static new(): MetadataList;
@@ -1895,6 +2237,15 @@ export class MetadataMap {
 * @returns {MetadataMap}
 */
   static from_bytes(bytes: Uint8Array): MetadataMap;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {MetadataMap}
+*/
+  static from_hex(hex_str: string): MetadataMap;
 /**
 * @returns {MetadataMap}
 */
@@ -1959,6 +2310,15 @@ export class Mint {
 * @returns {Mint}
 */
   static from_bytes(bytes: Uint8Array): Mint;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Mint}
+*/
+  static from_hex(hex_str: string): Mint;
 /**
 * @returns {Mint}
 */
@@ -2047,6 +2407,15 @@ export class MoveInstantaneousReward {
 */
   static from_bytes(bytes: Uint8Array): MoveInstantaneousReward;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {MoveInstantaneousReward}
+*/
+  static from_hex(hex_str: string): MoveInstantaneousReward;
+/**
 * @param {number} pot
 * @param {BigNum} amount
 * @returns {MoveInstantaneousReward}
@@ -2089,6 +2458,15 @@ export class MoveInstantaneousRewardsCert {
 */
   static from_bytes(bytes: Uint8Array): MoveInstantaneousRewardsCert;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {MoveInstantaneousRewardsCert}
+*/
+  static from_hex(hex_str: string): MoveInstantaneousRewardsCert;
+/**
 * @returns {MoveInstantaneousReward}
 */
   move_instantaneous_reward(): MoveInstantaneousReward;
@@ -2111,6 +2489,15 @@ export class MultiAsset {
 * @returns {MultiAsset}
 */
   static from_bytes(bytes: Uint8Array): MultiAsset;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {MultiAsset}
+*/
+  static from_hex(hex_str: string): MultiAsset;
 /**
 * @returns {MultiAsset}
 */
@@ -2155,6 +2542,15 @@ export class MultiHostName {
 */
   static from_bytes(bytes: Uint8Array): MultiHostName;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {MultiHostName}
+*/
+  static from_hex(hex_str: string): MultiHostName;
+/**
 * @returns {DNSRecordSRV}
 */
   dns_name(): DNSRecordSRV;
@@ -2177,6 +2573,15 @@ export class NativeScript {
 * @returns {NativeScript}
 */
   static from_bytes(bytes: Uint8Array): NativeScript;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {NativeScript}
+*/
+  static from_hex(hex_str: string): NativeScript;
 /**
 * @param {number} namespace
 * @returns {ScriptHash}
@@ -2277,6 +2682,15 @@ export class NetworkId {
 */
   static from_bytes(bytes: Uint8Array): NetworkId;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {NetworkId}
+*/
+  static from_hex(hex_str: string): NetworkId;
+/**
 * @returns {NetworkId}
 */
   static testnet(): NetworkId;
@@ -2330,6 +2744,15 @@ export class Nonce {
 */
   static from_bytes(bytes: Uint8Array): Nonce;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Nonce}
+*/
+  static from_hex(hex_str: string): Nonce;
+/**
 * @returns {Nonce}
 */
   static new_identity(): Nonce;
@@ -2356,6 +2779,15 @@ export class OperationalCert {
 * @returns {OperationalCert}
 */
   static from_bytes(bytes: Uint8Array): OperationalCert;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {OperationalCert}
+*/
+  static from_hex(hex_str: string): OperationalCert;
 /**
 * @returns {KESVKey}
 */
@@ -2394,6 +2826,15 @@ export class PlutusData {
 * @returns {PlutusData}
 */
   static from_bytes(bytes: Uint8Array): PlutusData;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PlutusData}
+*/
+  static from_hex(hex_str: string): PlutusData;
 /**
 * @param {ConstrPlutusData} constr_plutus_data
 * @returns {PlutusData}
@@ -2458,6 +2899,15 @@ export class PlutusList {
 */
   static from_bytes(bytes: Uint8Array): PlutusList;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PlutusList}
+*/
+  static from_hex(hex_str: string): PlutusList;
+/**
 * @returns {PlutusList}
 */
   static new(): PlutusList;
@@ -2488,6 +2938,15 @@ export class PlutusMap {
 * @returns {PlutusMap}
 */
   static from_bytes(bytes: Uint8Array): PlutusMap;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PlutusMap}
+*/
+  static from_hex(hex_str: string): PlutusMap;
 /**
 * @returns {PlutusMap}
 */
@@ -2526,6 +2985,15 @@ export class PlutusScript {
 */
   static from_bytes(bytes: Uint8Array): PlutusScript;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PlutusScript}
+*/
+  static from_hex(hex_str: string): PlutusScript;
+/**
 * @param {Uint8Array} bytes
 * @returns {PlutusScript}
 */
@@ -2548,6 +3016,15 @@ export class PlutusScripts {
 * @returns {PlutusScripts}
 */
   static from_bytes(bytes: Uint8Array): PlutusScripts;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PlutusScripts}
+*/
+  static from_hex(hex_str: string): PlutusScripts;
 /**
 * @returns {PlutusScripts}
 */
@@ -2633,6 +3110,15 @@ export class PoolMetadata {
 */
   static from_bytes(bytes: Uint8Array): PoolMetadata;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PoolMetadata}
+*/
+  static from_hex(hex_str: string): PoolMetadata;
+/**
 * @returns {URL}
 */
   url(): URL;
@@ -2666,6 +3152,15 @@ export class PoolMetadataHash {
 */
   static from_bech32(bech_str: string): PoolMetadataHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PoolMetadataHash}
+*/
+  static from_hex(hex_str: string): PoolMetadataHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {PoolMetadataHash}
 */
@@ -2684,6 +3179,15 @@ export class PoolParams {
 * @returns {PoolParams}
 */
   static from_bytes(bytes: Uint8Array): PoolParams;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PoolParams}
+*/
+  static from_hex(hex_str: string): PoolParams;
 /**
 * @returns {Ed25519KeyHash}
 */
@@ -2748,6 +3252,15 @@ export class PoolRegistration {
 */
   static from_bytes(bytes: Uint8Array): PoolRegistration;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PoolRegistration}
+*/
+  static from_hex(hex_str: string): PoolRegistration;
+/**
 * @returns {PoolParams}
 */
   pool_params(): PoolParams;
@@ -2770,6 +3283,15 @@ export class PoolRetirement {
 * @returns {PoolRetirement}
 */
   static from_bytes(bytes: Uint8Array): PoolRetirement;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PoolRetirement}
+*/
+  static from_hex(hex_str: string): PoolRetirement;
 /**
 * @returns {Ed25519KeyHash}
 */
@@ -2837,6 +3359,15 @@ export class PrivateKey {
 * @returns {Ed25519Signature}
 */
   sign(message: Uint8Array): Ed25519Signature;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PrivateKey}
+*/
+  static from_hex(hex_str: string): PrivateKey;
 }
 /**
 */
@@ -2851,6 +3382,15 @@ export class ProposedProtocolParameterUpdates {
 * @returns {ProposedProtocolParameterUpdates}
 */
   static from_bytes(bytes: Uint8Array): ProposedProtocolParameterUpdates;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ProposedProtocolParameterUpdates}
+*/
+  static from_hex(hex_str: string): ProposedProtocolParameterUpdates;
 /**
 * @returns {ProposedProtocolParameterUpdates}
 */
@@ -2888,6 +3428,15 @@ export class ProtocolParamUpdate {
 * @returns {ProtocolParamUpdate}
 */
   static from_bytes(bytes: Uint8Array): ProtocolParamUpdate;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ProtocolParamUpdate}
+*/
+  static from_hex(hex_str: string): ProtocolParamUpdate;
 /**
 * @param {BigNum} minfee_a
 */
@@ -3083,6 +3632,15 @@ export class ProtocolVersion {
 */
   static from_bytes(bytes: Uint8Array): ProtocolVersion;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ProtocolVersion}
+*/
+  static from_hex(hex_str: string): ProtocolVersion;
+/**
 * @returns {number}
 */
   major(): number;
@@ -3110,6 +3668,15 @@ export class ProtocolVersions {
 * @returns {ProtocolVersions}
 */
   static from_bytes(bytes: Uint8Array): ProtocolVersions;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ProtocolVersions}
+*/
+  static from_hex(hex_str: string): ProtocolVersions;
 /**
 * @returns {ProtocolVersions}
 */
@@ -3166,6 +3733,15 @@ export class PublicKey {
 * @returns {Ed25519KeyHash}
 */
   hash(): Ed25519KeyHash;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {PublicKey}
+*/
+  static from_hex(hex_str: string): PublicKey;
 }
 /**
 */
@@ -3201,6 +3777,15 @@ export class Redeemer {
 * @returns {Redeemer}
 */
   static from_bytes(bytes: Uint8Array): Redeemer;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Redeemer}
+*/
+  static from_hex(hex_str: string): Redeemer;
 /**
 * @returns {RedeemerTag}
 */
@@ -3240,6 +3825,15 @@ export class RedeemerTag {
 */
   static from_bytes(bytes: Uint8Array): RedeemerTag;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {RedeemerTag}
+*/
+  static from_hex(hex_str: string): RedeemerTag;
+/**
 * @returns {RedeemerTag}
 */
   static new_spend(): RedeemerTag;
@@ -3274,6 +3868,15 @@ export class Redeemers {
 */
   static from_bytes(bytes: Uint8Array): Redeemers;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Redeemers}
+*/
+  static from_hex(hex_str: string): Redeemers;
+/**
 * @returns {Redeemers}
 */
   static new(): Redeemers;
@@ -3304,6 +3907,15 @@ export class Relay {
 * @returns {Relay}
 */
   static from_bytes(bytes: Uint8Array): Relay;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Relay}
+*/
+  static from_hex(hex_str: string): Relay;
 /**
 * @param {SingleHostAddr} single_host_addr
 * @returns {Relay}
@@ -3349,6 +3961,15 @@ export class Relays {
 * @returns {Relays}
 */
   static from_bytes(bytes: Uint8Array): Relays;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Relays}
+*/
+  static from_hex(hex_str: string): Relays;
 /**
 * @returns {Relays}
 */
@@ -3405,6 +4026,15 @@ export class RewardAddresses {
 */
   static from_bytes(bytes: Uint8Array): RewardAddresses;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {RewardAddresses}
+*/
+  static from_hex(hex_str: string): RewardAddresses;
+/**
 * @returns {RewardAddresses}
 */
   static new(): RewardAddresses;
@@ -3436,6 +4066,15 @@ export class ScriptAll {
 */
   static from_bytes(bytes: Uint8Array): ScriptAll;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ScriptAll}
+*/
+  static from_hex(hex_str: string): ScriptAll;
+/**
 * @returns {NativeScripts}
 */
   native_scripts(): NativeScripts;
@@ -3458,6 +4097,15 @@ export class ScriptAny {
 * @returns {ScriptAny}
 */
   static from_bytes(bytes: Uint8Array): ScriptAny;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ScriptAny}
+*/
+  static from_hex(hex_str: string): ScriptAny;
 /**
 * @returns {NativeScripts}
 */
@@ -3487,6 +4135,15 @@ export class ScriptDataHash {
 */
   static from_bech32(bech_str: string): ScriptDataHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ScriptDataHash}
+*/
+  static from_hex(hex_str: string): ScriptDataHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {ScriptDataHash}
 */
@@ -3511,6 +4168,15 @@ export class ScriptHash {
 */
   static from_bech32(bech_str: string): ScriptHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ScriptHash}
+*/
+  static from_hex(hex_str: string): ScriptHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {ScriptHash}
 */
@@ -3529,6 +4195,15 @@ export class ScriptHashes {
 * @returns {ScriptHashes}
 */
   static from_bytes(bytes: Uint8Array): ScriptHashes;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ScriptHashes}
+*/
+  static from_hex(hex_str: string): ScriptHashes;
 /**
 * @returns {ScriptHashes}
 */
@@ -3561,6 +4236,15 @@ export class ScriptNOfK {
 */
   static from_bytes(bytes: Uint8Array): ScriptNOfK;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ScriptNOfK}
+*/
+  static from_hex(hex_str: string): ScriptNOfK;
+/**
 * @returns {number}
 */
   n(): number;
@@ -3589,6 +4273,15 @@ export class ScriptPubkey {
 */
   static from_bytes(bytes: Uint8Array): ScriptPubkey;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {ScriptPubkey}
+*/
+  static from_hex(hex_str: string): ScriptPubkey;
+/**
 * @returns {Ed25519KeyHash}
 */
   addr_keyhash(): Ed25519KeyHash;
@@ -3611,6 +4304,15 @@ export class SingleHostAddr {
 * @returns {SingleHostAddr}
 */
   static from_bytes(bytes: Uint8Array): SingleHostAddr;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {SingleHostAddr}
+*/
+  static from_hex(hex_str: string): SingleHostAddr;
 /**
 * @returns {number | undefined}
 */
@@ -3644,6 +4346,15 @@ export class SingleHostName {
 * @returns {SingleHostName}
 */
   static from_bytes(bytes: Uint8Array): SingleHostName;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {SingleHostName}
+*/
+  static from_hex(hex_str: string): SingleHostName;
 /**
 * @returns {number | undefined}
 */
@@ -3694,6 +4405,15 @@ export class StakeCredential {
 * @returns {StakeCredential}
 */
   static from_bytes(bytes: Uint8Array): StakeCredential;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {StakeCredential}
+*/
+  static from_hex(hex_str: string): StakeCredential;
 }
 /**
 */
@@ -3708,6 +4428,15 @@ export class StakeCredentials {
 * @returns {StakeCredentials}
 */
   static from_bytes(bytes: Uint8Array): StakeCredentials;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {StakeCredentials}
+*/
+  static from_hex(hex_str: string): StakeCredentials;
 /**
 * @returns {StakeCredentials}
 */
@@ -3740,6 +4469,15 @@ export class StakeDelegation {
 */
   static from_bytes(bytes: Uint8Array): StakeDelegation;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {StakeDelegation}
+*/
+  static from_hex(hex_str: string): StakeDelegation;
+/**
 * @returns {StakeCredential}
 */
   stake_credential(): StakeCredential;
@@ -3768,6 +4506,15 @@ export class StakeDeregistration {
 */
   static from_bytes(bytes: Uint8Array): StakeDeregistration;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {StakeDeregistration}
+*/
+  static from_hex(hex_str: string): StakeDeregistration;
+/**
 * @returns {StakeCredential}
 */
   stake_credential(): StakeCredential;
@@ -3790,6 +4537,15 @@ export class StakeRegistration {
 * @returns {StakeRegistration}
 */
   static from_bytes(bytes: Uint8Array): StakeRegistration;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {StakeRegistration}
+*/
+  static from_hex(hex_str: string): StakeRegistration;
 /**
 * @returns {StakeCredential}
 */
@@ -3836,6 +4592,15 @@ export class TimelockExpiry {
 */
   static from_bytes(bytes: Uint8Array): TimelockExpiry;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TimelockExpiry}
+*/
+  static from_hex(hex_str: string): TimelockExpiry;
+/**
 * @returns {number}
 */
   slot(): number;
@@ -3859,6 +4624,15 @@ export class TimelockStart {
 */
   static from_bytes(bytes: Uint8Array): TimelockStart;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TimelockStart}
+*/
+  static from_hex(hex_str: string): TimelockStart;
+/**
 * @returns {number}
 */
   slot(): number;
@@ -3881,6 +4655,15 @@ export class Transaction {
 * @returns {Transaction}
 */
   static from_bytes(bytes: Uint8Array): Transaction;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Transaction}
+*/
+  static from_hex(hex_str: string): Transaction;
 /**
 * @returns {TransactionBody}
 */
@@ -3923,6 +4706,15 @@ export class TransactionBodies {
 */
   static from_bytes(bytes: Uint8Array): TransactionBodies;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionBodies}
+*/
+  static from_hex(hex_str: string): TransactionBodies;
+/**
 * @returns {TransactionBodies}
 */
   static new(): TransactionBodies;
@@ -3953,6 +4745,15 @@ export class TransactionBody {
 * @returns {TransactionBody}
 */
   static from_bytes(bytes: Uint8Array): TransactionBody;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionBody}
+*/
+  static from_hex(hex_str: string): TransactionBody;
 /**
 * @returns {TransactionInputs}
 */
@@ -4391,6 +5192,15 @@ export class TransactionHash {
 */
   static from_bech32(bech_str: string): TransactionHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionHash}
+*/
+  static from_hex(hex_str: string): TransactionHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {TransactionHash}
 */
@@ -4409,6 +5219,15 @@ export class TransactionInput {
 * @returns {TransactionInput}
 */
   static from_bytes(bytes: Uint8Array): TransactionInput;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionInput}
+*/
+  static from_hex(hex_str: string): TransactionInput;
 /**
 * @returns {TransactionHash}
 */
@@ -4437,6 +5256,15 @@ export class TransactionInputs {
 * @returns {TransactionInputs}
 */
   static from_bytes(bytes: Uint8Array): TransactionInputs;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionInputs}
+*/
+  static from_hex(hex_str: string): TransactionInputs;
 /**
 * @returns {TransactionInputs}
 */
@@ -4468,6 +5296,15 @@ export class TransactionMetadatum {
 * @returns {TransactionMetadatum}
 */
   static from_bytes(bytes: Uint8Array): TransactionMetadatum;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionMetadatum}
+*/
+  static from_hex(hex_str: string): TransactionMetadatum;
 /**
 * @param {MetadataMap} map
 * @returns {TransactionMetadatum}
@@ -4532,6 +5369,15 @@ export class TransactionMetadatumLabels {
 */
   static from_bytes(bytes: Uint8Array): TransactionMetadatumLabels;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionMetadatumLabels}
+*/
+  static from_hex(hex_str: string): TransactionMetadatumLabels;
+/**
 * @returns {TransactionMetadatumLabels}
 */
   static new(): TransactionMetadatumLabels;
@@ -4562,6 +5408,15 @@ export class TransactionOutput {
 * @returns {TransactionOutput}
 */
   static from_bytes(bytes: Uint8Array): TransactionOutput;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionOutput}
+*/
+  static from_hex(hex_str: string): TransactionOutput;
 /**
 * @returns {Address}
 */
@@ -4599,6 +5454,15 @@ export class TransactionOutputs {
 */
   static from_bytes(bytes: Uint8Array): TransactionOutputs;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionOutputs}
+*/
+  static from_hex(hex_str: string): TransactionOutputs;
+/**
 * @returns {TransactionOutputs}
 */
   static new(): TransactionOutputs;
@@ -4629,6 +5493,15 @@ export class TransactionUnspentOutput {
 * @returns {TransactionUnspentOutput}
 */
   static from_bytes(bytes: Uint8Array): TransactionUnspentOutput;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionUnspentOutput}
+*/
+  static from_hex(hex_str: string): TransactionUnspentOutput;
 /**
 * @param {TransactionInput} input
 * @param {TransactionOutput} output
@@ -4679,6 +5552,15 @@ export class TransactionWitnessSet {
 * @returns {TransactionWitnessSet}
 */
   static from_bytes(bytes: Uint8Array): TransactionWitnessSet;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionWitnessSet}
+*/
+  static from_hex(hex_str: string): TransactionWitnessSet;
 /**
 * @param {Vkeywitnesses} vkeys
 */
@@ -4746,6 +5628,15 @@ export class TransactionWitnessSets {
 */
   static from_bytes(bytes: Uint8Array): TransactionWitnessSets;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {TransactionWitnessSets}
+*/
+  static from_hex(hex_str: string): TransactionWitnessSets;
+/**
 * @returns {TransactionWitnessSets}
 */
   static new(): TransactionWitnessSets;
@@ -4777,6 +5668,15 @@ export class URL {
 */
   static from_bytes(bytes: Uint8Array): URL;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {URL}
+*/
+  static from_hex(hex_str: string): URL;
+/**
 * @param {string} url
 * @returns {URL}
 */
@@ -4799,6 +5699,15 @@ export class UnitInterval {
 * @returns {UnitInterval}
 */
   static from_bytes(bytes: Uint8Array): UnitInterval;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {UnitInterval}
+*/
+  static from_hex(hex_str: string): UnitInterval;
 /**
 * @returns {BigNum}
 */
@@ -4828,6 +5737,15 @@ export class Update {
 */
   static from_bytes(bytes: Uint8Array): Update;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Update}
+*/
+  static from_hex(hex_str: string): Update;
+/**
 * @returns {ProposedProtocolParameterUpdates}
 */
   proposed_protocol_parameter_updates(): ProposedProtocolParameterUpdates;
@@ -4855,6 +5773,15 @@ export class VRFCert {
 * @returns {VRFCert}
 */
   static from_bytes(bytes: Uint8Array): VRFCert;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {VRFCert}
+*/
+  static from_hex(hex_str: string): VRFCert;
 /**
 * @returns {Uint8Array}
 */
@@ -4889,6 +5816,15 @@ export class VRFKeyHash {
 */
   static from_bech32(bech_str: string): VRFKeyHash;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {VRFKeyHash}
+*/
+  static from_hex(hex_str: string): VRFKeyHash;
+/**
 * @param {Uint8Array} bytes
 * @returns {VRFKeyHash}
 */
@@ -4913,6 +5849,15 @@ export class VRFVKey {
 */
   static from_bech32(bech_str: string): VRFVKey;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {VRFVKey}
+*/
+  static from_hex(hex_str: string): VRFVKey;
+/**
 * @param {Uint8Array} bytes
 * @returns {VRFVKey}
 */
@@ -4931,6 +5876,15 @@ export class Value {
 * @returns {Value}
 */
   static from_bytes(bytes: Uint8Array): Value;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Value}
+*/
+  static from_hex(hex_str: string): Value;
 /**
 * @param {BigNum} coin
 * @returns {Value}
@@ -5001,6 +5955,15 @@ export class Vkey {
 */
   static from_bytes(bytes: Uint8Array): Vkey;
 /**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Vkey}
+*/
+  static from_hex(hex_str: string): Vkey;
+/**
 * @param {PublicKey} pk
 * @returns {Vkey}
 */
@@ -5045,6 +6008,15 @@ export class Vkeywitness {
 * @returns {Vkeywitness}
 */
   static from_bytes(bytes: Uint8Array): Vkeywitness;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Vkeywitness}
+*/
+  static from_hex(hex_str: string): Vkeywitness;
 /**
 * @param {Vkey} vkey
 * @param {Ed25519Signature} signature
@@ -5095,6 +6067,15 @@ export class Withdrawals {
 * @returns {Withdrawals}
 */
   static from_bytes(bytes: Uint8Array): Withdrawals;
+/**
+* @returns {string}
+*/
+  to_hex(): string;
+/**
+* @param {string} hex_str
+* @returns {Withdrawals}
+*/
+  static from_hex(hex_str: string): Withdrawals;
 /**
 * @returns {Withdrawals}
 */
