@@ -117,7 +117,7 @@ const Wallet = () => {
   const history = useHistory();
   const settings = useStoreState((state) => state.settings.settings);
   const avatarBg = useColorModeValue('white', 'gray.700');
-  const panelBg = useColorModeValue('teal.400', 'gray.800');
+  const panelBg = useColorModeValue('#349EA3', 'gray.800');
   const [state, setState] = React.useState({
     account: null,
     accounts: null,
