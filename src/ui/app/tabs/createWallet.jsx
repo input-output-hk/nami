@@ -537,6 +537,7 @@ const SeedDrop = ({ onLoad, ...props }) => {
   return (
     <Box {...props} display="flex" alignItems="center" justifyContent="center">
       <Box
+        transition="0.3s"
         border="1px dashed"
         background={
           !isValid
