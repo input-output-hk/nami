@@ -1,8 +1,8 @@
 <p align="center"><img width="200px" src="./src/assets/img/bannerBlack.svg"></img></p>
 
-# Nami Wallet
+# Nami
 
-Nami Wallet is a browser based wallet extension to interact with the Cardano blockchain. It's an open-source project and built by [**Berry Pool**](https://pipool.online).
+Nami is a browser based wallet extension to interact with the Cardano blockchain. It's an open-source project and built by [**Berry Pool**](https://pipool.online).
 
 ### Injected API
 
@@ -64,7 +64,7 @@ cardano.getUsedAddresses() : [BaseAddress]
 
 `BaseAddress` is a hex encoded bytes string.
 
-**Note** Nami Wallet doesn't utilize the concept of multipe addresses per wallet. This function will return an array of length `1` and will always return the same single address. Just to follow the standards of the proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88), it will return the address in an array.
+**Note** Nami doesn't utilize the concept of multipe addresses per wallet. This function will return an array of length `1` and will always return the same single address. Just to follow the standards of the proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88), it will return the address in an array.
 
 ##### cardano.getUnusedAddresses()
 
@@ -146,7 +146,7 @@ Returns the transaction hash, if transaction was submitted successfully, otherwi
 cardano.onAccountChange((addresses : [BaseAddress]) => void)
 ```
 
-**Note** To follow the standards of multiple addresses the callback will return an array, although Nami Wallet will just return an array with a single address, which is the same as the one in `cardano.getUsedAddresses()`.
+**Note** To follow the standards of multiple addresses the callback will return an array, although Nami will just return an array with a single address, which is the same as the one in `cardano.getUsedAddresses()`.
 
 ##### cardano.onNetworkChange(network)
 
