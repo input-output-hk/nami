@@ -58,6 +58,7 @@ export interface CommonParams {
     allowSeedlessDevice?: boolean;
     keepSession?: boolean;
     skipFinalReload?: boolean;
+    useCardanoDerivation?: boolean;
 }
 
 export interface Bundle<T> {

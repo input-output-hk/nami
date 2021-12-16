@@ -310,7 +310,7 @@ export type API = {
     /**
      * Applies device setup
      */
-    applySettings: Method<Mgmnt.ApplySettings, P.DefaultMessage>,
+    applySettings: Method<Protobuf.ApplySettings, P.DefaultMessage>,
 
     /**
      * Increment saved flag on device

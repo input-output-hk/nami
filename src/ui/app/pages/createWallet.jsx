@@ -6,7 +6,7 @@ import {
 } from '../../../api/extension';
 import { Button } from '@chakra-ui/button';
 import { Route, Switch, useHistory } from 'react-router-dom';
-import { Image } from '@chakra-ui/react';
+import { Image, useColorModeValue } from '@chakra-ui/react';
 import {
   Input,
   InputGroup,
@@ -20,9 +20,11 @@ import { CloseButton } from '@chakra-ui/close-button';
 import { Checkbox } from '@chakra-ui/checkbox';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 
-import Logo from '../../../assets/img/logo.svg';
+import LogoOriginal from '../../../assets/img/logo.svg';
+import LogoWhite from '../../../assets/img/logoWhite.svg';
 
 const CreateWallet = ({ data }) => {
+  const Logo = useColorModeValue(LogoOriginal, LogoWhite);
   const history = useHistory();
 
   return (
@@ -87,7 +89,6 @@ const GenerateSeed = (props) => {
                       fontWeight="bold"
                       rounded="full"
                       children={`${index}`}
-                      // background="teal.400"
                     />
                   )}
                   <Input
@@ -101,11 +102,9 @@ const GenerateSeed = (props) => {
                   ></Input>
                   {colIndex && (
                     <InputRightAddon
-                      // color="white"
                       fontWeight="bold"
                       rounded="full"
                       children={`${index}`}
-                      // background="teal.400"
                     />
                   )}
                 </InputGroup>

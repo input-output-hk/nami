@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "version": "2.3.1",
+  "version": "2.3.6",
   "description": "A wallet to experience Cardano to the fullest",
-  "name": "Nami Wallet",
+  "name": "Nami",
   "background": { "scripts": ["background.bundle.js"], "persistent": false },
   "browser_action": {
     "default_popup": "mainPopup.html",
@@ -26,5 +26,5 @@
     "Trezor/*"
   ],
   "permissions": ["storage", "chrome://favicon/", "unlimitedStorage"],
-  "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self';"
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';"
 }

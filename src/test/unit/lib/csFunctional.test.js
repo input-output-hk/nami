@@ -1,5 +1,6 @@
 import Loader from '../../../api/loader';
 import { utxoFromJson } from '../../../api/util';
+import manyMinValue from './utxo/manyMinValue.json';
 import singleSet from './utxo/singleUtxo.json';
 import manySmallSet from './utxo/manySmall.json';
 import smallSet from './utxo/smallSet.json';
@@ -31,6 +32,7 @@ const UTxO_SETS = {
   'Single UTxO Set': getUTxOSet(singleSet),
   'Small UTxO Set': getUTxOSet(smallSet),
   'Medium UTxO Set': getUTxOSet(mediumSet),
+  'Many Min Value UTxO Set': getUTxOSet(manyMinValue),
   'Many small UTxO Set': getUTxOSet(manySmallSet),
   // 'Large UTxO Set': getUTxOSet(largeSet)
 };
