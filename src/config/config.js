@@ -80,6 +80,7 @@ export const POPUP = {
 
 export const TAB = {
   hw: 'hwTab',
+  createWallet: 'createWalletTab',
 };
 
 export const HW = {

@@ -530,11 +530,11 @@ export const createPopup = (popup) =>
     )
   );
 
-export const createTab = (tab) =>
+export const createTab = (tab, query = '') =>
   new Promise((res, rej) =>
     chrome.tabs.create(
       {
-        url: chrome.runtime.getURL(tab + '.html'),
+        url: chrome.runtime.getURL(tab + '.html' + query),
         active: true,
       },
       function (tab) {
