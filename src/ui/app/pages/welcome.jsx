@@ -20,6 +20,8 @@ import BannerWhite from '../../../assets/img/bannerWhite.svg';
 import BannerBlack from '../../../assets/img/bannerBlack.svg';
 import TermsOfUse from '../components/termsOfUse';
 import { ViewIcon, WarningTwoIcon } from '@chakra-ui/icons';
+import { createTab } from '../../../api/extension';
+import { TAB } from '../../../config/config';
 
 const Welcome = () => {
   const Banner = useColorModeValue(BannerBlack, BannerWhite);
@@ -142,7 +144,7 @@ const WalletModal = React.forwardRef((props, ref) => {
             <Button
               isDisabled={!accept}
               colorScheme="teal"
-              onClick={() => history.push('/createWallet/generate')}
+              onClick={() => createTab(TAB.createWallet, `?type=generate`)}
             >
               Continue
             </Button>
@@ -234,10 +236,10 @@ const ImportModal = React.forwardRef((props, ref) => {
               isDisabled={!select || !accept}
               colorScheme="teal"
               onClick={() =>
-                history.push({
-                  pathname: '/createWallet/import',
-                  seedLength: parseInt(select),
-                })
+                createTab(
+                  TAB.createWallet,
+                  `?type=import&length=${parseInt(select)}`
+                )
               }
             >
               Continue
