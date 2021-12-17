@@ -305,15 +305,11 @@ const Whitelisted = () => {
                 src={`chrome://favicon/size/16@2x/${origin}`}
                 fallback={<SkeletonCircle width="24px" height="24px" />}
               />
-              <Text>{origin}</Text>
+              <Text>{origin.split('//')[1]}</Text>
               <SmallCloseIcon
                 cursor="pointer"
                 onClick={async () => {
                   await removeWhitelisted(origin);
-                  // const filteredWhitelist = whitelisted.filter(
-                  //   (o) => o != origin
-                  // );
-                  // setWhitelisted(filteredWhitelist);
                   getData();
                 }}
               />

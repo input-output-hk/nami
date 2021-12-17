@@ -628,6 +628,7 @@ const MakeAccount = (props) => {
               setState((s) => ({ ...s, password: e.target.value }))
             }
             onBlur={(e) =>
+              e.target.value &&
               setState((s) => ({
                 ...s,
                 regularPassword: e.target.value.length >= 8,
@@ -646,7 +647,7 @@ const MakeAccount = (props) => {
           </InputRightElement>
         </InputGroup>
         {state.regularPassword === false && (
-          <Text color="red.300">
+          <Text fontSize={'xs'} color="red.300">
             Password must be at least 8 characters long
           </Text>
         )}
@@ -660,6 +661,7 @@ const MakeAccount = (props) => {
               setState((s) => ({ ...s, passwordConfirm: e.target.value }))
             }
             onBlur={(e) =>
+              e.target.value &&
               setState((s) => ({
                 ...s,
                 matchingPassword: e.target.value === s.password,
@@ -679,7 +681,9 @@ const MakeAccount = (props) => {
           </InputRightElement>
         </InputGroup>
         {state.matchingPassword === false && (
-          <Text color="red.300">Password doesn't match</Text>
+          <Text fontSize={'xs'} color="red.300">
+            Password doesn't match
+          </Text>
         )}
         <Spacer height="8" />
         <Button
