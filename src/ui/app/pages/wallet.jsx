@@ -136,6 +136,7 @@ const Wallet = () => {
     accounts: {},
   }); // for quicker displaying
   const builderRef = React.useRef();
+  const fiatPrice = React.useRef(0);
 
   const checkTransactions = () =>
     setInterval(async () => {
@@ -177,7 +178,13 @@ const Wallet = () => {
         currentAccount.nft.push(asset);
       else currentAccount.ft.push(asset);
     });
-    const fiatPrice = await provider.api.price(settings.currency);
+    let price = fiatPrice.current;
+    try {
+      if (!fiatPrice.current) {
+        price = await provider.api.price(settings.currency);
+        fiatPrice.current = price;
+      }
+    } catch (e) {}
     const network = await getNetwork();
     const delegation = await getDelegation();
     const warning = await setBalanceWarning();
@@ -186,7 +193,7 @@ const Wallet = () => {
       ...s,
       account: currentAccount,
       accounts: allAccounts,
-      fiatPrice,
+      fiatPrice: price,
       network,
       delegation,
       warning: warning,
@@ -281,10 +288,20 @@ const Wallet = () => {
                 background={avatarBg}
                 width="14"
                 height="14"
-                as={Button}
+                _hover={{ filter: 'brightness(0.92)' }}
+                _active={{ filter: 'brightness(0.84)' }}
               >
-                <Box position="absolute" top="5px" right="6px" width="76%">
-                  <AvatarLoader avatar={info.avatar} />
+                <Box
+                  position="absolute"
+                  top="0"
+                  right="0"
+                  width={'full'}
+                  height={'full'}
+                  display={'flex'}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                >
+                  <AvatarLoader avatar={info.avatar} width="14" smallRobot />
                 </Box>
               </MenuButton>
               <MenuList fontSize="xs">
@@ -318,8 +335,18 @@ const Wallet = () => {
                             alignItems="center"
                             width="full"
                           >
-                            <Box boxSize="2rem" mr="12px">
-                              <AvatarLoader avatar={accountInfo.avatar} />
+                            <Box
+                              width={'30px'}
+                              height={'30px'}
+                              mr="12px"
+                              display={'flex'}
+                              alignItems={'center'}
+                              justifyContent={'center'}
+                            >
+                              <AvatarLoader
+                                avatar={accountInfo.avatar}
+                                width={'30px'}
+                              />
                             </Box>
 
                             <Box
@@ -676,7 +703,10 @@ const Wallet = () => {
               <AssetsViewer assets={state.account && state.account.ft} />
             </TabPanel>
             <TabPanel>
-              <CollectiblesViewer assets={state.account && state.account.nft} />
+              <CollectiblesViewer
+                assets={state.account && state.account.nft}
+                onUpdateAvatar={() => getData()}
+              />
             </TabPanel>
             <TabPanel>
               <HistoryViewer

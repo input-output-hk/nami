@@ -30,8 +30,9 @@ import Copy from './copy';
 import { useStoreActions, useStoreState } from 'easy-peasy';
 import { useHistory } from 'react-router-dom';
 import { BsArrowUpRight } from 'react-icons/bs';
+import { setAccountAvatar } from '../../../api/extension';
 
-const CollectiblesViewer = ({ assets }) => {
+const CollectiblesViewer = ({ assets, onUpdateAvatar }) => {
   const [assetsArray, setAssetsArray] = React.useState(null);
   const [search, setSearch] = React.useState('');
   const [total, setTotal] = React.useState(0);
@@ -108,12 +109,12 @@ const CollectiblesViewer = ({ assets }) => {
       <Box position="absolute" left="6" top="240px">
         <Search setSearch={setSearch} assets={assets} />
       </Box>
-      <CollectibleModal ref={ref} />
+      <CollectibleModal ref={ref} onUpdateAvatar={onUpdateAvatar} />
     </>
   );
 };
 
-export const CollectibleModal = React.forwardRef((props, ref) => {
+export const CollectibleModal = React.forwardRef(({ onUpdateAvatar }, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [asset, setAsset] = React.useState(null);
   const [fallback, setFallback] = React.useState(false); // remove short flickering where image is not instantly loaded
@@ -195,13 +196,26 @@ export const CollectibleModal = React.forwardRef((props, ref) => {
             >
               {asset.displayName}
             </Box>
-            <Box w="90%" h="1px" background={dividerColor} my={6} />
+            <Box w="90%" h="1px" background={dividerColor} mt={6} mb={4} />
             <Box position="relative" width="full" textAlign="center">
               <Button
                 position="absolute"
                 right="16px"
+                top="22px"
+                size="xs"
+                onClick={async (e) => {
+                  await setAccountAvatar(asset.image);
+                  onUpdateAvatar();
+                }}
+              >
+                As Avatar
+              </Button>
+              <Button
+                colorScheme={'orange'}
+                position="absolute"
+                right="16px"
                 top="-10px"
-                size="sm"
+                size="xs"
                 rightIcon={<BsArrowUpRight />}
                 onClick={(e) => {
                   setValue({ ...value, assets: [asset] });
@@ -214,7 +228,7 @@ export const CollectibleModal = React.forwardRef((props, ref) => {
                 x {asset.quantity}
               </Text>
             </Box>
-            <Box h={8} />
+            <Box h={10} />
             <Box px={10} display="flex" width="full" wordBreak="break-all">
               <Box width="140px" fontWeight="bold" fontSize={14}>
                 Policy

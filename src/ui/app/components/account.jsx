@@ -59,7 +59,11 @@ const Account = React.forwardRef((props, ref) => {
         alignItems="center"
         justifyContent="center"
       >
-        <AvatarLoader avatar={account && account.avatar} width="76%" />
+        <AvatarLoader
+          avatar={account && account.avatar}
+          width="10"
+          smallRobot
+        />
       </Box>
       <Box
         zIndex="1"
