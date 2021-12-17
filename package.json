@@ -39,6 +39,7 @@
     "file-type": "^16.5.2",
     "focus-visible": "^5.2.0",
     "framer-motion": "^4.1.16",
+    "i": "^0.3.7",
     "ipfs": "^0.56.0",
     "is-svg": "^4.3.1",
     "javascript-time-ago": "^2.3.7",
@@ -46,6 +47,7 @@
     "match-sorter": "^6.1.0",
     "node-fetch": "^2.6.1",
     "node-polyfill-webpack-plugin": "^1.1.2",
+    "npm": "^8.3.0",
     "qr-code-styling": "^1.6.0-rc.0",
     "randomcolor": "^0.6.2",
     "react": "^17.0.1",
@@ -68,7 +70,8 @@
     "react-transition-group": "^4.4.2",
     "react-window": "^1.8.6",
     "styled-components": "^5.3.0",
-    "trezor-connect": "^8.2.1"
+    "trezor-connect": "^8.2.1",
+    "web3-utils": "^1.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.13.15",

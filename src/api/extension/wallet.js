@@ -25,7 +25,13 @@ export const initTx = async () => {
   };
 };
 
-export const buildTx = async (account, utxos, outputs, protocolParameters) => {
+export const buildTx = async (
+  account,
+  utxos,
+  outputs,
+  protocolParameters,
+  auxiliaryData = null
+) => {
   await Loader.load();
 
   const totalAssets = await multiAssetCount(
@@ -76,6 +82,8 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
 
   txBuilder.add_output(outputs.get(0));
 
+  if (auxiliaryData) txBuilder.set_auxiliary_data(auxiliaryData);
+
   txBuilder.set_ttl(protocolParameters.slot + TX.invalid_hereafter);
   txBuilder.add_change_if_needed(
     Loader.Cardano.Address.from_bech32(account.paymentAddr)
@@ -83,7 +91,8 @@ export const buildTx = async (account, utxos, outputs, protocolParameters) => {
 
   const transaction = Loader.Cardano.Transaction.new(
     txBuilder.build(),
-    Loader.Cardano.TransactionWitnessSet.new()
+    Loader.Cardano.TransactionWitnessSet.new(),
+    txBuilder.get_auxiliary_data()
   );
 
   return transaction;
@@ -101,7 +110,11 @@ export const signAndSubmit = async (
     password,
     accountIndex
   );
-  const transaction = Loader.Cardano.Transaction.new(tx.body(), witnessSet);
+  const transaction = Loader.Cardano.Transaction.new(
+    tx.body(),
+    witnessSet,
+    tx.auxiliary_data()
+  );
 
   const txHash = await submitTx(
     Buffer.from(transaction.to_bytes(), 'hex').toString('hex')
