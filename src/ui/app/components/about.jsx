@@ -14,8 +14,8 @@ import {
   Link,
 } from '@chakra-ui/react';
 
-import BannerWhite from '../../../assets/img/bannerWhite.svg';
-import BannerBlack from '../../../assets/img/bannerBlack.svg';
+import LogoWhite from '../../../assets/img/logoWhite.svg';
+import LogoBlack from '../../../assets/img/logo.svg';
 import Berry from '../../../assets/img/berry.svg';
 import TermsOfUse from './termsOfUse';
 
@@ -23,7 +23,7 @@ const { version } = require('../../../../package.json');
 
 const About = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const Banner = useColorModeValue(BannerBlack, BannerWhite);
+  const Logo = useColorModeValue(LogoBlack, LogoWhite);
 
   const termsRef = React.useRef();
 
@@ -51,12 +51,12 @@ const About = React.forwardRef((props, ref) => {
             <Image
               cursor="pointer"
               onClick={() => window.open('https://namiwallet.io')}
-              width="120px"
-              src={Banner}
+              width="90px"
+              src={Logo}
             />
-            <Box height="2" />
-            <Text fontSize="sm">{version}</Text>
             <Box height="4" />
+            <Text fontSize="sm">{version}</Text>
+            <Box height="6" />
             <Box
               display="flex"
               alignItems="center"
