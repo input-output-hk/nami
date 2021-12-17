@@ -6,7 +6,6 @@ const AvatarLoader = ({ avatar, width, smallRobot }) => {
   const [loaded, setLoaded] = React.useState('');
 
   const fetchAvatar = async () => {
-    console.log(avatar);
     if (!avatar || avatar === loaded) return;
     setLoaded(Number(avatar) ? avatarToImage(avatar) : avatar);
   };
@@ -20,7 +19,7 @@ const AvatarLoader = ({ avatar, width, smallRobot }) => {
       height={Number(avatar) && smallRobot ? '85%' : width}
       rounded={'full'}
       overflow={'hidden'}
-      backgroundImage={`url(${loaded})`}
+      backgroundImage={loaded ? `url(${loaded})` : 'none'}
       backgroundRepeat={'no-repeat'}
       backgroundSize={'cover'}
     ></Box>
