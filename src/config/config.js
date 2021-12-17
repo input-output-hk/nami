@@ -116,7 +116,7 @@ export const EVENT = {
 };
 
 export const ADA_HANDLE = {
-  mainnet: 'd5df2ddadd04b98215f7c3ea94fd9ab8194968f94d9d32377fd26a7c',
+  mainnet: 'f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a',
   testnet: '8d18d786e92776c824607fd8e193ec535c79dc61ea2405ddf3b09fe3',
 };
 

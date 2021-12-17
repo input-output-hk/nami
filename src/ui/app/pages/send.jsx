@@ -413,12 +413,24 @@ const Send = () => {
                 removeAllAssets={removeAllAssets}
               />
               {address.error && (
-                <Text mt={1} width="full" textAlign="left" color="red.300">
+                <Text
+                  mb={-2}
+                  mt={1}
+                  width="full"
+                  textAlign="left"
+                  color="red.300"
+                >
                   {address.error}
                 </Text>
               )}
               {!address.error && address.isM1 && (
-                <Box mt={1} width="full" display="flex" alignItems="center">
+                <Box
+                  mb={-2}
+                  mt={1}
+                  width="full"
+                  display="flex"
+                  alignItems="center"
+                >
                   <Box>Milkomeda Mode</Box>{' '}
                   <Tooltip
                     offset={[40, 8]}
@@ -740,7 +752,8 @@ const AddressPopup = ({
               setTimeout(() => e.target.blur());
             }}
             fontSize="xs"
-            placeholder="Address, $handle or Milkomeda"
+            // placeholder="Address, $handle or Milkomeda"
+            placeholder="Address or $handle"
             onInput={async (e) => {
               clearTimeout(timer);
               const val = e.target.value;

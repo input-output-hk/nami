@@ -3,7 +3,6 @@ import { Button } from '@chakra-ui/button';
 import { useHistory } from 'react-router-dom';
 import {
   createAccount,
-  createPopup,
   createTab,
   deleteAccount,
   displayUnit,
@@ -25,7 +24,6 @@ import {
   BsArrowDownRight,
   BsArrowUpRight,
   BsClockHistory,
-  BsFillCollectionFill,
 } from 'react-icons/bs';
 import {
   Icon,
@@ -75,8 +73,6 @@ import {
   CopyIcon,
   ChevronDownIcon,
   InfoOutlineIcon,
-  SmallCloseIcon,
-  CloseIcon,
 } from '@chakra-ui/icons';
 import Scrollbars from 'react-custom-scrollbars';
 import QrCode from '../components/qrCode';
@@ -95,13 +91,12 @@ import { NETWORK_ID, TAB } from '../../../config/config';
 import { BalanceWarning } from '../components/balanceWarning';
 import { FaGamepad, FaRegFileCode } from 'react-icons/fa';
 import { BiWallet } from 'react-icons/bi';
+import { GiTwoCoins, GiUsbKey } from 'react-icons/gi';
+import CollectiblesViewer from '../components/collectiblesViewer';
+import AssetFingerprint from '@emurgo/cip14-js';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
-import { GiTwoCoins, GiUsbKey } from 'react-icons/gi';
-import CollectiblesViewer from '../components/collectiblesViewer';
-import { MdVideogameAsset } from 'react-icons/md';
-import AssetFingerprint from '@emurgo/cip14-js';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);

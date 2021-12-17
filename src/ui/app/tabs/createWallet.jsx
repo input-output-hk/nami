@@ -199,7 +199,7 @@ const GenerateSeed = (props) => {
           </Box>
         ))}
       </Stack>
-      <Box h="3" />
+      {/* <Box h="3" />
       <Box display="flex" justifyContent="center">
         {' '}
         <Button
@@ -217,7 +217,7 @@ const GenerateSeed = (props) => {
         >
           Download
         </Button>
-      </Box>
+      </Box> */}
 
       <Box height={3} />
       <Stack alignItems="center" direction="column">
@@ -474,19 +474,20 @@ const ImportSeed = () => {
         ))}
       </Stack>
       <Spacer height="1" />
-      {seedLength == 24 && (
-        <>
-          <Box textAlign="center" fontSize="xs">
-            or
-          </Box>
-          <Spacer height="2" />
-          <SeedDrop
-            onLoad={(seedphrase) =>
-              history.push({ pathname: '/account', mnemonic: seedphrase })
-            }
-          />
-        </>
-      )}
+      {seedLength == 24 &&
+        false && ( // TODO: give user more information because of security reasons
+          <>
+            <Box textAlign="center" fontSize="xs">
+              or
+            </Box>
+            <Spacer height="2" />
+            <SeedDrop
+              onLoad={(seedphrase) =>
+                history.push({ pathname: '/account', mnemonic: seedphrase })
+              }
+            />
+          </>
+        )}
       <Spacer height="5" />
       <Stack alignItems="center" direction="column">
         <Button
