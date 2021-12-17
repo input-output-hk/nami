@@ -12,7 +12,6 @@ import { Spinner } from '@chakra-ui/spinner';
 import Welcome from './app/pages/welcome';
 import Wallet from './app/pages/wallet';
 import { getAccounts } from '../api/extension';
-import CreateWallet from './app/pages/createWallet';
 import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
@@ -68,9 +67,6 @@ const App = () => {
         </Route>
         <Route exact path="/welcome">
           <Welcome />
-        </Route>
-        <Route path="/createWallet">
-          <CreateWallet />
         </Route>
         <Route path="/settings">
           <Settings />

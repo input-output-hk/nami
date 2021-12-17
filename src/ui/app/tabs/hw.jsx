@@ -5,7 +5,7 @@
 import React from 'react';
 import { HW, STORAGE, TAB } from '../../../config/config';
 import Main from '../../index';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { render } from 'react-dom';
 import {
   Button,
