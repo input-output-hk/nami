@@ -1,4 +1,5 @@
 import {
+  ADA_HANDLE,
   APIError,
   DataSignError,
   ERROR,
@@ -36,6 +37,7 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import Ada, { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '../../../temporary_modules/trezor-connect';
 import AssetFingerprint from '@emurgo/cip14-js';
+import Web3Utils from 'web3-utils';
 
 export const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -632,6 +634,10 @@ const isValidAddressBytes = async (address) => {
     return false;
   } catch (e) {}
   return false;
+};
+
+export const isValidEthAddress = function (address) {
+  return Web3Utils.isAddress(address);
 };
 
 export const extractKeyHash = async (address) => {
@@ -1284,6 +1290,20 @@ export const initHW = async ({ device, id }) => {
       });
     } catch (e) {}
   }
+};
+
+/**
+ *
+ * @param {string} assetName utf8 encoded
+ */
+export const getAdaHandle = async (assetName) => {
+  const network = await getNetwork();
+  const assetNameHex = Buffer.from(assetName).toString('hex');
+  const policy = ADA_HANDLE[network.id];
+  const asset = policy + assetNameHex;
+  const resolvedAddress = await blockfrostRequest(`/assets/${asset}/addresses`);
+  if (!resolvedAddress || resolvedAddress.error) return null;
+  return resolvedAddress[0].address;
 };
 
 export const createWallet = async (name, seedPhrase, password) => {
