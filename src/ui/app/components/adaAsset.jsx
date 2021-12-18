@@ -47,7 +47,6 @@ const AdaAsset = ({ asset }) => {
             <UnitDisplay quantity={asset.quantity} decimals={6} />
           </Box>
         </Box>
-        <Box h={2} />
         <Box width="full" display="flex" justifyContent="right">
           <Button
             mr="4"
