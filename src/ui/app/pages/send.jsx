@@ -1031,13 +1031,13 @@ const AssetsSelector = ({ assets, addAssets, value, isM1 }) => {
     >
       <PopoverTrigger>
         <Button
-          isDisabled={isM1}
+          isDisabled={isM1 || (assets && assets.length < 1)}
           flex={1}
           variant="ghost"
           size="sm"
           rightIcon={<ChevronDownIcon />}
         >
-          Assets
+          + Assets
         </Button>
       </PopoverTrigger>
       <PopoverContent w="98%">
