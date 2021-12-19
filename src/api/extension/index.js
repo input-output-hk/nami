@@ -676,8 +676,16 @@ export const verifyPayload = (payload) => {
 
 export const verifyTx = async (tx) => {
   await Loader.load();
+  const network = await getNetwork();
   try {
-    Loader.Cardano.Transaction.from_bytes(Buffer.from(tx, 'hex'));
+    const parseTx = Loader.Cardano.Transaction.from_bytes(
+      Buffer.from(tx, 'hex')
+    );
+    let networkId = parseTx.body().network_id();
+    if (!networkId && networkId != 0) {
+      networkId = parseTx.body().outputs().get(0).address().network_id();
+    }
+    if (networkId != networkNameToId(network.id)) throw Error('Wrong network');
   } catch (e) {
     throw APIError.InvalidRequest;
   }
