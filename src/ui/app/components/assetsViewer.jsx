@@ -17,6 +17,7 @@ import React from 'react';
 import Asset from './asset';
 import { Planet } from 'react-kawaii';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import AdaAsset from './adaAsset';
 
 const AssetsViewer = ({ assets }) => {
   const [assetsArray, setAssetsArray] = React.useState(null);
@@ -30,8 +31,7 @@ const AssetsViewer = ({ assets }) => {
     }
     setAssetsArray(null);
     await new Promise((res, rej) => setTimeout(() => res(), 10));
-    const assetsArray = [];
-    let i = 0;
+
     const filter = (asset) =>
       search
         ? asset.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -116,7 +116,11 @@ const AssetsGrid = ({ assets }) => {
               alignItems="center"
               justifyContent="center"
             >
-              <Asset asset={asset} />
+              {asset.name === 'ADA' ? (
+                <AdaAsset asset={asset} />
+              ) : (
+                <Asset asset={asset} />
+              )}
             </Box>
           </LazyLoadComponent>
         </Box>

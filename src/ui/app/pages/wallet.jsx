@@ -695,7 +695,21 @@ const Wallet = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <AssetsViewer assets={state.account && state.account.ft} />
+              <AssetsViewer
+                assets={
+                  state.account && state.account.lovelace > 0
+                    ? [
+                        {
+                          fingerprint: '',
+                          name: 'ADA',
+                          policy: '',
+                          quantity: state.account.lovelace,
+                          unit: '',
+                        },
+                      ].concat(state.account.ft)
+                    : []
+                }
+              />
             </TabPanel>
             <TabPanel>
               <CollectiblesViewer
