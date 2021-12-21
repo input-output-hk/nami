@@ -1297,6 +1297,7 @@ export const initHW = async ({ device, id }) => {
  * @param {string} assetName utf8 encoded
  */
 export const getAdaHandle = async (assetName) => {
+  if (!assetName || assetName.length == 0) return null;
   const network = await getNetwork();
   const assetNameHex = Buffer.from(assetName).toString('hex');
   const policy = ADA_HANDLE[network.id];
