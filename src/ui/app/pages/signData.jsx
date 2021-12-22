@@ -1,5 +1,4 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 import { getCurrentAccount, isHW, signData } from '../../../api/extension';
 import { Box, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
@@ -8,14 +7,16 @@ import { Button } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import { DataSignError } from '../../../config/config';
+import { Image, Spinner, useColorModeValue } from '@chakra-ui/react';
 
 const SignData = ({ request, controller }) => {
-  const history = useHistory();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [payload, setPayload] = React.useState('');
   const [address, setAddress] = React.useState('');
   const [error, setError] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(true);
+  const background = useColorModeValue('gray.100', 'gray.700');
   const getAccount = async () => {
     const currentAccount = await getCurrentAccount();
     if (isHW(currentAccount.index)) setError('HW not supported');
@@ -52,88 +53,146 @@ const SignData = ({ request, controller }) => {
     setAddress('unknown');
   };
 
+  const loadData = async () => {
+    await getAccount();
+    await getPayload();
+    await getAddress();
+    setIsLoading(false);
+  };
+
   React.useEffect(() => {
-    getAccount();
-    getPayload();
-    getAddress();
+    loadData();
   }, []);
   return (
     <>
-      <Box
-        minHeight="100vh"
-        display="flex"
-        alignItems="center"
-        flexDirection="column"
-        position="relative"
-      >
-        <Account />
-        <Box mt="6" textAlign="center">
-          <Text fontSize="2xl" fontWeight="bold">
-            DATA SIGN
-          </Text>
-          <Text fontSize="lg" mt="-1">
-            REQUEST
-          </Text>
-        </Box>
+      {isLoading ? (
         <Box
-          mt="10"
-          width="76%"
-          height="200px"
-          rounded="lg"
-          border="solid 2px"
-          borderColor="teal.500"
-          padding="2.5"
-          wordBreak="break-all"
-        >
-          <Scrollbars autoHide>{payload}</Scrollbars>
-        </Box>
-        <Box mt="2.5">
-          <Text fontSize="xs">
-            Data to be signed with <b>{address}</b> key
-          </Text>
-        </Box>
-        {error && (
-          <Box
-            bottom="95px"
-            position="absolute"
-            maxWidth="90%"
-            wordBreak="break-all"
-            textAlign="center"
-            fontSize="xs"
-            color="red.300"
-          >
-            {error}
-          </Box>
-        )}
-        <Box
-          position="absolute"
+          height="100vh"
           width="full"
-          bottom="8"
           display="flex"
           alignItems="center"
           justifyContent="center"
         >
-          <Button
-            variant="ghost"
-            mr="3"
-            onClick={async () => {
-              await controller.returnData({
-                error: DataSignError.UserDeclined,
-              });
-              window.close();
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            isDisabled={error}
-            colorScheme="orange"
-            onClick={() => ref.current.openModal(account.index)}
-          >
-            Sign
-          </Button>
+          <Spinner color="teal" speed="0.5s" />
         </Box>
-      </Box>
+      ) : (
+        <Box
+          minHeight="100vh"
+          display="flex"
+          alignItems="center"
+          flexDirection="column"
+          position="relative"
+        >
+          <Account />
+          <Box h="4" />
+          <Box
+            display={'flex'}
+            alignItems={'center'}
+            justifyContent={'left'}
+            width={'full'}
+          >
+            <Box w="6" />
+            <Box
+              width={8}
+              height={8}
+              background={background}
+              rounded={'xl'}
+              display={'flex'}
+              alignItems={'center'}
+              justifyContent={'center'}
+            >
+              <Image
+                draggable={false}
+                width={4}
+                height={4}
+                src={`chrome://favicon/size/16@2x/${request.origin}`}
+              />
+            </Box>
+            <Box w="3" />
+            <Text fontSize={'xs'} fontWeight="bold">
+              {request.origin.split('//')[1]}
+            </Text>
+          </Box>
+          <Box h="8" />
+          <Box>This app requests a signature for:</Box>
+          <Box h="4" />
+          <Box
+            width="76%"
+            height="200px"
+            rounded="xl"
+            background={background}
+            padding="2.5"
+            wordBreak="break-all"
+          >
+            <Scrollbars autoHide>{payload}</Scrollbars>
+          </Box>
+
+          <Box
+            position="absolute"
+            width="full"
+            bottom="3"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            flexDirection={'column'}
+          >
+            <Box py={2} px={4} rounded={'full'} background={background}>
+              {error ? (
+                <Text wordBreak="break-all" fontSize="xs" color="red.300">
+                  {error}
+                </Text>
+              ) : (
+                <Text fontSize="xs">
+                  Signing with{' '}
+                  <Box
+                    as={'b'}
+                    color={
+                      address == 'payment'
+                        ? 'teal.400'
+                        : address == 'stake'
+                        ? 'orange'
+                        : 'inherit'
+                    }
+                  >
+                    {address}
+                  </Box>{' '}
+                  key
+                </Text>
+              )}
+            </Box>
+            <Box h={6} />
+            <Box
+              display={'flex'}
+              alignItems={'center'}
+              justifyContent={'center'}
+              width={'full'}
+            >
+              <Button
+                height={'50px'}
+                width={'180px'}
+                onClick={async () => {
+                  await controller.returnData({
+                    error: DataSignError.UserDeclined,
+                  });
+                  window.close();
+                }}
+              >
+                Cancel
+              </Button>
+              <Box w={3} />
+              <Button
+                height={'50px'}
+                width={'180px'}
+                isDisabled={error}
+                colorScheme="teal"
+                onClick={() => ref.current.openModal(account.index)}
+              >
+                Sign
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      )}
       <ConfirmModal
         ref={ref}
         sign={(password) =>

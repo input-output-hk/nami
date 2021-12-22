@@ -116,7 +116,7 @@ const AssetsGrid = ({ assets }) => {
               alignItems="center"
               justifyContent="center"
             >
-              <Asset asset={asset} />
+              <Asset asset={asset} enableSend />
             </Box>
           </LazyLoadComponent>
         </Box>

@@ -509,8 +509,29 @@ export const setAccountAvatar = async (avatar) => {
   return await setStorage({ [STORAGE.accounts]: accounts });
 };
 
-export const createPopup = (popup) =>
-  new Promise((res, rej) =>
+export const createPopup = async (popup) => {
+  let left = 0;
+  let top = 0;
+  try {
+    const lastFocused = await new Promise((res, rej) => {
+      chrome.windows.getLastFocused((windowObject) => {
+        return res(windowObject);
+      });
+    });
+    top = lastFocused.top;
+    left =
+      lastFocused.left +
+      Math.round((lastFocused.width - POPUP_WINDOW.width) / 2);
+  } catch (_) {
+    // The following properties are more than likely 0, due to being
+    // opened from the background chrome process for the extension that
+    // has no physical dimensions
+    const { screenX, screenY, outerWidth } = window;
+    top = Math.max(screenY, 0);
+    left = Math.max(screenX + (outerWidth - POPUP_WINDOW.width), 0);
+  }
+
+  const { popupWindow, tab } = await new Promise((res, rej) =>
     chrome.tabs.create(
       {
         url: chrome.runtime.getURL(popup + '.html'),
@@ -523,14 +544,26 @@ export const createPopup = (popup) =>
             type: 'popup',
             focused: true,
             ...POPUP_WINDOW,
+            left,
+            top,
           },
-          function () {
-            res(tab);
+          function (newWindow) {
+            return res({ popupWindow: newWindow, tab });
           }
         );
       }
     )
   );
+
+  if (popupWindow.left !== left && popupWindow.state !== 'fullscreen') {
+    await new Promise((res, rej) => {
+      chrome.windows.update(popupWindow.id, { left, top }, () => {
+        return res();
+      });
+    });
+  }
+  return tab;
+};
 
 export const createTab = (tab, query = '') =>
   new Promise((res, rej) =>

@@ -113,6 +113,9 @@ export const TX = {
 export const EVENT = {
   accountChange: 'accountChange',
   networkChange: 'networkChange',
+  connect: 'connect',
+  disconnect: 'disconnect',
+  utxoChange: 'utxoChange',
 };
 
 export const ADA_HANDLE = {

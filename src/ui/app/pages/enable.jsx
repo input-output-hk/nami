@@ -36,6 +36,7 @@ const Enable = ({ request, controller }) => {
           justifyContent={'center'}
         >
           <Image
+            draggable={false}
             width={6}
             height={6}
             src={`chrome://favicon/size/16@2x/${request.origin}`}
@@ -70,14 +71,14 @@ const Enable = ({ request, controller }) => {
       <Box
         position="absolute"
         width="full"
-        bottom="14"
+        bottom="3"
         display="flex"
         alignItems="center"
         justifyContent="center"
       >
         <Button
-          mr={3}
-          variant="ghost"
+          height={'50px'}
+          width={'180px'}
           onClick={async () => {
             await controller.returnData({ error: APIError.Refused });
             window.close();
@@ -85,7 +86,10 @@ const Enable = ({ request, controller }) => {
         >
           Cancel
         </Button>
+        <Box w={3} />
         <Button
+          height={'50px'}
+          width={'180px'}
           colorScheme="teal"
           onClick={async () => {
             await setWhitelisted(request.origin);

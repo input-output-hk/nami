@@ -1,5 +1,4 @@
-import { APIError, EVENT, METHOD, SENDER, TARGET } from '../config/config';
-import provider from '../config/provider';
+import { APIError, METHOD, SENDER, TARGET } from '../config/config';
 
 /**
  * Message Object
@@ -172,7 +171,11 @@ export const Messaging = {
       // protect background by not allowing not whitelisted
       if (!whitelisted || whitelisted.error) return;
 
-      window.postMessage(response);
+      const event = new CustomEvent(TARGET + response.event, {
+        detail: response.data,
+      });
+
+      window.dispatchEvent(event);
     });
     //listen to function calls from webpage
     window.addEventListener('message', async function (e) {

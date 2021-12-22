@@ -1,10 +1,12 @@
 import { NODE, NETWORK_ID } from './config';
 import secrets from 'secrets';
+import { version } from '../../package.json';
 
 export default {
   api: {
     ipfs: 'https://ipfs.blockfrost.dev/ipfs',
     base: (node = NODE.mainnet) => node,
+    header: { [secrets.NAMI_HEADER || 'dummy']: version },
     key: (network = 'mainnet') => ({
       project_id:
         network === NETWORK_ID.mainnet
