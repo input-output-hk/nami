@@ -1340,6 +1340,7 @@ export const initHW = async ({ device, id }) => {
 export const getAdaHandle = async (assetName) => {
   const network = await getNetwork();
   const assetNameHex = Buffer.from(assetName).toString('hex');
+  if (!assetNameHex || assetNameHex.length == 0) return null;
   const policy = ADA_HANDLE[network.id];
   const asset = policy + assetNameHex;
   const resolvedAddress = await blockfrostRequest(`/assets/${asset}/addresses`);
