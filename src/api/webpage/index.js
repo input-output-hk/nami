@@ -76,50 +76,32 @@ export const submitTx = async (tx) => {
   return result.data;
 };
 
-export const onAccountChange = (callback) => {
-  function responseHandler(e) {
-    const response = e.data;
-    if (
-      typeof response !== 'object' ||
-      response === null ||
-      !response.target ||
-      response.target !== TARGET ||
-      !response.event ||
-      response.event !== EVENT.accountChange ||
-      !response.sender ||
-      response.sender !== SENDER.extension
-    )
-      return;
-    callback(response.data);
-  }
-  window.addEventListener('message', responseHandler);
-  return {
-    remove: () => {
-      window.removeEventListener('message', responseHandler);
-    },
-  };
+export const on = (eventName, callback) => {
+  const fn = (e) => callback(e.detail);
+  Object.defineProperty(fn, 'name', { value: callback.name });
+  window.cardano._events[eventName] = [
+    ...(window.cardano._events[eventName] || []),
+    fn,
+  ];
+  window.addEventListener(
+    TARGET + eventName,
+    window.cardano._events[eventName][
+      window.cardano._events[eventName].length - 1
+    ]
+  );
 };
 
-export const onNetworkChange = (callback) => {
-  function responseHandler(e) {
-    const response = e.data;
-    if (
-      typeof response !== 'object' ||
-      response === null ||
-      !response.target ||
-      response.target !== TARGET ||
-      !response.event ||
-      response.event !== EVENT.networkChange ||
-      !response.sender ||
-      response.sender !== SENDER.extension
-    )
-      return;
-    callback(response.data);
-  }
-  window.addEventListener('message', responseHandler);
-  return {
-    remove: () => {
-      window.removeEventListener('message', responseHandler);
-    },
-  };
+export const removeListener = (eventName, callback) => {
+  const fn = window.cardano._events[eventName].find(
+    (f) => f.name == callback.name
+  );
+  if (!fn) return;
+  const index = window.cardano._events[eventName].indexOf(fn);
+  window.removeEventListener(
+    TARGET + eventName,
+    window.cardano._events[eventName][index]
+  );
+  window.cardano._events[eventName].splice(index, 1);
+  if (window.cardano._events[eventName].length <= 0)
+    delete window.cardano._events[eventName];
 };

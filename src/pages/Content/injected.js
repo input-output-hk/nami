@@ -7,12 +7,13 @@ import {
   getRewardAddress,
   getUtxos,
   isEnabled,
-  onAccountChange,
-  onNetworkChange,
+  on,
+  removeListener,
   signData,
   signTx,
   submitTx,
 } from '../../api/webpage';
+import { EVENT } from '../../config/config';
 
 //dApp connector API follows https://github.com/cardano-foundation/CIPs/pull/88
 
@@ -32,8 +33,9 @@ window.cardano = {
   getChangeAddress: () => getAddress(),
   getRewardAddress: () => getRewardAddress(),
   getNetworkId: () => getNetworkId(),
-  onAccountChange: (callback) => onAccountChange(callback),
-  onNetworkChange: (callback) => onNetworkChange(callback),
+  onAccountChange: (callback) => on(EVENT.accountChange, callback),
+  onNetworkChange: (callback) => on(EVENT.networkChange, callback),
+  _events: {},
 };
 
 // const logDeprecated = () => {

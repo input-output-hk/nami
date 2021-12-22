@@ -795,27 +795,30 @@ const AddressPopup = ({
 
               timer = setTimeout(async () => {
                 // checking for Ada handle after 300ms
+                let handleAddr = { error: '$handle not found' };
                 if (isHandle) {
-                  const resolvedAddress = await getAdaHandle(
-                    e.target.value.slice(1)
-                  );
+                  const handle = e.target.value;
+                  const resolvedAddress = await getAdaHandle(handle.slice(1));
                   if (
-                    e.target.value.length > 1 &&
+                    handle.length > 1 &&
                     (await isValidAddress(resolvedAddress))
                   ) {
-                    addr = { result: resolvedAddress, display: e.target.value };
+                    handleAddr = {
+                      result: resolvedAddress,
+                      display: e.target.value,
+                    };
                   } else {
-                    addr = {
-                      result: e.target.value,
+                    handleAddr = {
+                      result: '',
                       display: e.target.value,
                       error: '$handle not found',
                     };
                   }
-                  setAddress(addr);
+                  setAddress(handleAddr);
                   onClose();
                 }
 
-                prepareTx(value, addr, 0);
+                prepareTx(value, handleAddr, 0);
               }, 300);
             }}
             isInvalid={address.error}

@@ -1,6 +1,6 @@
 {
   "name": "nami-wallet",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A wallet to experience Cardano to the fullest",
   "license": "MIT",
   "repository": {
@@ -57,6 +57,7 @@
     "react-dropzone": "^11.4.2",
     "react-hot-loader": "^4.13.0",
     "react-icons": "^4.2.0",
+    "react-json-pretty": "^2.2.0",
     "react-kawaii": "^0.17.0",
     "react-lazy-load-image-component": "^1.5.1",
     "react-leaf-carousel": "^2.0.3",

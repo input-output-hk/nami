@@ -25,7 +25,7 @@ const useIsMounted = () => {
   return isMounted;
 };
 
-const Asset = ({ asset }) => {
+const Asset = ({ asset, enableSend, ...props }) => {
   const isMounted = useIsMounted();
   const [token, setToken] = React.useState(null);
   const background = useColorModeValue('gray.100', 'gray.700');
@@ -94,7 +94,14 @@ const Asset = ({ asset }) => {
             {token.displayName}
           </Box>
           <Box w={4} />
-          <Box width="120px" textAlign="center">
+          <Box
+            width="120px"
+            textAlign="center"
+            py={1}
+            background={props.background}
+            color={props.color}
+            rounded={'xl'}
+          >
             <UnitDisplay
               quantity={token.quantity}
               decimals={token.decimals ? token.decimals : 0}
@@ -123,21 +130,26 @@ const Asset = ({ asset }) => {
             </Copy>
           </Box>
         </Box>
+
         <Box h={2} />
-        <Box width="full" display="flex" justifyContent="right">
-          <Button
-            mr="4"
-            background={background == 'gray.100' ? 'gray.200' : 'gray.600'}
-            size="xs"
-            rightIcon={<BsArrowUpRight />}
-            onClick={(e) => {
-              setValue({ ...value, assets: [asset] });
-              history.push('/send');
-            }}
-          >
-            Send
-          </Button>
-        </Box>
+        {enableSend && (
+          <>
+            <Box width="full" display="flex" justifyContent="right">
+              <Button
+                mr="4"
+                background={background == 'gray.100' ? 'gray.200' : 'gray.600'}
+                size="xs"
+                rightIcon={<BsArrowUpRight />}
+                onClick={(e) => {
+                  setValue({ ...value, assets: [asset] });
+                  history.push('/send');
+                }}
+              >
+                Send
+              </Button>
+            </Box>
+          </>
+        )}
         <Box h={2} />
       </Collapse>
     </Box>

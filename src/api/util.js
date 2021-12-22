@@ -49,8 +49,8 @@ export async function blockfrostRequest(endpoint, headers, body) {
     const rawResult = await fetch(provider.api.base(network.node) + endpoint, {
       headers: {
         ...provider.api.key(network.id),
+        ...provider.api.header,
         ...headers,
-        'User-Agent': 'nami-wallet',
         'Cache-Control': 'no-cache',
       },
       method: body ? 'POST' : 'GET',
