@@ -3,7 +3,6 @@ import {
   Avatar,
   Image,
   Skeleton,
-  Text,
   useColorModeValue,
   Button,
   Collapse,
@@ -35,12 +34,20 @@ const Asset = ({ asset, enableSend, ...props }) => {
     useStoreActions((actions) => actions.globalModel.sendStore.setValue),
   ];
   const history = useHistory();
+  const settings = useStoreState((state) => state.settings.settings);
 
   const fetchMetadata = async () => {
-    const detailedAsset = {
-      ...(await getAsset(asset.unit)),
-      quantity: asset.quantity,
-    };
+    const detailedAsset =
+      asset.unit === 'lovelace'
+        ? {
+            ...asset,
+            displayName: 'Ada',
+            decimals: 6,
+          }
+        : {
+            ...(await getAsset(asset.unit)),
+            quantity: asset.quantity,
+          };
     if (!isMounted.current) return;
     setToken(detailedAsset);
   };
@@ -57,7 +64,7 @@ const Asset = ({ asset, enableSend, ...props }) => {
       width="90%"
       rounded="xl"
       background={background}
-      onClick={() => setShow(!show)}
+      onClick={() => token.unit !== 'lovelace' && setShow(!show)}
       cursor="pointer"
       overflow="hidden"
     >
@@ -76,7 +83,23 @@ const Asset = ({ asset, enableSend, ...props }) => {
               src={token.image}
               fallback={
                 !token.image ? (
-                  <Avatar width="full" height="full" name={token.name} />
+                  token.unit === 'lovelace' ? (
+                    <Box
+                      width={'full'}
+                      height={'full'}
+                      background={'blue.500'}
+                      color={'white'}
+                      display={'flex'}
+                      alignItems={'center'}
+                      justifyContent={'center'}
+                      fontSize={'xl'}
+                      fontWeight={'medium'}
+                    >
+                      {settings.adaSymbol}
+                    </Box>
+                  ) : (
+                    <Avatar width="full" height="full" name={token.name} />
+                  )
                 ) : (
                   <Fallback name={token.name} />
                 )
