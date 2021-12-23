@@ -160,7 +160,23 @@ const Wallet = () => {
     await updateAccount(forceUpdate);
     const allAccounts = await getAccounts();
     const currentAccount = allAccounts[currentIndex];
-    currentAccount.ft = [];
+    currentAccount.ft =
+      currentAccount.lovelace > 0
+        ? [
+            {
+              unit: 'lovelace',
+              quantity: (
+                BigInt(currentAccount.lovelace) -
+                BigInt(currentAccount.minAda) -
+                BigInt(
+                  currentAccount.collateral
+                    ? currentAccount.collateral.lovelace
+                    : 0
+                )
+              ).toString(),
+            },
+          ]
+        : [];
     currentAccount.nft = [];
     currentAccount.assets.forEach((asset) => {
       asset.policy = asset.unit.slice(0, 56);
