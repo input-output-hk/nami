@@ -66,8 +66,6 @@ describe('webpage/eventRegistring', () => {
     test('stops the given callback from being invoked when cleaned out', () => {
       off(mockEventType, mockCallback);
 
-      console.log(window.cardano._events);
-
       const event = makeEvent(mockEventType);
 
       window.dispatchEvent(event);
