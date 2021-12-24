@@ -70,6 +70,7 @@ import Loader from '../../../api/loader';
 import { action, useStoreActions, useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
 import NumberFormat from 'react-number-format';
+import Copy from '../components/copy';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -157,6 +158,7 @@ const Send = () => {
   const ref = React.useRef();
   const [isLoading, setIsLoading] = React.useState(true);
   const focus = React.useRef(false);
+  const background = useColorModeValue('gray.100', 'gray.600');
 
   const network = React.useRef();
 
@@ -411,6 +413,8 @@ const Send = () => {
                 network={network.current}
                 prepareTx={prepareTx}
                 removeAllAssets={removeAllAssets}
+                setFee={setFee}
+                setTx={setTx}
               />
               {address.error && (
                 <Text
@@ -485,6 +489,7 @@ const Send = () => {
                         ada: val,
                         personalAda: val,
                       });
+                      setFee({ fee: '' });
                       timer = setTimeout(() => {
                         prepareTx(v, undefined, 0);
                       }, 800);
@@ -513,11 +518,11 @@ const Send = () => {
                   isM1={address.isM1}
                 />
               </Stack>
-              <Box height="6" />
+              <Box height="4" />
               <Scrollbars
                 style={{
                   width: '100%',
-                  height: '170px',
+                  height: '240px',
                 }}
               >
                 <Box
@@ -535,6 +540,7 @@ const Send = () => {
                           const v = value;
                           v.assets = objectToArray(assets.current);
 
+                          setFee({ fee: '' });
                           timer = setTimeout(() => {
                             prepareTx(v, undefined, 0);
                           }, 300);
@@ -542,18 +548,6 @@ const Send = () => {
                         onLoad={(decimals) => {
                           if (!assets.current[asset.unit]) return;
                           assets.current[asset.unit].decimals = decimals;
-                          // clearTimeout(timer);
-                          // const v = value;
-                          // v.assets = objectToArray(assets.current);
-                          // setValue({ ...v, assets: v.assets });
-
-                          // timer = setTimeout(() => {
-                          //   if (usesStore.current) {
-                          //     usesStore.current = false;
-                          //     return;
-                          //   }
-                          //   prepareTx(v, undefined, 0);
-                          // }, 300);
                         }}
                         onInput={async (val) => {
                           if (!assets.current[asset.unit]) return;
@@ -562,6 +556,7 @@ const Send = () => {
                           const v = value;
                           v.assets = objectToArray(assets.current);
                           setValue({ ...v, assets: v.assets });
+                          if (!usesStore.current) setFee({ fee: '' });
                           timer = setTimeout(() => {
                             if (usesStore.current) {
                               usesStore.current = false;
@@ -592,7 +587,7 @@ const Send = () => {
                 justifyContent="center"
                 fontSize="sm"
               >
-                {fee.error ? (
+                {/* {fee.error ? (
                   <Text fontSize="xs" color="red.300">
                     {fee.error}
                   </Text>
@@ -606,30 +601,121 @@ const Send = () => {
                       symbol={settings.adaSymbol}
                     />
                   </>
-                )}
+                )} */}
               </Stack>
             </Box>
             <Box
               position="absolute"
               width="full"
-              bottom="8"
+              bottom="3"
               display="flex"
               alignItems="center"
               justifyContent="center"
             >
               <Button
+                isLoading={
+                  !fee.fee &&
+                  !fee.error &&
+                  address.result &&
+                  !address.error &&
+                  (value.ada || value.assets.length > 0)
+                }
+                width={'366px'}
+                height={'50px'}
                 isDisabled={!tx || fee.error}
                 colorScheme="orange"
                 onClick={() => ref.current.openModal(account.current.index)}
-                rightIcon={<Icon as={BsArrowUpRight} />}
               >
-                Send
+                {fee.error ? fee.error : 'Send'}
               </Button>
             </Box>
           </>
         )}
       </Box>
       <ConfirmModal
+        title={'Confirm transaction'}
+        info={
+          <Box
+            width={'full'}
+            display={'flex'}
+            alignItems={'center'}
+            justifyContent={'center'}
+            flexDirection={'column'}
+          >
+            <Box fontSize={'sm'}>You are sending</Box>
+            <Box h={3} />
+            <UnitDisplay
+              fontSize="2xl"
+              fontWeight="medium"
+              hide
+              quantity={toUnit(value.ada, 6)}
+              decimals={6}
+              symbol={'₳'}
+            />
+            {value.assets.length > 0 && (
+              <Button
+                mt={1}
+                size={'xs'}
+                onClick={() =>
+                  assetsModalRef.current.openModal({
+                    assets: value.assets,
+                    title: (
+                      <Box>
+                        Address receiving{' '}
+                        <Box as={'span'}>{value.assets.length}</Box>{' '}
+                        {value.assets.length == 1 ? 'asset' : 'assets'}
+                      </Box>
+                    ),
+                  })
+                }
+              >
+                + {value.assets.length}{' '}
+                {value.assets.length > 1 ? 'Assets' : 'Asset'}
+              </Button>
+            )}
+            <Box h={3} />
+            <Box fontSize={'sm'}>to</Box>
+            <Box h={2} />
+            <Box
+              position={'relative'}
+              background={background}
+              rounded={'xl'}
+              p={2}
+            >
+              {' '}
+              <Copy label="Copied address" copy={address.result}>
+                <Box
+                  width="180px"
+                  whiteSpace="nowrap"
+                  fontWeight="normal"
+                  textAlign={'center'}
+                  display={'flex'}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                  flexDirection={'column'}
+                >
+                  <MiddleEllipsis>
+                    <span style={{ cursor: 'pointer' }}>{address.result}</span>
+                  </MiddleEllipsis>
+                </Box>
+              </Copy>
+            </Box>
+            <Box h={4} />
+            <Box
+              width={'full'}
+              display={'flex'}
+              alignItems={'center'}
+              justifyContent={'center'}
+              fontSize={'sm'}
+            >
+              <UnitDisplay quantity={fee.fee} decimals={6} symbol={'₳'} />{' '}
+              <Box ml={1} fontWeight={'medium'}>
+                fee
+              </Box>
+            </Box>
+            <Box h={6} />
+          </Box>
+        }
         ref={ref}
         sign={async (password, hw) => {
           await Loader.load();
@@ -694,6 +780,8 @@ const AddressPopup = ({
   prepareTx,
   network,
   removeAllAssets,
+  setFee,
+  setTx,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const checkColor = useColorModeValue('teal.500', 'teal.200');
@@ -791,13 +879,15 @@ const AddressPopup = ({
                   error: 'Address is invalid',
                 };
               }
+              setTx(null);
               setAddress(addr);
               onClose();
-
+              if (isHandle) setFee({ fee: '' });
               timer = setTimeout(async () => {
                 // checking for Ada handle after 300ms
-                let handleAddr = { error: '$handle not found' };
+                let handleAddr = null;
                 if (isHandle) {
+                  handleAddr = { error: '$handle not found' };
                   const handle = e.target.value;
                   const resolvedAddress = await getAdaHandle(handle.slice(1));
                   if (
@@ -817,9 +907,10 @@ const AddressPopup = ({
                   }
                   setAddress(handleAddr);
                   onClose();
+                  prepareTx(value, handleAddr, 0);
+                } else {
+                  prepareTx(value, addr, 0);
                 }
-
-                prepareTx(value, handleAddr, 0);
               }, 300);
             }}
             isInvalid={address.error}
@@ -867,6 +958,7 @@ const AddressPopup = ({
                       display: address,
                     });
                     onClose();
+                    setFee({ fee: '' });
                     timer = setTimeout(() => {
                       prepareTx(
                         undefined,
@@ -928,6 +1020,7 @@ const AddressPopup = ({
                               display: addr,
                             });
                             onClose();
+                            setFee({ fee: '' });
                             timer = setTimeout(() => {
                               const addr = account.paymentAddr;
                               prepareTx(

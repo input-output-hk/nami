@@ -116,7 +116,6 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
           displayType="input"
           type="text"
           thousandSeparator={true}
-          decimalScale={token ? token.decimals : 0}
           allowEmptyFormatting={true}
           fixedDecimalScale={true}
           width={`${width}px`}
