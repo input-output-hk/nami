@@ -171,7 +171,7 @@ export const Messaging = {
       // protect background by not allowing not whitelisted
       if (!whitelisted || whitelisted.error) return;
 
-      const event = new CustomEvent(TARGET + response.event, {
+      const event = new CustomEvent(`${TARGET}${response.event}`, {
         detail: response.data,
       });
 

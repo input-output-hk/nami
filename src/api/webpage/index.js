@@ -1,4 +1,4 @@
-import { EVENT, METHOD, SENDER, TARGET } from '../../config/config';
+import { METHOD } from '../../config/config';
 import { Messaging } from '../messaging';
 
 export const getBalance = async () => {
@@ -76,32 +76,4 @@ export const submitTx = async (tx) => {
   return result.data;
 };
 
-export const on = (eventName, callback) => {
-  const fn = (e) => callback(e.detail);
-  Object.defineProperty(fn, 'name', { value: callback.name });
-  window.cardano._events[eventName] = [
-    ...(window.cardano._events[eventName] || []),
-    fn,
-  ];
-  window.addEventListener(
-    TARGET + eventName,
-    window.cardano._events[eventName][
-      window.cardano._events[eventName].length - 1
-    ]
-  );
-};
-
-export const removeListener = (eventName, callback) => {
-  const fn = window.cardano._events[eventName].find(
-    (f) => f.name == callback.name
-  );
-  if (!fn) return;
-  const index = window.cardano._events[eventName].indexOf(fn);
-  window.removeEventListener(
-    TARGET + eventName,
-    window.cardano._events[eventName][index]
-  );
-  window.cardano._events[eventName].splice(index, 1);
-  if (window.cardano._events[eventName].length <= 0)
-    delete window.cardano._events[eventName];
-};
+export { on, off } from './eventRegistring';
