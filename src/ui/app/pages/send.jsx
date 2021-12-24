@@ -71,6 +71,7 @@ import { action, useStoreActions, useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
 import NumberFormat from 'react-number-format';
 import Copy from '../components/copy';
+import AssetsModal from '../components/assetsModal';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -161,6 +162,7 @@ const Send = () => {
   const background = useColorModeValue('gray.100', 'gray.600');
 
   const network = React.useRef();
+  const assetsModalRef = React.useRef();
 
   const prepareTx = async (v, a, count) => {
     if (!isMounted.current) return;
@@ -632,6 +634,7 @@ const Send = () => {
           </>
         )}
       </Box>
+      <AssetsModal ref={assetsModalRef} />
       <ConfirmModal
         title={'Confirm transaction'}
         info={
@@ -659,10 +662,14 @@ const Send = () => {
                 onClick={() =>
                   assetsModalRef.current.openModal({
                     assets: value.assets,
+                    background: 'red.400',
+                    color: 'white',
                     title: (
                       <Box>
-                        Address receiving{' '}
-                        <Box as={'span'}>{value.assets.length}</Box>{' '}
+                        Sending{' '}
+                        <Box as={'span'} color={'red.400'}>
+                          {value.assets.length}
+                        </Box>{' '}
                         {value.assets.length == 1 ? 'asset' : 'assets'}
                       </Box>
                     ),

@@ -79,6 +79,7 @@ const ConfirmModalNormal = ({ props, isOpen, onClose }) => {
     name: '',
   });
   const [waitReady, setWaitReady] = React.useState(true);
+  const inputRef = React.useRef();
 
   React.useEffect(() => {
     setState({
@@ -103,7 +104,13 @@ const ConfirmModalNormal = ({ props, isOpen, onClose }) => {
   };
 
   return (
-    <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
+    <Modal
+      size="xs"
+      isOpen={isOpen}
+      onClose={onClose}
+      isCentered
+      initialFocusRef={inputRef}
+    >
       <ModalOverlay />
       <ModalContent m={0}>
         <ModalHeader fontSize="md">
@@ -113,6 +120,7 @@ const ConfirmModalNormal = ({ props, isOpen, onClose }) => {
           {props.info}
           <InputGroup size="md">
             <Input
+              ref={inputRef}
               focusBorderColor="teal.400"
               variant="filled"
               isInvalid={state.wrongPassword === true}
