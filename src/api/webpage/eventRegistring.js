@@ -15,6 +15,8 @@ export const on = (eventName, callback) => {
   ];
 
   window.addEventListener(`${TARGET}${eventName}`, handler);
+
+  return { remove: () => off(eventName, callback) };
 };
 
 /**
