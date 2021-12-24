@@ -8,7 +8,6 @@ import {
   getUtxos,
   isEnabled,
   on,
-  removeListener,
   signData,
   signTx,
   submitTx,

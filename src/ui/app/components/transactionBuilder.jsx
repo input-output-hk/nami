@@ -26,7 +26,7 @@ import {
   UnorderedList,
   ListItem,
 } from '@chakra-ui/react';
-import { GoStop } from 'react-icons/Go';
+import { GoStop } from 'react-icons/go';
 // Assets
 import Berry from '../../../assets/img/berry.svg';
 import { ERROR } from '../../../config/config';

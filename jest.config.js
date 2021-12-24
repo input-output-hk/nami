@@ -14,4 +14,5 @@ module.exports = {
   },
   transformIgnorePatterns: [`/node_modules/(?!crypto-random-string)`],
   setupFilesAfterEnv: ['./jest.setup.js'],
+  testEnvironment: 'jsdom'
 };
