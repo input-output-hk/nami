@@ -962,6 +962,7 @@ export const submitTx = async (tx) => {
     { 'Content-Type': 'application/cbor' },
     Buffer.from(tx, 'hex')
   );
+  console.log(result);
   if (result.error) {
     if (result.status_code === 400)
       throw { ...TxSendError.Failure, message: result.message };

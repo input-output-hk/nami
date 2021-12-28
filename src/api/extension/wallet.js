@@ -136,7 +136,11 @@ export const signAndSubmitHW = async (
     partialSign
   );
 
-  const transaction = Loader.Cardano.Transaction.new(tx.body(), witnessSet);
+  const transaction = Loader.Cardano.Transaction.new(
+    tx.body(),
+    witnessSet,
+    tx.auxiliary_data()
+  );
 
   try {
     const txHash = await submitTx(

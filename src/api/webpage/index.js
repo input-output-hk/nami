@@ -76,4 +76,4 @@ export const submitTx = async (tx) => {
   return result.data;
 };
 
-export { on, off } from './eventRegistring';
+export { on, off } from './eventRegistration';

@@ -2,7 +2,6 @@ import {
   getStorage,
   encryptWithPassword,
   decryptWithPassword,
-  setStorage,
   createWallet,
   switchAccount,
   createAccount,
@@ -11,7 +10,6 @@ import {
   getNetwork,
   setNetwork,
   getCurrentAccount,
-  getUtxos,
 } from '../../../../api/extension';
 import Loader from '../../../../api/loader';
 import { ERROR, NODE, STORAGE } from '../../../../config/config';

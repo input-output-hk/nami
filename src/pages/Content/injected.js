@@ -7,6 +7,7 @@ import {
   getRewardAddress,
   getUtxos,
   isEnabled,
+  off,
   on,
   signData,
   signTx,
@@ -34,6 +35,7 @@ window.cardano = {
   getNetworkId: () => getNetworkId(),
   onAccountChange: (callback) => on(EVENT.accountChange, callback),
   onNetworkChange: (callback) => on(EVENT.networkChange, callback),
+  off,
   _events: {},
 };
 

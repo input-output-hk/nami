@@ -23,7 +23,7 @@ const AssetsModal = React.forwardRef((props, ref) => {
   const background = useColorModeValue('white', 'gray.800');
 
   const abs = (big) => {
-    return big < 0 ? big * BigInt(-1) : big;
+    return big < 0 ? BigInt(big) * BigInt(-1) : big;
   };
 
   React.useImperativeHandle(ref, () => ({

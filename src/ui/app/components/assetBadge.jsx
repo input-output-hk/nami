@@ -27,16 +27,17 @@ const useIsMounted = () => {
 
 const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   const isMounted = useIsMounted();
-  const [initialWidth, setInitialWidth] = React.useState(
-    BigInt(asset.quantity) <= 1 ? 60 : 85
+  const [width, setWidth] = React.useState(
+    BigInt(asset.quantity) <= 1 ? 60 : 200
   );
-  const [width, setWidth] = React.useState(initialWidth);
   const [token, setToken] = React.useState(null);
+  const [value, setValue] = React.useState('');
 
   const fetchData = async () => {
     const detailedAsset = {
       ...(await getAsset(asset.unit)),
       quantity: asset.quantity,
+      input: asset.input,
     };
     if (!isMounted.current) return;
     onLoad(detailedAsset.decimals);
@@ -44,14 +45,16 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
   };
 
   React.useEffect(() => {
+    setToken(null);
     fetchData();
-    const initialWidth = BigInt(asset.quantity) <= 1 ? 60 : 85;
-    setInitialWidth(initialWidth);
+    const initialWidth = BigInt(asset.quantity) <= 1 ? 60 : 200;
     setWidth(initialWidth);
-    if (BigInt(asset.quantity) <= 1) onInput(asset.quantity);
-    else {
+    if (BigInt(asset.quantity) == 1) {
+      setValue('1');
+      onInput(1);
+    } else {
+      setValue(asset.input);
       onInput(asset.input);
-      asset.input && setWidth(initialWidth + asset.input.length * 4);
     }
   }, [asset]);
   return (
@@ -108,37 +111,38 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
             </Box>
           }
         />
-        <NumberFormat
-          allowNegative={false}
-          px="8"
-          thousandsGroupStyle="thousand"
-          decimalSeparator="."
-          displayType="input"
-          type="text"
-          thousandSeparator={true}
-          allowEmptyFormatting={true}
-          fixedDecimalScale={true}
-          width={`${width}px`}
-          maxWidth="130px"
-          isReadOnly={BigInt(asset.quantity) <= 1}
-          value={asset.input || ''}
-          rounded="xl"
-          variant="filled"
-          fontSize="xs"
-          placeholder="Qty"
-          onValueChange={({ formattedValue }) => {
-            setWidth(initialWidth + formattedValue.length * 4);
-            onInput(formattedValue);
-          }}
-          isInvalid={
-            token &&
-            asset.input &&
-            (BigInt(toUnit(asset.input, token.decimals)) >
-              BigInt(asset.quantity) ||
-              BigInt(toUnit(asset.input, token.decimals)) <= 0)
-          }
-          customInput={Input}
-        />
+        {token && (
+          <NumberFormat
+            allowNegative={false}
+            px="8"
+            thousandsGroupStyle="thousand"
+            decimalSeparator="."
+            displayType="input"
+            type="text"
+            thousandSeparator={true}
+            decimalScale={token.decimals}
+            width={`${width}px`}
+            maxWidth="152px"
+            isReadOnly={BigInt(asset.quantity) <= 1}
+            value={value}
+            rounded="xl"
+            variant="filled"
+            fontSize="xs"
+            placeholder="Set quantity"
+            onValueChange={({ formattedValue }) => {
+              setValue(formattedValue);
+              onInput(formattedValue);
+            }}
+            isInvalid={
+              token &&
+              asset.input &&
+              (BigInt(toUnit(asset.input, token.decimals)) >
+                BigInt(asset.quantity) ||
+                BigInt(toUnit(asset.input, token.decimals)) <= 0)
+            }
+            customInput={Input}
+          />
+        )}
         <InputRightElement
           rounded="lg"
           children={

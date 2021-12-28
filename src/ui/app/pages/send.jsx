@@ -22,14 +22,11 @@ import { Button, IconButton } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import {
   CheckIcon,
-  ChevronDownIcon,
   ChevronLeftIcon,
   CloseIcon,
-  Icon,
   InfoOutlineIcon,
   SmallCloseIcon,
 } from '@chakra-ui/icons';
-import { BsArrowUpRight } from 'react-icons/bs';
 import { Input, InputGroup, InputLeftAddon } from '@chakra-ui/input';
 import {
   Popover,
@@ -60,10 +57,12 @@ import AssetBadge from '../components/assetBadge';
 import { ERROR, MILKOMEDA } from '../../../config/config';
 import {
   InputRightElement,
+  InputLeftElement,
   Spinner,
   Tooltip,
   useColorModeValue,
   useToast,
+  Icon,
 } from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
@@ -72,6 +71,7 @@ import AvatarLoader from '../components/avatarLoader';
 import NumberFormat from 'react-number-format';
 import Copy from '../components/copy';
 import AssetsModal from '../components/assetsModal';
+import { MdModeEdit } from 'react-icons/md';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -88,6 +88,7 @@ const initialState = {
   fee: { fee: '0' },
   value: { ada: '', assets: [], personalAda: '', minAda: '0' },
   address: { result: '', display: '' },
+  message: '',
   tx: null,
   txInfo: {
     protocolParameters: null,
@@ -104,6 +105,9 @@ export const sendStore = {
   setValue: action((state, value) => {
     state.value = value;
   }),
+  setMessage: action((state, message) => {
+    state.message = message;
+  }),
   setTx: action((state, tx) => {
     state.tx = tx;
   }),
@@ -116,6 +120,7 @@ export const sendStore = {
   reset: action((state) => {
     state.fee = initialState.fee;
     state.value = initialState.value;
+    state.message = initialState.message;
     state.address = initialState.address;
     state.tx = initialState.tx;
     state.txInfo = initialState.txInfo;
@@ -132,6 +137,10 @@ const Send = () => {
   const [value, setValue] = [
     useStoreState((state) => state.globalModel.sendStore.value),
     useStoreActions((actions) => actions.globalModel.sendStore.setValue),
+  ];
+  const [message, setMessage] = [
+    useStoreState((state) => state.globalModel.sendStore.message),
+    useStoreActions((actions) => actions.globalModel.sendStore.setMessage),
   ];
   const [txInfo, setTxInfo] = [
     useStoreState((state) => state.globalModel.sendStore.txInfo),
@@ -164,7 +173,13 @@ const Send = () => {
   const network = React.useRef();
   const assetsModalRef = React.useRef();
 
-  const prepareTx = async (v, a, count) => {
+  // prepareTx inputs
+
+  const v = React.useRef(value);
+  const a = React.useRef(address);
+  const m = React.useRef(message);
+
+  const prepareTx = async (count) => {
     if (!isMounted.current) return;
     await Loader.load();
     await new Promise((res, rej) => {
@@ -176,8 +191,9 @@ const Send = () => {
         }
       });
     });
-    const _value = v || value;
-    const _address = a || address;
+    const _value = v.current;
+    const _address = a.current;
+    const _message = m.current;
     if (!_value.ada && _value.assets.length <= 0) {
       setFee({ fee: '0' });
       setTx(null);
@@ -286,6 +302,27 @@ const Send = () => {
         auxiliaryData.set_metadata(generalMetadata);
       }
 
+      if (_message) {
+        function chunkSubstr(str, size) {
+          const numChunks = Math.ceil(str.length / size);
+          const chunks = new Array(numChunks);
+
+          for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+            chunks[i] = str.substr(o, size);
+          }
+
+          return chunks;
+        }
+        auxiliaryData = Loader.Cardano.AuxiliaryData.new();
+        const generalMetadata = Loader.Cardano.GeneralTransactionMetadata.new();
+        const msg = { msg: chunkSubstr(_message, 64) };
+        generalMetadata.insert(
+          Loader.Cardano.BigNum.from_str('674'),
+          Loader.Cardano.encode_json_str_to_metadatum(JSON.stringify(msg), 1)
+        );
+        auxiliaryData.set_metadata(generalMetadata);
+      }
+
       const tx = await buildTx(
         account.current,
         utxos.current,
@@ -296,7 +333,7 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
-      prepareTx(v, a, count + 1);
+      prepareTx(count + 1);
     }
   };
 
@@ -319,7 +356,7 @@ const Send = () => {
         )
       );
       utxos.current = _utxos;
-      await prepareTx(null, null, 0);
+      await prepareTx(0);
       setIsLoading(false);
       return;
     }
@@ -400,7 +437,7 @@ const Send = () => {
             <Text fontSize="lg" fontWeight="bold">
               Send
             </Text>
-            <Box height="12" />
+            <Box height="8" />
             <Box
               display="flex"
               alignItems="center"
@@ -417,6 +454,8 @@ const Send = () => {
                 removeAllAssets={removeAllAssets}
                 setFee={setFee}
                 setTx={setTx}
+                v={v}
+                a={a}
               />
               {address.error && (
                 <Text
@@ -454,49 +493,51 @@ const Send = () => {
                 justifyContent="center"
               >
                 <InputGroup size="sm" flex={3}>
-                  <InputLeftAddon
-                    border="none"
+                  <InputLeftElement
                     children={
-                      !isLoading ? (
-                        settings.adaSymbol
-                      ) : (
-                        <Spinner
-                          color="teal"
-                          speed="0.5s"
-                          boxSize="9px"
-                          size="xs"
-                        />
-                      )
+                      <Box pl={4}>
+                        {!isLoading ? (
+                          <Box>{settings.adaSymbol}</Box>
+                        ) : (
+                          <Spinner
+                            color="teal"
+                            speed="0.5s"
+                            boxSize="9px"
+                            size="xs"
+                          />
+                        )}
+                      </Box>
                     }
                   />
                   <NumberFormat
+                    pl="10"
                     allowNegative={false}
                     thousandsGroupStyle="thousand"
-                    value={value.ada || 0}
+                    value={value.ada}
                     decimalSeparator="."
                     displayType="input"
                     type="text"
                     thousandSeparator={true}
-                    decimalScale={6}
-                    allowEmptyFormatting={true}
                     fixedDecimalScale={true}
+                    decimalScale={6}
                     onInput={(e) => {
                       const val = e.target.value;
                       clearTimeout(timer);
                       value.ada = val;
                       value.personalAda = val;
-                      const v = value;
+                      const _v = value;
                       setValue({
-                        ...v,
+                        ..._v,
                         ada: val,
                         personalAda: val,
                       });
                       setFee({ fee: '' });
+                      setTx(null);
+                      v.current = _v;
                       timer = setTimeout(() => {
-                        prepareTx(v, undefined, 0);
+                        prepareTx(0);
                       }, 800);
                     }}
-                    borderLeftRadius="none"
                     variant="filled"
                     isDisabled={isLoading}
                     isInvalid={
@@ -511,7 +552,7 @@ const Send = () => {
                     customInput={Input}
                   />
                 </InputGroup>
-                <Box w={1} />
+                <Box w={4} />
                 <AssetsSelector
                   addAssets={addAssets}
                   assets={txInfo.balance.assets}
@@ -521,10 +562,38 @@ const Send = () => {
                 />
               </Stack>
               <Box height="4" />
+              <Box
+                width={'96%'}
+                display={'flex'}
+                alignItems={'center'}
+                justifyContent={'center'}
+              >
+                <InputGroup size="sm">
+                  <InputLeftElement children={<Icon as={MdModeEdit} />} />
+                  <Input
+                    value={message}
+                    onInput={(e) => {
+                      const msg = e.target.value;
+                      clearTimeout(timer);
+                      setMessage(msg);
+                      setFee({ fee: '' });
+                      m.current = msg;
+                      timer = setTimeout(() => {
+                        prepareTx(0);
+                      }, 800);
+                    }}
+                    size={'sm'}
+                    variant={'flushed'}
+                    placeholder="Optional message"
+                    fontSize={'xs'}
+                  />
+                </InputGroup>
+              </Box>
+              <Box height="4" />
               <Scrollbars
                 style={{
                   width: '100%',
-                  height: '240px',
+                  height: '200px',
                 }}
               >
                 <Box
@@ -539,12 +608,12 @@ const Send = () => {
                         onRemove={() => {
                           clearTimeout(timer);
                           removeAsset(asset);
-                          const v = value;
-                          v.assets = objectToArray(assets.current);
-
+                          const _v = value;
+                          _v.assets = objectToArray(assets.current);
+                          v.current = _v;
                           setFee({ fee: '' });
                           timer = setTimeout(() => {
-                            prepareTx(v, undefined, 0);
+                            prepareTx(0);
                           }, 300);
                         }}
                         onLoad={(decimals) => {
@@ -555,16 +624,17 @@ const Send = () => {
                           if (!assets.current[asset.unit]) return;
                           clearTimeout(timer);
                           assets.current[asset.unit].input = val;
-                          const v = value;
-                          v.assets = objectToArray(assets.current);
-                          setValue({ ...v, assets: v.assets });
+                          const _v = value;
+                          _v.assets = objectToArray(assets.current);
+                          setValue({ ..._v, assets: _v.assets });
+                          v.current = _v;
                           if (!usesStore.current) setFee({ fee: '' });
                           timer = setTimeout(() => {
                             if (usesStore.current) {
                               usesStore.current = false;
                               return;
                             }
-                            prepareTx(v, undefined, 0);
+                            prepareTx(0);
                           }, 500);
                         }}
                         asset={asset}
@@ -575,37 +645,6 @@ const Send = () => {
               </Scrollbars>
             </Box>
 
-            <Box
-              position="absolute"
-              width="full"
-              bottom="24"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="center"
-                fontSize="sm"
-              >
-                {/* {fee.error ? (
-                  <Text fontSize="xs" color="red.300">
-                    {fee.error}
-                  </Text>
-                ) : (
-                  <>
-                    {' '}
-                    <Text fontWeight="bold">+ Fee: </Text>
-                    <UnitDisplay
-                      quantity={!address.result ? '0' : fee.fee}
-                      decimals={6}
-                      symbol={settings.adaSymbol}
-                    />
-                  </>
-                )} */}
-              </Stack>
-            </Box>
             <Box
               position="absolute"
               width="full"
@@ -645,8 +684,6 @@ const Send = () => {
             justifyContent={'center'}
             flexDirection={'column'}
           >
-            <Box fontSize={'sm'}>You are sending</Box>
-            <Box h={3} />
             <UnitDisplay
               fontSize="2xl"
               fontWeight="medium"
@@ -661,7 +698,11 @@ const Send = () => {
                 size={'xs'}
                 onClick={() =>
                   assetsModalRef.current.openModal({
-                    assets: value.assets,
+                    userInput: true,
+                    assets: value.assets.map((asset) => ({
+                      ...asset,
+                      quantity: toUnit(asset.input, asset.decimals),
+                    })),
                     background: 'red.400',
                     color: 'white',
                     title: (
@@ -789,6 +830,8 @@ const AddressPopup = ({
   removeAllAssets,
   setFee,
   setTx,
+  v,
+  a,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const checkColor = useColorModeValue('teal.500', 'teal.200');
@@ -914,9 +957,13 @@ const AddressPopup = ({
                   }
                   setAddress(handleAddr);
                   onClose();
-                  prepareTx(value, handleAddr, 0);
+                  v.current = value;
+                  a.current = handleAddr;
+                  prepareTx(0);
                 } else {
-                  prepareTx(value, addr, 0);
+                  v.current = value;
+                  a.current = addr;
+                  prepareTx(0);
                 }
               }, 300);
             }}
@@ -966,12 +1013,9 @@ const AddressPopup = ({
                     });
                     onClose();
                     setFee({ fee: '' });
+                    a.current = { result: address, display: address };
                     timer = setTimeout(() => {
-                      prepareTx(
-                        undefined,
-                        { result: address, display: address },
-                        0
-                      );
+                      prepareTx(0);
                     }, 300);
                   }}
                 >
@@ -1030,14 +1074,11 @@ const AddressPopup = ({
                             setFee({ fee: '' });
                             timer = setTimeout(() => {
                               const addr = account.paymentAddr;
-                              prepareTx(
-                                undefined,
-                                {
-                                  result: addr,
-                                  display: addr,
-                                },
-                                0
-                              );
+                              a.current = {
+                                result: addr,
+                                display: addr,
+                              };
+                              prepareTx(0);
                             }, 300);
                           }}
                         >

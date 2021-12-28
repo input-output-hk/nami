@@ -1,11 +1,15 @@
-import { on, off } from '../../../../api/webpage/eventRegistring';
+/**
+ * @jest-environment jsdom
+ */
+
+import { on, off } from '../../../../api/webpage/eventRegistration';
 import { TARGET } from '../../../../config/config';
 
 describe('webpage/eventRegistring', () => {
-  const makeEvent = (eventType, detail) => (new CustomEvent(`${TARGET}${eventType}`, { detail }));
+  const makeEvent = (eventType, detail) =>
+    new CustomEvent(`${TARGET}${eventType}`, { detail });
 
   describe('on', () => {
-
     beforeEach(() => {
       window.cardano = {
         _events: {},
@@ -30,7 +34,7 @@ describe('webpage/eventRegistring', () => {
       const mockFn = jest.fn();
 
       on('event-A', mockFn);
-      
+
       const mockPayload = 'mock-payload';
       const event = makeEvent('event-B', mockPayload);
 
@@ -44,13 +48,13 @@ describe('webpage/eventRegistring', () => {
     const mockEventType = 'mock-event';
     const mockCallback = jest.fn();
     const mockHandler = jest.fn().mockImplementation(() => mockCallback());
-     
+
     beforeEach(() => {
       jest.resetAllMocks();
 
       window.cardano = {
         _events: {
-          [mockEventType]: [[mockCallback, mockHandler]]
+          [mockEventType]: [[mockCallback, mockHandler]],
         },
       };
     });
@@ -59,8 +63,8 @@ describe('webpage/eventRegistring', () => {
       off(mockEventType, mockCallback);
 
       expect(window.cardano._events).toEqual({
-        [mockEventType]: []
-      })
+        [mockEventType]: [],
+      });
     });
 
     test('stops the given callback from being invoked when cleaned out', () => {
@@ -70,7 +74,7 @@ describe('webpage/eventRegistring', () => {
 
       window.dispatchEvent(event);
 
-      expect(mockCallback).not.toHaveBeenCalled()
+      expect(mockCallback).not.toHaveBeenCalled();
     });
 
     test('does not stop other callbacks from being invoked after cleaned one out', () => {
@@ -84,7 +88,7 @@ describe('webpage/eventRegistring', () => {
 
       window.dispatchEvent(event);
 
-      expect(mockFn).toHaveBeenCalledTimes(1)
+      expect(mockFn).toHaveBeenCalledTimes(1);
     });
   });
 });

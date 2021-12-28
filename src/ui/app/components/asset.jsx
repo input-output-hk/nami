@@ -47,6 +47,7 @@ const Asset = ({ asset, enableSend, ...props }) => {
         : {
             ...(await getAsset(asset.unit)),
             quantity: asset.quantity,
+            input: asset.input,
           };
     if (!isMounted.current) return;
     setToken(detailedAsset);
