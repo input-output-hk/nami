@@ -714,7 +714,9 @@ export const verifyTx = async (tx) => {
     const parseTx = Loader.Cardano.Transaction.from_bytes(
       Buffer.from(tx, 'hex')
     );
-    let networkId = parseTx.body().network_id();
+    let networkId = parseTx.body().network_id()
+      ? parseTx.body().network_id().kind()
+      : null;
     if (!networkId && networkId != 0) {
       networkId = parseTx.body().outputs().get(0).address().network_id();
     }
