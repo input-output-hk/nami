@@ -303,6 +303,7 @@ const Send = () => {
         auxiliaryData.set_metadata(generalMetadata);
       }
 
+      // setting metadata for optional message (CIP-0020)
       if (_message) {
         function chunkSubstr(str, size) {
           const numChunks = Math.ceil(str.length / size);
@@ -377,18 +378,18 @@ const Send = () => {
       assets.current[asset.unit] = { ...asset };
     });
     const assetsList = objectToArray(assets.current);
-    setValue({ ...value, assets: assetsList });
+    triggerTxUpdate(() => setValue({ ...value, assets: assetsList }));
   };
 
   const removeAllAssets = () => {
     assets.current = {};
-    setValue({ ...value, assets: [] });
+    triggerTxUpdate(() => setValue({ ...value, assets: [] }));
   };
 
   const removeAsset = (asset) => {
     delete assets.current[asset.unit];
     const assetsList = objectToArray(assets.current);
-    setValue({ ...value, assets: assetsList });
+    triggerTxUpdate(() => setValue({ ...value, assets: assetsList }));
   };
 
   React.useEffect(() => {
@@ -454,11 +455,7 @@ const Send = () => {
                 value={value}
                 setAddress={setAddress}
                 address={address}
-                network={network.current}
-                prepareTx={prepareTx}
                 removeAllAssets={removeAllAssets}
-                setFee={setFee}
-                setTx={setTx}
                 triggerTxUpdate={triggerTxUpdate}
               />
               {address.error && (
@@ -598,11 +595,6 @@ const Send = () => {
                       <AssetBadge
                         onRemove={() => {
                           removeAsset(asset);
-                          const v = value;
-                          v.assets = objectToArray(assets.current);
-                          triggerTxUpdate(() =>
-                            setValue({ ...v, assets: v.assets })
-                          );
                         }}
                         onLoad={(decimals) => {
                           if (!assets.current[asset.unit]) return;
@@ -808,7 +800,6 @@ const AddressPopup = ({
   address,
   triggerTxUpdate,
   removeAllAssets,
-  a,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const checkColor = useColorModeValue('teal.500', 'teal.200');
@@ -936,7 +927,6 @@ const AddressPopup = ({
               } else if (isM1) {
                 addressTimer = setTimeout(async () => {
                   let m1Address = {};
-                  // let ethAddress = e.target.value;
                   const { isAllowed, current_address, protocolMagic, assets } =
                     await getMilkomedaData(e.target.value);
 
