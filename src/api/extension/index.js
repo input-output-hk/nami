@@ -38,6 +38,7 @@ import Ada, { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '../../../temporary_modules/trezor-connect';
 import AssetFingerprint from '@emurgo/cip14-js';
 import Web3Utils from 'web3-utils';
+import { milkomedaNetworks } from '@dcspark/milkomeda-constants';
 
 export const getStorage = (key) =>
   new Promise((res, rej) =>
@@ -964,7 +965,6 @@ export const submitTx = async (tx) => {
     { 'Content-Type': 'application/cbor' },
     Buffer.from(tx, 'hex')
   );
-  console.log(result);
   if (result.error) {
     if (result.status_code === 400)
       throw { ...TxSendError.Failure, message: result.message };
@@ -1349,6 +1349,41 @@ export const getAdaHandle = async (assetName) => {
   const resolvedAddress = await blockfrostRequest(`/assets/${asset}/addresses`);
   if (!resolvedAddress || resolvedAddress.error) return null;
   return resolvedAddress[0].address;
+};
+
+/**
+ *
+ * @param {string} ethAddress
+ */
+export const getMilkomedaData = async (ethAddress) => {
+  const network = await getNetwork();
+  if (network.id === NETWORK_ID.mainnet) {
+    const { isAllowed } = await fetch(
+      'https://' +
+        milkomedaNetworks['c1-mainnet'].backendEndpoint +
+        `/v1/isAddressAllowed?address=${ethAddress}`
+    ).then((res) => res.json());
+    const { assets, current_address } = await fetch(
+      'https://' +
+        milkomedaNetworks['c1-mainnet'].backendEndpoint +
+        '/v1/stargate'
+    ).then((res) => res.json());
+    const protocolMagic = milkomedaNetworks['c1-mainnet'].protocolMagic;
+    return { isAllowed, assets, current_address, protocolMagic };
+  } else {
+    const { isAllowed } = await fetch(
+      'https://' +
+        milkomedaNetworks['c1-devnet'].backendEndpoint +
+        `/v1/isAddressAllowed?address=${ethAddress}`
+    ).then((res) => res.json());
+    const { assets, current_address } = await fetch(
+      'https://' +
+        milkomedaNetworks['c1-devnet'].backendEndpoint +
+        '/v1/stargate'
+    ).then((res) => res.json());
+    const protocolMagic = milkomedaNetworks['c1-devnet'].protocolMagic;
+    return { isAllowed, assets, current_address, protocolMagic };
+  }
 };
 
 export const createWallet = async (name, seedPhrase, password) => {

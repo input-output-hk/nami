@@ -6,6 +6,7 @@ import {
   getAdaHandle,
   getAsset,
   getCurrentAccount,
+  getMilkomedaData,
   getNetwork,
   getUtxos,
   indexToHw,
@@ -54,7 +55,7 @@ import {
 import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
-import { ERROR, MILKOMEDA } from '../../../config/config';
+import { ERROR } from '../../../config/config';
 import {
   InputRightElement,
   InputLeftElement,
@@ -83,6 +84,7 @@ const useIsMounted = () => {
 };
 
 let timer = null;
+let addressTimer = null;
 
 const initialState = {
   fee: { fee: '0' },
@@ -155,11 +157,15 @@ const Send = () => {
     useStoreActions((actions) => actions.globalModel.sendStore.setTx),
   ];
 
+  const [txUpdate, setTxUpdate] = React.useState(false);
+  const triggerTxUpdate = (stateChange) => {
+    stateChange();
+    setTxUpdate((update) => !update);
+  };
+
   const utxos = React.useRef(null);
   const assets = React.useRef({});
   const account = React.useRef(null);
-  // this flag makes sure that in case something is in the store, the prepareTx is not triggered multiple times; refactoring may help with having prepareTX in a useEffect call
-  const usesStore = React.useRef(false);
   const resetState = useStoreActions(
     (actions) => actions.globalModel.sendStore.reset
   );
@@ -173,13 +179,7 @@ const Send = () => {
   const network = React.useRef();
   const assetsModalRef = React.useRef();
 
-  // prepareTx inputs
-
-  const v = React.useRef(value);
-  const a = React.useRef(address);
-  const m = React.useRef(message);
-
-  const prepareTx = async (count) => {
+  const prepareTx = async (count, data) => {
     if (!isMounted.current) return;
     await Loader.load();
     await new Promise((res, rej) => {
@@ -191,9 +191,9 @@ const Send = () => {
         }
       });
     });
-    const _value = v.current;
-    const _address = a.current;
-    const _message = m.current;
+    const _value = data.value;
+    const _address = data.address;
+    const _message = data.message;
     if (!_value.ada && _value.assets.length <= 0) {
       setFee({ fee: '0' });
       setTx(null);
@@ -265,13 +265,14 @@ const Send = () => {
           ada: minAdaDisplay,
         });
       }
-
       const outputs = Loader.Cardano.TransactionOutputs.new();
       outputs.add(
         Loader.Cardano.TransactionOutput.new(
-          Loader.Cardano.Address.from_bytes(
-            await isValidAddress(_address.result)
-          ),
+          _address.isM1
+            ? Loader.Cardano.Address.from_bech32(_address.result)
+            : Loader.Cardano.Address.from_bytes(
+                await isValidAddress(_address.result)
+              ),
           await assetsToValue(output.amount)
         )
       );
@@ -282,20 +283,20 @@ const Send = () => {
       if (_address.isM1) {
         auxiliaryData = Loader.Cardano.AuxiliaryData.new();
         const generalMetadata = Loader.Cardano.GeneralTransactionMetadata.new();
-        const m1Address = _address.display;
-        if (!isValidEthAddress(m1Address))
+        const ethAddress = _address.display;
+        if (!isValidEthAddress(ethAddress))
           throw new Error('Not a valid ETH address');
         generalMetadata.insert(
           Loader.Cardano.BigNum.from_str('87'),
           Loader.Cardano.encode_json_str_to_metadatum(
-            JSON.stringify(MILKOMEDA[network.current.id].protocol),
+            JSON.stringify(_address.protocolMagic),
             0
           )
         );
         generalMetadata.insert(
           Loader.Cardano.BigNum.from_str('88'),
           Loader.Cardano.encode_json_str_to_metadatum(
-            JSON.stringify(_address.display),
+            JSON.stringify(ethAddress),
             0
           )
         );
@@ -333,7 +334,7 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
-      prepareTx(count + 1);
+      prepareTx(count + 1, data);
     }
   };
 
@@ -346,17 +347,12 @@ const Send = () => {
     network.current = _network;
     account.current = currentAccount;
     if (txInfo.protocolParameters) {
-      // if there are no assets, the onLoad and onInput functions are not triggered. No need to set usesStore to true then
-      if (value.assets.length > 0) {
-        usesStore.current = true;
-      }
       const _utxos = txInfo.utxos.map((utxo) =>
         Loader.Cardano.TransactionUnspentOutput.from_bytes(
           Buffer.from(utxo, 'hex')
         )
       );
       utxos.current = _utxos;
-      await prepareTx(0);
       setIsLoading(false);
       return;
     }
@@ -394,6 +390,15 @@ const Send = () => {
     const assetsList = objectToArray(assets.current);
     setValue({ ...value, assets: assetsList });
   };
+
+  React.useEffect(() => {
+    if (txInfo.protocolParameters) {
+      clearTimeout(timer);
+      setTx(null);
+      setFee({ fee: '' });
+      timer = setTimeout(() => prepareTx(0, { value, address, message }), 500);
+    }
+  }, [txUpdate]);
 
   React.useEffect(() => {
     init();
@@ -454,8 +459,7 @@ const Send = () => {
                 removeAllAssets={removeAllAssets}
                 setFee={setFee}
                 setTx={setTx}
-                v={v}
-                a={a}
+                triggerTxUpdate={triggerTxUpdate}
               />
               {address.error && (
                 <Text
@@ -522,21 +526,14 @@ const Send = () => {
                     decimalScale={6}
                     onInput={(e) => {
                       const val = e.target.value;
-                      clearTimeout(timer);
                       value.ada = val;
                       value.personalAda = val;
-                      const _v = value;
-                      setValue({
-                        ..._v,
-                        ada: val,
-                        personalAda: val,
-                      });
-                      setFee({ fee: '' });
-                      setTx(null);
-                      v.current = _v;
-                      timer = setTimeout(() => {
-                        prepareTx(0);
-                      }, 800);
+                      const v = value;
+                      triggerTxUpdate(() =>
+                        setValue({
+                          ...v,
+                        })
+                      );
                     }}
                     variant="filled"
                     isDisabled={isLoading}
@@ -574,13 +571,7 @@ const Send = () => {
                     value={message}
                     onInput={(e) => {
                       const msg = e.target.value;
-                      clearTimeout(timer);
-                      setMessage(msg);
-                      setFee({ fee: '' });
-                      m.current = msg;
-                      timer = setTimeout(() => {
-                        prepareTx(0);
-                      }, 800);
+                      triggerTxUpdate(() => setMessage(msg));
                     }}
                     size={'sm'}
                     variant={'flushed'}
@@ -606,15 +597,12 @@ const Send = () => {
                     <Box key={index}>
                       <AssetBadge
                         onRemove={() => {
-                          clearTimeout(timer);
                           removeAsset(asset);
-                          const _v = value;
-                          _v.assets = objectToArray(assets.current);
-                          v.current = _v;
-                          setFee({ fee: '' });
-                          timer = setTimeout(() => {
-                            prepareTx(0);
-                          }, 300);
+                          const v = value;
+                          v.assets = objectToArray(assets.current);
+                          triggerTxUpdate(() =>
+                            setValue({ ...v, assets: v.assets })
+                          );
                         }}
                         onLoad={(decimals) => {
                           if (!assets.current[asset.unit]) return;
@@ -622,20 +610,12 @@ const Send = () => {
                         }}
                         onInput={async (val) => {
                           if (!assets.current[asset.unit]) return;
-                          clearTimeout(timer);
                           assets.current[asset.unit].input = val;
-                          const _v = value;
-                          _v.assets = objectToArray(assets.current);
-                          setValue({ ..._v, assets: _v.assets });
-                          v.current = _v;
-                          if (!usesStore.current) setFee({ fee: '' });
-                          timer = setTimeout(() => {
-                            if (usesStore.current) {
-                              usesStore.current = false;
-                              return;
-                            }
-                            prepareTx(0);
-                          }, 500);
+                          const v = value;
+                          v.assets = objectToArray(assets.current);
+                          triggerTxUpdate(() =>
+                            setValue({ ...v, assets: v.assets })
+                          );
                         }}
                         asset={asset}
                       />
@@ -793,7 +773,8 @@ const Send = () => {
               status: 'success',
               duration: 5000,
             });
-            await updateRecentSentToAddress(address.result);
+            if (await isValidAddress(address.result))
+              await updateRecentSentToAddress(address.result);
           } else if (signedTx === ERROR.fullMempool) {
             toast({
               title: 'Transaction failed',
@@ -825,12 +806,8 @@ const AddressPopup = ({
   value,
   setAddress,
   address,
-  prepareTx,
-  network,
+  triggerTxUpdate,
   removeAllAssets,
-  setFee,
-  setTx,
-  v,
   a,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -891,13 +868,14 @@ const AddressPopup = ({
               setTimeout(() => e.target.blur());
             }}
             fontSize="xs"
-            // placeholder="Address, $handle or Milkomeda"
-            placeholder="Address or $handle"
+            placeholder="Address, $handle or Milkomeda"
+            // placeholder="Address or $handle"
             onInput={async (e) => {
-              clearTimeout(timer);
+              clearTimeout(addressTimer);
               const val = e.target.value;
               let addr;
               let isHandle = false;
+              let isM1 = false;
               addr = { result: val };
               if (!e.target.value) {
                 addr = { result: '', display: '' };
@@ -906,17 +884,15 @@ const AddressPopup = ({
                 addr = { display: val };
               } else if (val.startsWith('0x')) {
                 if (isValidEthAddress(val)) {
-                  addr = {
-                    result: MILKOMEDA[network.id].address,
-                    display: val,
-                    isM1: true,
-                  };
+                  isM1 = true;
                   value.assets = [];
                   removeAllAssets();
+                  addr = { display: val, isM1: true };
                 } else {
                   addr = {
                     result: val,
                     display: val,
+                    isM1: true,
                     error: 'Address is invalid (Milkomeda)',
                   };
                 }
@@ -929,15 +905,14 @@ const AddressPopup = ({
                   error: 'Address is invalid',
                 };
               }
-              setTx(null);
-              setAddress(addr);
+
+              triggerTxUpdate(() => setAddress(addr));
               onClose();
-              if (isHandle) setFee({ fee: '' });
-              timer = setTimeout(async () => {
-                // checking for Ada handle after 300ms
-                let handleAddr = null;
-                if (isHandle) {
-                  handleAddr = { error: '$handle not found' };
+
+              if (isHandle) {
+                addressTimer = setTimeout(async () => {
+                  // checking for Ada handle after 300ms
+                  let handleAddr = { error: '$handle not found' };
                   const handle = e.target.value;
                   const resolvedAddress = await getAdaHandle(handle.slice(1));
                   if (
@@ -955,17 +930,36 @@ const AddressPopup = ({
                       error: '$handle not found',
                     };
                   }
-                  setAddress(handleAddr);
+                  triggerTxUpdate(() => setAddress(handleAddr));
                   onClose();
-                  v.current = value;
-                  a.current = handleAddr;
-                  prepareTx(0);
-                } else {
-                  v.current = value;
-                  a.current = addr;
-                  prepareTx(0);
-                }
-              }, 300);
+                }, 300);
+              } else if (isM1) {
+                addressTimer = setTimeout(async () => {
+                  let m1Address = {};
+                  // let ethAddress = e.target.value;
+                  const { isAllowed, current_address, protocolMagic, assets } =
+                    await getMilkomedaData(e.target.value);
+
+                  if (!isAllowed || !isValidEthAddress(e.target.value)) {
+                    m1Address = {
+                      result: '',
+                      display: e.target.value,
+                      isM1: true,
+                      error: 'Address is invalid (Milkomeda)',
+                    };
+                  } else {
+                    m1Address = {
+                      result: current_address,
+                      display: e.target.value,
+                      isM1: true,
+                      protocolMagic,
+                      assets,
+                    };
+                  }
+                  triggerTxUpdate(() => setAddress(m1Address));
+                  onClose();
+                });
+              }
             }}
             isInvalid={address.error}
           />
@@ -1005,18 +999,15 @@ const AddressPopup = ({
                   variant="ghost"
                   width="full"
                   onClick={() => {
-                    clearTimeout(timer);
                     const address = state.recentAddress;
-                    setAddress({
-                      result: address,
-                      display: address,
-                    });
+
+                    triggerTxUpdate(() =>
+                      setAddress({
+                        result: address,
+                        display: address,
+                      })
+                    );
                     onClose();
-                    setFee({ fee: '' });
-                    a.current = { result: address, display: address };
-                    timer = setTimeout(() => {
-                      prepareTx(0);
-                    }, 300);
                   }}
                 >
                   <Box display="flex" flexDirection="column" width="full">
@@ -1066,20 +1057,14 @@ const AddressPopup = ({
                           onClick={() => {
                             clearTimeout(timer);
                             const addr = account.paymentAddr;
-                            setAddress({
-                              result: addr,
-                              display: addr,
-                            });
-                            onClose();
-                            setFee({ fee: '' });
-                            timer = setTimeout(() => {
-                              const addr = account.paymentAddr;
-                              a.current = {
+
+                            triggerTxUpdate(() =>
+                              setAddress({
                                 result: addr,
                                 display: addr,
-                              };
-                              prepareTx(0);
-                            }, 300);
+                              })
+                            );
+                            onClose();
                           }}
                         >
                           <Box width="full" display="flex">
