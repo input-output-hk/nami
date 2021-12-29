@@ -277,12 +277,11 @@ const Send = () => {
         )
       );
 
-      let auxiliaryData;
+      const auxiliaryData = Loader.Cardano.AuxiliaryData.new();
+      const generalMetadata = Loader.Cardano.GeneralTransactionMetadata.new();
 
       // setting metadata for MilkomedaM1
       if (_address.isM1) {
-        auxiliaryData = Loader.Cardano.AuxiliaryData.new();
-        const generalMetadata = Loader.Cardano.GeneralTransactionMetadata.new();
         const ethAddress = _address.display;
         if (!isValidEthAddress(ethAddress))
           throw new Error('Not a valid ETH address');
@@ -300,7 +299,6 @@ const Send = () => {
             0
           )
         );
-        auxiliaryData.set_metadata(generalMetadata);
       }
 
       // setting metadata for optional message (CIP-0020)
@@ -315,13 +313,14 @@ const Send = () => {
 
           return chunks;
         }
-        auxiliaryData = Loader.Cardano.AuxiliaryData.new();
-        const generalMetadata = Loader.Cardano.GeneralTransactionMetadata.new();
         const msg = { msg: chunkSubstr(_message, 64) };
         generalMetadata.insert(
           Loader.Cardano.BigNum.from_str('674'),
           Loader.Cardano.encode_json_str_to_metadatum(JSON.stringify(msg), 1)
         );
+      }
+
+      if (generalMetadata.len() > 0) {
         auxiliaryData.set_metadata(generalMetadata);
       }
 
@@ -330,7 +329,7 @@ const Send = () => {
         utxos.current,
         outputs,
         txInfo.protocolParameters,
-        auxiliaryData
+        auxiliaryData.metadata() ? auxiliaryData : null
       );
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
