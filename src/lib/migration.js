@@ -9,6 +9,7 @@ import v2_3_0 from '../migrations/2.3.0';
 import v2_3_2 from '../migrations/2.3.2';
 import v2_3_3 from '../migrations/2.3.3';
 import v3_0_0 from '../migrations/3.0.0';
+import v3_0_2 from '../migrations/3.0.2';
 const MIG_SCRIPTS = [
   v1_1_5,
   v1_1_7,
@@ -18,6 +19,7 @@ const MIG_SCRIPTS = [
   v2_3_0,
   v2_3_3,
   v3_0_0,
+  v3_0_2,
 ];
 const { version } = require('../../package.json');
 let pwd = null;
