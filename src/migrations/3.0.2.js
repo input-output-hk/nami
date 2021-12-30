@@ -11,11 +11,11 @@ const migration = {
     {
       title: 'Milkomeda support',
       detail:
-        'Assets can now be moved to the Milkomeda sidechain. This functionality is available under the send screen.',
+        'Assets can now be moved to the Milkomeda sidechain. This functionality is available under the send screen (only testnet for now).',
     },
     {
       title: 'ADA as asset',
-      detail: 'ADA is shown now under assets at the main screen.',
+      detail: 'ADA is shown now under assets on the main screen.',
     },
   ],
   pwdRequired: false,
