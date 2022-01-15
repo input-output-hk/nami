@@ -16,10 +16,19 @@ export const isEnabled = async () => {
   return result.data;
 };
 
+//deprecated soon
 export const signData = async (address, payload) => {
   const result = await Messaging.sendToContent({
     method: METHOD.signData,
     data: { address, payload },
+  });
+  return result.data;
+};
+
+export const signDataCIP30 = async (address, payload) => {
+  const result = await Messaging.sendToContent({
+    method: METHOD.signData,
+    data: { address, payload, CIP30: true },
   });
   return result.data;
 };

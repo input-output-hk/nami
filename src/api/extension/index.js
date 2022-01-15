@@ -329,6 +329,9 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
         unspent.output().amount().compare(filterValue) !== -1
     );
   }
+  if ((amount || paginate) && converted.length <= 0) {
+    return null;
+  }
   return converted;
 };
 
@@ -735,6 +738,7 @@ export const verifyTx = async (tx) => {
  * @returns
  */
 
+//deprecated soon
 export const signData = async (address, payload, password, accountIndex) => {
   await Loader.load();
   const keyHash = await extractKeyHash(address);
@@ -781,6 +785,82 @@ export const signData = async (address, payload, password, accountIndex) => {
   paymentKey = null;
 
   return Buffer.from(coseSign1.to_bytes(), 'hex').toString('hex');
+};
+
+export const signDataCIP30 = async (
+  address,
+  payload,
+  password,
+  accountIndex
+) => {
+  await Loader.load();
+  const keyHash = await extractKeyHash(address);
+  const prefix = keyHash.slice(0, 5);
+  let { paymentKey, stakeKey } = await requestAccountKey(
+    password,
+    accountIndex
+  );
+  const accountKey = prefix === 'hbas_' ? paymentKey : stakeKey;
+
+  const publicKey = accountKey.to_public();
+  if (keyHash !== publicKey.hash().to_bech32(prefix))
+    throw DataSignError.ProofGeneration;
+  const protectedHeaders = Loader.Message.HeaderMap.new();
+  protectedHeaders.set_algorithm_id(
+    Loader.Message.Label.from_algorithm_id(Loader.Message.AlgorithmId.EdDSA)
+  );
+  // protectedHeaders.set_key_id(publicKey.as_bytes());
+  protectedHeaders.set_header(
+    Loader.Message.Label.new_text('address'),
+    Loader.Message.CBORValue.new_bytes(Buffer.from(address, 'hex'))
+  );
+  const protectedSerialized =
+    Loader.Message.ProtectedHeaderMap.new(protectedHeaders);
+  const unprotectedHeaders = Loader.Message.HeaderMap.new();
+  const headers = Loader.Message.Headers.new(
+    protectedSerialized,
+    unprotectedHeaders
+  );
+  const builder = Loader.Message.COSESign1Builder.new(
+    headers,
+    Buffer.from(payload, 'hex'),
+    false
+  );
+  const toSign = builder.make_data_to_sign().to_bytes();
+
+  const signedSigStruc = accountKey.sign(toSign).to_bytes();
+  const coseSign1 = builder.build(signedSigStruc);
+
+  stakeKey.free();
+  stakeKey = null;
+  paymentKey.free();
+  paymentKey = null;
+
+  const key = Loader.Message.COSEKey.new(
+    Loader.Message.Label.from_key_type(Loader.Message.KeyType.OKP)
+  );
+  key.set_algorithm_id(
+    Loader.Message.Label.from_algorithm_id(Loader.Message.AlgorithmId.EdDSA)
+  );
+  key.set_header(
+    Loader.Message.Label.new_int(
+      Loader.Message.Int.new_negative(Loader.Message.BigNum.from_str('1'))
+    ),
+    Loader.Message.CBORValue.new_int(
+      Loader.Message.Int.new_i32(6) //Loader.Message.CurveType.Ed25519
+    )
+  ); // crv (-1) set to Ed25519 (6)
+  key.set_header(
+    Loader.Message.Label.new_int(
+      Loader.Message.Int.new_negative(Loader.Message.BigNum.from_str('2'))
+    ),
+    Loader.Message.CBORValue.new_bytes(publicKey.as_bytes())
+  ); // x (-2) set to public key
+
+  return {
+    signature: Buffer.from(coseSign1.to_bytes()).toString('hex'),
+    key: Buffer.from(key.to_bytes()).toString('hex'),
+  };
 };
 
 /**

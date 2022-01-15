@@ -150,9 +150,11 @@ app.add(METHOD.getRewardAddress, async (request, sendResponse) => {
 app.add(METHOD.getUtxos, (request, sendResponse) => {
   getUtxos(request.data.amount, request.data.paginate)
     .then((utxos) => {
-      utxos = utxos.map((utxo) =>
-        Buffer.from(utxo.to_bytes(), 'hex').toString('hex')
-      );
+      utxos = utxos
+        ? utxos.map((utxo) =>
+            Buffer.from(utxo.to_bytes(), 'hex').toString('hex')
+          )
+        : null;
       sendResponse({
         id: request.id,
         data: utxos,

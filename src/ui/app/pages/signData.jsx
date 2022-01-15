@@ -1,5 +1,5 @@
 import React from 'react';
-import { getCurrentAccount, isHW, signData } from '../../../api/extension';
+import { getCurrentAccount, isHW, signData, signDataCIP30 } from '../../../api/extension';
 import { Box, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
@@ -195,7 +195,15 @@ const SignData = ({ request, controller }) => {
       )}
       <ConfirmModal
         ref={ref}
-        sign={(password) =>
+        sign={(password) => request.data.CIP30 ?
+            signDataCIP30(
+              request.data.address,
+              request.data.payload,
+              password,
+              account.index
+            )
+          :
+          // deprecated soon
           signData(
             request.data.address,
             request.data.payload,
