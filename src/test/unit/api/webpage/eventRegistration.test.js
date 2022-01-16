@@ -12,7 +12,9 @@ describe('webpage/eventRegistring', () => {
   describe('on', () => {
     beforeEach(() => {
       window.cardano = {
-        _events: {},
+        nami: {
+          _events: {},
+        },
       };
     });
 
@@ -53,8 +55,10 @@ describe('webpage/eventRegistring', () => {
       jest.resetAllMocks();
 
       window.cardano = {
-        _events: {
-          [mockEventType]: [[mockCallback, mockHandler]],
+        nami: {
+          _events: {
+            [mockEventType]: [[mockCallback, mockHandler]],
+          },
         },
       };
     });
@@ -62,7 +66,7 @@ describe('webpage/eventRegistring', () => {
     test('clean out matching callbacks fom the given event', () => {
       off(mockEventType, mockCallback);
 
-      expect(window.cardano._events).toEqual({
+      expect(window.cardano.nami._events).toEqual({
         [mockEventType]: [],
       });
     });
