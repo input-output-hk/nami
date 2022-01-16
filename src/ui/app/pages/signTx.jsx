@@ -567,7 +567,7 @@ const SignTx = ({ request, controller }) => {
                                   }
                                 >
                                   - {negativeAssets.length}{' '}
-                                  {assets.length > 1 ? 'Assets' : 'Asset'}
+                                  {negativeAssets.length > 1 ? 'Assets' : 'Asset'}
                                 </Button>
                               )}
                               {negativeAssets.length > 0 &&
@@ -596,7 +596,7 @@ const SignTx = ({ request, controller }) => {
                                   }
                                 >
                                   + {positiveAssets.length}{' '}
-                                  {assets.length > 1 ? 'Assets' : 'Asset'}
+                                  {positiveAssets.length > 1 ? 'Assets' : 'Asset'}
                                 </Button>
                               )}
                             </Box>
