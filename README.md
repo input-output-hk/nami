@@ -7,6 +7,44 @@ Nami is a browser based wallet extension to interact with the Cardano blockchain
 ### Injected API
 
 Since Nami is a browser extension, it can inject content inside the web context, which means you can connect the wallet to any website.
+The exposed API follows [CIP-0030](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0030). The returned types are in `cbor`/`bytes` format. A helpful library for serializing and de-serializing these low-level data structures is the [serialization-lib](https://github.com/Emurgo/cardano-serialization-lib). To verify a signature returned from `cardano.dataSign(address, payload)` the [message-signing](https://github.com/Emurgo/message-signing) library helps.
+
+#### Basic Usage
+
+- Detect the Cardano provider (`window.cardano`) and detect Nami (`window.cardano.nami`)
+- Request the `api` from `window.cardano.nami.enable()`
+- Detect which Cardano network the user is connected to (ID 1 = Mainnet, ID 0 = Testnet)
+- Get the user's Cardano account
+
+#### Methods
+
+The full list of methods can be found in [CIP-0030](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0030).
+For the wallet namespace Nami uses `nami`.
+
+Nami also uses a few custom endpoints, which are available under `api.experimental`:
+
+##### api.experimental.getCollateral()
+
+```
+cardano.getCollateral() : [TransactionUnspentOutput]
+```
+
+##### api.experimental.on(eventName, callback)
+
+Register events coming from Nami. Available events are:
+
+```
+accountChange: ((addresses : [BaseAddress]) => void)
+networkChange: ((network : number) => void)
+```
+
+##### api.experimental.off(eventName, callback)
+
+Deregister the events (works also with anonymous functions).
+
+### Injected API (Deprecated)
+
+Since Nami is a browser extension, it can inject content inside the web context, which means you can connect the wallet to any website.
 The exposed API follows for most parts this proposed [CIP](https://github.com/cardano-foundation/CIPs/pull/88). The returned types are in `cbor`/`bytes` format. A helpful library for serializing and de-serializing these low-level data structures is the [serialization-lib](https://github.com/Emurgo/cardano-serialization-lib). To verify a signature returned from `cardano.dataSign(address, payload)` the [message-signing](https://github.com/Emurgo/message-signing) library helps.
 
 #### Basic Usage
