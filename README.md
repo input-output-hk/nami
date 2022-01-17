@@ -21,6 +21,8 @@ The exposed API follows [CIP-0030](https://github.com/cardano-foundation/CIPs/tr
 The full list of methods can be found in [CIP-0030](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0030).
 For the wallet namespace Nami uses `nami`.
 
+**Note:** Nami follows the ongoing [PR](https://github.com/cardano-foundation/CIPs/pull/148) for the `dataSign` endpoint. (Very similar to the previous `dataSign` endpoint from Nami).
+
 Nami also uses a few custom endpoints, which are available under `api.experimental`:
 
 ##### api.experimental.getCollateral()
@@ -41,6 +43,8 @@ networkChange: ((network : number) => void)
 ##### api.experimental.off(eventName, callback)
 
 Deregister the events (works also with anonymous functions).
+
+---
 
 ### Injected API (Deprecated)
 
@@ -191,6 +195,8 @@ cardano.onAccountChange((addresses : [BaseAddress]) => void)
 ```
 cardano.onNetworkChange((network : number) => void)
 ```
+
+---
 
 ### Develop
 
