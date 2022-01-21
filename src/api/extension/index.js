@@ -1058,11 +1058,11 @@ export const submitTx = async (tx) => {
       });
     return result;
   }
-  // const result = await blockfrostRequest(
-  //   `/tx/submit`,
-  //   { 'Content-Type': 'application/cbor' },
-  //   Buffer.from(tx, 'hex')
-  // );
+  const result = await blockfrostRequest(
+    `/tx/submit`,
+    { 'Content-Type': 'application/cbor' },
+    Buffer.from(tx, 'hex')
+  );
   if (result.error) {
     if (result.status_code === 400)
       throw { ...TxSendError.Failure, message: result.message };
