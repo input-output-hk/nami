@@ -107,7 +107,7 @@ export const ERROR = {
 };
 
 export const TX = {
-  invalid_hereafter: 3600 * 2, //2h from current slot
+  invalid_hereafter: 3600 * 6, //6h from current slot
 };
 
 export const EVENT = {
