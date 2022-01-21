@@ -453,7 +453,12 @@ export const setNetwork = async (network) => {
   if (currentNetwork && currentNetwork.id !== id)
     emitNetworkChange(networkNameToId(id));
   await setStorage({
-    [STORAGE.network]: { id, node },
+    [STORAGE.network]: {
+      id,
+      node,
+      mainnetSubmit: network.mainnetSubmit,
+      testnetSubmit: network.testnetSubmit,
+    },
   });
   return true;
 };
@@ -1040,11 +1045,24 @@ export const signTxHW = async (
  */
 
 export const submitTx = async (tx) => {
-  const result = await blockfrostRequest(
-    `/tx/submit`,
-    { 'Content-Type': 'application/cbor' },
-    Buffer.from(tx, 'hex')
-  );
+  const network = await getNetwork();
+  if (network[network.id + 'Submit']) {
+    const result = await fetch(network[network.id + 'Submit'], {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/cbor' },
+      body: Buffer.from(tx, 'hex'),
+    })
+      .then((res) => res.json())
+      .catch(() => {
+        throw APIError.InvalidRequest;
+      });
+    return result;
+  }
+  // const result = await blockfrostRequest(
+  //   `/tx/submit`,
+  //   { 'Content-Type': 'application/cbor' },
+  //   Buffer.from(tx, 'hex')
+  // );
   if (result.error) {
     if (result.status_code === 400)
       throw { ...TxSendError.Failure, message: result.message };

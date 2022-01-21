@@ -20,6 +20,7 @@ import {
   SunIcon,
   SmallCloseIcon,
   RepeatIcon,
+  CheckIcon,
 } from '@chakra-ui/icons';
 import React from 'react';
 import {
@@ -349,6 +350,34 @@ const Network = () => {
   const setSettings = useStoreActions(
     (actions) => actions.settings.setSettings
   );
+
+  const endpointHandler = (e) => {
+    setSettings({
+      ...settings,
+      network: {
+        ...settings.network,
+        [settings.network.id + 'Submit']: value,
+      },
+    });
+    setApplied(true);
+    setTimeout(() => setApplied(false), 600);
+  };
+
+  const [value, setValue] = React.useState(
+    settings.network[settings.network.id + 'Submit'] || ''
+  );
+  const [isEnabled, setIsEnabled] = React.useState(
+    settings.network[settings.network.id + 'Submit']
+  );
+
+  const [applied, setApplied] = React.useState(false);
+
+  React.useEffect(() => {
+    console.log(settings.network.id);
+    setValue(settings.network[settings.network.id + 'Submit'] || '');
+    setIsEnabled(Boolean(settings.network[settings.network.id + 'Submit']));
+  }, [settings]);
+
   return (
     <>
       <Box height="10" />
@@ -365,12 +394,20 @@ const Network = () => {
             if (e.target.checked) {
               setSettings({
                 ...settings,
-                network: { id: NETWORK_ID.testnet, node: NODE.testnet },
+                network: {
+                  ...settings.network,
+                  id: NETWORK_ID.testnet,
+                  node: NODE.testnet,
+                },
               });
             } else {
               setSettings({
                 ...settings,
-                network: { id: NETWORK_ID.mainnet, node: NODE.mainnet },
+                network: {
+                  ...settings.network,
+                  id: NETWORK_ID.mainnet,
+                  node: NODE.mainnet,
+                },
               });
             }
           }}
@@ -380,16 +417,51 @@ const Network = () => {
       </Box>
       <Box height="8" />
       <Box display="flex" alignItems="center" justifyContent="center">
-        <Checkbox disabled={true} size="md" /> <Box width="2" />{' '}
-        <Text>Custom node</Text>
+        <Checkbox
+          isChecked={isEnabled}
+          onChange={(e) => {
+            if (!e.target.checked) {
+              setSettings({
+                ...settings,
+                network: {
+                  ...settings.network,
+                  [settings.network.id + 'Submit']: null,
+                },
+              });
+              setValue('');
+            }
+            setIsEnabled(e.target.checked);
+          }}
+          size="md"
+        />{' '}
+        <Box width="2" /> <Text>Custom node</Text>
       </Box>
       <Box height="3" />
-      <Input
-        disabled={true}
-        width="70%"
-        size="sm"
-        placeholder="http://localhost:8000"
-      />
+      <InputGroup size="md" width={'280px'}>
+        <Input
+          isDisabled={!isEnabled}
+          fontSize={'xs'}
+          value={value}
+          placeholder="http://localhost:8090/"
+          onKeyDown={(e) => {
+            if (e.key == 'Enter' && value.length > 0) {
+              endpointHandler();
+            }
+          }}
+          onChange={(e) => setValue(e.target.value)}
+          pr="4.5rem"
+        />
+        <InputRightElement width="4.5rem">
+          <Button
+            isDisabled={applied || !isEnabled || value.length <= 0}
+            h="1.75rem"
+            size="sm"
+            onClick={endpointHandler}
+          >
+            {applied ? <CheckIcon color={'teal.400'} /> : 'Apply'}
+          </Button>
+        </InputRightElement>
+      </InputGroup>
     </>
   );
 };
