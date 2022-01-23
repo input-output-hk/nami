@@ -94,6 +94,9 @@ export const Messaging = {
   sendToContent: function ({ method, data }) {
     return new Promise((res, rej) => {
       const requestId = Math.random().toString(36).substr(2, 9);
+      if (method == METHOD.submitTx) {
+        console.log(data);
+      }
       window.addEventListener('message', function responseHandler(e) {
         const response = e.data;
         if (
