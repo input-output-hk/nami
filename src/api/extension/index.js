@@ -1051,12 +1051,11 @@ export const submitTx = async (tx) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/cbor' },
       body: Buffer.from(tx, 'hex'),
-    })
-      .then((res) => res.json())
-      .catch(() => {
-        throw APIError.InvalidRequest;
-      });
-    return result;
+    });
+    if (result.ok) {
+      return await result.json();
+    }
+    throw APIError.InvalidRequest;
   }
   const result = await blockfrostRequest(
     `/tx/submit`,
