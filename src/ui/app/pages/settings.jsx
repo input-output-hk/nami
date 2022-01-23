@@ -373,7 +373,6 @@ const Network = () => {
   const [applied, setApplied] = React.useState(false);
 
   React.useEffect(() => {
-    console.log(settings.network.id);
     setValue(settings.network[settings.network.id + 'Submit'] || '');
     setIsEnabled(Boolean(settings.network[settings.network.id + 'Submit']));
   }, [settings]);

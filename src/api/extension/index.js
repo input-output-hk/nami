@@ -409,7 +409,7 @@ export const getCollateral = async () => {
         )
       )
     );
-    return [collateralUtxo, ...filteredUtxos];
+    return [collateralUtxo];
   }
   const utxos = await getUtxos();
   return utxos.filter(
