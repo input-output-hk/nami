@@ -409,9 +409,18 @@ export const getCollateral = async () => {
         )
       )
     );
-    return [collateralUtxo];
+    return [collateralUtxo, ...filteredUtxos];
   }
-  return [];
+  const utxos = await getUtxos();
+  return utxos.filter(
+    (utxo) =>
+      utxo
+        .output()
+        .amount()
+        .coin()
+        .compare(Loader.Cardano.BigNum.from_str('50000000')) <= 0 &&
+      !utxo.output().amount().multiasset()
+  );
 };
 
 export const getAddress = async () => {

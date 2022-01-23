@@ -389,10 +389,26 @@ const SignTx = ({ request, controller }) => {
             ) &&
           input.index() == collateral.index()
         ) {
+          // collateral utxo is less than 50 ADA. That's also fine.
+          if (
+            utxos[j]
+              .output()
+              .amount()
+              .coin()
+              .compare(Loader.Cardano.BigNum.from_str('50000000')) <= 0
+          )
+            return;
+
           if (!account.collateral) {
             setIsLoading((l) => ({ ...l, error: 'Collateral not set' }));
             return;
           }
+
+          Loader.Cardano.TransactionUnspentOutput.new()
+            .output()
+            .amount()
+            .coin()
+            .compare();
 
           if (
             !(
@@ -567,7 +583,9 @@ const SignTx = ({ request, controller }) => {
                                   }
                                 >
                                   - {negativeAssets.length}{' '}
-                                  {negativeAssets.length > 1 ? 'Assets' : 'Asset'}
+                                  {negativeAssets.length > 1
+                                    ? 'Assets'
+                                    : 'Asset'}
                                 </Button>
                               )}
                               {negativeAssets.length > 0 &&
@@ -596,7 +614,9 @@ const SignTx = ({ request, controller }) => {
                                   }
                                 >
                                   + {positiveAssets.length}{' '}
-                                  {positiveAssets.length > 1 ? 'Assets' : 'Asset'}
+                                  {positiveAssets.length > 1
+                                    ? 'Assets'
+                                    : 'Asset'}
                                 </Button>
                               )}
                             </Box>
