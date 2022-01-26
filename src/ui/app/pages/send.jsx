@@ -367,6 +367,7 @@ const Send = () => {
     utxos.current = _utxos;
     _utxos = _utxos.map((utxo) => Buffer.from(utxo.to_bytes()).toString('hex'));
     setIsLoading(false);
+    if (!isMounted.current) return;
     setTxInfo({ protocolParameters, utxos: _utxos, balance });
   };
 
