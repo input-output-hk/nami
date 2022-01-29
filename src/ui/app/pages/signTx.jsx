@@ -54,6 +54,7 @@ const SignTx = ({ request, controller }) => {
     contract: false,
     datum: false,
   });
+  const [tx, setTx] = React.useState("");
   // key kind can be payment and stake
   const [keyHashes, setKeyHashes] = React.useState({ kind: [], key: [] });
   const [isLoading, setIsLoading] = React.useState({
@@ -434,6 +435,7 @@ const SignTx = ({ request, controller }) => {
     const tx = Loader.Cardano.Transaction.from_bytes(
       Buffer.from(request.data.tx, 'hex')
     );
+    setTx(request.data.tx);
     getFee(tx);
     await getValue(tx, utxos, currentAccount);
     checkCollateral(tx, utxos, currentAccount);
@@ -656,67 +658,6 @@ const SignTx = ({ request, controller }) => {
           >
             Details
           </Button>
-
-          {/* <Box
-          bottom="95px"
-          position="absolute"
-          maxWidth="90%"
-          wordBreak="break-all"
-          textAlign="center"
-          fontSize="xs"
-        >
-          {Object.keys(property).some((key) => property[key]) && (
-            <Box mb="1.5">
-              <Tooltip
-                placement="top"
-                hasArrow
-                label={
-                  <>
-                    {property.minting && (
-                      <Text>
-                        <b>Minting</b>
-                      </Text>
-                    )}
-                    {property.certificate && (
-                      <Text>
-                        <b>Certificate</b>
-                      </Text>
-                    )}
-                    {property.withdrawal && (
-                      <Text>
-                        <b>Withdrawal</b>
-                      </Text>
-                    )}
-                    {property.metadata && (
-                      <Text>
-                        <b>Metadata</b>
-                      </Text>
-                    )}
-                    {property.contract && (
-                      <Text>
-                        <b>Contract</b>
-                      </Text>
-                    )}
-                    {property.script && (
-                      <Text>
-                        <b>Script</b>
-                      </Text>
-                    )}
-                    {property.datum && (
-                      <Text>
-                        <b>Datum</b>
-                      </Text>
-                    )}
-                  </>
-                }
-              >
-                <b style={{ cursor: 'pointer' }}>
-                  Extras <ChevronDownIcon />
-                </b>
-              </Tooltip>
-            </Box>
-          )}
-        </Box> */}
           <Box
             position="absolute"
             width="full"
@@ -777,6 +718,7 @@ const SignTx = ({ request, controller }) => {
         assetsModalRef={assetsModalRef}
         property={property}
         keyHashes={keyHashes}
+        tx={tx}
       />
       <ConfirmModal
         ref={ref}
@@ -812,7 +754,7 @@ const SignTx = ({ request, controller }) => {
 };
 
 const DetailsModal = React.forwardRef(
-  ({ externalValue, settings, property, keyHashes, assetsModalRef }, ref) => {
+  ({ externalValue, settings, property, keyHashes, tx, assetsModalRef }, ref) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const background = useColorModeValue('white', 'gray.800');
     const innerBackground = useColorModeValue('gray.100', 'gray.700');
@@ -1051,9 +993,26 @@ const DetailsModal = React.forwardRef(
                             </Box>
                           ))}
                       </Box>
-                      <Box h={8} />
+                      <Box h={10} />
                     </>
                   )}
+                   <Box h={5} />
+                    <Text width={'full'} fontSize="md" fontWeight={'bold'}>
+                        Raw transaction
+                      </Text>
+                      <Box height="4" />
+                      <Box
+                        padding="2.5"
+                        rounded={'xl'}
+                        width={'full'}
+                        height={'200px'}
+                        background={innerBackground}
+                      >
+                        <Scrollbars autoHide>
+                          {tx}
+                        </Scrollbars>
+                      </Box>
+                      <Box h={10} />
                 </Box>
                 <Box
                   position={'fixed'}
