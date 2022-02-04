@@ -124,6 +124,11 @@ export const ADA_HANDLE = {
   testnet: '8d18d786e92776c824607fd8e193ec535c79dc61ea2405ddf3b09fe3',
 };
 
+export const ADA_DOMAIN = {
+  mainnet: 'e2bdb31c13a57d94934d01a4ca17cf3b2cac61d055637261b089c8f6',
+  testnet: 'e2bdb31c13a57d94934d01a4ca17cf3b2cac61d055637261b089c8f6', // No testnet domains, using the mainnet policy for compatibility
+};
+
 // Errors dApp Connector
 export const APIError = {
   InvalidRequest: {

@@ -4,6 +4,7 @@ import {
   displayUnit,
   getAccounts,
   getAdaHandle,
+  getAdaDomain,
   getAsset,
   getCurrentAccount,
   getMilkomedaData,
@@ -859,19 +860,23 @@ const AddressPopup = ({
               setTimeout(() => e.target.blur());
             }}
             fontSize="xs"
-            placeholder="Address, $handle or Milkomeda"
+            placeholder="Address, $handle, adadomain or Milkomeda"
             // placeholder="Address or $handle"
             onInput={async (e) => {
               clearTimeout(addressTimer);
               const val = e.target.value;
               let addr;
               let isHandle = false;
+              let isDomain = false;
               let isM1 = false;
               addr = { result: val };
               if (!e.target.value) {
                 addr = { result: '', display: '' };
               } else if (val.startsWith('$')) {
                 isHandle = true;
+                addr = { display: val };
+              } else if (val.endsWith('.ada')) {
+                isDomain = true;
                 addr = { display: val };
               } else if (val.startsWith('0x')) {
                 if (isValidEthAddress(val)) {
@@ -922,6 +927,30 @@ const AddressPopup = ({
                     };
                   }
                   triggerTxUpdate(() => setAddress(handleAddr));
+                  onClose();
+                }, 300);
+              } else if (isDomain) {
+                addressTimer = setTimeout(async () => {
+                  // checking for Adadomain after 300ms
+                  let domainAddr = { error: 'adadomain not found' };
+                  const adadomain = e.target.value.substr(0, e.target.value.lastIndexOf('.'));
+                  const resolvedAddress = await getAdaDomain(adadomain);
+                  if (
+                    adadomain.length > 1 &&
+                    (await isValidAddress(resolvedAddress))
+                  ) {
+                    domainAddr = {
+                      result: resolvedAddress,
+                      display: e.target.value,
+                    };
+                  } else {
+                    domainAddr = {
+                      result: '',
+                      display: e.target.value,
+                      error: 'adadomain not found',
+                    };
+                  }
+                  triggerTxUpdate(() => setAddress(domainAddr));
                   onClose();
                 }, 300);
               } else if (isM1) {

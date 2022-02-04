@@ -1,5 +1,6 @@
 import {
   ADA_HANDLE,
+  ADA_DOMAIN,
   APIError,
   DataSignError,
   ERROR,
@@ -1451,6 +1452,21 @@ export const getAdaHandle = async (assetName) => {
   const assetNameHex = Buffer.from(assetName).toString('hex');
   if (!assetNameHex || assetNameHex.length == 0) return null;
   const policy = ADA_HANDLE[network.id];
+  const asset = policy + assetNameHex;
+  const resolvedAddress = await blockfrostRequest(`/assets/${asset}/addresses`);
+  if (!resolvedAddress || resolvedAddress.error) return null;
+  return resolvedAddress[0].address;
+};
+
+/**
+ *
+ * @param {string} assetName utf8 encoded
+ */
+export const getAdaDomain = async (assetName) => {
+  const network = await getNetwork();
+  const assetNameHex = Buffer.from(assetName).toString('hex');
+  if (!assetNameHex || assetNameHex.length == 0) return null;
+  const policy = ADA_DOMAIN[network.id];
   const asset = policy + assetNameHex;
   const resolvedAddress = await blockfrostRequest(`/assets/${asset}/addresses`);
   if (!resolvedAddress || resolvedAddress.error) return null;
