@@ -269,6 +269,12 @@ export const setTxDetail = async (txObject) => {
   return true;
 };
 
+export const getSpecificUtxo = async (txHash, txId) => {
+  const result = await blockfrostRequest(`/txs/${txHash}/utxos`);
+  if (!result || result.error) return null;
+  return result.outputs[txId];
+};
+
 /**
  *
  * @param {string} amount - cbor value

@@ -2,6 +2,7 @@ import React from 'react';
 import {
   bytesAddressToBinary,
   getCurrentAccount,
+  getSpecificUtxo,
   getUtxos,
   signTx,
   signTxHW,
@@ -234,7 +235,38 @@ const SignTx = ({ request, controller }) => {
     setValue({ ownValue, externalValue });
   };
 
-  const getKeyHashes = (tx, utxos, account) => {
+  const getPaymentKeyHash = async (address) => {
+    try {
+      return Buffer.from(
+        Loader.Cardano.BaseAddress.from_address(
+          Loader.Cardano.Address.from_bytes(address.to_bytes())
+        )
+          .payment_cred()
+          .to_bytes()
+      ).toString('hex');
+    } catch (e) {}
+    try {
+      return Buffer.from(
+        Loader.Cardano.EnterpriseAddress.from_address(
+          Loader.Cardano.Address.from_bytes(address.to_bytes())
+        )
+          .payment_cred()
+          .to_bytes()
+      ).toString('hex');
+    } catch (e) {}
+    try {
+      return Buffer.from(
+        Loader.Cardano.PointerAddress.from_address(
+          Loader.Cardano.Address.from_bytes(address.to_bytes())
+        )
+          .payment_cred()
+          .to_bytes()
+      ).toString('hex');
+    } catch (e) {}
+    throw Error('Not supported address type');
+  };
+
+  const getKeyHashes = async (tx, utxos, account) => {
     let requiredKeyHashes = [];
     const baseAddr = Loader.Cardano.BaseAddress.from_address(
       Loader.Cardano.Address.from_bech32(account.paymentAddr)
@@ -360,6 +392,22 @@ const SignTx = ({ request, controller }) => {
       }
     }
 
+    //get keyHashes from collateral
+    const collateral = txBody.collateral();
+    if (collateral) {
+      for (let i = 0; i < collateral.len(); i++) {
+        const c = collateral.get(i);
+        const utxo = await getSpecificUtxo(
+          Buffer.from(c.transaction_id().to_bytes()).toString('hex'),
+          c.index()
+        );
+        if (utxo) {
+          const address = Loader.Cardano.Address.from_bech32(utxo.address);
+          requiredKeyHashes.push(await getPaymentKeyHash(address));
+        }
+      }
+    }
+
     const keyKind = [];
     requiredKeyHashes = [...new Set(requiredKeyHashes)];
     if (requiredKeyHashes.includes(paymentKeyHash)) keyKind.push('payment');
@@ -433,7 +481,7 @@ const SignTx = ({ request, controller }) => {
     getFee(tx);
     await getValue(tx, utxos, currentAccount);
     checkCollateral(tx, utxos, currentAccount);
-    getKeyHashes(tx, utxos, currentAccount);
+    await getKeyHashes(tx, utxos, currentAccount);
     getProperties(tx);
     setIsLoading((l) => ({ ...l, loading: false }));
   };
