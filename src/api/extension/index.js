@@ -1475,26 +1475,40 @@ export const getMilkomedaData = async (ethAddress) => {
         milkomedaNetworks['c1-mainnet'].backendEndpoint +
         `/v1/isAddressAllowed?address=${ethAddress}`
     ).then((res) => res.json());
-    const { assets, current_address } = await fetch(
+    const { ada, ttl_expiry, assets, current_address } = await fetch(
       'https://' +
         milkomedaNetworks['c1-mainnet'].backendEndpoint +
         '/v1/stargate'
     ).then((res) => res.json());
     const protocolMagic = milkomedaNetworks['c1-mainnet'].protocolMagic;
-    return { isAllowed, assets, current_address, protocolMagic };
+    return {
+      isAllowed,
+      assets: [],
+      ada,
+      current_address,
+      protocolMagic,
+      ttl: ttl_expiry,
+    };
   } else {
     const { isAllowed } = await fetch(
       'https://' +
         milkomedaNetworks['c1-devnet'].backendEndpoint +
         `/v1/isAddressAllowed?address=${ethAddress}`
     ).then((res) => res.json());
-    const { assets, current_address } = await fetch(
+    const { ada, ttl_expiry, assets, current_address } = await fetch(
       'https://' +
         milkomedaNetworks['c1-devnet'].backendEndpoint +
         '/v1/stargate'
     ).then((res) => res.json());
     const protocolMagic = milkomedaNetworks['c1-devnet'].protocolMagic;
-    return { isAllowed, assets, current_address, protocolMagic };
+    return {
+      isAllowed,
+      assets: [],
+      ada,
+      current_address,
+      protocolMagic,
+      ttl: ttl_expiry,
+    };
   }
 };
 

@@ -202,7 +202,10 @@ const Send = () => {
     if (
       _address.error ||
       !_address.result ||
-      (!_value.ada && _value.assets.length <= 0)
+      (!_value.ada && _value.assets.length <= 0) ||
+      BigInt(toUnit(_value.ada)) < BigInt('1000000') ||
+      (address.isM1 &&
+        BigInt(toUnit(_value.ada)) < BigInt(address.ada.minLovelace))
     ) {
       setFee({ fee: '0' });
       setTx(null);
@@ -536,10 +539,13 @@ const Send = () => {
                     isDisabled={isLoading}
                     isInvalid={
                       value.ada &&
-                      (BigInt(toUnit(value.ada)) <
-                        BigInt(txInfo.protocolParameters.minUtxo) ||
-                        BigInt(toUnit(value.ada)) >
-                          BigInt(txInfo.balance.lovelace || '0'))
+                      (address.isM1
+                        ? BigInt(toUnit(value.ada)) <
+                          BigInt(address.ada.minLovelace) // milkomeda requires a minimium ada amount which is higher than the Cardano protocol min ada
+                        : BigInt(toUnit(value.ada)) <
+                            BigInt(txInfo.protocolParameters.minUtxo) ||
+                          BigInt(toUnit(value.ada)) >
+                            BigInt(txInfo.balance.lovelace || '0'))
                     }
                     onFocus={() => (focus.current = true)}
                     placeholder="0.000000"
@@ -878,12 +884,17 @@ const AddressPopup = ({
                   isM1 = true;
                   value.assets = [];
                   removeAllAssets();
-                  addr = { display: val, isM1: true };
+                  addr = {
+                    display: val,
+                    isM1: true,
+                    ada: { minLovelace: '2000000' },
+                  };
                 } else {
                   addr = {
                     result: val,
                     display: val,
                     isM1: true,
+                    ada: { minLovelace: '2000000' },
                     error: 'Address is invalid (Milkomeda)',
                   };
                 }
@@ -927,14 +938,24 @@ const AddressPopup = ({
               } else if (isM1) {
                 addressTimer = setTimeout(async () => {
                   let m1Address = {};
-                  const { isAllowed, current_address, protocolMagic, assets } =
-                    await getMilkomedaData(e.target.value);
+                  const {
+                    isAllowed,
+                    ada,
+                    current_address,
+                    protocolMagic,
+                    assets,
+                    ttl,
+                  } = await getMilkomedaData(e.target.value);
 
                   if (!isAllowed || !isValidEthAddress(e.target.value)) {
                     m1Address = {
                       result: '',
                       display: e.target.value,
                       isM1: true,
+                      ada,
+                      ttl,
+                      protocolMagic,
+                      assets,
                       error: 'Address is invalid (Milkomeda)',
                     };
                   } else {
@@ -942,6 +963,8 @@ const AddressPopup = ({
                       result: current_address,
                       display: e.target.value,
                       isM1: true,
+                      ada,
+                      ttl,
                       protocolMagic,
                       assets,
                     };

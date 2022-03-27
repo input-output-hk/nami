@@ -242,6 +242,7 @@ const SignTx = ({ request, controller }) => {
           Loader.Cardano.Address.from_bytes(address.to_bytes())
         )
           .payment_cred()
+          .to_keyhash()
           .to_bytes()
       ).toString('hex');
     } catch (e) {}
@@ -251,6 +252,7 @@ const SignTx = ({ request, controller }) => {
           Loader.Cardano.Address.from_bytes(address.to_bytes())
         )
           .payment_cred()
+          .to_keyhash()
           .to_bytes()
       ).toString('hex');
     } catch (e) {}
@@ -260,6 +262,7 @@ const SignTx = ({ request, controller }) => {
           Loader.Cardano.Address.from_bytes(address.to_bytes())
         )
           .payment_cred()
+          .to_keyhash()
           .to_bytes()
       ).toString('hex');
     } catch (e) {}
