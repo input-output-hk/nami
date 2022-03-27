@@ -205,7 +205,9 @@ const Send = () => {
       (!_value.ada && _value.assets.length <= 0) ||
       BigInt(toUnit(_value.ada)) < BigInt('1000000') ||
       (address.isM1 &&
-        BigInt(toUnit(_value.ada)) < BigInt(address.ada.minLovelace))
+        BigInt(toUnit(_value.ada)) <
+          BigInt(address.ada.minLovelace) +
+            BigInt(address.ada.fromADAFeeLovelace))
     ) {
       setFee({ fee: '0' });
       setTx(null);
@@ -541,7 +543,8 @@ const Send = () => {
                       value.ada &&
                       (address.isM1
                         ? BigInt(toUnit(value.ada)) <
-                          BigInt(address.ada.minLovelace) // milkomeda requires a minimium ada amount which is higher than the Cardano protocol min ada
+                          BigInt(address.ada.minLovelace) +
+                            BigInt(address.ada.fromADAFeeLovelace) // milkomeda requires a minimium ada amount which is higher than the Cardano protocol min ada
                         : BigInt(toUnit(value.ada)) <
                             BigInt(txInfo.protocolParameters.minUtxo) ||
                           BigInt(toUnit(value.ada)) >
@@ -887,14 +890,20 @@ const AddressPopup = ({
                   addr = {
                     display: val,
                     isM1: true,
-                    ada: { minLovelace: '2000000' },
+                    ada: {
+                      minLovelace: '2000000',
+                      fromADAFeeLovelace: '500000',
+                    },
                   };
                 } else {
                   addr = {
                     result: val,
                     display: val,
                     isM1: true,
-                    ada: { minLovelace: '2000000' },
+                    ada: {
+                      minLovelace: '2000000',
+                      fromADAFeeLovelace: '500000',
+                    },
                     error: 'Address is invalid (Milkomeda)',
                   };
                 }
