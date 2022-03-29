@@ -641,15 +641,6 @@ export const isValidAddress = async (address) => {
   const network = await getNetwork();
   try {
     const addr = Loader.Cardano.Address.from_bech32(address);
-    const prefix = bytesAddressToBinary(addr.to_bytes()).slice(0, 4);
-    if (
-      prefix == '0111' ||
-      prefix == '0011' ||
-      prefix == '0001' ||
-      prefix == '0101'
-    ) {
-      return false;
-    }
     if (
       (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
       (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
