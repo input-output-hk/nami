@@ -38,7 +38,7 @@ export async function delay(delayInMs) {
   });
 }
 
-export async function blockfrostRequest(endpoint, headers, body) {
+export async function blockfrostRequest(endpoint, headers, body, signal) {
   const network = await getNetwork();
   let result;
 
@@ -55,6 +55,7 @@ export async function blockfrostRequest(endpoint, headers, body) {
       },
       method: body ? 'POST' : 'GET',
       body,
+      signal,
     });
     result = await rawResult.json();
   }
