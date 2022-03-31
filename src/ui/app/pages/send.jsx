@@ -645,10 +645,7 @@ const Send = () => {
                 }
                 width={'366px'}
                 height={'50px'}
-                isDisabled={
-                  !tx || !address.result || fee.error
-                  // (address.isM1 && !address.result)
-                }
+                isDisabled={!tx || !address.result || fee.error}
                 colorScheme="orange"
                 onClick={() => ref.current.openModal(account.current.index)}
               >
@@ -973,7 +970,7 @@ const AddressPopup = ({
               triggerTxUpdate(() => setAddress(addr));
               onClose();
             }}
-            isInvalid={address.result && address.error}
+            isInvalid={address.error}
           />
           {address.result && !address.error && (
             <InputRightElement
