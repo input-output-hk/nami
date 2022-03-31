@@ -646,7 +646,8 @@ const Send = () => {
                 width={'366px'}
                 height={'50px'}
                 isDisabled={
-                  !tx || fee.error || (address.isM1 && !address.result)
+                  !tx || !address.result || fee.error
+                  // (address.isM1 && !address.result)
                 }
                 colorScheme="orange"
                 onClick={() => ref.current.openModal(account.current.index)}
@@ -830,14 +831,96 @@ const AddressPopup = ({
     setState({ currentAccount, accounts, recentAddress });
   };
 
-  const isValidAddressDebounced = useConstant(() =>
-    AwesomeDebouncePromise(isValidAddress, 300)
-  );
-  const getAdaHandleDebounced = useConstant(() =>
-    AwesomeDebouncePromise(getAdaHandle, 300)
-  );
-  const getMilkomedaDataDebounced = useConstant(() =>
-    AwesomeDebouncePromise(getMilkomedaData, 300)
+  const handleInput = async (e) => {
+    const val = e.target.value;
+    let addr;
+    let isHandle = false;
+    let isM1 = false;
+    if (!e.target.value) {
+      addr = { result: '', display: '' };
+    } else if (val.startsWith('$')) {
+      isHandle = true;
+      addr = { display: val };
+    } else if (val.startsWith('0x')) {
+      if (isValidEthAddress(val)) {
+        isM1 = true;
+        addr = {
+          display: val,
+          isM1: true,
+          ada: {
+            minLovelace: '2000000',
+            fromADAFeeLovelace: '500000',
+          },
+        };
+      } else {
+        addr = {
+          result: val,
+          display: val,
+          isM1: true,
+          ada: {
+            minLovelace: '2000000',
+            fromADAFeeLovelace: '500000',
+          },
+          error: 'Address is invalid (Milkomeda)',
+        };
+      }
+    } else if (await isValidAddress(val)) {
+      addr = { result: val, display: val };
+    } else {
+      addr = {
+        result: val,
+        display: val,
+        error: 'Address is invalid',
+      };
+    }
+
+    if (isHandle) {
+      const handle = e.target.value;
+      const resolvedAddress = await getAdaHandle(handle.slice(1));
+      if (handle.length > 1 && (await isValidAddress(resolvedAddress))) {
+        addr = {
+          result: resolvedAddress,
+          display: e.target.value,
+        };
+      } else {
+        addr = {
+          result: '',
+          display: e.target.value,
+          error: '$handle not found',
+        };
+      }
+    } else if (isM1) {
+      const { isAllowed, ada, current_address, protocolMagic, assets, ttl } =
+        await getMilkomedaData(e.target.value);
+
+      if (!isAllowed || !isValidEthAddress(e.target.value)) {
+        addr = {
+          result: '',
+          display: e.target.value,
+          isM1: true,
+          ada,
+          ttl,
+          protocolMagic,
+          assets,
+          error: 'Address is invalid (Milkomeda)',
+        };
+      } else {
+        addr = {
+          result: current_address,
+          display: e.target.value,
+          isM1: true,
+          ada,
+          ttl,
+          protocolMagic,
+          assets,
+        };
+      }
+    }
+    return addr;
+  };
+
+  const handleInputDebounced = useConstant(() =>
+    AwesomeDebouncePromise(handleInput, 300)
   );
 
   React.useEffect(() => {
@@ -883,121 +966,14 @@ const AddressPopup = ({
             }}
             fontSize="xs"
             placeholder="Address, $handle or Milkomeda"
-            // placeholder="Address or $handle"
             onInput={async (e) => {
-              console.log(e.target.value);
-              const val = e.target.value;
-              let addr;
-              let isHandle = false;
-              let isM1 = false;
-              addr = { result: val };
-              setAddress(addr);
-              if (!e.target.value) {
-                addr = { result: '', display: '' };
-              } else if (val.startsWith('$')) {
-                isHandle = true;
-                addr = { display: val };
-              } else if (val.startsWith('0x')) {
-                if (isValidEthAddress(val)) {
-                  isM1 = true;
-                  value.assets = [];
-                  removeAllAssets();
-                  addr = {
-                    display: val,
-                    isM1: true,
-                    ada: {
-                      minLovelace: '2000000',
-                      fromADAFeeLovelace: '500000',
-                    },
-                  };
-                } else {
-                  addr = {
-                    result: val,
-                    display: val,
-                    isM1: true,
-                    ada: {
-                      minLovelace: '2000000',
-                      fromADAFeeLovelace: '500000',
-                    },
-                    error: 'Address is invalid (Milkomeda)',
-                  };
-                }
-              } else if (await isValidAddressDebounced(val)) {
-                addr = { result: val, display: val };
-              } else {
-                addr = {
-                  result: val,
-                  display: val,
-                  error: 'Address is invalid',
-                };
-              }
-
+              setAddress({ display: e.target.value });
+              const addr = await handleInputDebounced(e);
+              if (addr.isM1) removeAllAssets();
               triggerTxUpdate(() => setAddress(addr));
               onClose();
-
-              if (isHandle) {
-                // checking for Ada handle after 300ms
-                let handleAddr = { error: '$handle not found' };
-                const handle = e.target.value;
-                const resolvedAddress = await getAdaHandleDebounced(
-                  handle.slice(1)
-                );
-                if (
-                  handle.length > 1 &&
-                  (await isValidAddress(resolvedAddress))
-                ) {
-                  handleAddr = {
-                    result: resolvedAddress,
-                    display: e.target.value,
-                  };
-                } else {
-                  handleAddr = {
-                    result: '',
-                    display: e.target.value,
-                    error: '$handle not found',
-                  };
-                }
-
-                triggerTxUpdate(() => setAddress(handleAddr));
-                onClose();
-              } else if (isM1) {
-                let m1Address = {};
-                const {
-                  isAllowed,
-                  ada,
-                  current_address,
-                  protocolMagic,
-                  assets,
-                  ttl,
-                } = await getMilkomedaDataDebounced(e.target.value);
-
-                if (!isAllowed || !isValidEthAddress(e.target.value)) {
-                  m1Address = {
-                    result: '',
-                    display: e.target.value,
-                    isM1: true,
-                    ada,
-                    ttl,
-                    protocolMagic,
-                    assets,
-                    error: 'Address is invalid (Milkomeda)',
-                  };
-                } else {
-                  m1Address = {
-                    result: current_address,
-                    display: e.target.value,
-                    isM1: true,
-                    ada,
-                    ttl,
-                    protocolMagic,
-                    assets,
-                  };
-                }
-                triggerTxUpdate(() => setAddress(m1Address));
-                onClose();
-              }
             }}
-            isInvalid={address.error}
+            isInvalid={address.result && address.error}
           />
           {address.result && !address.error && (
             <InputRightElement
@@ -1187,6 +1163,10 @@ const AssetsSelector = ({ assets, addAssets, value, isM1 }) => {
         : true;
     return assets.filter((asset) => filter1(asset) && filter2(asset));
   };
+
+  React.useEffect(() => {
+    if (isM1) onClose();
+  }, [isM1]);
 
   return (
     <Popover
