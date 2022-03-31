@@ -97,6 +97,7 @@ const initialState = {
     protocolParameters: null,
     utxos: [],
     balance: { lovelace: '0', assets: null },
+    milkomedaAddress: '',
   },
 };
 
@@ -372,9 +373,10 @@ const Send = () => {
     };
     utxos.current = _utxos;
     _utxos = _utxos.map((utxo) => Buffer.from(utxo.to_bytes()).toString('hex'));
-    setIsLoading(false);
+    const { current_address: milkomedaAddress } = await getMilkomedaData('');
     if (!isMounted.current) return;
-    setTxInfo({ protocolParameters, utxos: _utxos, balance });
+    setIsLoading(false);
+    setTxInfo({ protocolParameters, utxos: _utxos, balance, milkomedaAddress });
   };
 
   const objectToArray = (obj) => Object.keys(obj).map((key) => obj[key]);
@@ -458,11 +460,12 @@ const Send = () => {
               width="80%"
             >
               <AddressPopup
-                value={value}
                 setAddress={setAddress}
                 address={address}
                 removeAllAssets={removeAllAssets}
                 triggerTxUpdate={triggerTxUpdate}
+                txInfo={txInfo}
+                isLoading={isLoading}
               />
               {address.error && (
                 <Text
@@ -805,11 +808,12 @@ const Send = () => {
 
 // Address Popup
 const AddressPopup = ({
-  value,
   setAddress,
   address,
   triggerTxUpdate,
   removeAllAssets,
+  txInfo,
+  isLoading,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const checkColor = useColorModeValue('teal.500', 'teal.200');
@@ -827,6 +831,12 @@ const AddressPopup = ({
       currentAccount.recentSendToAddresses[0];
     setState({ currentAccount, accounts, recentAddress });
   };
+
+  const milkomedaAddress = React.useRef(txInfo.milkomedaAddress);
+
+  React.useEffect(() => {
+    milkomedaAddress.current = txInfo.milkomedaAddress;
+  }, [txInfo]);
 
   const handleInput = async (e) => {
     const val = e.target.value;
@@ -861,7 +871,10 @@ const AddressPopup = ({
           error: 'Address is invalid (Milkomeda)',
         };
       }
-    } else if (await isValidAddress(val)) {
+    } else if (
+      (await isValidAddress(val)) &&
+      val !== milkomedaAddress.current
+    ) {
       addr = { result: val, display: val };
     } else {
       addr = {
@@ -933,7 +946,7 @@ const AddressPopup = ({
           ).length > 0) &&
         isOpen
       }
-      onOpen={() => !address.result && !address.error && onOpen()}
+      onOpen={() => !isLoading && !address.result && !address.error && onOpen()}
       autoFocus={false}
       onClose={async () => {
         await new Promise((res, rej) => setTimeout(() => res()));
@@ -948,6 +961,7 @@ const AddressPopup = ({
       <PopoverTrigger>
         <InputGroup>
           <Input
+            disabled={isLoading}
             variant="filled"
             autoComplete="off"
             value={address.display}
@@ -1009,6 +1023,18 @@ const AddressPopup = ({
                   width="full"
                   onClick={() => {
                     const address = state.recentAddress;
+                    if (address == milkomedaAddress.current) {
+                      triggerTxUpdate(() =>
+                        setAddress({
+                          result: '',
+                          display: address,
+                          error:
+                            'Disallowed sending directly to Milkomeda stargate',
+                        })
+                      );
+                      onClose();
+                      return;
+                    }
 
                     triggerTxUpdate(() =>
                       setAddress({
