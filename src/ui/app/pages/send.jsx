@@ -205,7 +205,6 @@ const Send = () => {
       _address.error ||
       !_address.result ||
       (!_value.ada && _value.assets.length <= 0) ||
-      BigInt(toUnit(_value.ada)) < BigInt('1000000') ||
       (address.isM1 &&
         BigInt(toUnit(_value.ada)) <
           BigInt(address.ada.minLovelace) +
