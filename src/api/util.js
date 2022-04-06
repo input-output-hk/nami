@@ -22,6 +22,7 @@ import {
   TransactionSigningMode,
   TxAuxiliaryDataType,
   TxOutputDestinationType,
+  TxRequiredSignerType,
 } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import {
   CardanoAddressType,
@@ -380,6 +381,28 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     const outputAddress = Buffer.from(output.address().to_bytes()).toString(
       'hex'
     );
+
+    const outputAddressHuman = (() => {
+      try {
+        return Loader.Cardano.BaseAddress.from_address(output.address())
+          .to_address()
+          .to_bech32();
+      } catch (e) {}
+      try {
+        return Loader.Cardano.EnterpriseAddress.from_address(output.address())
+          .to_address()
+          .to_bech32();
+      } catch (e) {}
+      try {
+        return Loader.Cardano.PointerAddress.from_address(output.address())
+          .to_address()
+          .to_bech32();
+      } catch (e) {}
+      return Loader.Cardano.ByronAddress.from_address(
+        output.address()
+      ).to_base58();
+    })();
+
     const destination =
       outputAddress == address
         ? {
@@ -390,7 +413,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
             },
           }
         : {
-            address: output.address().to_bech32(),
+            address: outputAddressHuman,
           };
     const outputRes = {
       amount: output.amount().coin().to_str(),
@@ -707,10 +730,14 @@ export const txToLedger = async (tx, network, keys, address, index) => {
               addressHex: outputAddress,
             },
           };
+    const datumHashHex = output.data_hash()
+      ? Buffer.from(output.data_hash().to_bytes()).toString('hex')
+      : null;
     const outputRes = {
       amount: output.amount().coin().to_str(),
       tokenBundle,
       destination,
+      datumHashHex,
     };
     if (!tokenBundle) delete outputRes.tokenBundle;
     ledgerOutputs.push(outputRes);
@@ -978,6 +1005,58 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     if (keys.stake.path) additionalWitnessPaths.push(keys.stake.path);
   }
 
+  // Plutus
+  const scriptDataHashHex = tx.body().script_data_hash()
+    ? Buffer.from(tx.body().script_data_hash().to_bytes()).toString('hex')
+    : null;
+
+  let collaterals = null;
+  if (tx.body().collateral()) {
+    collaterals = [];
+    const collateraInputs = tx.body().collateral();
+    for (let i = 0; i < collateraInputs.len(); i++) {
+      const input = collateraInputs.get(i);
+      if (keys.payment.path) {
+        collaterals.push({
+          txHashHex: Buffer.from(input.transaction_id().to_bytes()).toString(
+            'hex'
+          ),
+          outputIndex: input.index(),
+          path: keys.payment.path, // needed to include payment key witness if available
+        });
+      } else {
+        collaterals.push({
+          txHashHex: Buffer.from(input.transaction_id().to_bytes()).toString(
+            'hex'
+          ),
+          outputIndex: input.index(),
+        });
+      }
+      signingMode = TransactionSigningMode.PLUTUS_TRANSACTION;
+    }
+  }
+
+  let requiredSigners = null;
+  if (tx.body().required_signers()) {
+    requiredSigners = [];
+    const r = tx.body().required_signers();
+    for (let i = 0; i < r.len(); i++) {
+      const signer = Buffer.from(r.get(i).to_bytes()).toString('hex');
+      if (signer === keys.payment.hash) {
+        requiredSigners.push({
+          type: TxRequiredSignerType.PATH,
+          path: keys.payment.path,
+        });
+      } else {
+        requiredSigners.push({
+          type: TxRequiredSignerType.HASH,
+          hashHex: 'fea6646c67fb467f8a5425e9c752e1e262b0420ba4b638f39514049a',
+        });
+      }
+    }
+    signingMode = TransactionSigningMode.PLUTUS_TRANSACTION;
+  }
+
   const ledgerTx = {
     network: {
       protocolMagic: network === 1 ? 764824073 : 42,
@@ -992,6 +1071,9 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     auxiliaryData,
     validityStartInterval,
     mint: mintBundle,
+    scriptDataHashHex,
+    collaterals,
+    requiredSigners,
   };
 
   Object.keys(ledgerTx).forEach(

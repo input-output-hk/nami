@@ -1,6 +1,6 @@
 {
   "name": "nami-wallet",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "A wallet to experience Cardano to the fullest",
   "license": "MIT",
   "repository": {
@@ -14,7 +14,7 @@
     "test": "NODE_ENV=test jest"
   },
   "dependencies": {
-    "@cardano-foundation/ledgerjs-hw-app-cardano": "^4.0.0",
+    "@cardano-foundation/ledgerjs-hw-app-cardano": "^5.0.0",
     "@chakra-ui/css-reset": "^1.0.0",
     "@chakra-ui/icons": "^1.0.13",
     "@chakra-ui/react": "^1.6.4",
