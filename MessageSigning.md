@@ -24,7 +24,23 @@ const verify = (address, payload, coseSign1Hex) => {
   const addressCose = S.Address.from_bytes(
     protectedHeaders.header(MS.Label.new_text('address')).as_bytes()
   );
-  const publicKeyCose = S.PublicKey.from_bytes(protectedHeaders.key_id());
+
+  // Commented out the below line in favor of CIP-30, only use if you are using the deprecated window.cardano.signedData(address, payload)
+  //const publicKeyCose = S.PublicKey.from_bytes(protectedHeaders.key_id());
+  const key = MS.COSEKey.from_bytes(
+          Buffer.from(coseKey, 'hex')
+      );
+  const publicKeyBytes = key
+      .header(
+          MS.Label.new_int(
+              MS.Int.new_negative(
+                  MS.BigNum.from_str('2')
+              )
+          )
+      )
+      .as_bytes();
+  const publicKeyCose =
+      APILoader.Cardano.PublicKey.from_bytes(publicKeyBytes);
 
   if (!verifyAddress(address, addressCose, publicKeyCose))
     throw new Error('Could not verify because of address mismatch');

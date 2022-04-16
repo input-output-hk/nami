@@ -820,7 +820,7 @@ export const signDataCIP30 = async (
   protectedHeaders.set_algorithm_id(
     Loader.Message.Label.from_algorithm_id(Loader.Message.AlgorithmId.EdDSA)
   );
-  // protectedHeaders.set_key_id(publicKey.as_bytes());
+  // protectedHeaders.set_key_id(publicKey.as_bytes()); // Removed to adhere to CIP-30
   protectedHeaders.set_header(
     Loader.Message.Label.new_text('address'),
     Loader.Message.CBORValue.new_bytes(Buffer.from(address, 'hex'))
