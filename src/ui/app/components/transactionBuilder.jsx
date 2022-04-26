@@ -29,7 +29,7 @@ import {
 import { GoStop } from 'react-icons/go';
 // Assets
 import Berry from '../../../assets/img/berry.svg';
-import { ERROR } from '../../../config/config';
+import { ERROR, HW } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
 import Loader from '../../../api/loader';
 import {
@@ -508,7 +508,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ref={undelegateRef}
       />
       <ConfirmModal
-        ready={data.ready && !isHW(data.account.index)} // TODO plutus not supported yet by HW
+        ready={data.ready && !isTrezor(data.account.index)} // TODO plutus not supported yet by HW
         title={
           <Box display="flex" alignItems="center">
             <Icon as={FaRegFileCode} mr="2" /> <Box>Collateral</Box>
@@ -660,5 +660,13 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
     </>
   );
 });
+
+// temporary function to detect if HW is trezor
+export const isTrezor = (accountIndex) =>
+  accountIndex != null &&
+  accountIndex != undefined &&
+  accountIndex != 0 &&
+  typeof accountIndex !== 'number' &&
+  accountIndex.startsWith(HW.trezor);
 
 export default TransactionBuilder;
