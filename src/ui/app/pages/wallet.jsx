@@ -14,7 +14,6 @@ import {
   getNetwork,
   getTransactions,
   isHW,
-  setBalanceWarning,
   switchAccount,
   updateAccount,
 } from '../../../api/extension';
@@ -88,7 +87,6 @@ import AvatarLoader from '../components/avatarLoader';
 import { currencyToSymbol } from '../../../api/util';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID, TAB } from '../../../config/config';
-import { BalanceWarning } from '../components/balanceWarning';
 import { FaGamepad, FaRegFileCode } from 'react-icons/fa';
 import { BiWallet } from 'react-icons/bi';
 import { GiTwoCoins, GiUsbKey } from 'react-icons/gi';
@@ -198,7 +196,7 @@ const Wallet = () => {
     } catch (e) {}
     const network = await getNetwork();
     const delegation = await getDelegation();
-    const warning = await setBalanceWarning();
+    // const warning = await setBalanceWarning();
     if (!isMounted.current) return;
     setState((s) => ({
       ...s,
@@ -207,7 +205,6 @@ const Wallet = () => {
       fiatPrice: price,
       network,
       delegation,
-      warning: warning,
     }));
   };
 
@@ -507,12 +504,12 @@ const Wallet = () => {
             alignItems="center"
             justifyContent="center"
           >
-            {state.warning && state.warning.active && (
+            {/* {state.warning && state.warning.active && (
               <BalanceWarning
                 fullBalance={state.warning.fullBalance}
                 symbol={settings.adaSymbol}
               />
-            )}
+            )} */}
             <UnitDisplay
               color="white"
               fontSize="2xl"
