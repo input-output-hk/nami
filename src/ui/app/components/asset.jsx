@@ -96,7 +96,7 @@ const Asset = ({ asset, enableSend, ...props }) => {
                       fontSize={'xl'}
                       fontWeight={'medium'}
                     >
-                      {settings.adaSymbol}
+                      {settings?.adaSymbol}
                     </Box>
                   ) : (
                     <Avatar width="full" height="full" name={token.name} />

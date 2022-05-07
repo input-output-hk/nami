@@ -90,7 +90,7 @@ const AssetsPopover = ({ assets, isDifference }) => {
                   height={200}
                   itemCount={assets.length}
                   itemSize={45}
-                  width={385}
+                  width="min(385px, 80vw)"
                   layout="vertical"
                 >
                   {({ index, style }) => {

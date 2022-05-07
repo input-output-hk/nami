@@ -38,6 +38,7 @@ import ConfirmModal from '../components/confirmModal';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import { MdModeEdit } from 'react-icons/md';
 import AvatarLoader from '../components/avatarLoader';
+import useAppDetails from '../hooks/useAppDetails';
 
 const Settings = () => {
   const history = useHistory();
@@ -228,7 +229,7 @@ const GeneralSettings = ({ accountRef }) => {
         <Text>USD</Text>
         <Box width="2" />
         <ButtonSwitch
-          defaultChecked={settings.currency !== 'usd'}
+          defaultChecked={settings?.currency !== 'usd'}
           onChange={(e) => {
             if (e.target.checked) {
               setSettings({ ...settings, currency: 'eur' });
@@ -268,6 +269,31 @@ const GeneralSettings = ({ accountRef }) => {
   );
 };
 
+const WhitelistedApp = ({ origin, index, onRemoveWhitelisted }) => {
+  const app = useAppDetails(origin);
+  return (
+    <Box
+      mb="2"
+      key={index}
+      display="flex"
+      alignItems="center"
+      justifyContent="space-between"
+      width="65%"
+    >
+      <Image
+        width="24px"
+        src={app.icon}
+        fallback={<SkeletonCircle width="24px" height="24px" />}
+      />
+      <Text>{app.name}</Text>
+      <SmallCloseIcon
+        cursor="pointer"
+        onClick={onRemoveWhitelisted}
+      />
+    </Box>
+  );
+}
+
 const Whitelisted = () => {
   const [whitelisted, setWhitelisted] = React.useState(null);
   const getData = () =>
@@ -277,6 +303,10 @@ const Whitelisted = () => {
   React.useEffect(() => {
     getData();
   }, []);
+  const handleRemoveWhitelisted = async (origin) => {
+    await removeWhitelisted(origin);
+    getData();
+  }
   return (
     <Box
       width="100%"
@@ -293,32 +323,15 @@ const Whitelisted = () => {
       {whitelisted ? (
         whitelisted.length > 0 ? (
           whitelisted.map((origin, index) => (
-            <Box
-              mb="2"
-              key={index}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              width="65%"
-            >
-              <Image
-                width="24px"
-                src={`chrome://favicon/size/16@2x/${origin}`}
-                fallback={<SkeletonCircle width="24px" height="24px" />}
-              />
-              <Text>{origin.split('//')[1]}</Text>
-              <SmallCloseIcon
-                cursor="pointer"
-                onClick={async () => {
-                  await removeWhitelisted(origin);
-                  getData();
-                }}
-              />
-            </Box>
+            <WhitelistedApp
+              origin={origin}
+              index={index}
+              onRemoveWhitelisted={handleRemoveWhitelisted.bind(this, origin)}
+            />
           ))
         ) : (
           <Box
-            mt="200"
+            mt="50"
             width="full"
             display="flex"
             alignItems="center"
@@ -330,7 +343,7 @@ const Whitelisted = () => {
         )
       ) : (
         <Box
-          mt="200"
+          mt="50"
           width="full"
           display="flex"
           alignItems="center"
@@ -388,7 +401,7 @@ const Network = () => {
         <Text>Mainnet</Text>
         <Box width="2" />
         <ButtonSwitch
-          defaultChecked={settings.network.id !== NETWORK_ID.mainnet}
+          defaultChecked={settings?.network?.id !== NETWORK_ID.mainnet}
           onChange={(e) => {
             if (e.target.checked) {
               setSettings({

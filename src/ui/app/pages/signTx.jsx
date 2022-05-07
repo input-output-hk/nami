@@ -32,6 +32,7 @@ import {
 } from '@chakra-ui/react';
 import JSONPretty from 'react-json-pretty';
 import AssetsModal from '../components/assetsModal';
+import useAppDetails from '../hooks/useAppDetails';
 
 const abs = (big) => {
   return big < 0 ? big * BigInt(-1) : big;
@@ -62,6 +63,7 @@ const SignTx = ({ request, controller }) => {
     loading: true,
     error: null,
   });
+  const app = useAppDetails(request.origin);
 
   const assetsModalRef = React.useRef();
   const detailsModalRef = React.useRef();
@@ -535,12 +537,12 @@ const SignTx = ({ request, controller }) => {
                 draggable={false}
                 width={4}
                 height={4}
-                src={`chrome://favicon/size/16@2x/${request.origin}`}
+                src={app.icon}
               />
             </Box>
             <Box w="3" />
             <Text fontSize={'xs'} fontWeight="bold">
-              {request.origin.split('//')[1]}
+              {app.name}
             </Text>
           </Box>
           <Box h="8" />
@@ -580,7 +582,7 @@ const SignTx = ({ request, controller }) => {
                         hide
                         quantity={abs(lovelace)}
                         decimals="6"
-                        symbol={settings.adaSymbol}
+                        symbol={settings?.adaSymbol}
                       />
                     </Stack>
                     {assets.length > 0 && (
@@ -681,7 +683,7 @@ const SignTx = ({ request, controller }) => {
                       <UnitDisplay
                         quantity={fee}
                         decimals="6"
-                        symbol={settings.adaSymbol}
+                        symbol={settings?.adaSymbol}
                       />
                       <Text fontWeight="bold">fee</Text>
                     </Stack>
@@ -928,7 +930,7 @@ const DetailsModal = React.forwardRef(
                                   fontWeight="bold"
                                   quantity={lovelace}
                                   decimals="6"
-                                  symbol={settings.adaSymbol}
+                                  symbol={settings?.adaSymbol}
                                 />
                                 {assets.length > 0 && (
                                   <Button

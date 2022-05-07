@@ -7,9 +7,11 @@ import { setWhitelisted } from '../../../api/extension';
 import { APIError } from '../../../config/config';
 
 import Account from '../components/account';
+import useAppDetails from '../hooks/useAppDetails';
 
 const Enable = ({ request, controller }) => {
   const background = useColorModeValue('gray.100', 'gray.700');
+  const app = useAppDetails(request.origin);
   return (
     <Box
       minHeight="100vh"
@@ -39,11 +41,11 @@ const Enable = ({ request, controller }) => {
             draggable={false}
             width={6}
             height={6}
-            src={`chrome://favicon/size/16@2x/${request.origin}`}
+            src={app.icon}
           />
         </Box>
         <Box height="3" />
-        <Text fontWeight="bold">{request.origin.split('//')[1]}</Text>
+        <Text fontWeight="bold">{app.name}</Text>
         <Box h={14} />
         <Box>This app would like to:</Box>
         <Box h={4} />

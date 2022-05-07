@@ -190,7 +190,7 @@ const Wallet = () => {
     let price = fiatPrice.current;
     try {
       if (!fiatPrice.current) {
-        price = await provider.api.price(settings.currency);
+        price = await provider.api.price(settings?.currency);
         fiatPrice.current = price;
       }
     } catch (e) {}
@@ -225,7 +225,7 @@ const Wallet = () => {
   return (
     <>
       <Box
-        minHeight="100vh"
+        minHeight="100%"
         display="flex"
         alignItems="center"
         flexDirection="column"
@@ -396,7 +396,7 @@ const Wallet = () => {
                                         ).toString()
                                       }
                                       decimals={6}
-                                      symbol={settings.adaSymbol}
+                                      symbol={settings?.adaSymbol}
                                     />
                                   ) : (
                                     <Text fontWeight="light">
@@ -507,7 +507,7 @@ const Wallet = () => {
             {/* {state.warning && state.warning.active && (
               <BalanceWarning
                 fullBalance={state.warning.fullBalance}
-                symbol={settings.adaSymbol}
+                symbol={settings?.adaSymbol}
               />
             )} */}
             <UnitDisplay
@@ -528,7 +528,7 @@ const Wallet = () => {
                 ).toString()
               }
               decimals={6}
-              symbol={settings.adaSymbol}
+              symbol={settings?.adaSymbol}
             />
             {state.account &&
             (state.account.assets.length > 0 || state.account.collateral) ? (
@@ -541,7 +541,7 @@ const Wallet = () => {
                           <Text mr="0.5">+</Text>
                           <UnitDisplay
                             quantity={state.account.minAda}
-                            symbol={settings.adaSymbol}
+                            symbol={settings?.adaSymbol}
                             decimals={6}
                           />
                           <Text ml="1">locked with assets</Text>
@@ -554,7 +554,7 @@ const Wallet = () => {
                           <Text mr="0.5">+</Text>
                           <UnitDisplay
                             quantity={state.account.collateral.lovelace}
-                            symbol={settings.adaSymbol}
+                            symbol={settings?.adaSymbol}
                             decimals={6}
                           />
                           <Text ml="1">Collateral</Text>
@@ -610,7 +610,7 @@ const Wallet = () => {
                     10 ** 2
                 )
               }
-              symbol={currencyToSymbol(settings.currency)}
+              symbol={currencyToSymbol(settings?.currency)}
               decimals={2}
             />
           </Box>
@@ -694,6 +694,7 @@ const Wallet = () => {
           flexDirection="column"
           variant="soft-rounded"
           colorScheme="teal"
+          position="relative"
         >
           <TabList>
             <Tab mr={2}>
@@ -959,7 +960,7 @@ const DelegationPopover = ({ account, delegation, children }) => {
               fontSize="sm"
               quantity={delegation.rewards}
               decimals={6}
-              symbol={settings.adaSymbol}
+              symbol={settings?.adaSymbol}
             />
             <Box h="4" />
             <Tooltip

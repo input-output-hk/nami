@@ -27,7 +27,7 @@ const App = () => {
   const init = async () => {
     const hasWallet = await getAccounts();
     if (hasWallet) {
-      history.push('/wallet');
+      history.replace('/wallet');
       // Set route from localStorage if available
       if (route && route !== '/wallet') {
         route
@@ -35,11 +35,11 @@ const App = () => {
           .split('/')
           .reduce((acc, r) => {
             const fullRoute = acc + `/${r}`;
-            history.push(fullRoute);
+            history.replace(fullRoute);
             return fullRoute;
           }, '');
       }
-    } else history.push('/welcome');
+    } else history.replace('/welcome');
     setIsLoading(false);
   };
   React.useEffect(() => {
@@ -51,8 +51,8 @@ const App = () => {
 
   return isLoading ? (
     <Box
-      height="full"
-      width="full"
+      height="100%"
+      width="100%"
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -60,7 +60,7 @@ const App = () => {
       <Spinner color="teal" speed="0.5s" />
     </Box>
   ) : (
-    <div style={{ overflowX: 'hidden' }}>
+    <div style={{ overflowX: 'hidden', height: '100%' }}>
       <Switch>
         <Route exact path="/wallet">
           <Wallet />

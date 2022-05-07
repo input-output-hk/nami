@@ -290,7 +290,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                       hide
                       quantity={data.stakeRegistration}
                       decimals={6}
-                      symbol={settings.adaSymbol}
+                      symbol={settings?.adaSymbol}
                     />
                   </Box>
                 )}
@@ -300,7 +300,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                   <UnitDisplay
                     quantity={data.fee}
                     decimals={6}
-                    symbol={settings.adaSymbol}
+                    symbol={settings?.adaSymbol}
                   />
                 </Box>
                 <Box h="4" />
@@ -384,7 +384,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                     hide
                     quantity={data.rewards}
                     decimals={6}
-                    symbol={settings.adaSymbol}
+                    symbol={settings?.adaSymbol}
                   />
                 </Box>
                 <Box h="3" />
@@ -394,7 +394,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                   <UnitDisplay
                     quantity={data.fee}
                     decimals={6}
-                    symbol={settings.adaSymbol}
+                    symbol={settings?.adaSymbol}
                   />
                 </Box>
                 <Box h="4" />
@@ -497,7 +497,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                   <UnitDisplay
                     quantity={data.fee}
                     decimals={6}
-                    symbol={settings.adaSymbol}
+                    symbol={settings?.adaSymbol}
                   />
                 </Box>
                 <Box h="4" />
@@ -571,7 +571,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               Cardano:
               <Box mt="3">The recommended collateral amount is</Box>
               <Box mb="3" width="full" textAlign="center">
-                <b style={{ fontSize: 16 }}>5 {settings.adaSymbol}</b>
+                <b style={{ fontSize: 16 }}>5 {settings?.adaSymbol}</b>
               </Box>{' '}
               The amount is separated from your account balance, you can choose
               to return it to your balance at any time.
@@ -596,7 +596,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                   <UnitDisplay
                     quantity={data.fee}
                     decimals={6}
-                    symbol={settings.adaSymbol}
+                    symbol={settings?.adaSymbol}
                   />
                 </Box>
                 <Box h="4" />
@@ -620,7 +620,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           <ModalBody>
             <Text fontSize="sm">
               Your collateral amount is{' '}
-              <b style={{ fontSize: 16 }}>5 {settings.adaSymbol}</b>.<br />
+              <b style={{ fontSize: 16 }}>5 {settings?.adaSymbol}</b>.<br />
               <br /> When removing the collateral amount, it is returned to the
               account balance, but disables interactions with smart contracts.
             </Text>

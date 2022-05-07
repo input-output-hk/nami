@@ -53,6 +53,7 @@ var options = {
     ),
     background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
     contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
+    mobileContentScript: path.join(__dirname, 'src', 'pages', 'MobileContent', 'index.js'),
     injected: path.join(__dirname, 'src', 'pages', 'Content', 'injected.js'),
   },
   chromeExtensionBoilerplate: {
@@ -179,6 +180,14 @@ var options = {
         {
           from: 'src/pages/Trezor',
           to: path.join(__dirname, 'build/Trezor'),
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'src/pages/MobileIndex',
+          to: path.join(__dirname, 'build'),
         },
       ],
     }),

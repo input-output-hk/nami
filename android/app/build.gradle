@@ -1,0 +1,69 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "io.nami.app"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "3.2.3"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+
+        def addConstant = {constantName, constantValue ->
+            manifestPlaceholders += [(constantName):constantValue]
+            buildConfigField "String", "${constantName}", "\"${constantValue}\""
+        }
+        addConstant("CARDANO_WALLET_INTENT_ACTION_ENABLE", "cardano.wallet.intent.action.ENABLE")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_IS_ENABLED", "cardano.wallet.intent.action.IS_ENABLED")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_GET_NETWORK_ID", "cardano.wallet.intent.action.GET_NETWORK_ID")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_GET_BALANCE", "cardano.wallet.intent.action.GET_BALANCE")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_GET_UTXOS", "cardano.wallet.intent.action.GET_UTXOS")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_GET_COLLATERAL", "cardano.wallet.intent.action.GET_COLLATERAL")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_GET_USED_ADDRESSES", "cardano.wallet.intent.action.GET_USED_ADDRESSES")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_GET_UNUSED_ADDRESSES", "cardano.wallet.intent.action.GET_UNUSED_ADDRESSES")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_GET_CHANGE_ADDRESS", "cardano.wallet.intent.action.GET_CHANGE_ADDRESS")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_GET_REWARD_ADDRESSES", "cardano.wallet.intent.action.GET_REWARD_ADDRESSES")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_SIGN_DATA", "cardano.wallet.intent.action.SIGN_DATA")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_SIGN_TX", "cardano.wallet.intent.action.SIGN_TX")
+        addConstant("CARDANO_WALLET_INTENT_ACTION_SUBMIT_TX", "cardano.wallet.intent.action.SUBMIT_TX")
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

@@ -153,7 +153,7 @@ const StoreInit = ({ children }) => {
           {children}
           {info && info.length ? <UpgradeModal info={info} ref={refB} /> : ''}
           {/* Settings Overlay */}
-          {settings.network.id === NETWORK_ID.testnet && (
+          {settings?.network?.id === NETWORK_ID.testnet && (
             <Box
               position="absolute"
               left="3"

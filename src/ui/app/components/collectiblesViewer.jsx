@@ -106,7 +106,7 @@ const CollectiblesViewer = ({ assets, onUpdateAvatar }) => {
           </>
         )}
       </Box>
-      <Box position="absolute" left="6" top="240px">
+      <Box position="absolute" left="6" top="0px">
         <Search setSearch={setSearch} assets={assets} />
       </Box>
       <CollectibleModal ref={ref} onUpdateAvatar={onUpdateAvatar} />
