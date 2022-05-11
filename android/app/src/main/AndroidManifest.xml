@@ -23,7 +23,7 @@
             </intent-filter>
 
             <intent-filter>
-                <data android:host="wallets.nami" android:scheme="cardano" />
+                <data android:host="wallet.nami" android:scheme="cardano" />
                 <action android:name="${CARDANO_WALLET_INTENT_ACTION_ENABLE}" />
                 <action android:name="${CARDANO_WALLET_INTENT_ACTION_IS_ENABLED}" />
                 <action android:name="${CARDANO_WALLET_INTENT_ACTION_GET_NETWORK_ID}" />

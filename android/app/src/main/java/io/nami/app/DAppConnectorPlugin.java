@@ -32,7 +32,10 @@ public class DAppConnectorPlugin extends Plugin {
         String action = intent.getAction();
         String pkg = activity.getCallingPackage();
         if (pkg == null) return;
-        pkg = pkg.toLowerCase();
+        if (pkg.equals("io.nami.client")) { // Trusted dApp Browser
+            String origin = intent.getStringExtra("origin"); // Check if request from Website
+            if (origin != null) pkg = origin;
+        }
         Bundle data = intent.getBundleExtra("data");
 
         switch (action) {
@@ -79,16 +82,22 @@ public class DAppConnectorPlugin extends Plugin {
         }
     }
 
+    private JSObject convertBundle(Bundle bundle) {
+        JSObject obj = new JSObject();
+        for (String key : bundle.keySet()) {
+            Object value = bundle.get(key);
+            if (value instanceof Bundle) value = convertBundle((Bundle) value);
+            obj.put(key, value);
+        }
+        return obj;
+    }
+
     public void emitEvent(String method, String pkg, Bundle data) {
         JSObject req = new JSObject();
         req.put("method", method);
         req.put("origin", pkg);
         if (data != null) {
-            JSObject obj = new JSObject();
-            for (String key : data.keySet()) {
-                obj.put(key, data.get(key));
-            }
-            req.put("data", obj);
+            req.put("data", convertBundle(data));
         }
         notifyListeners("dApp", req, true);
     }

@@ -51,6 +51,9 @@ DAppConnector.addListener('dApp', (req) => {
         handleResponse(response);
       };
       break;
+    case METHOD.submitTx:
+      req.data = req.data.tx;
+      break;
     default:
       break;
   }
