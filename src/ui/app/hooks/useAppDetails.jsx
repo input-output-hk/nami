@@ -5,7 +5,9 @@ function useAppDetails(origin) {
   const [name, setName] = useState();
   const [icon, setIcon] = useState();
 
-  const init = async () => {
+  const getAppDetails = async () => {
+    setName();
+    setIcon();
     if (DAppConnector) {
       if (origin.includes('//')) { // Website
         setName(origin.split('//')[1]);
@@ -21,7 +23,7 @@ function useAppDetails(origin) {
     }
   };
 
-  useEffect(() => init(), []);
+  useEffect(() => getAppDetails(), [origin]);
 
   return { name, icon };
 }
