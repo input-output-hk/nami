@@ -324,6 +324,7 @@ const Whitelisted = () => {
         whitelisted.length > 0 ? (
           whitelisted.map((origin, index) => (
             <WhitelistedApp
+              key={index}
               origin={origin}
               index={index}
               onRemoveWhitelisted={handleRemoveWhitelisted.bind(this, origin)}

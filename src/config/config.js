@@ -1,5 +1,5 @@
 export const TARGET = 'nami-wallet';
-export const SENDER = { extension: 'extension', webpage: 'webpage' };
+export const SENDER = { extension: 'extension', webpage: 'webpage', dAppBrowser: 'dAppBrowser' };
 export const METHOD = {
   isWhitelisted: 'isWhitelisted',
   enable: 'enable',

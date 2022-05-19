@@ -793,6 +793,7 @@ const SignTx = ({ request, controller }) => {
               data: Buffer.from(signedTx.to_bytes(), 'hex').toString('hex'),
             });
           else await controller.returnData({ error: signedTx });
+          ref.current.closeModal();
           window.close();
         }}
       />

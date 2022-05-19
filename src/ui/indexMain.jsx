@@ -16,6 +16,7 @@ import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
 import { useStoreActions, useStoreState } from 'easy-peasy';
+import DAppBrowser from './app/pages/dAppBrowser';
 
 const App = () => {
   const route = useStoreState((state) => state.globalModel.routeStore.route);
@@ -73,6 +74,9 @@ const App = () => {
         </Route>
         <Route exact path="/send">
           <Send />
+        </Route>
+        <Route path="/dAppBrowser">
+          <DAppBrowser />
         </Route>
       </Switch>
     </div>

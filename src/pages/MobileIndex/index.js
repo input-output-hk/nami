@@ -44,24 +44,42 @@ else {
   };
 }
 
-var openUrl = function(url) {
+let injectPage = function(page) {
+  let head = document.head;
+  let script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = `/${page}.bundle.js`;
+  head.appendChild(script);
+};
+
+let removePage = function(page) {
+  let head = document.head;
+  head.querySelectorAll('script').forEach((node) => {
+    if (node.src.endsWith(`/${page}.bundle.js`)) head.removeChild(node);
+  });
+};
+
+let openUrl = function(url) {
   window.history.pushState('', '', url);
 
   let file = url.split('?')[0].split('/').pop().replace('.html', '');
   document.body.innerHTML = `<div id="${file}"></div>`;
-
-  var head = document.head;
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = `/${file}.bundle.js`;
-  head.appendChild(script);
+  injectPage(file);
 
   return window;
 };
 
 window.close = function() {
-  openUrl(window.origin + '/mainPopup.html');
-}
+  removePage('internalPopup');
+  const modal = document.getElementById('internalPopupModal');
+  if (modal) {
+    modal.innerHTML = '';
+    window.history.back();
+  }
+  else {
+    openUrl(window.origin + '/mainPopup.html');
+  }
+};
 
 var startupListener;
 var connectListener;
@@ -73,6 +91,7 @@ var port;
 var tabs = [];
 
 var chrome = {
+  app: true,
 	storage: {
 		local: {
 			set: function(items, callback) {

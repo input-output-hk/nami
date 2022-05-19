@@ -90,6 +90,7 @@ import { NETWORK_ID, TAB } from '../../../config/config';
 import { FaGamepad, FaRegFileCode } from 'react-icons/fa';
 import { BiWallet } from 'react-icons/bi';
 import { GiTwoCoins, GiUsbKey } from 'react-icons/gi';
+import { MdWysiwyg } from 'react-icons/md';
 import CollectiblesViewer from '../components/collectiblesViewer';
 import AssetFingerprint from '@emurgo/cip14-js';
 
@@ -464,6 +465,14 @@ const Wallet = () => {
                 >
                   {' '}
                   Collateral
+                </MenuItem>
+                <MenuDivider />
+                <MenuItem
+                  onClick={() => history.push('/dAppBrowser')}
+                  icon={<Icon as={MdWysiwyg} w={3} h={3} />}
+                >
+                  {' '}
+                  dApp Browser
                 </MenuItem>
                 <MenuDivider />
                 <MenuItem

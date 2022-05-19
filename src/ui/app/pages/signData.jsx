@@ -217,6 +217,7 @@ const SignData = ({ request, controller }) => {
           if (status === true)
             await controller.returnData({ data: signedMessage });
           else await controller.returnData({ error: signedMessage });
+          ref.current.closeModal();
           window.close();
         }}
       />

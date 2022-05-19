@@ -74,7 +74,7 @@ class BackgroundController {
 
   listen = () => {
     chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
-      if (request.sender === SENDER.webpage) {
+      if (request.sender !== SENDER.extension) {
         this._methodList[request.method](request, sendResponse);
       }
       return true;
@@ -214,6 +214,46 @@ export const Messaging = {
       await Messaging.sendToBackground(request).then((response) => {
         window.postMessage(response);
       });
+    });
+  },
+  handleMessageFromBrowser: async (e) => {
+    const browser = e.source;
+    const origin = e.origin;
+    const request = e.data;
+    if (
+      typeof request !== 'object' ||
+      request === null ||
+      !request.target ||
+      request.target !== TARGET ||
+      !request.sender ||
+      request.sender !== SENDER.dAppBrowser
+    )
+      return;
+    request.origin = origin;
+
+    // only allow enable function, before checking for whitelisted
+    if (
+      request.method === METHOD.enable ||
+      request.method === METHOD.isEnabled
+    ) {
+      Messaging.sendToBackground({
+        ...request,
+      }).then((response) => browser.postMessage(response, origin));
+      return;
+    }
+
+    const whitelisted = await Messaging.sendToBackground({
+      method: METHOD.isWhitelisted,
+      origin,
+    });
+
+    // protect background by not allowing not whitelisted
+    if (!whitelisted || whitelisted.error) {
+      browser.postMessage({ ...whitelisted, id: request.id }, origin);
+      return;
+    }
+    await Messaging.sendToBackground(request).then((response) => {
+      browser.postMessage(response, origin);
     });
   },
   createBackgroundController: () => new BackgroundController(),
