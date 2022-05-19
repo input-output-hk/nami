@@ -1,13 +1,17 @@
 import React from 'react';
-import { Box, IconButton } from "@chakra-ui/react";
+import { Box, IconButton, Image, SkeletonCircle, Text } from "@chakra-ui/react";
 import Account from '../components/account';
 import { ChevronLeftIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useHistory } from 'react-router-dom';
 import { Messaging } from '../../../api/messaging';
+import useAppDetails from '../hooks/useAppDetails';
 
 const DAppBrowser = () => {
   const history = useHistory();
   const accountRef = React.useRef();
+
+  const dApp = 'https://caart.store';
+  const app = useAppDetails(dApp);
 
   React.useEffect(() => {
     const modalId = 'internalPopupModal';
@@ -15,10 +19,7 @@ const DAppBrowser = () => {
     div.id = modalId;
     document.body.prepend(div);
 
-    const iframe = document.getElementById("dAppBrowser");
-    iframe.onload = () => {
-      window.addEventListener('message', Messaging.handleMessageFromBrowser);
-    };
+    window.addEventListener('message', Messaging.handleMessageFromBrowser);
 
     return () => {
       document.body.removeChild(document.getElementById(modalId));
@@ -50,7 +51,15 @@ const DAppBrowser = () => {
           variant="ghost"
           icon={<ChevronLeftIcon boxSize="7" />}
         />
-        caart.store
+        <Box display="flex" alignItems="center">
+          <Image
+            mr="8px"
+            width="24px"
+            src={app.icon}
+            fallback={<SkeletonCircle width="24px" height="24px" />}
+          />
+          <Text>{app.name}</Text>
+        </Box>
         <IconButton
           rounded="md"
           variant="ghost"
@@ -60,8 +69,8 @@ const DAppBrowser = () => {
       <iframe
         id="dAppBrowser"
         style={{ width: "100%", height: "calc(100vh - 140px)", backgroundColor: "white" }}
-        src="http://localhost:3000/mint"
-        title="caart.store"
+        src={dApp}
+        title={app.name}
       />
     </Box>
   );
