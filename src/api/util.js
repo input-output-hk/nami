@@ -425,6 +425,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
       ...destination,
     };
     if (!tokenBundle) delete outputRes.tokenBundle;
+    if (!datumHash) delete outputRes.datumHash;
     trezorOutputs.push(outputRes);
   }
   let trezorCertificates = null;
@@ -674,7 +675,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         });
       }
     }
-    signingMode = TransactionSigningMode.PLUTUS_TRANSACTION;
+    signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
   }
 
   const trezorTx = {
