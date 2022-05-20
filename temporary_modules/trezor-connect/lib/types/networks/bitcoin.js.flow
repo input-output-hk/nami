@@ -6,7 +6,10 @@ import type {
     TxOutputType,
     TxOutputBinType,
     Address as ProtobufAddress,
+    InternalInputScriptType,
+    MultisigRedeemScriptType,
 } from '../trezor/protobuf';
+import type { AccountAddresses } from '../account';
 
 // getAddress params
 export type GetAddress = {
@@ -15,6 +18,9 @@ export type GetAddress = {
     showOnTrezor?: boolean,
     coin?: string,
     crossChain?: boolean,
+    multisig?: MultisigRedeemScriptType,
+    scriptType?: InternalInputScriptType,
+    useEventListener?: boolean, // set automatically if UI.ADDRESS_VALIDATION listener is used
 };
 
 // getAddress response
@@ -28,6 +34,7 @@ export type GetPublicKey = {
     path: string | number[],
     coin?: string,
     crossChain?: boolean,
+    showOnTrezor?: boolean,
 };
 
 // combined Bitcoin.PublicKey and Bitcoin.HDNode
@@ -92,12 +99,7 @@ export type SignTransaction = {
     outputs: TxOutputType[],
     refTxs?: RefTransaction[],
     account?: {
-        // Partial account (addresses)
-        addresses: {
-            used: { path: string, address: string }[],
-            unused: { path: string, address: string }[],
-            change: { path: string, address: string }[],
-        },
+        addresses: AccountAddresses,
     },
     coin: string,
     locktime?: number,
@@ -132,6 +134,7 @@ export type SignMessage = {
     coin: string,
     message: string,
     hex?: boolean,
+    no_script_type?: boolean,
 };
 
 export type VerifyMessage = {

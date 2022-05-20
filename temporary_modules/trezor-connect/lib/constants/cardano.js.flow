@@ -2,7 +2,7 @@
 
 export const PROTOCOL_MAGICS = Object.freeze({
     mainnet: 764824073,
-    testnet: 42,
+    testnet: 1097911063,
 });
 
 export const NETWORK_IDS = Object.freeze({

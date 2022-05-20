@@ -91,4 +91,4 @@ export type CoinInfo = BitcoinNetworkInfo | EthereumNetworkInfo | MiscNetworkInf
 
 export type GetCoinInfo = {
     coin: string;
-}
+};

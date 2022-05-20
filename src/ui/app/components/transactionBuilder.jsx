@@ -508,7 +508,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ref={undelegateRef}
       />
       <ConfirmModal
-        ready={data.ready && !isTrezor(data.account.index)} // TODO plutus not supported yet by HW
+        ready={data.ready}
         title={
           <Box display="flex" alignItems="center">
             <Icon as={FaRegFileCode} mr="2" /> <Box>Collateral</Box>
@@ -660,13 +660,5 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
     </>
   );
 });
-
-// temporary function to detect if HW is trezor
-export const isTrezor = (accountIndex) =>
-  accountIndex != null &&
-  accountIndex != undefined &&
-  accountIndex != 0 &&
-  typeof accountIndex !== 'number' &&
-  accountIndex.startsWith(HW.trezor);
 
 export default TransactionBuilder;

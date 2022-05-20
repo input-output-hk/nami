@@ -1,11 +1,14 @@
-import {
+import type {
     PrevInput,
     TxInput as OrigTxInputType,
     TxInputType,
     TxOutputType,
     TxOutputBinType,
     Address as ProtobufAddress,
+    MultisigRedeemScriptType,
+    InternalInputScriptType,
 } from '../trezor/protobuf';
+import type { AccountAddresses } from '../account';
 
 // getAddress params
 export interface GetAddress {
@@ -14,6 +17,8 @@ export interface GetAddress {
     showOnTrezor?: boolean;
     coin?: string;
     crossChain?: boolean;
+    multisig?: MultisigRedeemScriptType;
+    scriptType?: InternalInputScriptType;
 }
 
 // getAddress response
@@ -27,6 +32,7 @@ export interface GetPublicKey {
     path: string | number[];
     coin?: string;
     crossChain?: boolean;
+    showOnTrezor?: boolean;
 }
 
 // combined Bitcoin.PublicKey and Bitcoin.HDNode
@@ -43,33 +49,35 @@ export interface HDNodeResponse {
 }
 
 // based on PROTO.TransactionType, with required fields
-export type RefTransaction = {
-    hash: string;
-    version: number;
-    inputs: PrevInput[];
-    bin_outputs: TxOutputBinType[];
-    outputs?: undefined;
-    lock_time: number;
-    extra_data?: string;
-    expiry?: number;
-    overwintered?: boolean;
-    version_group_id?: number;
-    timestamp?: number;
-    branch_id?: number;
-} | {
-    hash: string;
-    version: number;
-    inputs: OrigTxInputType[];
-    bin_outputs?: undefined;
-    outputs: TxOutputType[];
-    lock_time: number;
-    extra_data?: string;
-    expiry?: number;
-    overwintered?: boolean;
-    version_group_id?: number;
-    timestamp?: number;
-    branch_id?: number;
-}
+export type RefTransaction =
+    | {
+          hash: string;
+          version: number;
+          inputs: PrevInput[];
+          bin_outputs: TxOutputBinType[];
+          outputs?: undefined;
+          lock_time: number;
+          extra_data?: string;
+          expiry?: number;
+          overwintered?: boolean;
+          version_group_id?: number;
+          timestamp?: number;
+          branch_id?: number;
+      }
+    | {
+          hash: string;
+          version: number;
+          inputs: OrigTxInputType[];
+          bin_outputs?: undefined;
+          outputs: TxOutputType[];
+          lock_time: number;
+          extra_data?: string;
+          expiry?: number;
+          overwintered?: boolean;
+          version_group_id?: number;
+          timestamp?: number;
+          branch_id?: number;
+      };
 
 // based on PROTO.SignTx, only optional fields
 export type TransactionOptions = {
@@ -88,12 +96,8 @@ export interface SignTransaction {
     inputs: TxInputType[];
     outputs: TxOutputType[];
     refTxs?: RefTransaction[];
-    account?: { // Partial account (addresses)
-        addresses: {
-            used: { path: string; address: string }[];
-            unused: { path: string; address: string }[];
-            change: { path: string; address: string }[];
-        };
+    account?: {
+        addresses: AccountAddresses;
     };
     coin: string;
     locktime?: number;
@@ -128,6 +132,7 @@ export interface SignMessage {
     coin: string;
     message: string;
     hex?: boolean;
+    no_script_type?: boolean;
 }
 
 export interface VerifyMessage {

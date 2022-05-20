@@ -1,5 +1,6 @@
 /* @flow */
 import type {
+    UintType,
     EosPermissionLevel,
     EosAuthorizationKey,
     EosActionBuyRamBytes,
@@ -16,6 +17,7 @@ import type {
 export type EosGetPublicKey = {
     path: string | number[],
     showOnTrezor?: boolean,
+    useEventListener?: boolean, // set automatically if UI.ADDRESS_VALIDATION listener is used
 };
 
 export type EosPublicKey = {
@@ -28,7 +30,7 @@ export type EosPublicKey = {
 // sign tx
 
 export type EosTxHeader = {
-    expiration: number | string,
+    expiration: UintType,
     refBlockNum: number,
     refBlockPrefix: number,
     maxNetUsageWords: number,
@@ -58,7 +60,7 @@ export type EosTxAction =
               from: string,
               to: string,
               quantity: string,
-              memo?: string,
+              memo: string,
           },
       })
     | (EosTxActionCommon & {
@@ -68,7 +70,7 @@ export type EosTxAction =
               receiver: string,
               stake_net_quantity: string,
               stake_cpu_quantity: string,
-              transfer?: boolean,
+              transfer: boolean,
           },
       })
     | (EosTxActionCommon & {
@@ -146,7 +148,7 @@ export type EosTxAction =
 
 export type EosSDKTransaction = {
     chainId: string,
-    header: ?EosTxHeader,
+    header: EosTxHeader,
     actions: Array<EosTxAction | (EosTxActionCommon & { name: string, data: string })>,
     // actions: EosTxAction[];
 };

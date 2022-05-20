@@ -1,7 +1,9 @@
+import type { Proxy } from './params';
+
 export interface CipherKeyValue {
     path: string | number[];
-    key?: string;
-    value?: string  | Buffer;
+    key: string;
+    value: string | Buffer;
     encrypt?: boolean;
     askOnEncrypt?: boolean;
     askOnDecrypt?: boolean;
@@ -19,6 +21,7 @@ export interface LoginChallenge {
 
 export interface RequestLoginAsync {
     callback: () => LoginChallenge;
+    asyncChallenge?: boolean;
 }
 
 export interface Login {
@@ -33,3 +36,8 @@ export interface CustomMessage {
     params: JSON | object;
     callback: (request: any) => Promise<{ message: string; params?: object }>;
 }
+
+export type SetProxy = {
+    proxy?: Proxy;
+    useOnionLinks?: boolean;
+};

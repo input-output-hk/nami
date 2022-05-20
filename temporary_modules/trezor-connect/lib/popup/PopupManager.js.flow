@@ -6,7 +6,7 @@ import * as IFRAME from '../constants/iframe';
 import * as UI from '../constants/ui';
 import { showPopupRequest } from './showPopupRequest';
 import type { ConnectSettings, CoreMessage, Deferred } from '../types';
-import { getOrigin } from '../env/browser/networkUtils';
+import { getOrigin } from '../utils/urlUtils';
 import { create as createDeferred } from '../utils/deferred';
 
 // const POPUP_REQUEST_TIMEOUT = 602;

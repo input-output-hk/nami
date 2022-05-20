@@ -48,21 +48,65 @@ export namespace TrezorConnect {
     /**
      * Event listeners
      */
-    function on(type: typeof CONSTANTS.DEVICE_EVENT, cb: (event: Device.DeviceEvent & { event: typeof CONSTANTS.DEVICE_EVENT }) => void): void;
-    function on(type: typeof CONSTANTS.TRANSPORT_EVENT, cb: (event: Events.TransportEvent & { event: typeof CONSTANTS.TRANSPORT_EVENT }) => void): void;
-    function on(type: typeof CONSTANTS.UI_EVENT, cb: (event: Events.UiEvent & { event: typeof CONSTANTS.UI_EVENT }) => void): void;
-    function on(type: typeof CONSTANTS.BLOCKCHAIN_EVENT, cb: (event: Blockchain.BlockchainEvent & { event: typeof CONSTANTS.BLOCKCHAIN_EVENT }) => void): void;
+    function on(
+        type: typeof CONSTANTS.DEVICE_EVENT,
+        cb: (event: Device.DeviceEvent & { event: typeof CONSTANTS.DEVICE_EVENT }) => void,
+    ): void;
+    function on(
+        type: typeof CONSTANTS.TRANSPORT_EVENT,
+        cb: (event: Events.TransportEvent & { event: typeof CONSTANTS.TRANSPORT_EVENT }) => void,
+    ): void;
+    function on(
+        type: typeof CONSTANTS.UI_EVENT,
+        cb: (event: Events.UiEvent & { event: typeof CONSTANTS.UI_EVENT }) => void,
+    ): void;
+    function on(
+        type: typeof CONSTANTS.BLOCKCHAIN_EVENT,
+        cb: (
+            event: Blockchain.BlockchainEvent & { event: typeof CONSTANTS.BLOCKCHAIN_EVENT },
+        ) => void,
+    ): void;
     function on(type: Events.MessageWithoutPayload['type'], cb: () => void): void;
-    function on(type: Events.DeviceMessage['type'], cb: (event: Events.DeviceMessage['payload']) => void): void;
-    function on(type: Events.ButtonRequestMessage['type'], cb: (event: Events.ButtonRequestMessage['payload']) => void): void;
-    function on(type: Events.AddressValidationMessage['type'], cb: (event: Events.AddressValidationMessage['payload']) => void): void;
-    function on(type: Events.RequestPermission['type'], cb: (event: Events.RequestPermission['payload']) => void): void;
-    function on(type: Events.RequestConfirmation['type'], cb: (event: Events.RequestConfirmation['payload']) => void): void;
-    function on(type: Events.UnexpectedDeviceMode['type'], cb: (event: Events.UnexpectedDeviceMode['payload']) => void): void;
-    function on(type: Events.FirmwareException['type'], cb: (event: Events.FirmwareException['payload']) => void): void;
-    function on<R>(type: typeof CONSTANTS.UI.BUNDLE_PROGRESS, cb: (event: Events.BundleProgress<R>['payload']) => void): void;
-    function on(type: Events.FirmwareProgress['type'], cb: (event: Events.FirmwareProgress['payload']) => void): void;
-    function on(type: Events.CustomMessageRequest['type'], cb: (event: Events.CustomMessageRequest['payload']) => void): void;
+    function on(
+        type: Events.DeviceMessage['type'],
+        cb: (event: Events.DeviceMessage['payload']) => void,
+    ): void;
+    function on(
+        type: Events.ButtonRequestMessage['type'],
+        cb: (event: Events.ButtonRequestMessage['payload']) => void,
+    ): void;
+    function on(
+        type: Events.AddressValidationMessage['type'],
+        cb: (event: Events.AddressValidationMessage['payload']) => void,
+    ): void;
+    function on(
+        type: Events.RequestPermission['type'],
+        cb: (event: Events.RequestPermission['payload']) => void,
+    ): void;
+    function on(
+        type: Events.RequestConfirmation['type'],
+        cb: (event: Events.RequestConfirmation['payload']) => void,
+    ): void;
+    function on(
+        type: Events.UnexpectedDeviceMode['type'],
+        cb: (event: Events.UnexpectedDeviceMode['payload']) => void,
+    ): void;
+    function on(
+        type: Events.FirmwareException['type'],
+        cb: (event: Events.FirmwareException['payload']) => void,
+    ): void;
+    function on<R>(
+        type: typeof CONSTANTS.UI.BUNDLE_PROGRESS,
+        cb: (event: Events.BundleProgress<R>['payload']) => void,
+    ): void;
+    function on(
+        type: Events.FirmwareProgress['type'],
+        cb: (event: Events.FirmwareProgress['payload']) => void,
+    ): void;
+    function on(
+        type: Events.CustomMessageRequest['type'],
+        cb: (event: Events.CustomMessageRequest['payload']) => void,
+    ): void;
     function off(type: string, cb: any): void;
     function removeAllListeners(): void;
 
@@ -75,13 +119,13 @@ export namespace TrezorConnect {
         params: P.CommonParams & Blockchain.BlockchainEstimateFee,
     ): P.Response<Blockchain.BlockchainEstimatedFee>;
     function blockchainGetAccountBalanceHistory(
-        params: Blockchain.BlockchainGetAccountBalanceHistory
+        params: Blockchain.BlockchainGetAccountBalanceHistory,
     ): P.Response<Blockchain.BlockchainAccountBalanceHistory[]>;
     function blockchainGetCurrentFiatRates(
-        params: Blockchain.BlockchainGetCurrentFiatRates
+        params: Blockchain.BlockchainGetCurrentFiatRates,
     ): P.Response<Blockchain.BlockchainTimestampedFiatRates>;
     function blockchainGetFiatRatesForTimestamps(
-        params: Blockchain.BlockchainGetFiatRatesForTimestamps
+        params: Blockchain.BlockchainGetFiatRatesForTimestamps,
     ): P.Response<Blockchain.BlockchainFiatRatesForTimestamps>;
     function blockchainGetTransactions(
         params: P.CommonParams & Blockchain.BlockchainGetTransactions,
@@ -93,18 +137,17 @@ export namespace TrezorConnect {
         params: P.CommonParams & Blockchain.BlockchainSubscribe,
     ): P.Response<Blockchain.BlockchainSubscribed>;
     function blockchainSubscribeFiatRates(
-        params: Blockchain.BlockchainSubscribeFiatRates
+        params: Blockchain.BlockchainSubscribeFiatRates,
     ): P.Response<Blockchain.BlockchainSubscribed>;
     function blockchainUnsubscribe(
         params: P.CommonParams & Blockchain.BlockchainSubscribe,
     ): P.Response<Blockchain.BlockchainSubscribed>;
     function blockchainUnsubscribeFiatRates(
-        params: Blockchain.BlockchainSubscribeFiatRates
+        params: Blockchain.BlockchainSubscribeFiatRates,
     ): P.Response<Blockchain.BlockchainSubscribed>;
     function blockchainDisconnect(
         params: P.CommonParams & Blockchain.BlockchainDisconnect,
     ): P.Response<Blockchain.BlockchainDisconnected>;
-
 
     /**
      * Bitcoin and Bitcoin-like
@@ -112,7 +155,9 @@ export namespace TrezorConnect {
      * returns it to caller. User is asked to confirm the export on Trezor.
      */
     function getAddress(params: P.CommonParams & Bitcoin.GetAddress): P.Response<Bitcoin.Address>;
-    function getAddress(params: P.CommonParams & P.Bundle<Bitcoin.GetAddress>): P.BundledResponse<Bitcoin.Address>;
+    function getAddress(
+        params: P.CommonParams & P.Bundle<Bitcoin.GetAddress>,
+    ): P.BundledResponse<Bitcoin.Address>;
 
     /**
      * Bitcoin and Bitcoin-like
@@ -120,7 +165,9 @@ export namespace TrezorConnect {
      * User is presented with a description of the requested key and asked to
      * confirm the export.
      */
-    function getPublicKey(params: P.CommonParams & Bitcoin.GetPublicKey): P.Response<Bitcoin.HDNodeResponse>;
+    function getPublicKey(
+        params: P.CommonParams & Bitcoin.GetPublicKey,
+    ): P.Response<Bitcoin.HDNodeResponse>;
     function getPublicKey(
         params: P.CommonParams & P.Bundle<Bitcoin.GetPublicKey>,
     ): P.BundledResponse<Bitcoin.HDNodeResponse>;
@@ -130,13 +177,17 @@ export namespace TrezorConnect {
      * Asks device to sign given inputs and outputs of pre-composed transaction.
      * User is asked to confirm all transaction details on Trezor.
      */
-    function signTransaction(params: P.CommonParams & Bitcoin.SignTransaction): P.Response<Bitcoin.SignedTransaction>;
+    function signTransaction(
+        params: P.CommonParams & Bitcoin.SignTransaction,
+    ): P.Response<Bitcoin.SignedTransaction>;
 
     /**
      * Bitcoin, Bitcoin-like, Ethereum-like, Ripple
      * Broadcasts the transaction to the selected network.
      */
-    function pushTransaction(params: P.CommonParams & Bitcoin.PushTransaction): P.Response<Bitcoin.PushedTransaction>;
+    function pushTransaction(
+        params: P.CommonParams & Bitcoin.PushTransaction,
+    ): P.Response<Bitcoin.PushedTransaction>;
 
     /**
      * Bitcoin and Bitcoin-like
@@ -147,7 +198,9 @@ export namespace TrezorConnect {
      * returned in hexadecimal format. Change output is added automatically, if
      * needed.
      */
-    function composeTransaction(params: P.CommonParams & Account.ComposeParams): P.Response<Bitcoin.SignedTransaction>;
+    function composeTransaction(
+        params: P.CommonParams & Account.ComposeParams,
+    ): P.Response<Bitcoin.SignedTransaction>;
     function composeTransaction(
         params: P.CommonParams & Account.PrecomposeParams,
     ): P.Response<Account.PrecomposedTransaction[]>;
@@ -156,7 +209,9 @@ export namespace TrezorConnect {
      * Bitcoin, Bitcoin-like, Ethereum-like, Ripple
      * Gets an info of specified account.
      */
-    function getAccountInfo(params: P.CommonParams & Account.GetAccountInfo): P.Response<Account.AccountInfo>;
+    function getAccountInfo(
+        params: P.CommonParams & Account.GetAccountInfo,
+    ): P.Response<Account.AccountInfo>;
     function getAccountInfo(
         params: P.CommonParams & P.Bundle<Account.GetAccountInfo>,
     ): P.BundledResponse<Account.AccountInfo>;
@@ -166,16 +221,22 @@ export namespace TrezorConnect {
      * Asks device to sign a message using the private key derived by given BIP32
      * path.
      */
-    function signMessage(params: P.CommonParams & Bitcoin.SignMessage): P.Response<Protobuf.MessageSignature>;
+    function signMessage(
+        params: P.CommonParams & Bitcoin.SignMessage,
+    ): P.Response<Protobuf.MessageSignature>;
 
     /**
      * Bitcoin and Bitcoin-like
      * Asks device to verify a message using the signer address and signature.
      */
-    function verifyMessage(params: P.CommonParams & Bitcoin.VerifyMessage): P.Response<P.DefaultMessage>;
+    function verifyMessage(
+        params: P.CommonParams & Bitcoin.VerifyMessage,
+    ): P.Response<P.DefaultMessage>;
 
     // Binance
-    function binanceGetAddress(params: P.CommonParams & Binance.BinanceGetAddress): P.Response<Binance.BinanceAddress>;
+    function binanceGetAddress(
+        params: P.CommonParams & Binance.BinanceGetAddress,
+    ): P.Response<Binance.BinanceAddress>;
     function binanceGetAddress(
         params: P.CommonParams & P.Bundle<Binance.BinanceGetAddress>,
     ): P.BundledResponse<Binance.BinanceAddress>;
@@ -190,7 +251,9 @@ export namespace TrezorConnect {
     ): P.Response<Protobuf.BinanceSignedTx>;
 
     // Cardano (ADA)
-    function cardanoGetAddress(params: P.CommonParams & Cardano.CardanoGetAddress): P.Response<Cardano.CardanoAddress>;
+    function cardanoGetAddress(
+        params: P.CommonParams & Cardano.CardanoGetAddress,
+    ): P.Response<Cardano.CardanoAddress>;
     function cardanoGetAddress(
         params: P.CommonParams & P.Bundle<Cardano.CardanoGetAddress>,
     ): P.BundledResponse<Cardano.CardanoAddress>;
@@ -208,11 +271,15 @@ export namespace TrezorConnect {
     ): P.Response<Cardano.CardanoSignedTxData>;
 
     // EOS
-    function eosGetPublicKey(params: P.CommonParams & EOS.EosGetPublicKey): P.Response<EOS.EosPublicKey>;
+    function eosGetPublicKey(
+        params: P.CommonParams & EOS.EosGetPublicKey,
+    ): P.Response<EOS.EosPublicKey>;
     function eosGetPublicKey(
         params: P.CommonParams & P.Bundle<EOS.EosGetPublicKey>,
     ): P.BundledResponse<EOS.EosPublicKey>;
-    function eosSignTransaction(params: P.CommonParams & EOS.EosSignTransaction): P.Response<Protobuf.EosSignedTx>;
+    function eosSignTransaction(
+        params: P.CommonParams & EOS.EosSignTransaction,
+    ): P.Response<Protobuf.EosSignedTx>;
 
     // Ethereum and Ethereum-like
     function ethereumGetAddress(
@@ -236,17 +303,32 @@ export namespace TrezorConnect {
     function ethereumSignMessage(
         params: P.CommonParams & Ethereum.EthereumSignMessage,
     ): P.Response<Protobuf.MessageSignature>;
+    /**
+     * @param params Passing:
+     * - {@link Ethereum.EthereumSignTypedData} is required for Trezor T
+     * - {@link Ethereum.EthereumSignTypedHash} is required for Trezor 1 compatability
+     */
+    function ethereumSignTypedData<T extends Ethereum.EthereumSignTypedDataTypes>(
+        params: P.CommonParams &
+            (Ethereum.EthereumSignTypedData<T> | Ethereum.EthereumSignTypedHashAndData<T>),
+    ): P.Response<Protobuf.EthereumTypedDataSignature>;
     function ethereumVerifyMessage(
         params: P.CommonParams & Ethereum.EthereumVerifyMessage,
     ): P.Response<P.DefaultMessage>;
 
     // NEM
     function nemGetAddress(params: P.CommonParams & NEM.NEMGetAddress): P.Response<NEM.NEMAddress>;
-    function nemGetAddress(params: P.CommonParams & P.Bundle<NEM.NEMGetAddress>): P.BundledResponse<NEM.NEMAddress>;
-    function nemSignTransaction(params: P.CommonParams & NEM.NEMSignTransaction): P.Response<Protobuf.NEMSignedTx>;
+    function nemGetAddress(
+        params: P.CommonParams & P.Bundle<NEM.NEMGetAddress>,
+    ): P.BundledResponse<NEM.NEMAddress>;
+    function nemSignTransaction(
+        params: P.CommonParams & NEM.NEMSignTransaction,
+    ): P.Response<Protobuf.NEMSignedTx>;
 
     // Ripple
-    function rippleGetAddress(params: P.CommonParams & Ripple.RippleGetAddress): P.Response<Ripple.RippleAddress>;
+    function rippleGetAddress(
+        params: P.CommonParams & Ripple.RippleGetAddress,
+    ): P.Response<Ripple.RippleAddress>;
     function rippleGetAddress(
         params: P.CommonParams & P.Bundle<Ripple.RippleGetAddress>,
     ): P.BundledResponse<Ripple.RippleAddress>;
@@ -255,7 +337,9 @@ export namespace TrezorConnect {
     ): P.Response<Ripple.RippleSignedTx>;
 
     // Stellar
-    function stellarGetAddress(params: P.CommonParams & Stellar.StellarGetAddress): P.Response<Stellar.StellarAddress>;
+    function stellarGetAddress(
+        params: P.CommonParams & Stellar.StellarGetAddress,
+    ): P.Response<Stellar.StellarAddress>;
     function stellarGetAddress(
         params: P.CommonParams & P.Bundle<Stellar.StellarGetAddress>,
     ): P.BundledResponse<Stellar.StellarAddress>;
@@ -264,11 +348,15 @@ export namespace TrezorConnect {
     ): P.Response<Stellar.StellarSignedTx>;
 
     // // Tezos
-    function tezosGetAddress(params: P.CommonParams & Tezos.TezosGetAddress): P.Response<Tezos.TezosAddress>;
+    function tezosGetAddress(
+        params: P.CommonParams & Tezos.TezosGetAddress,
+    ): P.Response<Tezos.TezosAddress>;
     function tezosGetAddress(
         params: P.CommonParams & P.Bundle<Tezos.TezosGetAddress>,
     ): P.BundledResponse<Tezos.TezosAddress>;
-    function tezosGetPublicKey(params: P.CommonParams & Tezos.TezosGetPublicKey): P.Response<Tezos.TezosPublicKey>;
+    function tezosGetPublicKey(
+        params: P.CommonParams & Tezos.TezosGetPublicKey,
+    ): P.Response<Tezos.TezosPublicKey>;
     function tezosGetPublicKey(
         params: P.CommonParams & P.Bundle<Tezos.TezosGetPublicKey>,
     ): P.BundledResponse<Tezos.TezosPublicKey>;
@@ -290,7 +378,9 @@ export namespace TrezorConnect {
      * Asks device to encrypt value using the private key derived by given BIP32
      * path and the given key. IV is always computed automatically.
      */
-    function cipherKeyValue(params: P.CommonParams & Misc.CipherKeyValue): P.Response<Misc.CipheredValue>;
+    function cipherKeyValue(
+        params: P.CommonParams & Misc.CipherKeyValue,
+    ): P.Response<Misc.CipheredValue>;
     function cipherKeyValue(
         params: P.CommonParams & P.Bundle<Misc.CipherKeyValue>,
     ): P.BundledResponse<Misc.CipheredValue>;
@@ -318,7 +408,9 @@ export namespace TrezorConnect {
     /**
      * Applies device setup
      */
-    function applySettings(params: P.CommonParams & Protobuf.ApplySettings): P.Response<P.DefaultMessage>;
+    function applySettings(
+        params: P.CommonParams & Protobuf.ApplySettings,
+    ): P.Response<P.DefaultMessage>;
 
     /**
      * Increment saved flag on device
@@ -333,8 +425,12 @@ export namespace TrezorConnect {
     /**
      * Sends FirmwareErase message followed by FirmwareUpdate message
      */
-    function firmwareUpdate(params: P.CommonParams & Mgmnt.FirmwareUpdate): P.Response<P.DefaultMessage>;
-    function firmwareUpdate(params: P.CommonParams & Mgmnt.FirmwareUpdateBinary): P.Response<P.DefaultMessage>;
+    function firmwareUpdate(
+        params: P.CommonParams & Mgmnt.FirmwareUpdate,
+    ): P.Response<P.DefaultMessage>;
+    function firmwareUpdate(
+        params: P.CommonParams & Mgmnt.FirmwareUpdateBinary,
+    ): P.Response<P.DefaultMessage>;
 
     /**
      * Asks device to initiate seed backup procedure
@@ -344,7 +440,9 @@ export namespace TrezorConnect {
     /**
      * Ask device to initiate recovery procedure
      */
-    function recoveryDevice(params: P.CommonParams & Mgmnt.RecoveryDevice): P.Response<P.DefaultMessage>;
+    function recoveryDevice(
+        params: P.CommonParams & Mgmnt.RecoveryDevice,
+    ): P.Response<P.DefaultMessage>;
 
     /**
      * Get static coin info
@@ -356,8 +454,11 @@ export namespace TrezorConnect {
      */
     function rebootToBootloader(params?: P.CommonParams): P.Response<P.DefaultMessage>;
 
+    /**
+     * Set tor proxy for @trezor/blockchain-link connections
+     */
+    function setProxy(params: Misc.SetProxy): P.Response<Protobuf.Success>;
+
     // // Developer mode
     function customMessage(params: P.CommonParams & Misc.CustomMessage): P.Response<any>;
-    function debugLinkDecision(params?: P.CommonParams): P.Response<{ debugLink: true }>;
-    function debugLinkGetState(params?: P.CommonParams): P.Response<{ debugLink: true }>;
 }

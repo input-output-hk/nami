@@ -7,9 +7,9 @@ exports.uiResponse = exports.requestLogin = exports.renderWebUSBButton = exports
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
-var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
-
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _events = _interopRequireDefault(require("events"));
 
@@ -35,16 +35,16 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 var eventEmitter = new _events["default"]();
 exports.eventEmitter = eventEmitter;
 
 var _log = (0, _debug.initLog)('[trezor-connect.js]');
 
-var _settings;
+var _settings = (0, _ConnectSettings.parse)();
 
 var _popupManager;
 
@@ -62,9 +62,9 @@ var initPopupManager = function initPopupManager() {
 };
 
 var manifest = function manifest(data) {
-  _settings = (0, _ConnectSettings.parse)({
+  _settings = (0, _ConnectSettings.parse)(_objectSpread(_objectSpread({}, _settings), {}, {
     manifest: data
-  });
+  }));
 };
 
 exports.manifest = manifest;
@@ -72,6 +72,7 @@ exports.manifest = manifest;
 var dispose = function dispose() {
   eventEmitter.removeAllListeners();
   iframe.dispose();
+  _settings = (0, _ConnectSettings.parse)();
 
   if (_popupManager) {
     _popupManager.close();
@@ -176,9 +177,7 @@ var init = /*#__PURE__*/function () {
             throw _constants.ERRORS.TypedError('Init_AlreadyInitialized');
 
           case 3:
-            if (!_settings) {
-              _settings = (0, _ConnectSettings.parse)(settings);
-            }
+            _settings = (0, _ConnectSettings.parse)(_objectSpread(_objectSpread({}, _settings), settings));
 
             if (_settings.manifest) {
               _context.next = 6;
@@ -363,6 +362,10 @@ var customMessageResponse = function customMessageResponse(payload) {
 };
 
 var uiResponse = function uiResponse(response) {
+  if (!iframe.instance) {
+    throw _constants.ERRORS.TypedError('Init_NotInitialized');
+  }
+
   var type = response.type,
       payload = response.payload;
   iframe.postMessage({
@@ -399,14 +402,22 @@ var customMessage = /*#__PURE__*/function () {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            if (!(typeof params.callback !== 'function')) {
+            if (iframe.instance) {
               _context4.next = 2;
+              break;
+            }
+
+            throw _constants.ERRORS.TypedError('Init_NotInitialized');
+
+          case 2:
+            if (!(typeof params.callback !== 'function')) {
+              _context4.next = 4;
               break;
             }
 
             return _context4.abrupt("return", (0, _message.errorMessage)(_constants.ERRORS.TypedError('Method_CustomMessage_Callback')));
 
-          case 2:
+          case 4:
             // TODO: set message listener only if iframe is loaded correctly
             callback = params.callback;
 
@@ -452,19 +463,19 @@ var customMessage = /*#__PURE__*/function () {
             }();
 
             window.addEventListener('message', customMessageListener, false);
-            _context4.next = 7;
+            _context4.next = 9;
             return call(_objectSpread(_objectSpread({
               method: 'customMessage'
             }, params), {}, {
               callback: null
             }));
 
-          case 7:
+          case 9:
             response = _context4.sent;
             window.removeEventListener('message', customMessageListener);
             return _context4.abrupt("return", response);
 
-          case 10:
+          case 12:
           case "end":
             return _context4.stop();
         }
@@ -486,8 +497,16 @@ var requestLogin = /*#__PURE__*/function () {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
+            if (iframe.instance) {
+              _context6.next = 2;
+              break;
+            }
+
+            throw _constants.ERRORS.TypedError('Init_NotInitialized');
+
+          case 2:
             if (!(typeof params.callback === 'function')) {
-              _context6.next = 9;
+              _context6.next = 11;
               break;
             }
 
@@ -544,7 +563,7 @@ var requestLogin = /*#__PURE__*/function () {
             }();
 
             window.addEventListener('message', loginChallengeListener, false);
-            _context6.next = 6;
+            _context6.next = 8;
             return call(_objectSpread(_objectSpread({
               method: 'requestLogin'
             }, params), {}, {
@@ -552,17 +571,17 @@ var requestLogin = /*#__PURE__*/function () {
               callback: null
             }));
 
-          case 6:
+          case 8:
             response = _context6.sent;
             window.removeEventListener('message', loginChallengeListener);
             return _context6.abrupt("return", response);
 
-          case 9:
+          case 11:
             return _context6.abrupt("return", call(_objectSpread({
               method: 'requestLogin'
             }, params)));
 
-          case 10:
+          case 12:
           case "end":
             return _context6.stop();
         }
@@ -578,6 +597,10 @@ var requestLogin = /*#__PURE__*/function () {
 exports.requestLogin = requestLogin;
 
 var disableWebUSB = function disableWebUSB() {
+  if (!iframe.instance) {
+    throw _constants.ERRORS.TypedError('Init_NotInitialized');
+  }
+
   iframe.postMessage({
     event: _constants.UI_EVENT,
     type: _constants.TRANSPORT.DISABLE_WEBUSB

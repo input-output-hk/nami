@@ -1,16 +1,17 @@
 /* @flow */
 
 export type ResetDevice = {
+    display_random?: boolean,
     strength?: number,
+    passphrase_protection?: boolean,
+    pin_protection?: boolean,
+    language?: string,
     label?: string,
     u2f_counter?: number,
-    pin_protection?: boolean,
-    passphrase_protection?: boolean,
     skip_backup?: boolean,
     no_backup?: boolean,
     backup_type?: 0 | 1,
 };
-
 export type ApplyFlags = {
     flags: number,
 };
@@ -21,8 +22,14 @@ export type ChangePin = {
 
 export type FirmwareUpdateBinary = {
     binary: ArrayBuffer,
+    version?: typeof undefined,
+    btcOnly?: typeof undefined,
+    baseUrl?: typeof undefined,
+    intermediary?: typeof undefined,
 };
+
 export type FirmwareUpdate = {
+    binary?: typeof undefined,
     version: number[],
     btcOnly?: boolean,
     baseUrl?: string,

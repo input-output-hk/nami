@@ -97,10 +97,10 @@ export interface RippleLibTransaction {
 
 export type TypedRawTransaction =
     | {
-        type: 'blockbook';
-        tx: BlockbookTransaction;
-    }
+          type: 'blockbook';
+          tx: BlockbookTransaction;
+      }
     | {
-        type: 'ripple';
-        tx: RippleLibTransaction;
-    };
+          type: 'ripple';
+          tx: RippleLibTransaction;
+      };

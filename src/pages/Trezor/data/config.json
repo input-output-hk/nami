@@ -27,6 +27,9 @@
         { "origin": "webextension@metamask.io", "label": "MetaMask", "icon": "./data/icons/metamask.svg" },
         { "origin": "file://", "label": " " }
     ],
+    "onionDomains": {
+        "trezor.io": "trezoriovpjcahpzkrewelclulmszwbqpzmzgub37gbcjlvluxtruqad.onion"
+    },
     "resources": {
         "bridge": "./data/bridge/latest.txt"
     },
@@ -150,11 +153,11 @@
             "comment": ["new eth transaction pricing mechanism (EIP1559) since 1.10.4/2.4.2"]
         },
         {
-            "capabilities": ["taproot", "aopp"],
+            "capabilities": ["taproot", "signMessageNoScriptType"],
             "min": ["1.10.4", "2.4.3"],
             "comment": [
                 "new btc accounts taproot since 1.10.4/2.4.3 (BTC + TEST only)",
-                "SignMessage with AOPP support"
+                "SignMessage with no_script_type support"
             ]
         },
         {
@@ -162,6 +165,16 @@
             "methods": ["signTransaction"],
             "min": ["1.10.1", "2.4.0"],
             "comment": [""]
+        },
+        {
+            "methods": ["ethereumSignTypedData"],
+            "min": ["1.10.5", "2.4.3"],
+            "comment": ["EIP-712 typed signing support added in 1.10.5/2.4.3"]
+        },
+        {
+            "capabilities": ["eip712-domain-only"],
+            "min": ["1.10.6", "2.4.4"],
+            "comment": ["EIP-712 domain-only signing, when primaryType=EIP712Domain"]
         }
     ]
 }

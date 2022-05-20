@@ -88,7 +88,7 @@ export interface CardanoNativeScriptHash {
 // Sign transaction
 
 export interface CardanoInput {
-    path: string | number[];
+    path?: string | number[];
     prev_hash: string;
     prev_index: number;
 }
@@ -97,29 +97,31 @@ export type CardanoToken = {
     assetNameBytes: string;
     amount?: string;
     mintAmount?: string;
-}
+};
 
 export type CardanoAssetGroup = {
     policyId: string;
     tokenAmounts: CardanoToken[];
-}
+};
 
 export type CardanoOutput =
     | {
           addressParameters: CardanoAddressParameters;
           amount: string;
           tokenBundle?: CardanoAssetGroup[];
+          datumHash?: string;
       }
     | {
           address: string;
           amount: string;
           tokenBundle?: CardanoAssetGroup[];
-      }
+          datumHash?: string;
+      };
 
 export type CardanoPoolOwner = {
     stakingKeyPath?: string | number[];
     stakingKeyHash?: string;
-}
+};
 
 export type CardanoPoolRelay = {
     type: CardanoPoolRelayType;
@@ -127,17 +129,17 @@ export type CardanoPoolRelay = {
     ipv6Address?: string;
     port?: number;
     hostName?: string;
-}
+};
 
 export type CardanoPoolMetadata = {
     url: string;
     hash: string;
-}
+};
 
 export type CardanoPoolMargin = {
     numerator: string;
     denominator: string;
-}
+};
 
 export type CardanoPoolParameters = {
     poolId: string;
@@ -149,7 +151,7 @@ export type CardanoPoolParameters = {
     owners: CardanoPoolOwner[];
     relays: CardanoPoolRelay[];
     metadata: CardanoPoolMetadata;
-}
+};
 
 export type CardanoCertificate = {
     type: CardanoCertificateType;
@@ -157,27 +159,40 @@ export type CardanoCertificate = {
     pool?: string;
     poolParameters?: CardanoPoolParameters;
     scriptHash?: string;
-}
+    keyHash?: string;
+};
 
 export type CardanoWithdrawal = {
     path?: string | number[];
     amount: string;
     scriptHash?: string;
-}
+    keyHash?: string;
+};
 
-export type CardanoMint = CardanoAssetGroup[]
+export type CardanoMint = CardanoAssetGroup[];
+
+export type CardanoCollateralInput = {
+    path?: string | number[];
+    prev_hash: string;
+    prev_index: number;
+};
+
+export type CardanoRequiredSigner = {
+    keyPath?: string | number[];
+    keyHash?: string;
+};
 
 export type CardanoCatalystRegistrationParameters = {
     votingPublicKey: string;
     stakingPath: string | number[];
     rewardAddressParameters: CardanoAddressParameters;
     nonce: string;
-}
+};
 
 export type CardanoAuxiliaryData = {
     hash?: string;
     catalystRegistrationParameters?: CardanoCatalystRegistrationParameters;
-}
+};
 
 export interface CardanoSignTransaction {
     inputs: CardanoInput[];
@@ -189,11 +204,15 @@ export interface CardanoSignTransaction {
     validityIntervalStart?: string;
     auxiliaryData?: CardanoAuxiliaryData;
     mint?: CardanoMint;
+    scriptDataHash?: string;
+    collateralInputs?: CardanoCollateralInput[];
+    requiredSigners?: CardanoRequiredSigner[];
     additionalWitnessRequests?: (string | number[])[];
     protocolMagic: number;
     networkId: number;
     signingMode: CardanoTxSigningMode;
     derivationType?: CardanoDerivationType;
+    includeNetworkId?: boolean;
 }
 
 export type CardanoSignedTxWitness = {
@@ -201,13 +220,13 @@ export type CardanoSignedTxWitness = {
     pubKey: string;
     signature: string;
     chainCode?: string;
-}
+};
 
 export type CardanoAuxiliaryDataSupplement = {
     type: CardanoTxAuxiliaryDataSupplementType;
     auxiliaryDataHash: string;
     catalystSignature?: string;
-}
+};
 
 export interface CardanoSignedTxData {
     hash: string;

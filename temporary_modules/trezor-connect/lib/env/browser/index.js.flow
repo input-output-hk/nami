@@ -29,7 +29,7 @@ import * as $T from '../../types';
 export const eventEmitter = new EventEmitter();
 const _log = initLog('[trezor-connect.js]');
 
-let _settings: $T.ConnectSettings;
+let _settings = parseSettings();
 let _popupManager: ?PopupManager;
 
 const initPopupManager = (): PopupManager => {
@@ -46,8 +46,9 @@ const initPopupManager = (): PopupManager => {
     return pm;
 };
 
-export const manifest = (data: any) => {
+export const manifest = (data: $T.Manifest) => {
     _settings = parseSettings({
+        ..._settings,
         manifest: data,
     });
 };
@@ -55,6 +56,7 @@ export const manifest = (data: any) => {
 export const dispose = () => {
     eventEmitter.removeAllListeners();
     iframe.dispose();
+    _settings = parseSettings();
     if (_popupManager) {
         _popupManager.close();
     }
@@ -135,9 +137,7 @@ export const init = async (settings: $Shape<$T.ConnectSettings> = {}): Promise<v
         throw ERRORS.TypedError('Init_AlreadyInitialized');
     }
 
-    if (!_settings) {
-        _settings = parseSettings(settings);
-    }
+    _settings = parseSettings({ ..._settings, ...settings });
 
     if (!_settings.manifest) {
         throw ERRORS.TypedError('Init_ManifestMissing');
@@ -240,6 +240,9 @@ const customMessageResponse = (payload: ?{ message: string, params?: any }) => {
 };
 
 export const uiResponse = (response: $T.UiResponse) => {
+    if (!iframe.instance) {
+        throw ERRORS.TypedError('Init_NotInitialized');
+    }
     const { type, payload } = response;
     iframe.postMessage({ event: UI_EVENT, type, payload });
 };
@@ -256,6 +259,9 @@ export const getSettings = (): $T.Response<$T.ConnectSettings> => {
 };
 
 export const customMessage: $PropertyType<$T.API, 'customMessage'> = async params => {
+    if (!iframe.instance) {
+        throw ERRORS.TypedError('Init_NotInitialized');
+    }
     if (typeof params.callback !== 'function') {
         return errorMessage(ERRORS.TypedError('Method_CustomMessage_Callback'));
     }
@@ -281,7 +287,9 @@ export const customMessage: $PropertyType<$T.API, 'customMessage'> = async param
 };
 
 export const requestLogin: $PropertyType<$T.API, 'requestLogin'> = async params => {
-    // $FlowIssue: property callback not found
+    if (!iframe.instance) {
+        throw ERRORS.TypedError('Init_NotInitialized');
+    }
     if (typeof params.callback === 'function') {
         const { callback } = params;
 
@@ -321,6 +329,9 @@ export const requestLogin: $PropertyType<$T.API, 'requestLogin'> = async params 
 };
 
 export const disableWebUSB = () => {
+    if (!iframe.instance) {
+        throw ERRORS.TypedError('Init_NotInitialized');
+    }
     iframe.postMessage({
         event: UI_EVENT,
         type: TRANSPORT.DISABLE_WEBUSB,

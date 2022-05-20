@@ -28,9 +28,9 @@ Object.keys(_types).forEach(function (key) {
   exports[key] = _types[key];
 });
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 var TrezorConnect = {
   manifest: _node.manifest,
@@ -141,16 +141,6 @@ var TrezorConnect = {
       method: 'composeTransaction'
     }, params));
   },
-  debugLinkDecision: function debugLinkDecision(params) {
-    return (0, _node.call)(_objectSpread({
-      method: 'debugLinkDecision'
-    }, params));
-  },
-  debugLinkGetState: function debugLinkGetState(params) {
-    return (0, _node.call)(_objectSpread({
-      method: 'debugLinkGetState'
-    }, params));
-  },
   ethereumGetAddress: function ethereumGetAddress(params) {
     var useEventListener = _node.eventEmitter.listenerCount(_constants.UI.ADDRESS_VALIDATION) > 0;
     return (0, _node.call)(_objectSpread(_objectSpread({
@@ -172,6 +162,11 @@ var TrezorConnect = {
   ethereumSignTransaction: function ethereumSignTransaction(params) {
     return (0, _node.call)(_objectSpread({
       method: 'ethereumSignTransaction'
+    }, params));
+  },
+  ethereumSignTypedData: function ethereumSignTypedData(params) {
+    return (0, _node.call)(_objectSpread({
+      method: 'ethereumSignTypedData'
     }, params));
   },
   ethereumVerifyMessage: function ethereumVerifyMessage(params) {
@@ -385,6 +380,11 @@ var TrezorConnect = {
   rebootToBootloader: function rebootToBootloader(params) {
     return (0, _node.call)(_objectSpread({
       method: 'rebootToBootloader'
+    }, params));
+  },
+  setProxy: function setProxy(params) {
+    return (0, _node.call)(_objectSpread({
+      method: 'setProxy'
     }, params));
   },
   dispose: _node.dispose,

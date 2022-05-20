@@ -7,7 +7,7 @@ import type { Manifest, ConnectSettings } from '../types';
  * It could be changed by passing values into TrezorConnect.init(...) method
  */
 
-const VERSION = '8.2.3';
+const VERSION = '8.2.9-beta.1';
 const versionN = VERSION.split('.').map(s => parseInt(s, 10));
 // const DIRECTORY = `${ versionN[0] }${ (versionN[1] > 0 ? `.${versionN[1]}` : '') }/`;
 const DIRECTORY = `${versionN[0]}/`;
@@ -36,8 +36,6 @@ const initialSettings: ConnectSettings = {
     timestamp: new Date().getTime(),
     interactionTimeout: 600, // 5 minutes
 };
-
-let currentSettings: ConnectSettings = initialSettings;
 
 const parseManifest = (manifest: ?Manifest): ?Manifest => {
     if (!manifest) return;
@@ -98,7 +96,7 @@ export const corsValidator = (url?: string) => {
 };
 
 export const parse = (input: $Shape<ConnectSettings> = {}) => {
-    const settings: ConnectSettings = { ...currentSettings };
+    const settings: ConnectSettings = { ...initialSettings };
     if (Object.prototype.hasOwnProperty.call(input, 'debug')) {
         if (Array.isArray(input)) {
             // enable log with prefix
@@ -187,6 +185,5 @@ export const parse = (input: $Shape<ConnectSettings> = {}) => {
         settings.manifest = parseManifest(input.manifest);
     }
 
-    currentSettings = settings;
-    return currentSettings;
+    return settings;
 };

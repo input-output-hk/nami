@@ -415,9 +415,13 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         : {
             address: outputAddressHuman,
           };
+    const datumHash = output.data_hash()
+      ? Buffer.from(output.data_hash().to_bytes()).toString('hex')
+      : null;
     const outputRes = {
       amount: output.amount().coin().to_str(),
       tokenBundle,
+      datumHash,
       ...destination,
     };
     if (!tokenBundle) delete outputRes.tokenBundle;
@@ -623,6 +627,56 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     if (keys.stake.path) additionalWitnessRequests.push(keys.stake.path);
   }
 
+  // Plutus
+  const scriptDataHash = tx.body().script_data_hash()
+    ? Buffer.from(tx.body().script_data_hash().to_bytes()).toString('hex')
+    : null;
+
+  let collateralInputs = null;
+  if (tx.body().collateral()) {
+    collateralInputs = [];
+    const collateraInputs = tx.body().collateral();
+    for (let i = 0; i < collateraInputs.len(); i++) {
+      const input = collateraInputs.get(i);
+      if (keys.payment.path) {
+        collateralInputs.push({
+          prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString(
+            'hex'
+          ),
+          prev_index: input.index(),
+          path: keys.payment.path, // needed to include payment key witness if available
+        });
+      } else {
+        collateralInputs.push({
+          prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString(
+            'hex'
+          ),
+          prev_index: input.index(),
+        });
+      }
+      signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
+    }
+  }
+
+  let requiredSigners = null;
+  if (tx.body().required_signers()) {
+    requiredSigners = [];
+    const r = tx.body().required_signers();
+    for (let i = 0; i < r.len(); i++) {
+      const signer = Buffer.from(r.get(i).to_bytes()).toString('hex');
+      if (signer === keys.payment.hash) {
+        requiredSigners.push({
+          keyPath: keys.payment.path,
+        });
+      } else {
+        requiredSigners.push({
+          keyHash: signer,
+        });
+      }
+    }
+    signingMode = TransactionSigningMode.PLUTUS_TRANSACTION;
+  }
+
   const trezorTx = {
     signingMode,
     inputs: trezorInputs,
@@ -636,6 +690,9 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     withdrawals: trezorWithdrawals,
     auxiliaryData,
     mint: mintBundle,
+    scriptDataHash,
+    collateralInputs,
+    requiredSigners,
     protocolMagic: network === 1 ? 764824073 : 42,
     networkId: network,
     additionalWitnessRequests,
@@ -1050,7 +1107,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
       } else {
         requiredSigners.push({
           type: TxRequiredSignerType.HASH,
-          hashHex: 'fea6646c67fb467f8a5425e9c752e1e262b0420ba4b638f39514049a',
+          hashHex: signer,
         });
       }
     }

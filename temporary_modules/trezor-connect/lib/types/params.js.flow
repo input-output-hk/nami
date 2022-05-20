@@ -23,6 +23,17 @@ export type Manifest = {
     email: string,
 };
 
+export type Proxy =
+    | string
+    | {
+          // Partial (useful) BlockchainLinkOptions.proxy
+          protocol?: 'socks4' | 'socks4a' | 'socks' | 'socks5' | 'socks5h',
+          host: string,
+          port: string | number,
+          username?: string,
+          password?: string,
+      };
+
 export type ConnectSettings = {
     manifest: ?Manifest,
     connectSrc?: string,
@@ -48,6 +59,8 @@ export type ConnectSettings = {
     extension?: string,
     env: 'node' | 'web' | 'webextension' | 'electron' | 'react-native',
     timestamp: number,
+    proxy?: Proxy,
+    useOnionLinks?: boolean,
 };
 
 export type CommonParams = {
@@ -65,6 +78,11 @@ export type CommonParams = {
 
 export type Bundle<T> = {
     bundle: T[],
+};
+
+export type NoBundle<T> = {
+    ...T,
+    bundle?: typeof undefined,
 };
 
 export type CoreMessage = {

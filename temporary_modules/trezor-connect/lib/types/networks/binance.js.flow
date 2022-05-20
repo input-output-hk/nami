@@ -6,6 +6,7 @@ export type BinanceGetAddress = {
     path: string | number[],
     address?: string,
     showOnTrezor?: boolean,
+    useEventListener?: boolean, // set automatically if UI.ADDRESS_VALIDATION listener is used
 };
 
 export type BinanceAddress = {
@@ -52,7 +53,15 @@ export type BinancePreparedMessage =
           type: 'BinanceCancelMsg',
       });
 
-export type BinancePreparedTransaction = BinanceSDKTransaction & {
+// todo: a better way to make some of the props from BinanceSDKTransaction required
+// and keep others as they are?
+// does not work: $NonMaybeType<BinanceSDKTransaction>
+export type BinancePreparedTransaction = {
+    ...BinanceSDKTransaction,
+    account_number: number,
+    sequence: number,
+    source: number,
+} & {
     messages: BinancePreparedMessage[],
 };
 

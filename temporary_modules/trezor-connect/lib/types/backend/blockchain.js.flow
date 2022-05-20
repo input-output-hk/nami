@@ -8,6 +8,7 @@ import type { CoreMessage } from '../params';
 export type BlockchainInfo = {
     coin: CoinInfo,
     url: string,
+    cleanUrl?: string,
     blockHash: string,
     blockHeight: number,
     decimals: number,

@@ -1,9 +1,11 @@
 /* @flow */
 
+import type { Proxy } from './params';
+
 export type CipherKeyValue = {
     path: string | number[],
-    key?: string,
-    value?: string | Buffer,
+    key: string,
+    value: string | Buffer,
     encrypt?: boolean,
     askOnEncrypt?: boolean,
     askOnDecrypt?: boolean,
@@ -17,9 +19,11 @@ export type CipheredValue = {
 export type LoginChallenge = {
     challengeHidden: string,
     challengeVisual: string,
+    callback?: typeof undefined,
+    asyncChallenge?: typeof undefined,
 };
 
-export type RequestLoginAsync = { callback: () => LoginChallenge };
+export type RequestLoginAsync = { callback: () => LoginChallenge, asyncChallenge?: boolean };
 
 export type Login = {
     address: string,
@@ -32,4 +36,9 @@ export type CustomMessage = {
     message: string,
     params: JSON | Object,
     callback: (request: any) => Promise<{ message: string, params?: Object }>,
+};
+
+export type SetProxy = {
+    proxy?: Proxy,
+    useOnionLinks?: boolean,
 };
