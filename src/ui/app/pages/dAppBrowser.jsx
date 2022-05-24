@@ -47,7 +47,7 @@ const DAppBrowser = () => {
       >
         <IconButton
           rounded="md"
-          onClick={() => history.goBack()}
+          onClick={() => history.push('/wallet')}
           variant="ghost"
           icon={<ChevronLeftIcon boxSize="7" />}
         />

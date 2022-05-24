@@ -29,8 +29,8 @@ const Main = ({ children }) => {
   }, []);
   return (
     <Box
-      width={'100%'}
-      height={'100vh'}
+      width={(isMain && !chrome.namiApp) ? POPUP_WINDOW.width + 'px' : '100%'}
+      height={(isMain && !chrome.namiApp) ? POPUP_WINDOW.height + 'px' : '100vh'}
     >
       <Theme>
         <StoreProvider>

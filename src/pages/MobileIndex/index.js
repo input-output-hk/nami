@@ -91,7 +91,7 @@ var port;
 var tabs = [];
 
 var chrome = {
-  app: true,
+  namiApp: true,
 	storage: {
 		local: {
 			set: function(items, callback) {

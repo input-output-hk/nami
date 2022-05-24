@@ -534,7 +534,7 @@ export const setAccountAvatar = async (avatar) => {
 };
 
 export const createPopup = async (popup) => {
-  const windowPopup = !chrome.app || !document.getElementById('internalPopupModal');
+  const windowPopup = !chrome.namiApp || !document.getElementById('internalPopupModal');
   if (windowPopup) {
     let left = 0;
     let top = 0;
