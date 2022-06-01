@@ -104,6 +104,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             ready: true,
           });
         } catch (e) {
+          console.log(e);
           checkTx(count + 1);
         }
       };

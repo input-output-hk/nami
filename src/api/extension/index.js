@@ -1661,9 +1661,14 @@ export const updateBalance = async (currentAccount, network) => {
     );
     if (currentAccount[network.id].assets.length > 0) {
       const protocolParameters = await initTx();
+      const checkOutput = Loader.Cardano.TransactionOutput.new(
+        Loader.Cardano.Address.from_bech32(
+          currentAccount[network.id].paymentAddr
+        ),
+        amount
+      );
       const minAda = Loader.Cardano.min_ada_required(
-        amount,
-        false,
+        checkOutput,
         Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
       ).to_str();
       currentAccount[network.id].minAda = minAda;
@@ -1795,9 +1800,9 @@ export const toUnit = (amount, decimals = 6) => {
     amount.toString().replace(/[,\s]/g, '')
   ).toLocaleString('en-EN', { minimumFractionDigits: decimals });
   const split = result.split('.');
+  const front = split[0].replace(/[,\s]/g, '');
   result =
-    split[0].replace(/[,\s]/g, '') +
-    (split[1] ? split[1].slice(0, decimals) : '');
+    (front == 0 ? '' : front) + (split[1] ? split[1].slice(0, decimals) : '');
   if (!result) return '0';
   else if (result == 'NaN') return '0';
   return result;

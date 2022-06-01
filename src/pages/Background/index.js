@@ -151,8 +151,8 @@ app.add(METHOD.getUtxos, (request, sendResponse) => {
   getUtxos(request.data.amount, request.data.paginate)
     .then((utxos) => {
       utxos = utxos
-        ? utxos.map((utxo) =>
-            Buffer.from(utxo.to_bytes(), 'hex').toString('hex')
+        ? utxos.map(
+            (utxo) => Buffer.from(utxo.to_legacy_bytes(), 'hex').toString('hex') // LEGACY support => TODO change in the future
           )
         : null;
       sendResponse({

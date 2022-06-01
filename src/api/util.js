@@ -202,7 +202,9 @@ export const utxoFromJson = async (output, address) => {
       Loader.Cardano.TransactionHash.from_bytes(
         Buffer.from(output.tx_hash || output.txHash, 'hex')
       ),
-      output.output_index || output.txId
+      Loader.Cardano.BigNum.from_str(
+        (output.output_index ?? output.txId).toString()
+      )
     ),
     Loader.Cardano.TransactionOutput.new(
       Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex')),
@@ -317,13 +319,9 @@ export const valueToAssets = async (value) => {
   return assets;
 };
 
-export const minAdaRequired = async (value, coinsPerUtxoWord) => {
+export const minAdaRequired = async (output, coinsPerUtxoWord) => {
   await Loader.load();
-  return Loader.Cardano.min_ada_required(
-    value,
-    false,
-    coinsPerUtxoWord
-  ).to_str();
+  return Loader.Cardano.min_ada_required(output, coinsPerUtxoWord).to_str();
 };
 
 /**

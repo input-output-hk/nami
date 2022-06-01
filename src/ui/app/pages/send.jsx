@@ -247,13 +247,25 @@ const Send = () => {
         });
       }
 
-      const outputValue = await assetsToValue(output.amount);
+      const checkOutput = Loader.Cardano.TransactionOutput.new(
+        _address.isM1
+          ? Loader.Cardano.Address.from_bech32(_address.result)
+          : Loader.Cardano.Address.from_bytes(
+              await isValidAddress(_address.result)
+            ),
+        await assetsToValue(output.amount)
+      );
       const minAda = await minAdaRequired(
-        outputValue,
+        checkOutput,
         Loader.Cardano.BigNum.from_str(
           txInfo.protocolParameters.coinsPerUtxoWord
         )
       );
+
+      if (BigInt(minAda) > BigInt(toUnit(_value.personalAda || '0'))) {
+        setFee({ error: 'Transaction not possible' });
+        return;
+      }
 
       if (BigInt(minAda) <= BigInt(toUnit(_value.personalAda || '0'))) {
         const displayAda = parseFloat(
@@ -364,6 +376,17 @@ const Send = () => {
     }
     let _utxos = await getUtxos();
     const protocolParameters = await initTx();
+
+    const checkOutput = Loader.Cardano.TransactionOutput.new(
+      Loader.Cardano.Address.from_bech32(currentAccount.paymentAddr),
+      Loader.Cardano.Value.zero()
+    );
+    const minUtxo = await minAdaRequired(
+      checkOutput,
+      Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
+    );
+    protocolParameters.minUtxo = minUtxo;
+
     const utxoSum = await sumUtxos(_utxos);
     let balance = await valueToAssets(utxoSum);
     balance = {
