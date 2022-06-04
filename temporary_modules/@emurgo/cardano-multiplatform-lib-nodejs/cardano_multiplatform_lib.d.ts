@@ -37,6 +37,13 @@ export function encrypt_with_password(password: string, salt: string, nonce: str
 */
 export function decrypt_with_password(password: string, data: string): string;
 /**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
+/**
 * @param {string} json
 * @param {number} schema
 * @returns {PlutusData}
@@ -48,13 +55,6 @@ export function encode_json_str_to_plutus_datum(json: string, schema: number): P
 * @returns {string}
 */
 export function decode_plutus_datum_to_json_str(datum: PlutusData, schema: number): string;
-/**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
 /**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
@@ -202,23 +202,9 @@ export enum StakeCredKind {
 }
 /**
 */
-export enum CoinSelectionStrategyCIP2 {
-/**
-* Performs CIP2's Largest First ada-only selection. Will error if outputs contain non-ADA assets.
-*/
-  LargestFirst,
-/**
-* Performs CIP2's Random Improve ada-only selection. Will error if outputs contain non-ADA assets.
-*/
-  RandomImprove,
-/**
-* Same as LargestFirst, but before adding ADA, will insert by largest-first for each asset type.
-*/
-  LargestFirstMultiAsset,
-/**
-* Same as RandomImprove, but before adding ADA, will insert by random-improve for each asset type.
-*/
-  RandomImproveMultiAsset,
+export enum ScriptWitnessKind {
+  NativeWitness,
+  PlutusWitness,
 }
 /**
 */
@@ -307,12 +293,6 @@ export enum ScriptKind {
 export enum DatumKind {
   Hash,
   Data,
-}
-/**
-*/
-export enum ScriptWitnessKind {
-  NativeWitness,
-  PlutusWitness,
 }
 /**
 * Each new language uses a different namespace for hashing its script
@@ -578,6 +558,10 @@ export class AuxiliaryData {
 * @param {PlutusScripts} plutus_scripts
 */
   set_plutus_scripts(plutus_scripts: PlutusScripts): void;
+/**
+* @param {PlutusScripts} plutus_scripts
+*/
+  set_plutus_v2_scripts(plutus_scripts: PlutusScripts): void;
 }
 /**
 */
@@ -5581,14 +5565,13 @@ export class TransactionBuilder {
 */
   script_data_hash(): ScriptDataHash | undefined;
 /**
-* @param {Address} address
-* @param {TransactionInput} collateral
+* @param {TransactionUnspentOutput} utxo
 */
-  add_collateral(address: Address, collateral: TransactionInput): void;
+  add_collateral(utxo: TransactionUnspentOutput): void;
 /**
 * @returns {TransactionInputs | undefined}
 */
-  collateral(): TransactionInputs | undefined;
+  get_collateral(): TransactionInputs | undefined;
 /**
 * @param {Ed25519KeyHash} required_signer
 */
@@ -5665,13 +5648,21 @@ export class TransactionBuilder {
   outputs(): TransactionOutputs;
 /**
 * Returns full Transaction object with the body and the auxiliary data
+*
 * NOTE: witness_set will contain all mint_scripts if any been added or set
+*
 * takes fetched ex units into consideration
+*
+* add collateral utxos and collateral change receiver in case you redeem from plutus script utxos
+*
 * async call
+*
 * NOTE: is_valid set to true
+* @param {TransactionUnspentOutputs | undefined} collateral_utxos
+* @param {Address | undefined} collateral_change_address
 * @returns {Promise<Transaction>}
 */
-  construct(): Promise<Transaction>;
+  construct(collateral_utxos?: TransactionUnspentOutputs, collateral_change_address?: Address): Promise<Transaction>;
 /**
 * Returns full Transaction object with the body and the auxiliary data
 * NOTE: witness_set will contain all mint_scripts if any been added or set
@@ -5740,6 +5731,16 @@ export class TransactionBuilderConfigBuilder {
 * @returns {TransactionBuilderConfigBuilder}
 */
   costmdls(costmdls: Costmdls): TransactionBuilderConfigBuilder;
+/**
+* @param {number} collateral_percentage
+* @returns {TransactionBuilderConfigBuilder}
+*/
+  collateral_percentage(collateral_percentage: number): TransactionBuilderConfigBuilder;
+/**
+* @param {number} max_collateral_inputs
+* @returns {TransactionBuilderConfigBuilder}
+*/
+  max_collateral_inputs(max_collateral_inputs: number): TransactionBuilderConfigBuilder;
 /**
 * @param {Blockfrost} blockfrost
 * @returns {TransactionBuilderConfigBuilder}
@@ -6860,6 +6861,7 @@ export interface AuxiliaryDataJSON {
   } | null;
   native_scripts?: NativeScriptsJSON | null;
   plutus_scripts?: PlutusScriptsJSON | null;
+  plutus_v2_scripts?: PlutusScriptsJSON | null;
 }
 export type AuxiliaryDataHashJSON = string;
 export interface AuxiliaryDataSetJSON {

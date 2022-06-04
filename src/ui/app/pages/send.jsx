@@ -262,11 +262,6 @@ const Send = () => {
         )
       );
 
-      if (BigInt(minAda) > BigInt(toUnit(_value.personalAda || '0'))) {
-        setFee({ error: 'Transaction not possible' });
-        return;
-      }
-
       if (BigInt(minAda) <= BigInt(toUnit(_value.personalAda || '0'))) {
         const displayAda = parseFloat(
           _value.personalAda.replace(/[,\s]/g, '')
@@ -283,6 +278,12 @@ const Send = () => {
           ada: minAdaDisplay,
         });
       }
+
+      if (BigInt(minAda) > BigInt(output.amount[0].quantity || '0')) {
+        setFee({ error: 'Transaction not possible' });
+        return;
+      }
+
       const outputs = Loader.Cardano.TransactionOutputs.new();
       outputs.add(
         Loader.Cardano.TransactionOutput.new(

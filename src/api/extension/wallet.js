@@ -21,6 +21,8 @@ export const initTx = async () => {
     priceStep: p.price_step,
     maxTxSize: parseInt(p.max_tx_size),
     slot: parseInt(latest_block.slot),
+    collateralPercentage: parseInt(p.collateral_percent),
+    maxCollateralInputs: parseInt(p.max_collateral_inputs),
   };
 };
 
@@ -50,6 +52,8 @@ export const buildTx = async (
     .max_tx_size(protocolParameters.maxTxSize)
     .max_value_size(protocolParameters.maxValSize)
     .ex_unit_prices(Loader.Cardano.ExUnitPrices.from_float(0, 0))
+    .collateral_percentage(protocolParameters.collateralPercentage)
+    .max_collateral_inputs(protocolParameters.maxCollateralInputs)
     .build();
 
   const txBuilder = Loader.Cardano.TransactionBuilder.new(txBuilderConfig);
@@ -150,6 +154,8 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
     .max_tx_size(protocolParameters.maxTxSize)
     .max_value_size(protocolParameters.maxValSize)
     .ex_unit_prices(Loader.Cardano.ExUnitPrices.from_float(0, 0))
+    .collateral_percentage(protocolParameters.collateralPercentage)
+    .max_collateral_inputs(protocolParameters.maxCollateralInputs)
     .build();
 
   const txBuilder = Loader.Cardano.TransactionBuilder.new(txBuilderConfig);
@@ -223,6 +229,8 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     .max_tx_size(protocolParameters.maxTxSize)
     .max_value_size(protocolParameters.maxValSize)
     .ex_unit_prices(Loader.Cardano.ExUnitPrices.from_float(0, 0))
+    .collateral_percentage(protocolParameters.collateralPercentage)
+    .max_collateral_inputs(protocolParameters.maxCollateralInputs)
     .build();
 
   const txBuilder = Loader.Cardano.TransactionBuilder.new(txBuilderConfig);
@@ -274,6 +282,8 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
     .max_tx_size(protocolParameters.maxTxSize)
     .max_value_size(protocolParameters.maxValSize)
     .ex_unit_prices(Loader.Cardano.ExUnitPrices.from_float(0, 0))
+    .collateral_percentage(protocolParameters.collateralPercentage)
+    .max_collateral_inputs(protocolParameters.maxCollateralInputs)
     .build();
 
   const txBuilder = Loader.Cardano.TransactionBuilder.new(txBuilderConfig);

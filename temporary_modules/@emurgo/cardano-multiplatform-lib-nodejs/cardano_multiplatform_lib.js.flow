@@ -66,6 +66,18 @@ declare export function decrypt_with_password(
 ): string;
 
 /**
+ * @param {Transaction} tx
+ * @param {LinearFee} linear_fee
+ * @param {ExUnitPrices} ex_unit_prices
+ * @returns {BigNum}
+ */
+declare export function min_fee(
+  tx: Transaction,
+  linear_fee: LinearFee,
+  ex_unit_prices: ExUnitPrices
+): BigNum;
+
+/**
  * @param {string} json
  * @param {number} schema
  * @returns {PlutusData}
@@ -84,18 +96,6 @@ declare export function decode_plutus_datum_to_json_str(
   datum: PlutusData,
   schema: number
 ): string;
-
-/**
- * @param {Transaction} tx
- * @param {LinearFee} linear_fee
- * @param {ExUnitPrices} ex_unit_prices
- * @returns {BigNum}
- */
-declare export function min_fee(
-  tx: Transaction,
-  linear_fee: LinearFee,
-  ex_unit_prices: ExUnitPrices
-): BigNum;
 
 /**
  * @param {TransactionHash} tx_body_hash
@@ -308,11 +308,9 @@ declare export var StakeCredKind: {|
 /**
  */
 
-declare export var CoinSelectionStrategyCIP2: {|
-  +LargestFirst: 0, // 0
-  +RandomImprove: 1, // 1
-  +LargestFirstMultiAsset: 2, // 2
-  +RandomImproveMultiAsset: 3, // 3
+declare export var ScriptWitnessKind: {|
+  +NativeWitness: 0, // 0
+  +PlutusWitness: 1, // 1
 |};
 
 /**
@@ -376,14 +374,6 @@ declare export var ScriptKind: {|
 declare export var DatumKind: {|
   +Hash: 0, // 0
   +Data: 1, // 1
-|};
-
-/**
- */
-
-declare export var ScriptWitnessKind: {|
-  +NativeWitness: 0, // 0
-  +PlutusWitness: 1, // 1
 |};
 
 /**
@@ -705,6 +695,11 @@ declare export class AuxiliaryData {
    * @param {PlutusScripts} plutus_scripts
    */
   set_plutus_scripts(plutus_scripts: PlutusScripts): void;
+
+  /**
+   * @param {PlutusScripts} plutus_scripts
+   */
+  set_plutus_v2_scripts(plutus_scripts: PlutusScripts): void;
 }
 /**
  */
@@ -6804,15 +6799,14 @@ declare export class TransactionBuilder {
   script_data_hash(): ScriptDataHash | void;
 
   /**
-   * @param {Address} address
-   * @param {TransactionInput} collateral
+   * @param {TransactionUnspentOutput} utxo
    */
-  add_collateral(address: Address, collateral: TransactionInput): void;
+  add_collateral(utxo: TransactionUnspentOutput): void;
 
   /**
    * @returns {TransactionInputs | void}
    */
-  collateral(): TransactionInputs | void;
+  get_collateral(): TransactionInputs | void;
 
   /**
    * @param {Ed25519KeyHash} required_signer
@@ -6906,13 +6900,24 @@ declare export class TransactionBuilder {
 
   /**
    * Returns full Transaction object with the body and the auxiliary data
+   *
    * NOTE: witness_set will contain all mint_scripts if any been added or set
+   *
    * takes fetched ex units into consideration
+   *
+   * add collateral utxos and collateral change receiver in case you redeem from plutus script utxos
+   *
    * async call
+   *
    * NOTE: is_valid set to true
+   * @param {TransactionUnspentOutputs | void} collateral_utxos
+   * @param {Address | void} collateral_change_address
    * @returns {Promise<Transaction>}
    */
-  construct(): Promise<Transaction>;
+  construct(
+    collateral_utxos?: TransactionUnspentOutputs,
+    collateral_change_address?: Address
+  ): Promise<Transaction>;
 
   /**
    * Returns full Transaction object with the body and the auxiliary data
@@ -6994,6 +6999,22 @@ declare export class TransactionBuilderConfigBuilder {
    * @returns {TransactionBuilderConfigBuilder}
    */
   costmdls(costmdls: Costmdls): TransactionBuilderConfigBuilder;
+
+  /**
+   * @param {number} collateral_percentage
+   * @returns {TransactionBuilderConfigBuilder}
+   */
+  collateral_percentage(
+    collateral_percentage: number
+  ): TransactionBuilderConfigBuilder;
+
+  /**
+   * @param {number} max_collateral_inputs
+   * @returns {TransactionBuilderConfigBuilder}
+   */
+  max_collateral_inputs(
+    max_collateral_inputs: number
+  ): TransactionBuilderConfigBuilder;
 
   /**
    * @param {Blockfrost} blockfrost
@@ -8344,6 +8365,7 @@ export interface AuxiliaryDataJSON {
   } | null;
   native_scripts?: NativeScriptsJSON | null;
   plutus_scripts?: PlutusScriptsJSON | null;
+  plutus_v2_scripts?: PlutusScriptsJSON | null;
 }
 export type AuxiliaryDataHashJSON = string;
 export interface AuxiliaryDataSetJSON {

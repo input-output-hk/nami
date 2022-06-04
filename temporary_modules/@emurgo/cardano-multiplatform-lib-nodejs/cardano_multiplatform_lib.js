@@ -103,16 +103,16 @@ function passStringToWasm0(arg, malloc, realloc) {
     return ptr;
 }
 
-function isLikeNone(x) {
-    return x === undefined || x === null;
-}
-
 let cachegetInt32Memory0 = null;
 function getInt32Memory0() {
     if (cachegetInt32Memory0 === null || cachegetInt32Memory0.buffer !== wasm.memory.buffer) {
         cachegetInt32Memory0 = new Int32Array(wasm.memory.buffer);
     }
     return cachegetInt32Memory0;
+}
+
+function isLikeNone(x) {
+    return x === undefined || x === null;
 }
 
 function debugString(val) {
@@ -348,6 +348,20 @@ module.exports.decrypt_with_password = function(password, data) {
 };
 
 /**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+module.exports.min_fee = function(tx, linear_fee, ex_unit_prices) {
+    _assertClass(tx, Transaction);
+    _assertClass(linear_fee, LinearFee);
+    _assertClass(ex_unit_prices, ExUnitPrices);
+    var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, ex_unit_prices.ptr);
+    return BigNum.__wrap(ret);
+};
+
+/**
 * @param {string} json
 * @param {number} schema
 * @returns {PlutusData}
@@ -376,20 +390,6 @@ module.exports.decode_plutus_datum_to_json_str = function(datum, schema) {
         wasm.__wbindgen_add_to_stack_pointer(16);
         wasm.__wbindgen_free(r0, r1);
     }
-};
-
-/**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-module.exports.min_fee = function(tx, linear_fee, ex_unit_prices) {
-    _assertClass(tx, Transaction);
-    _assertClass(linear_fee, LinearFee);
-    _assertClass(ex_unit_prices, ExUnitPrices);
-    var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, ex_unit_prices.ptr);
-    return BigNum.__wrap(ret);
 };
 
 /**
@@ -551,7 +551,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1355(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1358(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__hf20c15ebccf7f833(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -584,23 +584,7 @@ module.exports.MetadataJsonSchema = Object.freeze({ NoConversions:0,"0":"NoConve
 module.exports.StakeCredKind = Object.freeze({ Key:0,"0":"Key",Script:1,"1":"Script", });
 /**
 */
-module.exports.CoinSelectionStrategyCIP2 = Object.freeze({
-/**
-* Performs CIP2's Largest First ada-only selection. Will error if outputs contain non-ADA assets.
-*/
-LargestFirst:0,"0":"LargestFirst",
-/**
-* Performs CIP2's Random Improve ada-only selection. Will error if outputs contain non-ADA assets.
-*/
-RandomImprove:1,"1":"RandomImprove",
-/**
-* Same as LargestFirst, but before adding ADA, will insert by largest-first for each asset type.
-*/
-LargestFirstMultiAsset:2,"2":"LargestFirstMultiAsset",
-/**
-* Same as RandomImprove, but before adding ADA, will insert by random-improve for each asset type.
-*/
-RandomImproveMultiAsset:3,"3":"RandomImproveMultiAsset", });
+module.exports.ScriptWitnessKind = Object.freeze({ NativeWitness:0,"0":"NativeWitness",PlutusWitness:1,"1":"PlutusWitness", });
 /**
 */
 module.exports.LanguageKind = Object.freeze({ PlutusV1:0,"0":"PlutusV1",PlutusV2:1,"1":"PlutusV2", });
@@ -667,9 +651,6 @@ module.exports.ScriptKind = Object.freeze({ NativeScript:0,"0":"NativeScript",Pl
 /**
 */
 module.exports.DatumKind = Object.freeze({ Hash:0,"0":"Hash",Data:1,"1":"Data", });
-/**
-*/
-module.exports.ScriptWitnessKind = Object.freeze({ NativeWitness:0,"0":"NativeWitness",PlutusWitness:1,"1":"PlutusWitness", });
 /**
 * Each new language uses a different namespace for hashing its script
 * This is because you could have a language where the same bytes have different semantics
@@ -1304,6 +1285,13 @@ class AuxiliaryData {
     set_plutus_scripts(plutus_scripts) {
         _assertClass(plutus_scripts, PlutusScripts);
         wasm.auxiliarydata_set_plutus_scripts(this.ptr, plutus_scripts.ptr);
+    }
+    /**
+    * @param {PlutusScripts} plutus_scripts
+    */
+    set_plutus_v2_scripts(plutus_scripts) {
+        _assertClass(plutus_scripts, PlutusScripts);
+        wasm.auxiliarydata_set_plutus_v2_scripts(this.ptr, plutus_scripts.ptr);
     }
 }
 module.exports.AuxiliaryData = AuxiliaryData;
@@ -13716,19 +13704,17 @@ class TransactionBuilder {
         return ret === 0 ? undefined : ScriptDataHash.__wrap(ret);
     }
     /**
-    * @param {Address} address
-    * @param {TransactionInput} collateral
+    * @param {TransactionUnspentOutput} utxo
     */
-    add_collateral(address, collateral) {
-        _assertClass(address, Address);
-        _assertClass(collateral, TransactionInput);
-        wasm.transactionbuilder_add_collateral(this.ptr, address.ptr, collateral.ptr);
+    add_collateral(utxo) {
+        _assertClass(utxo, TransactionUnspentOutput);
+        wasm.transactionbuilder_add_collateral(this.ptr, utxo.ptr);
     }
     /**
     * @returns {TransactionInputs | undefined}
     */
-    collateral() {
-        var ret = wasm.transactionbuilder_collateral(this.ptr);
+    get_collateral() {
+        var ret = wasm.transactionbuilder_get_collateral(this.ptr);
         return ret === 0 ? undefined : TransactionInputs.__wrap(ret);
     }
     /**
@@ -13872,15 +13858,35 @@ class TransactionBuilder {
     }
     /**
     * Returns full Transaction object with the body and the auxiliary data
+    *
     * NOTE: witness_set will contain all mint_scripts if any been added or set
+    *
     * takes fetched ex units into consideration
+    *
+    * add collateral utxos and collateral change receiver in case you redeem from plutus script utxos
+    *
     * async call
+    *
     * NOTE: is_valid set to true
+    * @param {TransactionUnspentOutputs | undefined} collateral_utxos
+    * @param {Address | undefined} collateral_change_address
     * @returns {Promise<Transaction>}
     */
-    construct() {
+    construct(collateral_utxos, collateral_change_address) {
         const ptr = this.__destroy_into_raw();
-        var ret = wasm.transactionbuilder_construct(ptr);
+        let ptr0 = 0;
+        if (!isLikeNone(collateral_utxos)) {
+            _assertClass(collateral_utxos, TransactionUnspentOutputs);
+            ptr0 = collateral_utxos.ptr;
+            collateral_utxos.ptr = 0;
+        }
+        let ptr1 = 0;
+        if (!isLikeNone(collateral_change_address)) {
+            _assertClass(collateral_change_address, Address);
+            ptr1 = collateral_change_address.ptr;
+            collateral_change_address.ptr = 0;
+        }
+        var ret = wasm.transactionbuilder_construct(ptr, ptr0, ptr1);
         return takeObject(ret);
     }
     /**
@@ -14026,6 +14032,22 @@ class TransactionBuilderConfigBuilder {
     costmdls(costmdls) {
         _assertClass(costmdls, Costmdls);
         var ret = wasm.transactionbuilderconfigbuilder_costmdls(this.ptr, costmdls.ptr);
+        return TransactionBuilderConfigBuilder.__wrap(ret);
+    }
+    /**
+    * @param {number} collateral_percentage
+    * @returns {TransactionBuilderConfigBuilder}
+    */
+    collateral_percentage(collateral_percentage) {
+        var ret = wasm.transactionbuilderconfigbuilder_collateral_percentage(this.ptr, collateral_percentage);
+        return TransactionBuilderConfigBuilder.__wrap(ret);
+    }
+    /**
+    * @param {number} max_collateral_inputs
+    * @returns {TransactionBuilderConfigBuilder}
+    */
+    max_collateral_inputs(max_collateral_inputs) {
+        var ret = wasm.transactionbuilderconfigbuilder_max_collateral_inputs(this.ptr, max_collateral_inputs);
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
@@ -16839,20 +16861,6 @@ module.exports.__wbindgen_string_new = function(arg0, arg1) {
     return addHeapObject(ret);
 };
 
-module.exports.__wbg_fetch_da4b562f370dc6f1 = function(arg0, arg1) {
-    var ret = getObject(arg0).fetch(getObject(arg1));
-    return addHeapObject(ret);
-};
-
-module.exports.__wbindgen_string_get = function(arg0, arg1) {
-    const obj = getObject(arg1);
-    var ret = typeof(obj) === 'string' ? obj : undefined;
-    var ptr0 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len0 = WASM_VECTOR_LEN;
-    getInt32Memory0()[arg0 / 4 + 1] = len0;
-    getInt32Memory0()[arg0 / 4 + 0] = ptr0;
-};
-
 module.exports.__wbindgen_json_parse = function(arg0, arg1) {
     var ret = JSON.parse(getStringFromWasm0(arg0, arg1));
     return addHeapObject(ret);
@@ -16862,6 +16870,20 @@ module.exports.__wbindgen_json_serialize = function(arg0, arg1) {
     const obj = getObject(arg1);
     var ret = JSON.stringify(obj === undefined ? null : obj);
     var ptr0 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    getInt32Memory0()[arg0 / 4 + 1] = len0;
+    getInt32Memory0()[arg0 / 4 + 0] = ptr0;
+};
+
+module.exports.__wbg_fetch_da4b562f370dc6f1 = function(arg0, arg1) {
+    var ret = getObject(arg0).fetch(getObject(arg1));
+    return addHeapObject(ret);
+};
+
+module.exports.__wbindgen_string_get = function(arg0, arg1) {
+    const obj = getObject(arg1);
+    var ret = typeof(obj) === 'string' ? obj : undefined;
+    var ptr0 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     var len0 = WASM_VECTOR_LEN;
     getInt32Memory0()[arg0 / 4 + 1] = len0;
     getInt32Memory0()[arg0 / 4 + 0] = ptr0;
@@ -16987,7 +17009,7 @@ module.exports.__wbg_new_c143a4f563f78c4e = function(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1355(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1358(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -17137,7 +17159,7 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8341 = function(arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper8376 = function(arg0, arg1, arg2) {
     var ret = makeMutClosure(arg0, arg1, 462, __wbg_adapter_32);
     return addHeapObject(ret);
 };
