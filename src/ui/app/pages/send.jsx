@@ -745,6 +745,14 @@ const Send = () => {
                 fee
               </Box>
             </Box>
+            {address.isM1 && (
+              <>
+                <Box h={4} />
+                <Box fontWeight={'bold'} fontSize={'sm'}>
+                  Sending to Milkomeda ⚠️
+                </Box>
+              </>
+            )}
             <Box h={6} />
           </Box>
         }
