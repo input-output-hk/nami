@@ -94,7 +94,7 @@ const SignTx = ({ request, controller }) => {
     const outputs = tx.body().outputs();
     for (let i = 0; i < outputs.len(); i++) {
       const output = outputs.get(i);
-      if (output.data_hash()) {
+      if (output.datum()) {
         datum = true;
         const prefix = bytesAddressToBinary(output.address().to_bytes()).slice(
           0,
@@ -182,10 +182,14 @@ const SignTx = ({ request, controller }) => {
         ) {
           externalOutputs[address].script = true;
         }
-        const datumHash = output.data_hash();
-        if (datumHash)
+        const datum = output.datum();
+        if (datum)
           externalOutputs[address].datumHash = Buffer.from(
-            datumHash.to_bytes()
+            datum.kind() === 0
+              ? datum.as_data_hash().to_bytes()
+              : Loader.Cardano.hash_plutus_data(
+                  datum.as_data().get()
+                ).to_bytes()
           ).toString('hex');
       }
     }

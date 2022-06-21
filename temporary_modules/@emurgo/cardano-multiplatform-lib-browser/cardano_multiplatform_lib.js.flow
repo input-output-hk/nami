@@ -910,6 +910,12 @@ declare export class BigNum {
   checked_div(other: BigNum): BigNum;
 
   /**
+   * @param {BigNum} other
+   * @returns {BigNum}
+   */
+  checked_div_ceil(other: BigNum): BigNum;
+
+  /**
    * returns 0 if it would otherwise underflow
    * @param {BigNum} other
    * @returns {BigNum}

@@ -5,7 +5,12 @@ import { blockfrostRequest } from '../util';
 
 export const initTx = async () => {
   const latest_block = await blockfrostRequest('/blocks/latest');
-  const p = await blockfrostRequest(`/epochs/${latest_block.epoch}/parameters`);
+  const p = await blockfrostRequest(`/epochs/latest/parameters`);
+
+  // TODO: bug blockfrost
+  p.coins_per_utxo_word = 34480;
+
+  console.log(p);
 
   return {
     linearFee: {
@@ -15,7 +20,7 @@ export const initTx = async () => {
     minUtxo: '1000000', //p.min_utxo, minUTxOValue protocol paramter has been removed since Alonzo HF. Calulation of minADA works differently now, but 1 minADA still sufficient for now
     poolDeposit: p.pool_deposit,
     keyDeposit: p.key_deposit,
-    coinsPerUtxoWord: p.coins_per_utxo_word,
+    coinsPerUtxoWord: p.coins_per_utxo_word.toString(),
     maxValSize: p.max_val_size,
     priceMem: p.price_mem,
     priceStep: p.price_step,

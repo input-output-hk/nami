@@ -40,8 +40,12 @@ export async function delay(delayInMs) {
 }
 
 export async function blockfrostRequest(endpoint, headers, body, signal) {
+  console.log(endpoint);
+
   const network = await getNetwork();
   let result;
+
+  console.log(endpoint);
 
   while (!result || result.status_code === 500) {
     if (result) {
