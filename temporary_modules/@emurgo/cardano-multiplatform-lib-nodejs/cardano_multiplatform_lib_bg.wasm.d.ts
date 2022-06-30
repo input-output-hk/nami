@@ -794,7 +794,7 @@ export function __wbg_transactionbuilderconfig_free(a: number): void;
 export function __wbg_transactionbuilderconfigbuilder_free(a: number): void;
 export function transactionbuilderconfigbuilder_new(): number;
 export function transactionbuilderconfigbuilder_fee_algo(a: number, b: number): number;
-export function transactionbuilderconfigbuilder_coins_per_utxo_word(a: number, b: number): number;
+export function transactionbuilderconfigbuilder_coins_per_utxo_byte(a: number, b: number): number;
 export function transactionbuilderconfigbuilder_pool_deposit(a: number, b: number): number;
 export function transactionbuilderconfigbuilder_key_deposit(a: number, b: number): number;
 export function transactionbuilderconfigbuilder_max_value_size(a: number, b: number): number;

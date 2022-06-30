@@ -113,10 +113,10 @@ export function get_implicit_input(txbody: TransactionBody, pool_deposit: BigNum
 export function get_deposit(txbody: TransactionBody, pool_deposit: BigNum, key_deposit: BigNum): BigNum;
 /**
 * @param {TransactionOutput} output
-* @param {BigNum} coins_per_utxo_word
+* @param {BigNum} coins_per_utxo_byte
 * @returns {BigNum}
 */
-export function min_ada_required(output: TransactionOutput, coins_per_utxo_word: BigNum): BigNum;
+export function min_ada_required(output: TransactionOutput, coins_per_utxo_byte: BigNum): BigNum;
 /**
 * Receives a script JSON string
 * and returns a NativeScript.
@@ -5702,10 +5702,10 @@ export class TransactionBuilderConfigBuilder {
 */
   fee_algo(fee_algo: LinearFee): TransactionBuilderConfigBuilder;
 /**
-* @param {BigNum} coins_per_utxo_word
+* @param {BigNum} coins_per_utxo_byte
 * @returns {TransactionBuilderConfigBuilder}
 */
-  coins_per_utxo_word(coins_per_utxo_word: BigNum): TransactionBuilderConfigBuilder;
+  coins_per_utxo_byte(coins_per_utxo_byte: BigNum): TransactionBuilderConfigBuilder;
 /**
 * @param {BigNum} pool_deposit
 * @returns {TransactionBuilderConfigBuilder}
@@ -6925,6 +6925,7 @@ export interface CostmdlsJSON {
 }
 export type DNSRecordAorAAAAJSON = string;
 export type DNSRecordSRVJSON = string;
+export type DataJSON = PlutusDataJSON;
 export type DataHashJSON = string;
 export type DatumJSON = DatumEnumJSON;
 export type DatumEnumJSON =
@@ -6932,7 +6933,7 @@ export type DatumEnumJSON =
       Hash: string;
     }
   | {
-      Data: Data;
+      DataJSON: Data;
     };
 export type Ed25519KeyHashJSON = string;
 export type Ed25519KeyHashesJSON = string[];
@@ -7203,6 +7204,17 @@ export type RelayEnumJSON =
 export type RelaysJSON = RelayJSON[];
 export type RewardAddressJSON = string;
 export type RewardAddressesJSON = string[];
+export type ScriptJSON = ScriptEnumJSON;
+export type ScriptEnumJSON =
+  | {
+      NativeScriptJSON: NativeScript;
+    }
+  | {
+      PlutusScriptV1: string;
+    }
+  | {
+      PlutusScriptV2: string;
+    };
 export interface ScriptAllJSON {
   native_scripts: NativeScriptsJSON;
 }
@@ -7219,6 +7231,7 @@ export interface ScriptNOfKJSON {
 export interface ScriptPubkeyJSON {
   addr_keyhash: string;
 }
+export type ScriptRefJSON = ScriptJSON;
 export type ScriptWitnessJSON = ScriptWitnessEnumJSON;
 export type ScriptWitnessEnumJSON =
   | {
@@ -7241,7 +7254,7 @@ export type StakeCredTypeJSON =
       Key: string;
     }
   | {
-      Script: string;
+      ScriptJSON: string;
     };
 export type StakeCredentialJSON = StakeCredTypeJSON;
 export type StakeCredentialsJSON = StakeCredTypeJSON[];
@@ -7300,7 +7313,7 @@ export interface TransactionOutputJSON {
   address: string;
   amount: ValueJSON;
   datum?: DatumJSON | null;
-  script_ref?: Script | null;
+  script_ref?: ScriptJSON | null;
 }
 export type TransactionOutputsJSON = TransactionOutputJSON[];
 export interface TransactionWitnessSetJSON {

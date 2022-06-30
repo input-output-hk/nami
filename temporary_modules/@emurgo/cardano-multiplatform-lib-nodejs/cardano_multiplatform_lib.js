@@ -511,13 +511,13 @@ module.exports.get_deposit = function(txbody, pool_deposit, key_deposit) {
 
 /**
 * @param {TransactionOutput} output
-* @param {BigNum} coins_per_utxo_word
+* @param {BigNum} coins_per_utxo_byte
 * @returns {BigNum}
 */
-module.exports.min_ada_required = function(output, coins_per_utxo_word) {
+module.exports.min_ada_required = function(output, coins_per_utxo_byte) {
     _assertClass(output, TransactionOutput);
-    _assertClass(coins_per_utxo_word, BigNum);
-    var ret = wasm.min_ada_required(output.ptr, coins_per_utxo_word.ptr);
+    _assertClass(coins_per_utxo_byte, BigNum);
+    var ret = wasm.min_ada_required(output.ptr, coins_per_utxo_byte.ptr);
     return BigNum.__wrap(ret);
 };
 
@@ -13983,12 +13983,12 @@ class TransactionBuilderConfigBuilder {
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
-    * @param {BigNum} coins_per_utxo_word
+    * @param {BigNum} coins_per_utxo_byte
     * @returns {TransactionBuilderConfigBuilder}
     */
-    coins_per_utxo_word(coins_per_utxo_word) {
-        _assertClass(coins_per_utxo_word, BigNum);
-        var ret = wasm.transactionbuilderconfigbuilder_coins_per_utxo_word(this.ptr, coins_per_utxo_word.ptr);
+    coins_per_utxo_byte(coins_per_utxo_byte) {
+        _assertClass(coins_per_utxo_byte, BigNum);
+        var ret = wasm.transactionbuilderconfigbuilder_coins_per_utxo_byte(this.ptr, coins_per_utxo_byte.ptr);
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
@@ -17168,8 +17168,8 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8417 = function(arg0, arg1, arg2) {
-    var ret = makeMutClosure(arg0, arg1, 453, __wbg_adapter_32);
+module.exports.__wbindgen_closure_wrapper8423 = function(arg0, arg1, arg2) {
+    var ret = makeMutClosure(arg0, arg1, 454, __wbg_adapter_32);
     return addHeapObject(ret);
 };
 
