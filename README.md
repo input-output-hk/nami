@@ -8,6 +8,8 @@ Nami is a browser based wallet extension to interact with the Cardano blockchain
 
 [Download testnet version](./build.zip)
 
+Extract the zip. Then go to `chrome://extensions`, click Load unpacked at the top left and select the build folder.
+
 ### Injected API
 
 Since Nami is a browser extension, it can inject content inside the web context, which means you can connect the wallet to any website.
