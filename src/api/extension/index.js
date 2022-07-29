@@ -1354,6 +1354,9 @@ export const createHWAccounts = async (accounts) => {
     const paymentKeyHash = Buffer.from(paymentKeyHashRaw.to_bytes()).toString(
       'hex'
     );
+
+    const paymentKeyHashBech32 = paymentKeyHashRaw.to_bech32('addr_vkh');
+
     const stakeKeyHash = Buffer.from(stakeKeyHashRaw.to_bytes()).toString(
       'hex'
     );
@@ -1402,6 +1405,7 @@ export const createHWAccounts = async (accounts) => {
       index,
       publicKey: Buffer.from(publicKey.as_bytes()).toString('hex'),
       paymentKeyHash,
+      paymentKeyHashBech32,
       stakeKeyHash,
       name,
       [NETWORK_ID.mainnet]: {
