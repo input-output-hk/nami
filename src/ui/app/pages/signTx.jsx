@@ -288,15 +288,17 @@ const SignTx = ({ request, controller }) => {
     //get key hashes from inputs
     const inputs = tx.body().inputs();
     for (let i = 0; i < inputs.len(); i++) {
-      const txHash = Buffer.from(
-        inputs.get(i).transaction_id().to_bytes()
-      ).toString('hex');
+      const input = inputs.get(i);
+      const txHash = Buffer.from(input.transaction_id().to_bytes()).toString(
+        'hex'
+      );
+      const index = parseInt(input.index().to_str());
       if (
         utxos.some(
           (utxo) =>
             Buffer.from(utxo.input().transaction_id().to_bytes()).toString(
               'hex'
-            ) === txHash
+            ) === txHash && parseInt(utxo.input().index().to_str()) === index
         )
       ) {
         requiredKeyHashes.push(paymentKeyHash);
