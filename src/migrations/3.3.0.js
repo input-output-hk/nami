@@ -3,7 +3,7 @@ import { getStorage, setStorage } from '../api/extension/index';
 import Loader from '../api/loader';
 
 const migration = {
-  version: '3.2.0',
+  version: '3.3.0',
   up: async (pwd) => {
     await Loader.load();
     const storage = await getStorage(STORAGE.accounts);
