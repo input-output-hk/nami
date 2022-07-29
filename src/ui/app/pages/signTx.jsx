@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   bytesAddressToBinary,
+  extractKeyOrScriptHash,
   getCurrentAccount,
   getSpecificUtxo,
   getUtxos,
@@ -134,12 +135,12 @@ const SignTx = ({ request, controller }) => {
       const inputTxHash = Buffer.from(
         input.transaction_id().to_bytes()
       ).toString('hex');
-      const inputTxId = input.index();
+      const inputTxId = parseInt(input.index().to_str());
       const utxo = utxos.find((utxo) => {
         const utxoTxHash = Buffer.from(
           utxo.input().transaction_id().to_bytes()
         ).toString('hex');
-        const utxoTxId = utxo.input().index();
+        const utxoTxId = parseInt(utxo.input().index().to_str());
         return inputTxHash === utxoTxHash && inputTxId === utxoTxId;
       });
       if (utxo) {
@@ -155,7 +156,11 @@ const SignTx = ({ request, controller }) => {
     for (let i = 0; i < outputs.len(); i++) {
       const output = outputs.get(i);
       const address = output.address().to_bech32();
-      if (address === account.paymentAddr) {
+      const hashBech32 = await extractKeyOrScriptHash(
+        Buffer.from(output.address().to_bytes()).toString('hex')
+      );
+      // making sure funds at mangled addresses are also included
+      if (hashBech32 === account.paymentKeyHashBech32) {
         //own
         ownOutputValue = ownOutputValue.checked_add(output.amount());
       } else {

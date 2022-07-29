@@ -139,7 +139,7 @@ export const getBalance = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
-    `/addresses/${currentAccount.paymentAddr}`
+    `/addresses/${currentAccount.paymentKeyHashBech32}`
   );
   if (result.error) {
     if (result.status_code === 400) throw APIError.InvalidRequest;
@@ -153,7 +153,7 @@ export const getBalance = async () => {
 export const getBalanceExtended = async () => {
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
-    `/addresses/${currentAccount.paymentAddr}/extended`
+    `/addresses/${currentAccount.paymentKeyHashBech32}/extended`
   );
   if (result.error) {
     if (result.status_code === 400) throw APIError.InvalidRequest;
@@ -290,7 +290,7 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
   const limit = paginate && paginate.limit ? `&count=${paginate.limit}` : '';
   while (true) {
     let pageResult = await blockfrostRequest(
-      `/addresses/${currentAccount.paymentAddr}/utxos?page=${page}${limit}`
+      `/addresses/${currentAccount.paymentKeyHashBech32}/utxos?page=${page}${limit}`
     );
     if (pageResult.error) {
       if (result.status_code === 400) throw APIError.InvalidRequest;
@@ -356,7 +356,7 @@ const checkCollateral = async (currentAccount, network, checkTx) => {
   let page = 1;
   while (true) {
     let pageResult = await blockfrostRequest(
-      `/addresses/${currentAccount[network.id].paymentAddr}/utxos?page=${page}`
+      `/addresses/${currentAccount.paymentKeyHashBech32}/utxos?page=${page}`
     );
     if (pageResult.error) {
       if (result.status_code === 400) throw APIError.InvalidRequest;
@@ -690,22 +690,81 @@ export const isValidEthAddress = function (address) {
 
 export const extractKeyHash = async (address) => {
   await Loader.load();
-  //TODO: implement for various address types
   if (!(await isValidAddressBytes(Buffer.from(address, 'hex'))))
     throw DataSignError.InvalidFormat;
   try {
-    const baseAddr = Loader.Cardano.BaseAddress.from_address(
+    const addr = Loader.Cardano.BaseAddress.from_address(
       Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
     );
-    return baseAddr.payment_cred().to_keyhash().to_bech32('hbas_');
+    return addr.payment_cred().to_keyhash().to_bech32('addr_vkh');
   } catch (e) {}
   try {
-    const rewardAddr = Loader.Cardano.RewardAddress.from_address(
+    const addr = Loader.Cardano.EnterpriseAddress.from_address(
       Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
     );
-    return rewardAddr.payment_cred().to_keyhash().to_bech32('hrew_');
+    return addr.payment_cred().to_keyhash().to_bech32('addr_vkh');
+  } catch (e) {}
+  try {
+    const addr = Loader.Cardano.PointerAddress.from_address(
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
+    );
+    return addr.payment_cred().to_keyhash().to_bech32('addr_vkh');
+  } catch (e) {}
+  try {
+    const addr = Loader.Cardano.RewardAddress.from_address(
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
+    );
+    return addr.payment_cred().to_keyhash().to_bech32('stake_vkh');
   } catch (e) {}
   throw DataSignError.AddressNotPK;
+};
+
+export const extractKeyOrScriptHash = async (address) => {
+  await Loader.load();
+  if (!(await isValidAddressBytes(Buffer.from(address, 'hex'))))
+    throw DataSignError.InvalidFormat;
+  try {
+    const addr = Loader.Cardano.BaseAddress.from_address(
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
+    );
+
+    const credential = addr.payment_cred();
+    if (credential.kind() === 0)
+      return credential.to_keyhash().to_bech32('addr_vkh');
+    if (credential.kind() === 1)
+      return credential.to_scripthash().to_bech32('script');
+  } catch (e) {}
+  try {
+    const addr = Loader.Cardano.EnterpriseAddress.from_address(
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
+    );
+    const credential = addr.payment_cred();
+    if (credential.kind() === 0)
+      return credential.to_keyhash().to_bech32('addr_vkh');
+    if (credential.kind() === 1)
+      return credential.to_scripthash().to_bech32('script');
+  } catch (e) {}
+  try {
+    const addr = Loader.Cardano.PointerAddress.from_address(
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
+    );
+    const credential = addr.payment_cred();
+    if (credential.kind() === 0)
+      return credential.to_keyhash().to_bech32('addr_vkh');
+    if (credential.kind() === 1)
+      return credential.to_scripthash().to_bech32('script');
+  } catch (e) {}
+  try {
+    const addr = Loader.Cardano.RewardAddress.from_address(
+      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex'))
+    );
+    const credential = addr.payment_cred();
+    if (credential.kind() === 0)
+      return credential.to_keyhash().to_bech32('stake_vkh');
+    if (credential.kind() === 1)
+      return credential.to_scripthash().to_bech32('script');
+  } catch (e) {}
+  throw new Error('No address type matched.');
 };
 
 export const verifySigStructure = async (sigStructure) => {
@@ -753,12 +812,12 @@ export const verifyTx = async (tx) => {
 export const signData = async (address, payload, password, accountIndex) => {
   await Loader.load();
   const keyHash = await extractKeyHash(address);
-  const prefix = keyHash.slice(0, 5);
+  const prefix = keyHash.slice(0, 8);
   let { paymentKey, stakeKey } = await requestAccountKey(
     password,
     accountIndex
   );
-  const accountKey = prefix === 'hbas_' ? paymentKey : stakeKey;
+  const accountKey = prefix === 'addr_vkh' ? paymentKey : stakeKey;
 
   const publicKey = accountKey.to_public();
   if (keyHash !== publicKey.hash().to_bech32(prefix))
@@ -806,12 +865,12 @@ export const signDataCIP30 = async (
 ) => {
   await Loader.load();
   const keyHash = await extractKeyHash(address);
-  const prefix = keyHash.slice(0, 5);
+  const prefix = keyHash.slice(0, 8);
   let { paymentKey, stakeKey } = await requestAccountKey(
     password,
     accountIndex
   );
-  const accountKey = prefix === 'hbas_' ? paymentKey : stakeKey;
+  const accountKey = prefix === 'addr_vkh' ? paymentKey : stakeKey;
 
   const publicKey = accountKey.to_public();
   if (keyHash !== publicKey.hash().to_bech32(prefix))
@@ -1208,6 +1267,9 @@ export const createAccount = async (name, password, accountIndex = null) => {
     paymentKeyPub.hash().to_bytes(),
     'hex'
   ).toString('hex');
+
+  const paymentKeyHashBech32 = paymentKeyPub.hash().to_bech32('addr_vkh');
+
   const stakeKeyHash = Buffer.from(
     stakeKeyPub.hash().to_bytes(),
     'hex'
@@ -1255,6 +1317,7 @@ export const createAccount = async (name, password, accountIndex = null) => {
       index,
       publicKey,
       paymentKeyHash,
+      paymentKeyHashBech32,
       stakeKeyHash,
       name,
       [NETWORK_ID.mainnet]: {

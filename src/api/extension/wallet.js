@@ -7,6 +7,8 @@ export const initTx = async () => {
   const latest_block = await blockfrostRequest('/blocks/latest');
   const p = await blockfrostRequest(`/epochs/latest/parameters`);
 
+  console.log(p);
+
   return {
     linearFee: {
       minFeeA: p.min_fee_a.toString(),
