@@ -23,19 +23,19 @@ const migration = {
       );
       const paymentKeyHashBech32 = paymentKeyHash.to_bech32('addr_vkh');
       currentAccount.paymentKeyHashBech32 = paymentKeyHashBech32;
+
+      currentAccount[NETWORK_ID.preview] = {
+        ...networkDefault,
+        paymentAddr: currentAccount[NETWORK_ID.testnet].paymentAddr,
+        rewardAddr: currentAccount[NETWORK_ID.testnet].rewardAddr,
+      };
+
+      currentAccount[NETWORK_ID.preview] = {
+        ...networkDefault,
+        paymentAddr: currentAccount[NETWORK_ID.testnet].paymentAddr,
+        rewardAddr: currentAccount[NETWORK_ID.testnet].rewardAddr,
+      };
     }
-
-    currentAccount[NETWORK_ID.preview] = {
-      ...networkDefault,
-      paymentAddr: currentAccount[NETWORK_ID.testnet].paymentAddr,
-      rewardAddr: currentAccount[NETWORK_ID.testnet].rewardAddr,
-    };
-
-    currentAccount[NETWORK_ID.preview] = {
-      ...networkDefault,
-      paymentAddr: currentAccount[NETWORK_ID.testnet].paymentAddr,
-      rewardAddr: currentAccount[NETWORK_ID.testnet].rewardAddr,
-    };
 
     await setStorage({ [STORAGE.accounts]: storage });
   },
@@ -46,10 +46,10 @@ const migration = {
     for (let i = 0; i < accounts.length; i++) {
       const currentAccount = storage[accounts[i]];
       delete currentAccount.paymentKeyHashBech32;
-    }
 
-    delete currentAccount[NETWORK_ID.preview];
-    delete currentAccount[NETWORK_ID.preprod];
+      delete currentAccount[NETWORK_ID.preview];
+      delete currentAccount[NETWORK_ID.preprod];
+    }
 
     await setStorage({ [STORAGE.accounts]: storage });
   },
