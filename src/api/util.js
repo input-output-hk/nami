@@ -49,7 +49,7 @@ export async function blockfrostRequest(endpoint, headers, body, signal) {
     }
     const rawResult = await fetch(provider.api.base(network.node) + endpoint, {
       headers: {
-        ...provider.api.key(network.id),
+        ...provider.api.key(network.name || network.id),
         ...provider.api.header,
         ...headers,
         'Cache-Control': 'no-cache',
@@ -82,7 +82,12 @@ export const currencyToSymbol = (currency) => {
 export const hexToAscii = (hex) => Buffer.from(hex, 'hex').toString();
 
 export const networkNameToId = (name) => {
-  const names = { [NETWORK_ID.mainnet]: 1, [NETWORK_ID.testnet]: 0 };
+  const names = {
+    [NETWORK_ID.mainnet]: 1,
+    [NETWORK_ID.testnet]: 0,
+    [NETWORK_ID.preview]: 0,
+    [NETWORK_ID.preprod]: 0,
+  };
   return names[name];
 };
 

@@ -197,7 +197,7 @@ export const setBalanceWarning = async () => {
 export const getTransactions = async (paginate = 1, count = 10) => {
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
-    `/addresses/${currentAccount.paymentAddr}/transactions?page=${paginate}&order=desc&count=${count}`
+    `/addresses/${currentAccount.paymentKeyHashBech32}/transactions?page=${paginate}&order=desc&count=${count}`
   );
   if (!result || result.error) return [];
   return result.map((tx) => ({
@@ -460,9 +460,15 @@ export const setNetwork = async (network) => {
   if (network.id === NETWORK_ID.mainnet) {
     id = NETWORK_ID.mainnet;
     node = NODE.mainnet;
-  } else {
+  } else if (network.id === NETWORK_ID.testnet) {
     id = NETWORK_ID.testnet;
     node = NODE.testnet;
+  } else if (network.id === NETWORK_ID.preview) {
+    id = NETWORK_ID.preview;
+    node = NODE.preview;
+  } else {
+    id = NETWORK_ID.preprod;
+    node = NODE.preprod;
   }
   if (network.node) node = network.node;
   if (currentNetwork && currentNetwork.id !== id)
@@ -643,7 +649,10 @@ export const isValidAddress = async (address) => {
     const addr = Loader.Cardano.Address.from_bech32(address);
     if (
       (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
-      (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
+      (addr.network_id() === 0 &&
+        (network.id === NETWORK_ID.testnet ||
+          network.id === NETWORK_ID.preview ||
+          network.id === NETWORK_ID.preprod))
     )
       return addr.to_bytes();
     return false;
@@ -652,7 +661,10 @@ export const isValidAddress = async (address) => {
     const addr = Loader.Cardano.ByronAddress.from_base58(address);
     if (
       (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
-      (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
+      (addr.network_id() === 0 &&
+        (network.id === NETWORK_ID.testnet ||
+          network.id === NETWORK_ID.preview ||
+          network.id === NETWORK_ID.preprod))
     )
       return addr.to_address().to_bytes();
     return false;
@@ -667,7 +679,10 @@ const isValidAddressBytes = async (address) => {
     const addr = Loader.Cardano.Address.from_bytes(address);
     if (
       (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
-      (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
+      (addr.network_id() === 0 &&
+        (network.id === NETWORK_ID.testnet ||
+          network.id === NETWORK_ID.preview ||
+          network.id === NETWORK_ID.preprod))
     )
       return true;
     return false;
@@ -676,7 +691,10 @@ const isValidAddressBytes = async (address) => {
     const addr = Loader.Cardano.ByronAddress.from_bytes(address);
     if (
       (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
-      (addr.network_id() === 0 && network.id === NETWORK_ID.testnet)
+      (addr.network_id() === 0 &&
+        (network.id === NETWORK_ID.testnet ||
+          network.id === NETWORK_ID.preview ||
+          network.id === NETWORK_ID.preprod))
     )
       return true;
     return false;
@@ -1330,6 +1348,16 @@ export const createAccount = async (name, password, accountIndex = null) => {
         paymentAddr: paymentAddrTestnet,
         rewardAddr: rewardAddrTestnet,
       },
+      [NETWORK_ID.preview]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
+      [NETWORK_ID.preprod]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
       avatar: Math.random().toString(),
     },
   };
@@ -1414,6 +1442,16 @@ export const createHWAccounts = async (accounts) => {
         rewardAddr: rewardAddrMainnet,
       },
       [NETWORK_ID.testnet]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
+      [NETWORK_ID.preview]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
+      [NETWORK_ID.preprod]: {
         ...networkDefault,
         paymentAddr: paymentAddrTestnet,
         rewardAddr: rewardAddrTestnet,
@@ -1608,21 +1646,24 @@ export const createWallet = async (name, seedPhrase, password) => {
       password,
       searchIndex
     );
-    const paymentKeyHash = paymentKey.to_public().hash();
-    const stakeKeyHash = stakeKey.to_public().hash();
+    const paymentKeyHashBech32 = paymentKey
+      .to_public()
+      .hash()
+      .to_bech32('addr_vkh');
+    // const stakeKeyHash = stakeKey.to_public().hash();
     paymentKey.free();
-    stakeKey.free();
+    // stakeKey.free();
     paymentKey = null;
-    stakeKey = null;
-    const paymentAddr = Loader.Cardano.BaseAddress.new(
-      Loader.Cardano.NetworkInfo.mainnet().network_id(),
-      Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHash),
-      Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
-    )
-      .to_address()
-      .to_bech32();
+    // stakeKey = null;
+    // const paymentAddr = Loader.Cardano.BaseAddress.new(
+    //   Loader.Cardano.NetworkInfo.mainnet().network_id(),
+    //   Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHash),
+    //   Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
+    // )
+    //   .to_address()
+    //   .to_bech32();
     const transactions = await blockfrostRequest(
-      `/addresses/${paymentAddr}/transactions`
+      `/addresses/${paymentKeyHashBech32}/transactions`
     );
     if (transactions && !transactions.error && transactions.length >= 1)
       createAccount(`Account ${searchIndex}`, password, searchIndex);
