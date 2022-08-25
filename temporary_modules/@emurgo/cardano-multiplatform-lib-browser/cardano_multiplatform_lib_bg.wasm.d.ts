@@ -74,7 +74,6 @@ export function transactionbody_set_validity_start_interval(a: number, b: number
 export function transactionbody_validity_start_interval(a: number): number;
 export function transactionbody_set_mint(a: number, b: number): void;
 export function transactionbody_mint(a: number): number;
-export function transactionbody_multiassets(a: number): number;
 export function transactionbody_set_script_data_hash(a: number, b: number): void;
 export function transactionbody_script_data_hash(a: number): number;
 export function transactionbody_set_collateral(a: number, b: number): void;
@@ -90,6 +89,7 @@ export function transactionbody_total_collateral(a: number): number;
 export function transactionbody_set_reference_inputs(a: number, b: number): void;
 export function transactionbody_reference_inputs(a: number): number;
 export function transactionbody_new(a: number, b: number, c: number, d: number): number;
+export function transactionbody_raw(a: number, b: number): void;
 export function __wbg_transactioninput_free(a: number): void;
 export function transactioninput_to_bytes(a: number, b: number): void;
 export function transactioninput_from_bytes(a: number, b: number): number;
@@ -806,7 +806,7 @@ export function transactionbuilderconfigbuilder_max_collateral_inputs(a: number,
 export function transactionbuilderconfigbuilder_blockfrost(a: number, b: number): number;
 export function transactionbuilderconfigbuilder_build(a: number): number;
 export function __wbg_transactionbuilder_free(a: number): void;
-export function transactionbuilder_add_inputs_from(a: number, b: number): void;
+export function transactionbuilder_add_inputs_from(a: number, b: number, c: number): void;
 export function transactionbuilder_add_input(a: number, b: number, c: number): void;
 export function transactionbuilder_add_reference_input(a: number, b: number): void;
 export function transactionbuilder_fee_for_input(a: number, b: number, c: number, d: number): number;
@@ -1427,6 +1427,7 @@ export function make_icarus_bootstrap_witness(a: number, b: number, c: number): 
 export function make_vkey_witness(a: number, b: number): number;
 export function hash_auxiliary_data(a: number): number;
 export function hash_transaction(a: number): number;
+export function hash_transaction_raw(a: number, b: number): number;
 export function hash_plutus_data(a: number): number;
 export function hash_script_data(a: number, b: number, c: number): number;
 export function get_implicit_input(a: number, b: number, c: number): number;

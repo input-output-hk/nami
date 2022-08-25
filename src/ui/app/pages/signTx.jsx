@@ -88,7 +88,7 @@ const SignTx = ({ request, controller }) => {
 
     const certificate = tx.body().certs();
     const withdrawal = tx.body().withdrawals();
-    const minting = tx.body().multiassets();
+    const minting = tx.body().mint();
     const script = tx.witness_set().native_scripts();
     let datum;
     let contract = tx.body().script_data_hash();

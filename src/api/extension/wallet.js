@@ -71,7 +71,10 @@ export const buildTx = async (
   const utxosCore = Loader.Cardano.TransactionUnspentOutputs.new();
   utxos.forEach((utxo) => utxosCore.add(utxo));
 
-  txBuilder.add_inputs_from(utxosCore);
+  txBuilder.add_inputs_from(
+    utxosCore,
+    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+  );
 
   txBuilder.balance(Loader.Cardano.Address.from_bech32(account.paymentAddr));
 
@@ -200,7 +203,10 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
   const utxosCore = Loader.Cardano.TransactionUnspentOutputs.new();
   utxos.forEach((utxo) => utxosCore.add(utxo));
 
-  txBuilder.add_inputs_from(utxosCore);
+  txBuilder.add_inputs_from(
+    utxosCore,
+    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+  );
 
   txBuilder.balance(Loader.Cardano.Address.from_bech32(account.paymentAddr));
 
@@ -253,7 +259,10 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
   const utxosCore = Loader.Cardano.TransactionUnspentOutputs.new();
   utxos.forEach((utxo) => utxosCore.add(utxo));
 
-  txBuilder.add_inputs_from(utxosCore);
+  txBuilder.add_inputs_from(
+    utxosCore,
+    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+  );
 
   txBuilder.balance(Loader.Cardano.Address.from_bech32(account.paymentAddr));
 
@@ -320,7 +329,10 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
   const utxosCore = Loader.Cardano.TransactionUnspentOutputs.new();
   utxos.forEach((utxo) => utxosCore.add(utxo));
 
-  txBuilder.add_inputs_from(utxosCore);
+  txBuilder.add_inputs_from(
+    utxosCore,
+    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+  );
 
   txBuilder.balance(Loader.Cardano.Address.from_bech32(account.paymentAddr));
 

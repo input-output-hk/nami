@@ -86,6 +86,11 @@ export function hash_auxiliary_data(auxiliary_data: AuxiliaryData): AuxiliaryDat
 */
 export function hash_transaction(tx_body: TransactionBody): TransactionHash;
 /**
+* @param {Uint8Array} tx_body
+* @returns {TransactionHash}
+*/
+export function hash_transaction_raw(tx_body: Uint8Array): TransactionHash;
+/**
 * @param {PlutusData} plutus_data
 * @returns {DataHash}
 */
@@ -5342,12 +5347,6 @@ export class TransactionBody {
 */
   mint(): Mint | undefined;
 /**
-* This function returns the mint value of the transaction
-* Use `.mint()` instead.
-* @returns {Mint | undefined}
-*/
-  multiassets(): Mint | undefined;
-/**
 * @param {ScriptDataHash} script_data_hash
 */
   set_script_data_hash(script_data_hash: ScriptDataHash): void;
@@ -5411,6 +5410,10 @@ export class TransactionBody {
 * @returns {TransactionBody}
 */
   static new(inputs: TransactionInputs, outputs: TransactionOutputs, fee: BigNum, ttl?: BigNum): TransactionBody;
+/**
+* @returns {Uint8Array | undefined}
+*/
+  raw(): Uint8Array | undefined;
 }
 /**
 */
@@ -5422,9 +5425,12 @@ export class TransactionBuilder {
 * This should be called after adding all certs/outputs/etc and will be an error otherwise.
 * Adding a change output must be called after via TransactionBuilder::balance()
 * inputs to cover the minimum fees. This does not, however, set the txbuilder's fee.
+*
+* change_address is required here in order to determine the min ada requirement precisely
 * @param {TransactionUnspentOutputs} inputs
+* @param {Address} change_address
 */
-  add_inputs_from(inputs: TransactionUnspentOutputs): void;
+  add_inputs_from(inputs: TransactionUnspentOutputs, change_address: Address): void;
 /**
 * @param {TransactionUnspentOutput} utxo
 * @param {ScriptWitness | undefined} script_witness
@@ -5635,10 +5641,10 @@ export class TransactionBuilder {
 * Make sure to call this function last after setting all other tx-body properties
 * Editing inputs, outputs, mint, etc. after change been calculated
 * might cause a mismatch in calculated fee versus the required fee
-* @param {Address} address
+* @param {Address} change_address
 * @param {Datum | undefined} datum
 */
-  balance(address: Address, datum?: Datum): void;
+  balance(change_address: Address, datum?: Datum): void;
 /**
 * @returns {number}
 */
@@ -7290,6 +7296,7 @@ export interface TransactionBodyJSON {
   inputs: TransactionInputsJSON;
   mint?: MintJSON | null;
   network_id?: NetworkIdJSON | null;
+  original_bytes?: number[] | null;
   outputs: TransactionOutputsJSON;
   reference_inputs?: TransactionInputsJSON | null;
   required_signers?: Ed25519KeyHashesJSON | null;

@@ -454,6 +454,17 @@ export function hash_transaction(tx_body) {
 }
 
 /**
+* @param {Uint8Array} tx_body
+* @returns {TransactionHash}
+*/
+export function hash_transaction_raw(tx_body) {
+    var ptr0 = passArray8ToWasm0(tx_body, wasm.__wbindgen_malloc);
+    var len0 = WASM_VECTOR_LEN;
+    var ret = wasm.hash_transaction_raw(ptr0, len0);
+    return TransactionHash.__wrap(ret);
+}
+
+/**
 * @param {PlutusData} plutus_data
 * @returns {DataHash}
 */
@@ -552,7 +563,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1359(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1360(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__h7a735230209646c7(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -13178,15 +13189,6 @@ export class TransactionBody {
         return ret === 0 ? undefined : Mint.__wrap(ret);
     }
     /**
-    * This function returns the mint value of the transaction
-    * Use `.mint()` instead.
-    * @returns {Mint | undefined}
-    */
-    multiassets() {
-        var ret = wasm.transactionbody_multiassets(this.ptr);
-        return ret === 0 ? undefined : Mint.__wrap(ret);
-    }
-    /**
     * @param {ScriptDataHash} script_data_hash
     */
     set_script_data_hash(script_data_hash) {
@@ -13304,6 +13306,25 @@ export class TransactionBody {
         var ret = wasm.transactionbody_new(inputs.ptr, outputs.ptr, fee.ptr, ptr0);
         return TransactionBody.__wrap(ret);
     }
+    /**
+    * @returns {Uint8Array | undefined}
+    */
+    raw() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.transactionbody_raw(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            let v0;
+            if (r0 !== 0) {
+                v0 = getArrayU8FromWasm0(r0, r1).slice();
+                wasm.__wbindgen_free(r0, r1 * 1);
+            }
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
 }
 /**
 */
@@ -13333,11 +13354,15 @@ export class TransactionBuilder {
     * This should be called after adding all certs/outputs/etc and will be an error otherwise.
     * Adding a change output must be called after via TransactionBuilder::balance()
     * inputs to cover the minimum fees. This does not, however, set the txbuilder's fee.
+    *
+    * change_address is required here in order to determine the min ada requirement precisely
     * @param {TransactionUnspentOutputs} inputs
+    * @param {Address} change_address
     */
-    add_inputs_from(inputs) {
+    add_inputs_from(inputs, change_address) {
         _assertClass(inputs, TransactionUnspentOutputs);
-        wasm.transactionbuilder_add_inputs_from(this.ptr, inputs.ptr);
+        _assertClass(change_address, Address);
+        wasm.transactionbuilder_add_inputs_from(this.ptr, inputs.ptr, change_address.ptr);
     }
     /**
     * @param {TransactionUnspentOutput} utxo
@@ -13707,18 +13732,18 @@ export class TransactionBuilder {
     * Make sure to call this function last after setting all other tx-body properties
     * Editing inputs, outputs, mint, etc. after change been calculated
     * might cause a mismatch in calculated fee versus the required fee
-    * @param {Address} address
+    * @param {Address} change_address
     * @param {Datum | undefined} datum
     */
-    balance(address, datum) {
-        _assertClass(address, Address);
+    balance(change_address, datum) {
+        _assertClass(change_address, Address);
         let ptr0 = 0;
         if (!isLikeNone(datum)) {
             _assertClass(datum, Datum);
             ptr0 = datum.ptr;
             datum.ptr = 0;
         }
-        wasm.transactionbuilder_balance(this.ptr, address.ptr, ptr0);
+        wasm.transactionbuilder_balance(this.ptr, change_address.ptr, ptr0);
     }
     /**
     * @returns {number}
@@ -16898,7 +16923,7 @@ export function __wbg_new_c143a4f563f78c4e(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1359(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1360(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -17023,7 +17048,7 @@ export function __wbindgen_memory() {
     return addHeapObject(ret);
 };
 
-export function __wbindgen_closure_wrapper8423(arg0, arg1, arg2) {
+export function __wbindgen_closure_wrapper8426(arg0, arg1, arg2) {
     var ret = makeMutClosure(arg0, arg1, 454, __wbg_adapter_32);
     return addHeapObject(ret);
 };

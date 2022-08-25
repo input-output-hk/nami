@@ -983,7 +983,7 @@ export const signTx = async (
 
   const txWitnessSet = Loader.Cardano.TransactionWitnessSet.new();
   const vkeyWitnesses = Loader.Cardano.Vkeywitnesses.new();
-  const txHash = Loader.Cardano.hash_transaction(rawTx.body());
+  const txHash = Loader.Cardano.hash_transaction_raw(rawTx.body().raw());
   keyHashes.forEach((keyHash) => {
     let signingKey;
     if (keyHash === paymentKeyHash) signingKey = paymentKey;
