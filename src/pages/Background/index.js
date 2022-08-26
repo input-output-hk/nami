@@ -13,7 +13,14 @@ import {
   verifyTx,
 } from '../../api/extension';
 import { Messaging } from '../../api/messaging';
-import { APIError, METHOD, POPUP, SENDER, TARGET } from '../../config/config';
+import {
+  APIError,
+  METHOD,
+  NETWORKD_ID_NUMBER,
+  POPUP,
+  SENDER,
+  TARGET,
+} from '../../config/config';
 
 const app = Messaging.createBackgroundController();
 
@@ -233,12 +240,11 @@ app.add(METHOD.isWhitelisted, async (request, sendResponse) => {
 });
 
 app.add(METHOD.getNetworkId, async (request, sendResponse) => {
-  const networkMap = { mainnet: 1, testnet: 0 };
   const network = await getNetwork();
   if (network)
     sendResponse({
       id: request.id,
-      data: networkMap[network.id],
+      data: NETWORKD_ID_NUMBER[network.id],
       target: TARGET,
       sender: SENDER.extension,
     });

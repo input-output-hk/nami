@@ -77,6 +77,13 @@ export const NETWORK_ID = {
   preprod: 'preprod',
 };
 
+export const NETWORKD_ID_NUMBER = {
+  mainnet: 1,
+  testnet: 0,
+  preview: 0,
+  preprod: 0,
+};
+
 export const POPUP = {
   main: 'mainPopup',
   internal: 'internalPopup',
