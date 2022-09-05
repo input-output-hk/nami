@@ -323,10 +323,18 @@ const TxDetail = ({ displayInfo, network }) => {
             <Link
               color="teal"
               href={
-                (network.id === NETWORK_ID.mainnet
-                  ? 'https://cardanoscan.io/transaction/'
-                  : 'https://testnet.cardanoscan.io/transaction/') +
-                displayInfo.txHash
+                (() => {
+                  switch (network.id) {
+                    case NETWORK_ID.mainnet:
+                      return 'https://cardanoscan.io/transaction/';
+                    case NETWORK_ID.preprod:
+                      return 'https://testnet.cardanoscan.io/transaction/';
+                    case NETWORK_ID.preview:
+                      return 'https://preview.cexplorer.io/tx/';
+                    case NETWORK_ID.testnet:
+                      return 'https://testnet.cexplorer.io/tx/';
+                  }
+                })() + displayInfo.txHash
               }
               isExternal
             >

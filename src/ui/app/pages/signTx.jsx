@@ -320,10 +320,7 @@ const SignTx = ({ request, controller }) => {
         if (cert.kind() === 0) {
           const credential = cert.as_stake_registration().stake_credential();
           if (credential.kind() === 0) {
-            const keyHash = Buffer.from(
-              credential.to_keyhash().to_bytes()
-            ).toString('hex');
-            requiredKeyHashes.push(keyHash);
+            // stake registration doesn't required key hash
           }
         } else if (cert.kind() === 1) {
           const credential = cert.as_stake_deregistration().stake_credential();
@@ -352,10 +349,14 @@ const SignTx = ({ request, controller }) => {
             );
             requiredKeyHashes.push(keyHash);
           }
+        } else if (cert.kind() === 4) {
+          const operator = cert.as_pool_retirement().pool_keyhash().to_hex();
+          requiredKeyHashes.push(operator);
         } else if (cert.kind() === 6) {
           const instant_reward = cert
             .as_move_instantaneous_rewards_cert()
             .move_instantaneous_reward()
+            .as_to_stake_creds()
             .keys();
           for (let i = 0; i < instant_reward.len(); i++) {
             const credential = instant_reward.get(i);
@@ -371,6 +372,19 @@ const SignTx = ({ request, controller }) => {
       }
     };
     if (txBody.certs()) keyHashFromCert(txBody);
+
+    // key hashes from withdrawals
+    const withdrawals = txBody.withdrawals();
+    const keyHashFromWithdrawal = (withdrawals) => {
+      const rewardAddresses = withdrawals.keys();
+      for (let i = 0; i < rewardAddresses.len(); i++) {
+        const credential = rewardAddresses.get(i).payment_cred();
+        if (credential.kind() === 0) {
+          requiredKeyHashes.push(credential.to_keyhash().to_hex());
+        }
+      }
+    };
+    if (withdrawals) keyHashFromWithdrawal(withdrawals);
 
     //get key hashes from scripts
     const scripts = tx.witness_set().native_scripts();
