@@ -404,7 +404,11 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
 
   const type = getTxType(currentAddr, addresses, detail.utxos);
   const date = dateFromUnix(detail.block.time);
-  const amounts = calculateAmount(currentAddr, detail.utxos);
+  const amounts = calculateAmount(
+    currentAddr,
+    detail.utxos,
+    detail.info.valid_contract
+  );
   const assets = amounts.filter((amount) => amount.unit !== 'lovelace');
   const lovelace = BigInt(
     amounts.find((amount) => amount.unit === 'lovelace').quantity
@@ -481,14 +485,18 @@ const getTimestamp = (date) => {
   )}`;
 };
 
-const calculateAmount = (currentAddr, uTxOList) => {
+const calculateAmount = (currentAddr, uTxOList, validContract = true) => {
   let inputs = compileOutputs(
     uTxOList.inputs.filter(
-      (input) => input.address === currentAddr && !input.collateral
+      (input) =>
+        input.address === currentAddr && !(input.collateral && validContract)
     )
   );
   let outputs = compileOutputs(
-    uTxOList.outputs.filter((output) => output.address === currentAddr)
+    uTxOList.outputs.filter(
+      (output) =>
+        output.address === currentAddr && !(output.collateral && validContract)
+    )
   );
   let amounts = [];
 
