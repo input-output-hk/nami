@@ -127,10 +127,12 @@ Will return the same address as the one in `cardano.getUsedAddresses()`.
 ##### cardano.getRewardAddress()
 
 ```
-cardano.getRewardAddress() : RewardAddress
+cardano.getRewardAddresses() : [RewardAddress]
 ```
 
-`RewardAddress` is a hex encoded bytes string.
+`RewardAddresses` is a hex encoded bytes string.
+
+**Note** This function will return an array of length `1` and will always return the same single address.
 
 ##### cardano.getNetworkId()
 
