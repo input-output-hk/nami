@@ -130,7 +130,7 @@ Will return the same address as the one in `cardano.getUsedAddresses()`.
 cardano.getRewardAddresses() : [RewardAddress]
 ```
 
-`RewardAddresses` is a hex encoded bytes string.
+`RewardAddress` is a hex encoded bytes string.
 
 **Note** This function will return an array of length `1` and will always return the same single address.
 
