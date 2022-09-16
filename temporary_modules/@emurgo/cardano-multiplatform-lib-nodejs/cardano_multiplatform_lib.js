@@ -348,51 +348,6 @@ module.exports.decrypt_with_password = function(password, data) {
 };
 
 /**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-module.exports.min_fee = function(tx, linear_fee, ex_unit_prices) {
-    _assertClass(tx, Transaction);
-    _assertClass(linear_fee, LinearFee);
-    _assertClass(ex_unit_prices, ExUnitPrices);
-    var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, ex_unit_prices.ptr);
-    return BigNum.__wrap(ret);
-};
-
-/**
-* @param {string} json
-* @param {number} schema
-* @returns {PlutusData}
-*/
-module.exports.encode_json_str_to_plutus_datum = function(json, schema) {
-    var ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len0 = WASM_VECTOR_LEN;
-    var ret = wasm.encode_json_str_to_plutus_datum(ptr0, len0, schema);
-    return PlutusData.__wrap(ret);
-};
-
-/**
-* @param {PlutusData} datum
-* @param {number} schema
-* @returns {string}
-*/
-module.exports.decode_plutus_datum_to_json_str = function(datum, schema) {
-    try {
-        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        _assertClass(datum, PlutusData);
-        wasm.decode_plutus_datum_to_json_str(retptr, datum.ptr, schema);
-        var r0 = getInt32Memory0()[retptr / 4 + 0];
-        var r1 = getInt32Memory0()[retptr / 4 + 1];
-        return getStringFromWasm0(r0, r1);
-    } finally {
-        wasm.__wbindgen_add_to_stack_pointer(16);
-        wasm.__wbindgen_free(r0, r1);
-    }
-};
-
-/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key
@@ -453,17 +408,6 @@ module.exports.hash_transaction = function(tx_body) {
 };
 
 /**
-* @param {Uint8Array} tx_body
-* @returns {TransactionHash}
-*/
-module.exports.hash_transaction_raw = function(tx_body) {
-    var ptr0 = passArray8ToWasm0(tx_body, wasm.__wbindgen_malloc);
-    var len0 = WASM_VECTOR_LEN;
-    var ret = wasm.hash_transaction_raw(ptr0, len0);
-    return TransactionHash.__wrap(ret);
-};
-
-/**
 * @param {PlutusData} plutus_data
 * @returns {DataHash}
 */
@@ -471,6 +415,46 @@ module.exports.hash_plutus_data = function(plutus_data) {
     _assertClass(plutus_data, PlutusData);
     var ret = wasm.hash_plutus_data(plutus_data.ptr);
     return DataHash.__wrap(ret);
+};
+
+/**
+* @param {Uint8Array} data
+* @returns {Uint8Array}
+*/
+module.exports.hash_blake2b256 = function(data) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        var ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        wasm.hash_blake2b256(retptr, ptr0, len0);
+        var r0 = getInt32Memory0()[retptr / 4 + 0];
+        var r1 = getInt32Memory0()[retptr / 4 + 1];
+        var v1 = getArrayU8FromWasm0(r0, r1).slice();
+        wasm.__wbindgen_free(r0, r1 * 1);
+        return v1;
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+};
+
+/**
+* @param {Uint8Array} data
+* @returns {Uint8Array}
+*/
+module.exports.hash_blake2b224 = function(data) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        var ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        wasm.hash_blake2b224(retptr, ptr0, len0);
+        var r0 = getInt32Memory0()[retptr / 4 + 0];
+        var r1 = getInt32Memory0()[retptr / 4 + 1];
+        var v1 = getArrayU8FromWasm0(r0, r1).slice();
+        wasm.__wbindgen_free(r0, r1 * 1);
+        return v1;
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+    }
 };
 
 /**
@@ -555,6 +539,51 @@ module.exports.encode_json_str_to_native_script = function(json, self_xpub, sche
     return NativeScript.__wrap(ret);
 };
 
+/**
+* @param {string} json
+* @param {number} schema
+* @returns {PlutusData}
+*/
+module.exports.encode_json_str_to_plutus_datum = function(json, schema) {
+    var ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    var ret = wasm.encode_json_str_to_plutus_datum(ptr0, len0, schema);
+    return PlutusData.__wrap(ret);
+};
+
+/**
+* @param {PlutusData} datum
+* @param {number} schema
+* @returns {string}
+*/
+module.exports.decode_plutus_datum_to_json_str = function(datum, schema) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        _assertClass(datum, PlutusData);
+        wasm.decode_plutus_datum_to_json_str(retptr, datum.ptr, schema);
+        var r0 = getInt32Memory0()[retptr / 4 + 0];
+        var r1 = getInt32Memory0()[retptr / 4 + 1];
+        return getStringFromWasm0(r0, r1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_free(r0, r1);
+    }
+};
+
+/**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+module.exports.min_fee = function(tx, linear_fee, ex_unit_prices) {
+    _assertClass(tx, Transaction);
+    _assertClass(linear_fee, LinearFee);
+    _assertClass(ex_unit_prices, ExUnitPrices);
+    var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, ex_unit_prices.ptr);
+    return BigNum.__wrap(ret);
+};
+
 function handleError(f, args) {
     try {
         return f.apply(this, args);
@@ -562,7 +591,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1360(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1364(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__h7a735230209646c7(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -596,6 +625,18 @@ module.exports.StakeCredKind = Object.freeze({ Key:0,"0":"Key",Script:1,"1":"Scr
 /**
 */
 module.exports.ScriptWitnessKind = Object.freeze({ NativeWitness:0,"0":"NativeWitness",PlutusWitness:1,"1":"PlutusWitness", });
+/**
+* Each new language uses a different namespace for hashing its script
+* This is because you could have a language where the same bytes have different semantics
+* So this avoids scripts in different languages mapping to the same hash
+* Note that the enum value here is different than the enum value for deciding the cost model of a script
+* https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
+*/
+module.exports.ScriptHashNamespace = Object.freeze({ NativeScript:0,"0":"NativeScript",PlutusV1:1,"1":"PlutusV1",PlutusV2:2,"2":"PlutusV2", });
+/**
+* Used to choose the schema for a script JSON string
+*/
+module.exports.ScriptSchema = Object.freeze({ Wallet:0,"0":"Wallet",Node:1,"1":"Node", });
 /**
 */
 module.exports.LanguageKind = Object.freeze({ PlutusV1:0,"0":"PlutusV1",PlutusV2:1,"1":"PlutusV2", });
@@ -662,18 +703,6 @@ module.exports.ScriptKind = Object.freeze({ NativeScript:0,"0":"NativeScript",Pl
 /**
 */
 module.exports.DatumKind = Object.freeze({ Hash:0,"0":"Hash",Data:1,"1":"Data", });
-/**
-* Each new language uses a different namespace for hashing its script
-* This is because you could have a language where the same bytes have different semantics
-* So this avoids scripts in different languages mapping to the same hash
-* Note that the enum value here is different than the enum value for deciding the cost model of a script
-* https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
-*/
-module.exports.ScriptHashNamespace = Object.freeze({ NativeScript:0,"0":"NativeScript",PlutusV1:1,"1":"PlutusV1",PlutusV2:2,"2":"PlutusV2", });
-/**
-* Used to choose the schema for a script JSON string
-*/
-module.exports.ScriptSchema = Object.freeze({ Wallet:0,"0":"Wallet",Node:1,"1":"Node", });
 /**
 */
 class Address {
@@ -8844,6 +8873,12 @@ class PoolRegistration {
         var ret = wasm.poolregistration_new(pool_params.ptr);
         return PoolRegistration.__wrap(ret);
     }
+    /**
+    * @param {boolean} update
+    */
+    set_is_update(update) {
+        wasm.poolregistration_set_is_update(this.ptr, update);
+    }
 }
 module.exports.PoolRegistration = PoolRegistration;
 /**
@@ -9073,6 +9108,32 @@ class PrivateKey {
         var len0 = WASM_VECTOR_LEN;
         var ret = wasm.privatekey_sign(this.ptr, ptr0, len0);
         return Ed25519Signature.__wrap(ret);
+    }
+    /**
+    * @param {Uint8Array} bytes
+    * @returns {PrivateKey}
+    */
+    static from_bytes(bytes) {
+        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.privatekey_from_bytes(ptr0, len0);
+        return PrivateKey.__wrap(ret);
+    }
+    /**
+    * @returns {Uint8Array}
+    */
+    to_bytes() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.privatekey_to_bytes(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
     }
 }
 module.exports.PrivateKey = PrivateKey;
@@ -13861,6 +13922,23 @@ class TransactionBuilder {
         wasm.transactionbuilder_balance(this.ptr, change_address.ptr, ptr0);
     }
     /**
+    * Returns the TransactionBody.
+    * @returns {Uint8Array}
+    */
+    to_bytes() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.transactionbuilder_to_bytes(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
     * @returns {number}
     */
     full_size() {
@@ -15858,6 +15936,14 @@ class UnitInterval {
         var ret = wasm.unitinterval_new(numerator.ptr, denominator.ptr);
         return UnitInterval.__wrap(ret);
     }
+    /**
+    * @param {number} float_number
+    * @returns {UnitInterval}
+    */
+    static from_float(float_number) {
+        var ret = wasm.unitinterval_from_float(float_number);
+        return UnitInterval.__wrap(ret);
+    }
 }
 module.exports.UnitInterval = UnitInterval;
 /**
@@ -16219,16 +16305,6 @@ class VRFVKey {
         wasm.__wbg_vrfvkey_free(ptr);
     }
     /**
-    * @param {Uint8Array} bytes
-    * @returns {VRFVKey}
-    */
-    static from_bytes(bytes) {
-        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
-        var len0 = WASM_VECTOR_LEN;
-        var ret = wasm.vrfvkey_from_bytes(ptr0, len0);
-        return VRFVKey.__wrap(ret);
-    }
-    /**
     * @returns {Uint8Array}
     */
     to_bytes() {
@@ -16245,57 +16321,37 @@ class VRFVKey {
         }
     }
     /**
-    * @param {string} prefix
-    * @returns {string}
-    */
-    to_bech32(prefix) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            var ptr0 = passStringToWasm0(prefix, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-            var len0 = WASM_VECTOR_LEN;
-            wasm.vrfvkey_to_bech32(retptr, this.ptr, ptr0, len0);
-            var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_free(r0, r1);
-        }
-    }
-    /**
-    * @param {string} bech_str
+    * @param {Uint8Array} bytes
     * @returns {VRFVKey}
     */
-    static from_bech32(bech_str) {
-        var ptr0 = passStringToWasm0(bech_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    static from_bytes(bytes) {
+        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
         var len0 = WASM_VECTOR_LEN;
-        var ret = wasm.vrfvkey_from_bech32(ptr0, len0);
+        var ret = wasm.vrfvkey_from_bytes(ptr0, len0);
         return VRFVKey.__wrap(ret);
     }
     /**
-    * @returns {string}
+    * @returns {VRFKeyHash}
     */
-    to_hex() {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.vrfvkey_to_hex(retptr, this.ptr);
-            var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_free(r0, r1);
-        }
+    hash() {
+        var ret = wasm.vrfvkey_hash(this.ptr);
+        return VRFKeyHash.__wrap(ret);
     }
     /**
-    * @param {string} hex
-    * @returns {VRFVKey}
+    * @returns {Uint8Array}
     */
-    static from_hex(hex) {
-        var ptr0 = passStringToWasm0(hex, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        var len0 = WASM_VECTOR_LEN;
-        var ret = wasm.vrfvkey_from_hex(ptr0, len0);
-        return VRFVKey.__wrap(ret);
+    to_raw_key() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.vrfvkey_to_raw_key(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
     }
 }
 module.exports.VRFVKey = VRFVKey;
@@ -17068,7 +17124,7 @@ module.exports.__wbg_new_c143a4f563f78c4e = function(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1360(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1364(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -17193,8 +17249,8 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8426 = function(arg0, arg1, arg2) {
-    var ret = makeMutClosure(arg0, arg1, 454, __wbg_adapter_32);
+module.exports.__wbindgen_closure_wrapper8449 = function(arg0, arg1, arg2) {
+    var ret = makeMutClosure(arg0, arg1, 459, __wbg_adapter_32);
     return addHeapObject(ret);
 };
 

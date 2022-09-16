@@ -37,25 +37,6 @@ export function encrypt_with_password(password: string, salt: string, nonce: str
 */
 export function decrypt_with_password(password: string, data: string): string;
 /**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
-/**
-* @param {string} json
-* @param {number} schema
-* @returns {PlutusData}
-*/
-export function encode_json_str_to_plutus_datum(json: string, schema: number): PlutusData;
-/**
-* @param {PlutusData} datum
-* @param {number} schema
-* @returns {string}
-*/
-export function decode_plutus_datum_to_json_str(datum: PlutusData, schema: number): string;
-/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key
@@ -86,15 +67,20 @@ export function hash_auxiliary_data(auxiliary_data: AuxiliaryData): AuxiliaryDat
 */
 export function hash_transaction(tx_body: TransactionBody): TransactionHash;
 /**
-* @param {Uint8Array} tx_body
-* @returns {TransactionHash}
-*/
-export function hash_transaction_raw(tx_body: Uint8Array): TransactionHash;
-/**
 * @param {PlutusData} plutus_data
 * @returns {DataHash}
 */
 export function hash_plutus_data(plutus_data: PlutusData): DataHash;
+/**
+* @param {Uint8Array} data
+* @returns {Uint8Array}
+*/
+export function hash_blake2b256(data: Uint8Array): Uint8Array;
+/**
+* @param {Uint8Array} data
+* @returns {Uint8Array}
+*/
+export function hash_blake2b224(data: Uint8Array): Uint8Array;
 /**
 * @param {Redeemers} redeemers
 * @param {Costmdls} cost_models
@@ -137,6 +123,25 @@ export function min_ada_required(output: TransactionOutput, coins_per_utxo_byte:
 * @returns {NativeScript}
 */
 export function encode_json_str_to_native_script(json: string, self_xpub: string, schema: number): NativeScript;
+/**
+* @param {string} json
+* @param {number} schema
+* @returns {PlutusData}
+*/
+export function encode_json_str_to_plutus_datum(json: string, schema: number): PlutusData;
+/**
+* @param {PlutusData} datum
+* @param {number} schema
+* @returns {string}
+*/
+export function decode_plutus_datum_to_json_str(datum: PlutusData, schema: number): string;
+/**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
 /**
 */
 export enum CertificateKind {
@@ -210,6 +215,25 @@ export enum StakeCredKind {
 export enum ScriptWitnessKind {
   NativeWitness,
   PlutusWitness,
+}
+/**
+* Each new language uses a different namespace for hashing its script
+* This is because you could have a language where the same bytes have different semantics
+* So this avoids scripts in different languages mapping to the same hash
+* Note that the enum value here is different than the enum value for deciding the cost model of a script
+* https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
+*/
+export enum ScriptHashNamespace {
+  NativeScript,
+  PlutusV1,
+  PlutusV2,
+}
+/**
+* Used to choose the schema for a script JSON string
+*/
+export enum ScriptSchema {
+  Wallet,
+  Node,
 }
 /**
 */
@@ -298,25 +322,6 @@ export enum ScriptKind {
 export enum DatumKind {
   Hash,
   Data,
-}
-/**
-* Each new language uses a different namespace for hashing its script
-* This is because you could have a language where the same bytes have different semantics
-* So this avoids scripts in different languages mapping to the same hash
-* Note that the enum value here is different than the enum value for deciding the cost model of a script
-* https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
-*/
-export enum ScriptHashNamespace {
-  NativeScript,
-  PlutusV1,
-  PlutusV2,
-}
-/**
-* Used to choose the schema for a script JSON string
-*/
-export enum ScriptSchema {
-  Wallet,
-  Node,
 }
 /**
 */
@@ -3544,6 +3549,10 @@ export class PoolRegistration {
 * @returns {PoolRegistration}
 */
   static new(pool_params: PoolParams): PoolRegistration;
+/**
+* @param {boolean} update
+*/
+  set_is_update(update: boolean): void;
 }
 /**
 */
@@ -3638,6 +3647,15 @@ export class PrivateKey {
 * @returns {Ed25519Signature}
 */
   sign(message: Uint8Array): Ed25519Signature;
+/**
+* @param {Uint8Array} bytes
+* @returns {PrivateKey}
+*/
+  static from_bytes(bytes: Uint8Array): PrivateKey;
+/**
+* @returns {Uint8Array}
+*/
+  to_bytes(): Uint8Array;
 }
 /**
 */
@@ -5646,6 +5664,11 @@ export class TransactionBuilder {
 */
   balance(change_address: Address, datum?: Datum): void;
 /**
+* Returns the TransactionBody.
+* @returns {Uint8Array}
+*/
+  to_bytes(): Uint8Array;
+/**
 * @returns {number}
 */
   full_size(): number;
@@ -6470,6 +6493,11 @@ export class UnitInterval {
 * @returns {UnitInterval}
 */
   static new(numerator: BigNum, denominator: BigNum): UnitInterval;
+/**
+* @param {number} float_number
+* @returns {UnitInterval}
+*/
+  static from_float(float_number: number): UnitInterval;
 }
 /**
 */
@@ -6591,33 +6619,22 @@ export class VRFKeyHash {
 export class VRFVKey {
   free(): void;
 /**
+* @returns {Uint8Array}
+*/
+  to_bytes(): Uint8Array;
+/**
 * @param {Uint8Array} bytes
 * @returns {VRFVKey}
 */
   static from_bytes(bytes: Uint8Array): VRFVKey;
 /**
+* @returns {VRFKeyHash}
+*/
+  hash(): VRFKeyHash;
+/**
 * @returns {Uint8Array}
 */
-  to_bytes(): Uint8Array;
-/**
-* @param {string} prefix
-* @returns {string}
-*/
-  to_bech32(prefix: string): string;
-/**
-* @param {string} bech_str
-* @returns {VRFVKey}
-*/
-  static from_bech32(bech_str: string): VRFVKey;
-/**
-* @returns {string}
-*/
-  to_hex(): string;
-/**
-* @param {string} hex
-* @returns {VRFVKey}
-*/
-  static from_hex(hex: string): VRFVKey;
+  to_raw_key(): Uint8Array;
 }
 /**
 */
@@ -6978,7 +6995,7 @@ export interface HeaderBodyJSON {
   prev_hash?: string | null;
   protocol_version: ProtocolVersionJSON;
   slot: string;
-  vrf_vkey: string;
+  vrf_vkey: VRFVKeyJSON;
 }
 export type IntJSON = string;
 export type Ipv4JSON = [number, number, number, number];
@@ -7147,6 +7164,10 @@ export interface PoolParamsJSON {
   vrf_keyhash: string;
 }
 export interface PoolRegistrationJSON {
+  /**
+   * We need this to figure out if someone registers a pool or only updates it. So that we know if we need to add the pool deposit or not.
+   */
+  is_update?: boolean | null;
   pool_params: PoolParamsJSON;
 }
 export interface PoolRetirementJSON {
@@ -7349,7 +7370,7 @@ export interface VRFCertJSON {
   proof: number[];
 }
 export type VRFKeyHashJSON = string;
-export type VRFVKeyJSON = string;
+export type VRFVKeyJSON = number[];
 export interface ValueJSON {
   coin: string;
   multiasset?: MultiAssetJSON | null;

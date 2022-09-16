@@ -404,7 +404,7 @@ export const getCollateral = async () => {
         Loader.Cardano.TransactionHash.from_bytes(
           Buffer.from(collateral.txHash, 'hex')
         ),
-        collateral.txId
+        Loader.Cardano.BigNum.from_str(collateral.txId.toString())
       ),
       Loader.Cardano.TransactionOutput.new(
         Loader.Cardano.Address.from_bech32(
@@ -983,7 +983,7 @@ export const signTx = async (
 
   const txWitnessSet = Loader.Cardano.TransactionWitnessSet.new();
   const vkeyWitnesses = Loader.Cardano.Vkeywitnesses.new();
-  const txHash = Loader.Cardano.hash_transaction_raw(rawTx.body().raw());
+  const txHash = Loader.Cardano.hash_transaction(rawTx.body());
   keyHashes.forEach((keyHash) => {
     let signingKey;
     if (keyHash === paymentKeyHash) signingKey = paymentKey;
