@@ -58,7 +58,8 @@ const migration = {
             currentAccountNetwork.minAda = Loader.Cardano.min_ada_required(
               checkOutput,
               Loader.Cardano.BigNum.from_str(
-                protocolParameters.coinsPerUtxoWord
+                // protocolParameters.coinsPerUtxoWord
+                (4310).toString() // We hardcode this, since we don't know if Blockfrost switches PP quickly during the epoch transition
               )
             ).to_str();
           } else {
