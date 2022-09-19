@@ -1,6 +1,8 @@
 import { NETWORK_ID, STORAGE } from '../config/config';
 import { getStorage, setStorage } from '../api/extension/index';
 import Loader from '../api/loader';
+import { initTx } from '../api/extension/wallet';
+import { assetsToValue } from '../api/util';
 
 const migration = {
   version: '3.3.0',
@@ -15,6 +17,8 @@ const migration = {
     await Loader.load();
     const storage = await getStorage(STORAGE.accounts);
     const accounts = Object.keys(storage);
+    const networks = Object.keys(NETWORK_ID);
+    const protocolParameters = await initTx();
 
     for (let i = 0; i < accounts.length; i++) {
       const currentAccount = storage[accounts[i]];
@@ -30,11 +34,38 @@ const migration = {
         rewardAddr: currentAccount[NETWORK_ID.testnet].rewardAddr,
       };
 
-      currentAccount[NETWORK_ID.preview] = {
+      currentAccount[NETWORK_ID.preprod] = {
         ...networkDefault,
         paymentAddr: currentAccount[NETWORK_ID.testnet].paymentAddr,
         rewardAddr: currentAccount[NETWORK_ID.testnet].rewardAddr,
       };
+    }
+
+    // add minAda
+    for (let i = 0; i < accounts.length; i++) {
+      for (let j = 0; j < networks.length; j++) {
+        if (storage[accounts[i]][networks[j]]) {
+          const currentAccountNetwork = storage[accounts[i]][networks[j]];
+          let assets = currentAccountNetwork.assets;
+          if (assets.length > 0) {
+            const amount = await assetsToValue(assets);
+            const checkOutput = Loader.Cardano.TransactionOutput.new(
+              Loader.Cardano.Address.from_bech32(
+                currentAccountNetwork.paymentAddr
+              ),
+              amount
+            );
+            currentAccountNetwork.minAda = Loader.Cardano.min_ada_required(
+              checkOutput,
+              Loader.Cardano.BigNum.from_str(
+                protocolParameters.coinsPerUtxoWord
+              )
+            ).to_str();
+          } else {
+            currentAccountNetwork.minAda = 0;
+          }
+        }
+      }
     }
 
     await setStorage({ [STORAGE.accounts]: storage });
@@ -54,8 +85,13 @@ const migration = {
     await setStorage({ [STORAGE.accounts]: storage });
   },
   info: [
-    { title: 'Vasil support' },
-    { title: 'Support for new testnets: Preview and Preprod' },
+    { title: 'Support: Vasil era' },
+    {
+      title: 'Support: Mangled addresses',
+      detail:
+        'Nami keeps track now of all addresses with the same payment credential.',
+    },
+    { title: 'Support: Preview and Preprod network' },
     { title: 'Bug fixing' },
   ],
   pwdRequired: false,

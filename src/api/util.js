@@ -325,6 +325,8 @@ export const valueToAssets = async (value) => {
 };
 
 export const minAdaRequired = async (output, coinsPerUtxoWord) => {
+  console.log(coinsPerUtxoWord);
+  console.log(output.to_json());
   await Loader.load();
   return Loader.Cardano.min_ada_required(output, coinsPerUtxoWord).to_str();
 };
