@@ -49,7 +49,7 @@ export async function blockfrostRequest(endpoint, headers, body, signal) {
     }
     const rawResult = await fetch(provider.api.base(network.node) + endpoint, {
       headers: {
-        ...provider.api.key(network.id),
+        ...provider.api.key(network.name || network.id),
         ...provider.api.header,
         ...headers,
         'Cache-Control': 'no-cache',
@@ -82,7 +82,12 @@ export const currencyToSymbol = (currency) => {
 export const hexToAscii = (hex) => Buffer.from(hex, 'hex').toString();
 
 export const networkNameToId = (name) => {
-  const names = { [NETWORK_ID.mainnet]: 1, [NETWORK_ID.testnet]: 0 };
+  const names = {
+    [NETWORK_ID.mainnet]: 1,
+    [NETWORK_ID.testnet]: 0,
+    [NETWORK_ID.preview]: 0,
+    [NETWORK_ID.preprod]: 0,
+  };
   return names[name];
 };
 
@@ -202,7 +207,9 @@ export const utxoFromJson = async (output, address) => {
       Loader.Cardano.TransactionHash.from_bytes(
         Buffer.from(output.tx_hash || output.txHash, 'hex')
       ),
-      output.output_index || output.txId
+      Loader.Cardano.BigNum.from_str(
+        (output.output_index ?? output.txId).toString()
+      )
     ),
     Loader.Cardano.TransactionOutput.new(
       Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex')),
@@ -317,13 +324,11 @@ export const valueToAssets = async (value) => {
   return assets;
 };
 
-export const minAdaRequired = async (value, coinsPerUtxoWord) => {
+export const minAdaRequired = async (output, coinsPerUtxoWord) => {
+  console.log(coinsPerUtxoWord);
+  console.log(output.to_json());
   await Loader.load();
-  return Loader.Cardano.min_ada_required(
-    value,
-    false,
-    coinsPerUtxoWord
-  ).to_str();
+  return Loader.Cardano.min_ada_required(output, coinsPerUtxoWord).to_str();
 };
 
 /**

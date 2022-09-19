@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   bytesAddressToBinary,
+  extractKeyOrScriptHash,
   getCurrentAccount,
   getSpecificUtxo,
   getUtxos,
@@ -87,14 +88,14 @@ const SignTx = ({ request, controller }) => {
 
     const certificate = tx.body().certs();
     const withdrawal = tx.body().withdrawals();
-    const minting = tx.body().multiassets();
+    const minting = tx.body().mint();
     const script = tx.witness_set().native_scripts();
     let datum;
     let contract = tx.body().script_data_hash();
     const outputs = tx.body().outputs();
     for (let i = 0; i < outputs.len(); i++) {
       const output = outputs.get(i);
-      if (output.data_hash()) {
+      if (output.datum()) {
         datum = true;
         const prefix = bytesAddressToBinary(output.address().to_bytes()).slice(
           0,
@@ -134,12 +135,12 @@ const SignTx = ({ request, controller }) => {
       const inputTxHash = Buffer.from(
         input.transaction_id().to_bytes()
       ).toString('hex');
-      const inputTxId = input.index();
+      const inputTxId = parseInt(input.index().to_str());
       const utxo = utxos.find((utxo) => {
         const utxoTxHash = Buffer.from(
           utxo.input().transaction_id().to_bytes()
         ).toString('hex');
-        const utxoTxId = utxo.input().index();
+        const utxoTxId = parseInt(utxo.input().index().to_str());
         return inputTxHash === utxoTxHash && inputTxId === utxoTxId;
       });
       if (utxo) {
@@ -155,7 +156,11 @@ const SignTx = ({ request, controller }) => {
     for (let i = 0; i < outputs.len(); i++) {
       const output = outputs.get(i);
       const address = output.address().to_bech32();
-      if (address === account.paymentAddr) {
+      const hashBech32 = await extractKeyOrScriptHash(
+        Buffer.from(output.address().to_bytes()).toString('hex')
+      );
+      // making sure funds at mangled addresses are also included
+      if (hashBech32 === account.paymentKeyHashBech32) {
         //own
         ownOutputValue = ownOutputValue.checked_add(output.amount());
       } else {
@@ -182,10 +187,14 @@ const SignTx = ({ request, controller }) => {
         ) {
           externalOutputs[address].script = true;
         }
-        const datumHash = output.data_hash();
-        if (datumHash)
+        const datum = output.datum();
+        if (datum)
           externalOutputs[address].datumHash = Buffer.from(
-            datumHash.to_bytes()
+            datum.kind() === 0
+              ? datum.as_data_hash().to_bytes()
+              : Loader.Cardano.hash_plutus_data(
+                  datum.as_data().get()
+                ).to_bytes()
           ).toString('hex');
       }
     }
@@ -284,15 +293,17 @@ const SignTx = ({ request, controller }) => {
     //get key hashes from inputs
     const inputs = tx.body().inputs();
     for (let i = 0; i < inputs.len(); i++) {
-      const txHash = Buffer.from(
-        inputs.get(i).transaction_id().to_bytes()
-      ).toString('hex');
+      const input = inputs.get(i);
+      const txHash = Buffer.from(input.transaction_id().to_bytes()).toString(
+        'hex'
+      );
+      const index = parseInt(input.index().to_str());
       if (
         utxos.some(
           (utxo) =>
             Buffer.from(utxo.input().transaction_id().to_bytes()).toString(
               'hex'
-            ) === txHash
+            ) === txHash && parseInt(utxo.input().index().to_str()) === index
         )
       ) {
         requiredKeyHashes.push(paymentKeyHash);
@@ -309,10 +320,7 @@ const SignTx = ({ request, controller }) => {
         if (cert.kind() === 0) {
           const credential = cert.as_stake_registration().stake_credential();
           if (credential.kind() === 0) {
-            const keyHash = Buffer.from(
-              credential.to_keyhash().to_bytes()
-            ).toString('hex');
-            requiredKeyHashes.push(keyHash);
+            // stake registration doesn't required key hash
           }
         } else if (cert.kind() === 1) {
           const credential = cert.as_stake_deregistration().stake_credential();
@@ -341,10 +349,14 @@ const SignTx = ({ request, controller }) => {
             );
             requiredKeyHashes.push(keyHash);
           }
+        } else if (cert.kind() === 4) {
+          const operator = cert.as_pool_retirement().pool_keyhash().to_hex();
+          requiredKeyHashes.push(operator);
         } else if (cert.kind() === 6) {
           const instant_reward = cert
             .as_move_instantaneous_rewards_cert()
             .move_instantaneous_reward()
+            .as_to_stake_creds()
             .keys();
           for (let i = 0; i < instant_reward.len(); i++) {
             const credential = instant_reward.get(i);
@@ -360,6 +372,19 @@ const SignTx = ({ request, controller }) => {
       }
     };
     if (txBody.certs()) keyHashFromCert(txBody);
+
+    // key hashes from withdrawals
+    const withdrawals = txBody.withdrawals();
+    const keyHashFromWithdrawal = (withdrawals) => {
+      const rewardAddresses = withdrawals.keys();
+      for (let i = 0; i < rewardAddresses.len(); i++) {
+        const credential = rewardAddresses.get(i).payment_cred();
+        if (credential.kind() === 0) {
+          requiredKeyHashes.push(credential.to_keyhash().to_hex());
+        }
+      }
+    };
+    if (withdrawals) keyHashFromWithdrawal(withdrawals);
 
     //get key hashes from scripts
     const scripts = tx.witness_set().native_scripts();
