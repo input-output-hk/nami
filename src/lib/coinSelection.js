@@ -2,7 +2,7 @@ import {
   TransactionUnspentOutput,
   TransactionOutputs,
   Value,
-} from '@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
+} from '../../temporary_modules/@emurgo/cardano-multiplatform-lib-browser';
 import Loader from '../api/loader';
 
 /**

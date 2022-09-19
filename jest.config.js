@@ -1,8 +1,8 @@
 module.exports = {
   moduleNameMapper: {
     // mock out the browser version of WASM bindings with the nodejs bindings
-    '^(.*)@emurgo/cardano-serialization-lib-browser(.*)$':
-      '$1@emurgo/cardano-serialization-lib-nodejs$2',
+    '^(.*)@emurgo/cardano-multiplatform-lib-browser(.*)$':
+      '$1@emurgo/cardano-multiplatform-lib-nodejs$2',
     '^(.*)@emurgo/cardano-message-signing-browser(.*)$':
       '$1@emurgo/cardano-message-signing-nodejs$2',
     // blockfrost keys

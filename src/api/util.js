@@ -8,7 +8,7 @@ import {
   Value,
   MultiAsset,
   Transaction,
-} from '@emurgo/cardano-serialization-lib-browser/cardano_serialization_lib';
+} from '../../temporary_modules/@emurgo/cardano-message-signing-browser';
 import AssetFingerprint from '@emurgo/cip14-js';
 import {
   AddressType,
