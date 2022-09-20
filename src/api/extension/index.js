@@ -830,7 +830,7 @@ export const verifyTx = async (tx) => {
 export const signData = async (address, payload, password, accountIndex) => {
   await Loader.load();
   const keyHash = await extractKeyHash(address);
-  const prefix = keyHash.slice(0, 8);
+  const prefix = keyHash.startsWith('addr_vkh') ? 'addr_vkh' : 'stake_vkh';
   let { paymentKey, stakeKey } = await requestAccountKey(
     password,
     accountIndex
@@ -883,7 +883,7 @@ export const signDataCIP30 = async (
 ) => {
   await Loader.load();
   const keyHash = await extractKeyHash(address);
-  const prefix = keyHash.slice(0, 8);
+  const prefix = keyHash.startsWith('addr_vkh') ? 'addr_vkh' : 'stake_vkh';
   let { paymentKey, stakeKey } = await requestAccountKey(
     password,
     accountIndex
