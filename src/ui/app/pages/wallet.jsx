@@ -178,11 +178,12 @@ const Wallet = () => {
     currentAccount.nft = [];
     currentAccount.assets.forEach((asset) => {
       asset.policy = asset.unit.slice(0, 56);
-      asset.name = Buffer.from(asset.unit.slice(56), 'hex').toString();
+      asset.name = Buffer.from(asset.unit.slice(56), 'hex');
       asset.fingerprint = new AssetFingerprint(
         Buffer.from(asset.policy, 'hex'),
-        Buffer.from(asset.name)
+        asset.name
       ).fingerprint();
+      asset.name = asset.name.toString();
       if (asset.has_nft_onchain_metadata === true)
         currentAccount.nft.push(asset);
       else currentAccount.ft.push(asset);
