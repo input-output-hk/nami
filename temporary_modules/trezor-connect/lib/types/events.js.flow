@@ -64,6 +64,7 @@ export type MessageWithoutPayload = {
         | typeof UI.INSUFFICIENT_FUNDS
         | typeof UI.CLOSE_UI_WINDOW
         | typeof UI.LOGIN_CHALLENGE_REQUEST,
+    payload?: typeof undefined,
 };
 
 export type DeviceMessage =

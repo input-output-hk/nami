@@ -13,6 +13,7 @@ import {
   InputGroup,
   InputRightElement,
   Icon,
+  Select,
 } from '@chakra-ui/react';
 import {
   ChevronLeftIcon,
@@ -399,34 +400,25 @@ const Network = () => {
       </Text>
       <Box height="6" />
       <Box display="flex" alignItems="center" justifyContent="center">
-        <Text>Mainnet</Text>
-        <Box width="2" />
-        <ButtonSwitch
-          defaultChecked={settings?.network?.id !== NETWORK_ID.mainnet}
+        <Select
+          defaultValue={settings?.network?.id}
           onChange={(e) => {
-            if (e.target.checked) {
-              setSettings({
-                ...settings,
-                network: {
-                  ...settings.network,
-                  id: NETWORK_ID.testnet,
-                  node: NODE.testnet,
-                },
-              });
-            } else {
-              setSettings({
-                ...settings,
-                network: {
-                  ...settings.network,
-                  id: NETWORK_ID.mainnet,
-                  node: NODE.mainnet,
-                },
-              });
-            }
+            const id = e.target.value;
+            setSettings({
+              ...settings,
+              network: {
+                ...settings.network,
+                id: NETWORK_ID[id],
+                node: NODE[id],
+              },
+            });
           }}
-        />
-        <Box width="2" />
-        <Text>Testnet</Text>
+        >
+          <option value={NETWORK_ID.mainnet}>Mainnet</option>
+          <option value={NETWORK_ID.preprod}>Preprod</option>
+          <option value={NETWORK_ID.preview}>Preview</option>
+          <option value={NETWORK_ID.testnet}>Testnet</option>
+        </Select>
       </Box>
       <Box height="8" />
       <Box display="flex" alignItems="center" justifyContent="center">

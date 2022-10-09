@@ -4,6 +4,7 @@
 // https://github.com/stellar/js-stellar-base
 
 import type {
+    UintType,
     StellarAssetType,
     StellarSignerType,
     StellarMemoType,
@@ -105,10 +106,10 @@ export type StellarSetOptionsOperation = {
     inflationDest?: string, // Proto: "inflation_destination_account"
     clearFlags?: number, // Proto: "clear_flags"
     setFlags?: number, // Proto: "set_flags"
-    masterWeight?: number | string, // Proto: "master_weight"
-    lowThreshold?: number | string, // Proto: "low_threshold"
-    medThreshold?: number | string, // Proto: "medium_threshold"
-    highThreshold?: number | string, // Proto: "high_threshold"
+    masterWeight?: UintType, // Proto: "master_weight"
+    lowThreshold?: UintType, // Proto: "low_threshold"
+    medThreshold?: UintType, // Proto: "medium_threshold"
+    highThreshold?: UintType, // Proto: "high_threshold"
     homeDomain?: string, // Proto: "home_domain"
 };
 
@@ -173,7 +174,7 @@ export type StellarOperation =
 export type StellarTransaction = {
     source: string, // Proto: "source_account"
     fee: number, // Proto: ok
-    sequence: string | number, // Proto: "sequence_number"
+    sequence: UintType, // Proto: "sequence_number"
     timebounds?: {
         minTime: number, // Proto: "timebounds_start"
         maxTime: number, // Proto: "timebounds_end"
@@ -245,6 +246,7 @@ export type StellarGetAddress = {
     path: string | number[],
     address?: string,
     showOnTrezor?: boolean,
+    useEventListener?: boolean, // set automatically if UI.ADDRESS_VALIDATION listener is used
 };
 
 export type StellarAddress = {

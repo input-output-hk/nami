@@ -13,7 +13,7 @@ var _deferred = require("../utils/deferred");
 
 var _constants = require("../constants");
 
-var _networkUtils = require("../env/browser/networkUtils");
+var _urlUtils = require("../utils/urlUtils");
 
 var _inlineStyles = _interopRequireDefault(require("./inline-styles"));
 
@@ -75,7 +75,7 @@ var init = /*#__PURE__*/function () {
               instance.setAttribute('allow', 'usb');
             }
 
-            exports.origin = origin = (0, _networkUtils.getOrigin)(instance.src);
+            exports.origin = origin = (0, _urlUtils.getOrigin)(instance.src);
             exports.timeout = timeout = window.setTimeout(function () {
               initPromise.reject(_constants.ERRORS.TypedError('Init_IframeTimeout'));
             }, 10000);

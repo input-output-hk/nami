@@ -1,6 +1,6 @@
 {
   "name": "trezor-connect",
-  "version": "8.2.3",
+  "version": "8.2.9-beta.1",
   "author": "Trezor <info@trezor.io>",
   "homepage": "https://github.com/trezor/connect",
   "description": "High-level javascript interface for Trezor hardware wallet.",
@@ -25,8 +25,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.15.4",
-    "events": "^3.3.0",
-    "whatwg-fetch": "^3.6.2"
+    "cross-fetch": "^3.1.5",
+    "events": "^3.3.0"
   },
   "types": "lib/typescript/index.d.ts"
 }

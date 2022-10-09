@@ -53,6 +53,7 @@ export type CardanoGetAddress = {
     address?: string,
     showOnTrezor?: boolean,
     derivationType?: CardanoDerivationType,
+    useEventListener?: boolean, // set automatically if UI.ADDRESS_VALIDATION listener is used
 };
 
 export type CardanoAddress = {
@@ -110,11 +111,13 @@ export type CardanoOutput =
           addressParameters: CardanoAddressParameters,
           amount: string,
           tokenBundle?: CardanoAssetGroup[],
+          datumHash?: string,
       }
     | {
           address: string,
           amount: string,
           tokenBundle?: CardanoAssetGroup[],
+          datumHash?: string,
       };
 
 export type CardanoPoolOwner = {
@@ -158,15 +161,28 @@ export type CardanoCertificate = {
     pool?: string,
     poolParameters?: CardanoPoolParameters,
     scriptHash?: string,
+    keyHash?: string,
 };
 
 export type CardanoWithdrawal = {
     path?: string | number[],
     amount: string,
     scriptHash?: string,
+    keyHash?: string,
 };
 
 export type CardanoMint = CardanoAssetGroup[];
+
+export type CardanoCollateralInput = {
+    path?: string | number[],
+    prev_hash: string,
+    prev_index: number,
+};
+
+export type CardanoRequiredSigner = {
+    keyPath?: string | number[],
+    keyHash?: string,
+};
 
 export type CardanoCatalystRegistrationParameters = {
     votingPublicKey: string,
@@ -190,11 +206,15 @@ export type CardanoSignTransaction = {
     validityIntervalStart?: string,
     auxiliaryData?: CardanoAuxiliaryData,
     mint?: CardanoMint,
+    scriptDataHash?: string,
+    collateralInputs?: CardanoCollateralInput[],
+    requiredSigners?: CardanoRequiredSigner[],
     additionalWitnessRequests?: (string | number[])[],
     protocolMagic: number,
     networkId: number,
     signingMode: CardanoTxSigningMode,
     derivationType?: CardanoDerivationType,
+    includeNetworkId?: boolean,
 };
 
 export type CardanoSignedTxWitness = {

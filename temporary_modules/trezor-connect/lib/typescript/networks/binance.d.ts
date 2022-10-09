@@ -51,7 +51,7 @@ export type BinancePreparedMessage =
           type: 'BinanceCancelMsg';
       });
 
-export type BinancePreparedTransaction = BinanceSDKTransaction & {
+export type BinancePreparedTransaction = Required<BinanceSDKTransaction> & {
     messages: BinancePreparedMessage[];
 };
 

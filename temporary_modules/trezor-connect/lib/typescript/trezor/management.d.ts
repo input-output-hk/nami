@@ -1,11 +1,11 @@
-import type { SafetyCheckLevel } from './protobuf';
-
 export interface ResetDevice {
+    display_random?: boolean;
     strength?: number;
+    passphrase_protection?: boolean;
+    pin_protection?: boolean;
+    language?: string;
     label?: string;
     u2f_counter?: number;
-    pin_protection?: boolean;
-    passphrase_protection?: boolean;
     skip_backup?: boolean;
     no_backup?: boolean;
     backup_type?: 0 | 1;

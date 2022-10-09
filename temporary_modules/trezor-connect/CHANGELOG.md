@@ -1,4 +1,67 @@
-# 8.2.4 (not released)
+# 8.2.8
+
+### Added
+- Cardano: support for Plutus transactions (#1073)
+
+### Changed
+- signTransaction allows address_n to be bip44 path string
+- updated blockchain-link to 2.1.3
+
+### Fixed
+- race condition causing "unexpected response" error for calls preceded by a cancelled call.
+
+# 8.2.7
+
+### Added
+- `TrezorConnect.setProxy` method. Allow @trezor/blockchain-link using TOR proxy.
+- Support for Electrum backend
+
+### Fixed
+- Some methods not throwing `ui-device_firmware_unsupported` when the current device firmware didn't support the method.
+- Ethereum: EthereumSignTypedData now supports signing domain-only data, i.e. when `primaryType` is equal to `EIP712Domain`.
+- GetAccountInfo method in popup mode
+### Changed
+- @trezor/blockchain-link 2.0.0 use workers as commonjs modules in nodejs and react-native env.
+- Ethereum: EthereumSignTypedData must always have at least Trezor T parameters.
+
+### Removed
+- AOPP
+
+# 8.2.6
+
+### Added
+
+- 1.10.5 FW release
+
+# 8.2.5
+
+### Added
+
+- Support for cardano in GetAccountInto method
+- Ethereum: Support for EthereumSignTypedData operation [#983](https://github.com/trezor/connect/pull/983) and [#1015](https://github.com/trezor/connect/pull/1015)
+- Management: Wipe device from bootloader mode
+
+### Changed
+- use modules instead of blockchain-link builds in nodejs
+
+### Removed
+- debugLink methods removed
+- loadDevice method removed
+
+# 8.2.4
+
+### Fixed
+
+- Communication with trezor bridge in node.js environment
+- Race condition for RebootToBootloader message
+- Encoding protobuf messages which contain number (sent as string) which is over Number.MAX_SAVE_INTEGER in browser environment
+- Stellar: convert manageBuyOffer.buyAmount to manageBuyOffer.amount
+- Stellar: transformTransaction, convert transaction fee to number
+- Stellar: transformTransaction, when the memo type is TEXT, convert memo.value to string
+- Cardano: fix catalyst reward address backwards compatibility
+
+### Changed
+- trezor-link was replaced with @trezor/transport
 
 # 8.2.3
 
@@ -55,7 +118,7 @@
 
 ### Changed
 - Cardano: since transaction streaming has been introduced, it isn't possible to return the whole serialized transaction from the `cardanoSignTransaction` call anymore. Instead the transaction hash, transaction witnesses and auxiliary data supplement are returned and the serialized transaction needs to be assembled by the client.
-- Cardano: an obligatory `signingMode` parameter has been added to the `cardanoSignTransaction` call
+- Cardano: a required `signingMode` parameter has been added to the `cardanoSignTransaction` call
 - Cardano: providing auxiliary data as a blob to the `cardanoSignTransaction` call is not supported anymore. Provide only the auxiliary data hash instead.
 - Removed support for `Lisk`.
 

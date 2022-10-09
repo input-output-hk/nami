@@ -22,7 +22,7 @@ import * as Events from './events';
 import * as Blockchain from './backend/blockchain';
 
 interface Bundled<Parm, Resp> {
-    (params: $Exact<{ ...$Exact<P.CommonParams>, ...$Exact<Parm> }>): P.Response<Resp>;
+    (params: $Exact<{ ...$Exact<P.CommonParams>, ...$Exact<P.NoBundle<Parm>> }>): P.Response<Resp>;
     (
         params: $Exact<{ ...$Exact<P.CommonParams>, ...$Exact<P.Bundle<Parm>> }>,
     ): P.BundledResponse<Resp>;
@@ -252,21 +252,26 @@ export type API = {
     // Ethereum and Ethereum-like
     ethereumGetAddress: Bundled<Ethereum.EthereumGetAddress, Ethereum.EthereumAddress>,
     ethereumGetPublicKey: Bundled<Ethereum.EthereumGetPublicKey, Bitcoin.HDNodeResponse>,
-    ethereumSignTransaction: Bundled<Ethereum.EthereumSignTransaction, Ethereum.EthereumSignedTx>,
+    ethereumSignTransaction: Method<Ethereum.EthereumSignTransaction, Ethereum.EthereumSignedTx>,
     ethereumSignMessage: Method<Ethereum.EthereumSignMessage, Protobuf.EthereumMessageSignature>,
+    ethereumSignTypedData: Method<
+        Ethereum.EthereumSignTypedData | Ethereum.EthereumSignTypedHashAndData,
+        Protobuf.EthereumTypedDataSignature,
+    >,
+
     ethereumVerifyMessage: Method<Ethereum.EthereumVerifyMessage, P.DefaultMessage>,
 
     // NEM
     nemGetAddress: Bundled<NEM.NEMGetAddress, NEM.NEMAddress>,
-    nemSignTransaction: Bundled<NEM.NEMSignTransaction, Protobuf.NEMSignedTx>,
+    nemSignTransaction: Method<NEM.NEMSignTransaction, Protobuf.NEMSignedTx>,
 
     // Ripple
     rippleGetAddress: Bundled<Ripple.RippleGetAddress, Ripple.RippleAddress>,
-    rippleSignTransaction: Bundled<Ripple.RippleSignTransaction, Ripple.RippleSignedTx>,
+    rippleSignTransaction: Method<Ripple.RippleSignTransaction, Ripple.RippleSignedTx>,
 
     // Stellar
     stellarGetAddress: Bundled<Stellar.StellarGetAddress, Stellar.StellarAddress>,
-    stellarSignTransaction: Bundled<Stellar.StellarSignTransaction, Stellar.StellarSignedTx>,
+    stellarSignTransaction: Method<Stellar.StellarSignTransaction, Stellar.StellarSignedTx>,
 
     // // Tezos
     tezosGetAddress: Bundled<Tezos.TezosGetAddress, Tezos.TezosAddress>,
@@ -352,8 +357,11 @@ export type API = {
      */
     rebootToBootloader: Method<{}, P.DefaultMessage>,
 
+    /**
+     * Set tor proxy for @trezor/blockchain-link connections
+     */
+    setProxy: Method<Misc.SetProxy, Protobuf.Success>,
+
     // // Developer mode
     customMessage: Method<Misc.CustomMessage, any>,
-    debugLinkDecision: Method<{}, { debugLink: true }>,
-    debugLinkGetState: Method<{}, { debugLink: true }>,
 };

@@ -7,15 +7,15 @@ exports.parse = exports.getEnv = exports.corsValidator = exports.DEFAULT_PRIORIT
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 /*
  * Initial settings for connect.
  * It could be changed by passing values into TrezorConnect.init(...) method
  */
-var VERSION = '8.2.3';
+var VERSION = '8.2.9-beta.1';
 var versionN = VERSION.split('.').map(function (s) {
   return parseInt(s, 10);
 }); // const DIRECTORY = `${ versionN[0] }${ (versionN[1] > 0 ? `.${versionN[1]}` : '') }/`;
@@ -48,7 +48,6 @@ var initialSettings = {
   interactionTimeout: 600 // 5 minutes
 
 };
-var currentSettings = initialSettings;
 
 var parseManifest = function parseManifest(manifest) {
   if (!manifest) return;
@@ -108,7 +107,7 @@ var parse = function parse(input) {
     input = {};
   }
 
-  var settings = _objectSpread({}, currentSettings);
+  var settings = _objectSpread({}, initialSettings);
 
   if (Object.prototype.hasOwnProperty.call(input, 'debug')) {
     if (Array.isArray(input)) {// enable log with prefix
@@ -201,8 +200,7 @@ var parse = function parse(input) {
     settings.manifest = parseManifest(input.manifest);
   }
 
-  currentSettings = settings;
-  return currentSettings;
+  return settings;
 };
 
 exports.parse = parse;

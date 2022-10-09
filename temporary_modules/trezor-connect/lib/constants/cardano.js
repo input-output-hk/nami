@@ -4,7 +4,7 @@ exports.__esModule = true;
 exports.PROTOCOL_MAGICS = exports.POOL_RELAY_TYPE = exports.NETWORK_IDS = exports.CERTIFICATE_TYPE = exports.ADDRESS_TYPE = void 0;
 var PROTOCOL_MAGICS = Object.freeze({
   mainnet: 764824073,
-  testnet: 42
+  testnet: 1097911063
 });
 exports.PROTOCOL_MAGICS = PROTOCOL_MAGICS;
 var NETWORK_IDS = Object.freeze({

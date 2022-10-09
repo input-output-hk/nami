@@ -1,8 +1,9 @@
 "use strict";
 
 exports.__esModule = true;
-exports.Enum_WordRequestType = exports.Enum_TezosContractType = exports.Enum_TezosBallotType = exports.Enum_StellarSignerType = exports.Enum_StellarMemoType = exports.Enum_StellarAssetType = exports.Enum_SdProtectOperationType = exports.Enum_SafetyCheckLevel = exports.Enum_RequestType = exports.Enum_RecoveryDeviceType = exports.Enum_PinMatrixRequestType = exports.Enum_OutputScriptType = exports.Enum_NEMSupplyChangeType = exports.Enum_NEMMosaicLevy = exports.Enum_NEMModificationType = exports.Enum_NEMImportanceTransferMode = exports.Enum_InputScriptType = exports.Enum_FailureType = exports.Enum_EthereumDataType = exports.Enum_DecredStakingSpendType = exports.Enum_DebugSwipeDirection = exports.Enum_CardanoTxWitnessType = exports.Enum_CardanoTxSigningMode = exports.Enum_CardanoTxAuxiliaryDataSupplementType = exports.Enum_CardanoPoolRelayType = exports.Enum_CardanoNativeScriptType = exports.Enum_CardanoNativeScriptHashDisplayFormat = exports.Enum_CardanoDerivationType = exports.Enum_CardanoCertificateType = exports.Enum_CardanoAddressType = exports.Enum_Capability = exports.Enum_ButtonRequestType = exports.Enum_BinanceTimeInForce = exports.Enum_BinanceOrderType = exports.Enum_BinanceOrderSide = exports.Enum_BackupType = exports.Enum_AmountUnit = void 0;
+exports.Enum_WordRequestType = exports.Enum_TezosContractType = exports.Enum_TezosBallotType = exports.Enum_StellarSignerType = exports.Enum_StellarMemoType = exports.Enum_StellarAssetType = exports.Enum_SdProtectOperationType = exports.Enum_SafetyCheckLevel = exports.Enum_RequestType = exports.Enum_RecoveryDeviceType = exports.Enum_PinMatrixRequestType = exports.Enum_OutputScriptType = exports.Enum_NEMSupplyChangeType = exports.Enum_NEMMosaicLevy = exports.Enum_NEMModificationType = exports.Enum_NEMImportanceTransferMode = exports.Enum_InputScriptType = exports.Enum_FailureType = exports.Enum_EthereumDataType = exports.Enum_DecredStakingSpendType = exports.Enum_DebugButton = exports.Enum_CardanoTxWitnessType = exports.Enum_CardanoTxSigningMode = exports.Enum_CardanoTxAuxiliaryDataSupplementType = exports.Enum_CardanoPoolRelayType = exports.Enum_CardanoNativeScriptType = exports.Enum_CardanoNativeScriptHashDisplayFormat = exports.Enum_CardanoDerivationType = exports.Enum_CardanoCertificateType = exports.Enum_CardanoAddressType = exports.Enum_Capability = exports.Enum_ButtonRequestType = exports.Enum_BinanceTimeInForce = exports.Enum_BinanceOrderType = exports.Enum_BinanceOrderSide = exports.Enum_BackupType = exports.Enum_AmountUnit = void 0;
 // This file is auto generated from data/messages/message.json
+// custom type uint32/64 may be represented as string
 // BinanceGetAddress
 // BinanceAddress
 // BinanceGetPublicKey
@@ -68,7 +69,8 @@ var Enum_RequestType = Object.freeze({
   TXFINISHED: 3,
   TXEXTRADATA: 4,
   TXORIGINPUT: 5,
-  TXORIGOUTPUT: 6
+  TXORIGOUTPUT: 6,
+  TXPAYMENTREQ: 7
 });
 exports.Enum_RequestType = Enum_RequestType;
 var Enum_CardanoDerivationType = Object.freeze({
@@ -127,7 +129,8 @@ exports.Enum_CardanoTxAuxiliaryDataSupplementType = Enum_CardanoTxAuxiliaryDataS
 var Enum_CardanoTxSigningMode = Object.freeze({
   ORDINARY_TRANSACTION: 0,
   POOL_REGISTRATION_AS_OWNER: 1,
-  MULTISIG_TRANSACTION: 2
+  MULTISIG_TRANSACTION: 2,
+  PLUTUS_TRANSACTION: 3
 });
 exports.Enum_CardanoTxSigningMode = Enum_CardanoTxSigningMode;
 var Enum_CardanoTxWitnessType = Object.freeze({
@@ -184,19 +187,12 @@ var Enum_PinMatrixRequestType = Object.freeze({
   PinMatrixRequestType_WipeCodeSecond: 5
 });
 exports.Enum_PinMatrixRequestType = Enum_PinMatrixRequestType;
-var Enum_DebugSwipeDirection = Object.freeze({
-  UP: 0,
-  DOWN: 1,
-  LEFT: 2,
-  RIGHT: 3
+var Enum_DebugButton = Object.freeze({
+  NO: 0,
+  YES: 1,
+  INFO: 2
 });
-exports.Enum_DebugSwipeDirection = Enum_DebugSwipeDirection;
-var Enum_BackupType = Object.freeze({
-  Bip39: 0,
-  Slip39_Basic: 1,
-  Slip39_Advanced: 2
-});
-exports.Enum_BackupType = Enum_BackupType;
+exports.Enum_DebugButton = Enum_DebugButton;
 var Enum_EthereumDataType = Object.freeze({
   UINT: 1,
   INT: 2,
@@ -208,6 +204,12 @@ var Enum_EthereumDataType = Object.freeze({
   STRUCT: 8
 });
 exports.Enum_EthereumDataType = Enum_EthereumDataType;
+var Enum_BackupType = Object.freeze({
+  Bip39: 0,
+  Slip39_Basic: 1,
+  Slip39_Advanced: 2
+});
+exports.Enum_BackupType = Enum_BackupType;
 var Enum_SafetyCheckLevel = Object.freeze({
   Strict: 0,
   PromptAlways: 1,

@@ -1,4 +1,8 @@
 // This file is auto generated from data/messages/message.json
+
+// custom type uint32/64 may be represented as string
+export type UintType = string | number;
+
 // BinanceGetAddress
 export type BinanceGetAddress = {
     address_n: number[];
@@ -24,24 +28,24 @@ export type BinancePublicKey = {
 // BinanceSignTx
 export type BinanceSignTx = {
     address_n: number[];
-    msg_count?: number;
-    account_number?: number;
+    msg_count: number;
+    account_number: number;
     chain_id?: string;
     memo?: string;
-    sequence?: number;
-    source?: number;
+    sequence: number;
+    source: number;
 };
 
 // BinanceTxRequest
 export type BinanceTxRequest = {};
 
 export type BinanceCoin = {
-    amount?: number;
-    denom?: string;
+    amount: UintType;
+    denom: string;
 };
 
 export type BinanceInputOutput = {
-    address?: string;
+    address: string;
     coins: BinanceCoin[];
 };
 
@@ -74,13 +78,13 @@ export enum BinanceTimeInForce {
 // BinanceOrderMsg
 export type BinanceOrderMsg = {
     id?: string;
-    ordertype?: BinanceOrderType;
-    price?: number;
-    quantity?: number;
+    ordertype: BinanceOrderType;
+    price: number;
+    quantity: number;
     sender?: string;
-    side?: BinanceOrderSide;
+    side: BinanceOrderSide;
     symbol?: string;
-    timeinforce?: BinanceTimeInForce;
+    timeinforce: BinanceTimeInForce;
 };
 
 // BinanceCancelMsg
@@ -183,6 +187,7 @@ export type GetAddress = {
 // Address
 export type Address = {
     address: string;
+    mac?: string;
 };
 
 // GetOwnershipId
@@ -245,6 +250,7 @@ export enum Enum_RequestType {
     TXEXTRADATA = 4,
     TXORIGINPUT = 5,
     TXORIGOUTPUT = 6,
+    TXPAYMENTREQ = 7,
 }
 export type RequestType = keyof typeof Enum_RequestType;
 
@@ -268,90 +274,91 @@ export type TxRequest = {
     serialized?: TxRequestSerializedType;
 };
 
-export type TxInputType = {
-    address_n: number[];
-    prev_hash: string;
-    prev_index: number;
-    script_sig?: string;
+// TxInputType replacement
+// TxInputType needs more exact types
+// differences: external input (no address_n + required script_pubkey)
+
+export type InternalInputScriptType = Exclude<InputScriptType, 'EXTERNAL'>;
+
+type CommonTxInputType = {
+    prev_hash: string; // required: previous transaction hash (reversed)
+    prev_index: number; // required: previous transaction index
+    amount: UintType; // required
     sequence?: number;
-    script_type?: InputScriptType;
     multisig?: MultisigRedeemScriptType;
-    amount: number | string;
     decred_tree?: number;
-    witness?: string;
-    ownership_proof?: string;
-    commitment_data?: string;
-    orig_hash?: string;
-    orig_index?: number;
+    orig_hash?: string; // RBF
+    orig_index?: number; // RBF
     decred_staking_spend?: DecredStakingSpendType;
-    script_pubkey?: string;
+    script_pubkey?: string; // required if script_type=EXTERNAL
+    script_sig?: string; // used by EXTERNAL, depending on script_pubkey
+    witness?: string; // used by EXTERNAL, depending on script_pubkey
+    ownership_proof?: string; // used by EXTERNAL, depending on script_pubkey
+    commitment_data?: string; // used by EXTERNAL, depending on ownership_proof
 };
 
+export type TxInputType =
+    | (CommonTxInputType & {
+          address_n: number[];
+          script_type?: InternalInputScriptType;
+      })
+    | (CommonTxInputType & {
+          address_n?: typeof undefined;
+          script_type: 'EXTERNAL';
+          script_pubkey: string;
+      });
+
+export type TxInput = TxInputType;
+
+// TxInputType replacement end
+
 export type TxOutputBinType = {
-    amount: number | string;
+    amount: UintType;
     script_pubkey: string;
     decred_script_version?: number;
 };
 
-// - TxOutputType replacement
+// TxOutputType replacement
 // TxOutputType needs more exact types
 // differences: external output (no address_n), opreturn output (no address_n, no address)
-// eslint-disable-next-line no-unused-vars
-// type Exclude<A, B> = $Keys<$Diff<typeof Enum_OutputScriptType, { PAYTOOPRETURN: 3 }>>; // flowtype equivalent of typescript Exclude
+
 export type ChangeOutputScriptType = Exclude<OutputScriptType, 'PAYTOOPRETURN'>;
 
-export type TxOutputType = {
-    address: string;
-    address_n?: typeof undefined;
-    script_type: 'PAYTOADDRESS';
-    amount: string;
-    multisig?: MultisigRedeemScriptType;
-    orig_hash?: string;
-    orig_index?: number;
-} | {
-    address?: typeof undefined;
-    address_n: number[];
-    script_type: ChangeOutputScriptType;
-    amount: string;
-    multisig?: MultisigRedeemScriptType;
-    orig_hash?: string;
-    orig_index?: number;
-} | {
-    address?: typeof undefined;
-    address_n?: typeof undefined;
-    amount: '0';
-    op_return_data: string;
-    script_type: 'PAYTOOPRETURN';
-    orig_hash?: string;
-    orig_index?: number;
-};
-// - TxOutputType replacement end
+export type TxOutputType =
+    | {
+          address: string;
+          address_n?: typeof undefined;
+          script_type: 'PAYTOADDRESS';
+          amount: UintType;
+          multisig?: MultisigRedeemScriptType;
+          orig_hash?: string;
+          orig_index?: number;
+          payment_req_index?: number;
+      }
+    | {
+          address?: typeof undefined;
+          address_n: number[];
+          script_type: ChangeOutputScriptType;
+          amount: UintType;
+          multisig?: MultisigRedeemScriptType;
+          orig_hash?: string;
+          orig_index?: number;
+          payment_req_index?: number;
+      }
+    | {
+          address?: typeof undefined;
+          address_n?: typeof undefined;
+          amount: '0';
+          op_return_data: string;
+          script_type: 'PAYTOOPRETURN';
+          orig_hash?: string;
+          orig_index?: number;
+          payment_req_index?: number;
+      };
 
-// TxInput
-export type TxInput = {
-    address_n: number[];
-    prev_hash: string;
-    prev_index: number;
-    script_sig?: string;
-    sequence?: number;
-    script_type?: InputScriptType;
-    multisig?: MultisigRedeemScriptType;
-    amount: string | number;
-    decred_tree?: number;
-    witness?: string;
-    ownership_proof?: string;
-    commitment_data?: string;
-    orig_hash?: string;
-    orig_index?: number;
-    decred_staking_spend?: DecredStakingSpendType;
-    script_pubkey?: string;
-};
-
-// TxOutput
-
-// - TxOutput replacement
 export type TxOutput = TxOutputType;
-// - TxOutput replacement end
+
+// - TxOutputType replacement end
 
 // PrevTx
 export type PrevTx = {
@@ -377,37 +384,74 @@ export type PrevInput = {
 
 // PrevOutput
 export type PrevOutput = {
-    amount: string | number;
+    amount: UintType;
     script_pubkey: string;
     decred_script_version?: number;
 };
 
+export type TextMemo = {
+    text: string;
+};
+
+export type RefundMemo = {
+    address: string;
+    mac: string;
+};
+
+export type CoinPurchaseMemo = {
+    coin_type: number;
+    amount: UintType;
+    address: string;
+    mac: string;
+};
+
+export type PaymentRequestMemo = {
+    text_memo?: TextMemo;
+    refund_memo?: RefundMemo;
+    coin_purchase_memo?: CoinPurchaseMemo;
+};
+
+// TxAckPaymentRequest
+export type TxAckPaymentRequest = {
+    nonce?: string;
+    recipient_name: string;
+    memos?: PaymentRequestMemo[];
+    amount?: UintType;
+    signature: string;
+};
+
 // TxAck
-// - TxAck replacement
+
+// TxAck replacement
 // TxAck needs more exact types
 // PrevInput and TxInputType requires exact responses in TxAckResponse
 // main difference: PrevInput should not contain address_n (unexpected field by protobuf)
 
-export type TxAckResponse = {
-    inputs: Array<TxInputType | PrevInput>;
-} | {
-    bin_outputs: TxOutputBinType[];
-} | {
-    outputs: TxOutputType[];
-} | {
-    extra_data: string;
-} | {
-    version?: number;
-    lock_time?: number;
-    inputs_cnt: number;
-    outputs_cnt: number;
-    extra_data?: string;
-    extra_data_len?: number;
-    timestamp?: number;
-    version_group_id?: number;
-    expiry?: number;
-    branch_id?: number;
-};
+export type TxAckResponse =
+    | {
+          inputs: Array<TxInputType | PrevInput>;
+      }
+    | {
+          bin_outputs: TxOutputBinType[];
+      }
+    | {
+          outputs: TxOutputType[];
+      }
+    | {
+          extra_data: string;
+      }
+    | {
+          version?: number;
+          lock_time?: number;
+          inputs_cnt: number;
+          outputs_cnt: number;
+          extra_data?: string;
+          extra_data_len?: number;
+          timestamp?: number;
+          version_group_id?: number;
+          expiry?: number;
+          branch_id?: number;
+      };
 
 export type TxAck = {
     tx: TxAckResponse;
@@ -484,8 +528,9 @@ export type OwnershipProof = {
 // AuthorizeCoinJoin
 export type AuthorizeCoinJoin = {
     coordinator: string;
-    max_total_fee: number;
-    fee_per_anonymity?: number;
+    max_rounds: number;
+    max_coordinator_fee_rate: number;
+    max_fee_per_kvbyte: number;
     address_n: number[];
     coin_name?: string;
     script_type?: InputScriptType;
@@ -571,6 +616,7 @@ export enum CardanoTxSigningMode {
     ORDINARY_TRANSACTION = 0,
     POOL_REGISTRATION_AS_OWNER = 1,
     MULTISIG_TRANSACTION = 2,
+    PLUTUS_TRANSACTION = 3,
 }
 
 export enum CardanoTxWitnessType {
@@ -592,8 +638,8 @@ export type CardanoNativeScript = {
     key_hash?: string;
     key_path?: number[];
     required_signatures_count?: number;
-    invalid_before?: string | number;
-    invalid_hereafter?: string | number;
+    invalid_before?: UintType;
+    invalid_hereafter?: UintType;
 };
 
 // CardanoGetNativeScriptHash
@@ -653,15 +699,19 @@ export type CardanoSignTxInit = {
     network_id: number;
     inputs_count: number;
     outputs_count: number;
-    fee: string | number;
-    ttl?: string | number;
+    fee: UintType;
+    ttl?: UintType;
     certificates_count: number;
     withdrawals_count: number;
     has_auxiliary_data: boolean;
-    validity_interval_start?: string | number;
+    validity_interval_start?: UintType;
     witness_requests_count: number;
     minting_asset_groups_count: number;
     derivation_type: CardanoDerivationType;
+    include_network_id?: boolean;
+    script_data_hash?: string;
+    collateral_inputs_count: number;
+    required_signers_count: number;
 };
 
 // CardanoTxInput
@@ -674,8 +724,9 @@ export type CardanoTxInput = {
 export type CardanoTxOutput = {
     address?: string;
     address_parameters?: CardanoAddressParametersType;
-    amount: string | number;
+    amount: UintType;
     asset_groups_count: number;
+    datum_hash?: string;
 };
 
 // CardanoAssetGroup
@@ -687,8 +738,8 @@ export type CardanoAssetGroup = {
 // CardanoToken
 export type CardanoToken = {
     asset_name_bytes: string;
-    amount?: string | number;
-    mint_amount?: string | number;
+    amount?: UintType;
+    mint_amount?: UintType;
 };
 
 // CardanoPoolOwner
@@ -716,10 +767,10 @@ export type CardanoPoolMetadataType = {
 export type CardanoPoolParametersType = {
     pool_id: string;
     vrf_key_hash: string;
-    pledge: string | number;
-    cost: string | number;
-    margin_numerator: string | number;
-    margin_denominator: string | number;
+    pledge: UintType;
+    cost: UintType;
+    margin_numerator: UintType;
+    margin_denominator: UintType;
     reward_account: string;
     owners: CardanoPoolOwner[];
     relays: CardanoPoolRelayParameters[];
@@ -735,13 +786,15 @@ export type CardanoTxCertificate = {
     pool?: string;
     pool_parameters?: CardanoPoolParametersType;
     script_hash?: string;
+    key_hash?: string;
 };
 
 // CardanoTxWithdrawal
 export type CardanoTxWithdrawal = {
     path?: number[];
-    amount: number;
+    amount: UintType;
     script_hash?: string;
+    key_hash?: string;
 };
 
 // CardanoCatalystRegistrationParametersType
@@ -749,7 +802,7 @@ export type CardanoCatalystRegistrationParametersType = {
     voting_public_key: string;
     staking_path: number[];
     reward_address_parameters: CardanoAddressParametersType;
-    nonce: string | number;
+    nonce: UintType;
 };
 
 // CardanoTxAuxiliaryData
@@ -761,6 +814,18 @@ export type CardanoTxAuxiliaryData = {
 // CardanoTxMint
 export type CardanoTxMint = {
     asset_groups_count: number;
+};
+
+// CardanoTxCollateralInput
+export type CardanoTxCollateralInput = {
+    prev_hash: string;
+    prev_index: number;
+};
+
+// CardanoTxRequiredSigner
+export type CardanoTxRequiredSigner = {
+    key_hash?: string;
+    key_path?: number[];
 };
 
 // CardanoTxItemAck
@@ -805,7 +870,7 @@ export type CardanoTxInputType = {
 
 export type CardanoTokenType = {
     asset_name_bytes: string;
-    amount: string | number;
+    amount: UintType;
 };
 
 export type CardanoAssetGroupType = {
@@ -815,7 +880,7 @@ export type CardanoAssetGroupType = {
 
 export type CardanoTxOutputType = {
     address?: string;
-    amount: string | number;
+    amount: UintType;
     address_parameters?: CardanoAddressParametersType;
     token_bundle: CardanoAssetGroupType[];
 };
@@ -842,7 +907,7 @@ export type CardanoTxCertificateType = {
 
 export type CardanoTxWithdrawalType = {
     path: number[];
-    amount: number;
+    amount: UintType;
 };
 
 export type CardanoTxAuxiliaryDataType = {
@@ -855,12 +920,12 @@ export type CardanoSignTx = {
     inputs: CardanoTxInputType[];
     outputs: CardanoTxOutputType[];
     protocol_magic: number;
-    fee: string | number;
-    ttl?: string | number;
+    fee: UintType;
+    ttl?: UintType;
     network_id: number;
     certificates: CardanoTxCertificateType[];
     withdrawals: CardanoTxWithdrawalType[];
-    validity_interval_start?: string | number;
+    validity_interval_start?: UintType;
     auxiliary_data?: CardanoTxAuxiliaryDataType;
 };
 
@@ -1033,112 +1098,11 @@ export type ECDHSessionKey = {
     public_key?: string;
 };
 
-export enum DebugSwipeDirection {
-    UP = 0,
-    DOWN = 1,
-    LEFT = 2,
-    RIGHT = 3,
+export enum DebugButton {
+    NO = 0,
+    YES = 1,
+    INFO = 2,
 }
-
-// DebugLinkDecision
-export type DebugLinkDecision = {
-    yes_no?: boolean;
-    swipe?: DebugSwipeDirection;
-    input?: string;
-    x?: number;
-    y?: number;
-    wait?: boolean;
-    hold_ms?: number;
-};
-
-// DebugLinkLayout
-export type DebugLinkLayout = {
-    lines: string[];
-};
-
-// DebugLinkReseedRandom
-export type DebugLinkReseedRandom = {
-    value?: number;
-};
-
-// DebugLinkRecordScreen
-export type DebugLinkRecordScreen = {
-    target_directory?: string;
-};
-
-// DebugLinkGetState
-export type DebugLinkGetState = {
-    wait_word_list?: boolean;
-    wait_word_pos?: boolean;
-    wait_layout?: boolean;
-};
-
-export enum Enum_BackupType {
-    Bip39 = 0,
-    Slip39_Basic = 1,
-    Slip39_Advanced = 2,
-}
-export type BackupType = keyof typeof Enum_BackupType;
-
-// DebugLinkState
-export type DebugLinkState = {
-    layout?: string;
-    pin?: string;
-    matrix?: string;
-    mnemonic_secret?: string;
-    node?: HDNodeType;
-    passphrase_protection?: boolean;
-    reset_word?: string;
-    reset_entropy?: string;
-    recovery_fake_word?: string;
-    recovery_word_pos?: number;
-    reset_word_pos?: number;
-    mnemonic_type?: BackupType;
-    layout_lines: string[];
-};
-
-// DebugLinkStop
-export type DebugLinkStop = {};
-
-// DebugLinkLog
-export type DebugLinkLog = {
-    level?: number;
-    bucket?: string;
-    text?: string;
-};
-
-// DebugLinkMemoryRead
-export type DebugLinkMemoryRead = {
-    address?: number;
-    length?: number;
-};
-
-// DebugLinkMemory
-export type DebugLinkMemory = {
-    memory?: string;
-};
-
-// DebugLinkMemoryWrite
-export type DebugLinkMemoryWrite = {
-    address?: number;
-    memory?: string;
-    flash?: boolean;
-};
-
-// DebugLinkFlashErase
-export type DebugLinkFlashErase = {
-    sector?: number;
-};
-
-// DebugLinkEraseSdCard
-export type DebugLinkEraseSdCard = {
-    format?: boolean;
-};
-
-// DebugLinkWatchLayout
-export type DebugLinkWatchLayout = {
-    watch?: boolean;
-};
 
 // EosGetPublicKey
 export type EosGetPublicKey = {
@@ -1164,9 +1128,9 @@ export type EosTxHeader = {
 // EosSignTx
 export type EosSignTx = {
     address_n: number[];
-    chain_id?: string;
-    header?: EosTxHeader;
-    num_actions?: number;
+    chain_id: string;
+    header: EosTxHeader;
+    num_actions: number;
 };
 
 // EosTxActionRequest
@@ -1175,13 +1139,13 @@ export type EosTxActionRequest = {
 };
 
 export type EosAsset = {
-    amount?: string;
-    symbol?: string;
+    amount: UintType;
+    symbol: string;
 };
 
 export type EosPermissionLevel = {
-    actor?: string;
-    permission?: string;
+    actor: string;
+    permission: string;
 };
 
 export type EosAuthorizationKey = {
@@ -1192,117 +1156,117 @@ export type EosAuthorizationKey = {
 };
 
 export type EosAuthorizationAccount = {
-    account?: EosPermissionLevel;
-    weight?: number;
+    account: EosPermissionLevel;
+    weight: number;
 };
 
 export type EosAuthorizationWait = {
-    wait_sec?: number;
-    weight?: number;
+    wait_sec: number;
+    weight: number;
 };
 
 export type EosAuthorization = {
-    threshold?: number;
+    threshold: number;
     keys: EosAuthorizationKey[];
     accounts: EosAuthorizationAccount[];
     waits: EosAuthorizationWait[];
 };
 
 export type EosActionCommon = {
-    account?: string;
-    name?: string;
+    account: string;
+    name: string;
     authorization: EosPermissionLevel[];
 };
 
 export type EosActionTransfer = {
-    sender?: string;
-    receiver?: string;
-    quantity?: EosAsset;
-    memo?: string;
+    sender: string;
+    receiver: string;
+    quantity: EosAsset;
+    memo: string;
 };
 
 export type EosActionDelegate = {
-    sender?: string;
-    receiver?: string;
-    net_quantity?: EosAsset;
-    cpu_quantity?: EosAsset;
-    transfer?: boolean;
+    sender: string;
+    receiver: string;
+    net_quantity: EosAsset;
+    cpu_quantity: EosAsset;
+    transfer: boolean;
 };
 
 export type EosActionUndelegate = {
-    sender?: string;
-    receiver?: string;
-    net_quantity?: EosAsset;
-    cpu_quantity?: EosAsset;
+    sender: string;
+    receiver: string;
+    net_quantity: EosAsset;
+    cpu_quantity: EosAsset;
 };
 
 export type EosActionRefund = {
-    owner?: string;
+    owner: string;
 };
 
 export type EosActionBuyRam = {
-    payer?: string;
-    receiver?: string;
-    quantity?: EosAsset;
+    payer: string;
+    receiver: string;
+    quantity: EosAsset;
 };
 
 export type EosActionBuyRamBytes = {
-    payer?: string;
-    receiver?: string;
-    bytes?: number;
+    payer: string;
+    receiver: string;
+    bytes: number;
 };
 
 export type EosActionSellRam = {
-    account?: string;
-    bytes?: number;
+    account: string;
+    bytes: number;
 };
 
 export type EosActionVoteProducer = {
-    voter?: string;
-    proxy?: string;
+    voter: string;
+    proxy: string;
     producers: string[];
 };
 
 export type EosActionUpdateAuth = {
-    account?: string;
-    permission?: string;
-    parent?: string;
-    auth?: EosAuthorization;
+    account: string;
+    permission: string;
+    parent: string;
+    auth: EosAuthorization;
 };
 
 export type EosActionDeleteAuth = {
-    account?: string;
-    permission?: string;
+    account: string;
+    permission: string;
 };
 
 export type EosActionLinkAuth = {
-    account?: string;
-    code?: string;
-    type?: string;
-    requirement?: string;
+    account: string;
+    code: string;
+    type: string;
+    requirement: string;
 };
 
 export type EosActionUnlinkAuth = {
-    account?: string;
-    code?: string;
-    type?: string;
+    account: string;
+    code: string;
+    type: string;
 };
 
 export type EosActionNewAccount = {
-    creator?: string;
-    name?: string;
-    owner?: EosAuthorization;
-    active?: EosAuthorization;
+    creator: string;
+    name: string;
+    owner: EosAuthorization;
+    active: EosAuthorization;
 };
 
 export type EosActionUnknown = {
     data_size: number;
-    data_chunk?: string;
+    data_chunk: string;
 };
 
 // EosTxActionAck
 export type EosTxActionAck = {
-    common?: EosActionCommon;
+    common: EosActionCommon;
     transfer?: EosActionTransfer;
     delegate?: EosActionDelegate;
     undelegate?: EosActionUndelegate;
@@ -1372,12 +1336,6 @@ export type EthereumTypedDataValueRequest = {
 // EthereumTypedDataValueAck
 export type EthereumTypedDataValueAck = {
     value: string;
-};
-
-// EthereumTypedDataSignature
-export type EthereumTypedDataSignature = {
-    signature: string;
-    address: string;
 };
 
 // EthereumGetPublicKey
@@ -1470,6 +1428,26 @@ export type EthereumVerifyMessage = {
     address: string;
 };
 
+// EthereumSignTypedHash
+export type EthereumSignTypedHash = {
+    address_n: number[];
+    domain_separator_hash: string;
+    message_hash?: string;
+};
+
+// EthereumTypedDataSignature
+export type EthereumTypedDataSignature = {
+    signature: string;
+    address: string;
+};
+
+export enum Enum_BackupType {
+    Bip39 = 0,
+    Slip39_Basic = 1,
+    Slip39_Advanced = 2,
+}
+export type BackupType = keyof typeof Enum_BackupType;
+
 export enum Enum_SafetyCheckLevel {
     Strict = 0,
     PromptAlways = 1,
@@ -1534,7 +1512,6 @@ export type Features = {
     fw_minor: number | null;
     fw_patch: number | null;
     fw_vendor: string | null;
-    fw_vendor_keys: string | null;
     unfinished_backup: boolean | null;
     no_backup: boolean | null;
     recovery_mode: boolean | null;
@@ -1619,19 +1596,6 @@ export type Entropy = {
 // WipeDevice
 export type WipeDevice = {};
 
-// LoadDevice
-export type LoadDevice = {
-    mnemonics: string[];
-    pin?: string;
-    passphrase_protection?: boolean;
-    language?: string;
-    label?: string;
-    skip_checksum?: boolean;
-    u2f_counter?: number;
-    needs_backup?: boolean;
-    no_backup?: boolean;
-};
-
 // ResetDevice
 export type ResetDevice = {
     display_random?: boolean;
@@ -1643,7 +1607,7 @@ export type ResetDevice = {
     u2f_counter?: number;
     skip_backup?: boolean;
     no_backup?: boolean;
-    backup_type?: BackupType;
+    backup_type?: string | number;
 };
 
 // BackupDevice
@@ -1717,6 +1681,14 @@ export type CancelAuthorization = {};
 // RebootToBootloader
 export type RebootToBootloader = {};
 
+// GetNonce
+export type GetNonce = {};
+
+// Nonce
+export type Nonce = {
+    nonce: string;
+};
+
 // NEMGetAddress
 export type NEMGetAddress = {
     address_n: number[];
@@ -1732,31 +1704,31 @@ export type NEMAddress = {
 export type NEMTransactionCommon = {
     address_n?: number[];
     network?: number;
-    timestamp?: number;
-    fee?: number;
-    deadline?: number;
+    timestamp: number;
+    fee: UintType;
+    deadline: number;
     signer?: string;
 };
 
 export type NEMMosaic = {
-    namespace?: string;
-    mosaic?: string;
-    quantity?: number;
+    namespace: string;
+    mosaic: string;
+    quantity: number;
 };
 
 export type NEMTransfer = {
-    recipient?: string;
-    amount?: string | number;
+    recipient: string;
+    amount: UintType;
     payload?: string;
     public_key?: string;
     mosaics?: NEMMosaic[];
 };
 
 export type NEMProvisionNamespace = {
-    namespace?: string;
+    namespace: string;
     parent?: string;
-    sink?: string;
-    fee?: number;
+    sink: string;
+    fee: UintType;
 };
 
 export enum NEMMosaicLevy {
@@ -1767,25 +1739,25 @@ export enum NEMMosaicLevy {
 export type NEMMosaicDefinition = {
     name?: string;
     ticker?: string;
-    namespace?: string;
-    mosaic?: string;
+    namespace: string;
+    mosaic: string;
     divisibility?: number;
     levy?: NEMMosaicLevy;
-    fee?: number;
+    fee?: UintType;
     levy_address?: string;
     levy_namespace?: string;
     levy_mosaic?: string;
     supply?: number;
     mutable_supply?: boolean;
     transferable?: boolean;
-    description?: string;
+    description: string;
     networks?: number[];
 };
 
 export type NEMMosaicCreation = {
-    definition?: NEMMosaicDefinition;
-    sink?: string;
-    fee?: number;
+    definition: NEMMosaicDefinition;
+    sink: string;
+    fee: UintType;
 };
 
 export enum NEMSupplyChangeType {
@@ -1794,10 +1766,10 @@ export enum NEMSupplyChangeType {
 }
 
 export type NEMMosaicSupplyChange = {
-    namespace?: string;
-    mosaic?: string;
-    type?: NEMSupplyChangeType;
-    delta?: number;
+    namespace: string;
+    mosaic: string;
+    type: NEMSupplyChangeType;
+    delta: number;
 };
 
 export enum NEMModificationType {
@@ -1806,8 +1778,8 @@ export enum NEMModificationType {
 }
 
 export type NEMCosignatoryModification = {
-    type?: NEMModificationType;
-    public_key?: string;
+    type: NEMModificationType;
+    public_key: string;
 };
 
 export type NEMAggregateModification = {
@@ -1821,13 +1793,13 @@ export enum NEMImportanceTransferMode {
 }
 
 export type NEMImportanceTransfer = {
-    mode?: NEMImportanceTransferMode;
-    public_key?: string;
+    mode: NEMImportanceTransferMode;
+    public_key: string;
 };
 
 // NEMSignTx
 export type NEMSignTx = {
-    transaction?: NEMTransactionCommon;
+    transaction: NEMTransactionCommon;
     multisig?: NEMTransactionCommon;
     transfer?: NEMTransfer;
     cosigning?: boolean;
@@ -1869,7 +1841,7 @@ export type RippleAddress = {
 };
 
 export type RipplePayment = {
-    amount: string | number;
+    amount: UintType;
     destination: string;
     destination_tag?: number;
 };
@@ -1877,11 +1849,11 @@ export type RipplePayment = {
 // RippleSignTx
 export type RippleSignTx = {
     address_n: number[];
-    fee?: string | number;
+    fee: UintType;
     flags?: number;
-    sequence?: number;
+    sequence: number;
     last_ledger_sequence?: number;
-    payment?: RipplePayment;
+    payment: RipplePayment;
 };
 
 // RippleSignedTx
@@ -1927,8 +1899,8 @@ export type StellarSignTx = {
     address_n: number[];
     network_passphrase: string;
     source_account: string;
-    fee: number;
-    sequence_number: string | number;
+    fee: UintType;
+    sequence_number: UintType;
     timebounds_start: number;
     timebounds_end: number;
     memo_type: StellarMemoType;
@@ -1946,24 +1918,24 @@ export type StellarPaymentOp = {
     source_account?: string;
     destination_account: string;
     asset: StellarAsset;
-    amount: string | number;
+    amount: UintType;
 };
 
 // StellarCreateAccountOp
 export type StellarCreateAccountOp = {
     source_account?: string;
     new_account: string;
-    starting_balance: string | number;
+    starting_balance: UintType;
 };
 
 // StellarPathPaymentStrictReceiveOp
 export type StellarPathPaymentStrictReceiveOp = {
     source_account?: string;
     send_asset: StellarAsset;
-    send_max: string | number;
+    send_max: UintType;
     destination_account: string;
     destination_asset: StellarAsset;
-    destination_amount: string | number;
+    destination_amount: UintType;
     paths?: StellarAsset[];
 };
 
@@ -1971,10 +1943,10 @@ export type StellarPathPaymentStrictReceiveOp = {
 export type StellarPathPaymentStrictSendOp = {
     source_account?: string;
     send_asset: StellarAsset;
-    send_amount: string | number;
+    send_amount: UintType;
     destination_account: string;
     destination_asset: StellarAsset;
-    destination_min: string | number;
+    destination_min: UintType;
     paths?: StellarAsset[];
 };
 
@@ -1983,10 +1955,10 @@ export type StellarManageSellOfferOp = {
     source_account?: string;
     selling_asset: StellarAsset;
     buying_asset: StellarAsset;
-    amount: string | number;
+    amount: UintType;
     price_n: number;
     price_d: number;
-    offer_id: string | number;
+    offer_id: UintType;
 };
 
 // StellarManageBuyOfferOp
@@ -1994,10 +1966,10 @@ export type StellarManageBuyOfferOp = {
     source_account?: string;
     selling_asset: StellarAsset;
     buying_asset: StellarAsset;
-    amount: string | number;
+    amount: UintType;
     price_n: number;
     price_d: number;
-    offer_id: string | number;
+    offer_id: UintType;
 };
 
 // StellarCreatePassiveSellOfferOp
@@ -2005,7 +1977,7 @@ export type StellarCreatePassiveSellOfferOp = {
     source_account?: string;
     selling_asset: StellarAsset;
     buying_asset: StellarAsset;
-    amount: string | number;
+    amount: UintType;
     price_n: number;
     price_d: number;
 };
@@ -2022,10 +1994,10 @@ export type StellarSetOptionsOp = {
     inflation_destination_account?: string;
     clear_flags?: number;
     set_flags?: number;
-    master_weight?: string | number;
-    low_threshold?: string | number;
-    medium_threshold?: string | number;
-    high_threshold?: string | number;
+    master_weight?: UintType;
+    low_threshold?: UintType;
+    medium_threshold?: UintType;
+    high_threshold?: UintType;
     home_domain?: string;
     signer_type?: StellarSignerType;
     signer_key?: Buffer | string;
@@ -2036,7 +2008,7 @@ export type StellarSetOptionsOp = {
 export type StellarChangeTrustOp = {
     source_account?: string;
     asset: StellarAsset;
-    limit: string | number;
+    limit: UintType;
 };
 
 // StellarAllowTrustOp
@@ -2064,7 +2036,7 @@ export type StellarManageDataOp = {
 // StellarBumpSequenceOp
 export type StellarBumpSequenceOp = {
     source_account?: string;
-    bump_to: string | number;
+    bump_to: UintType;
 };
 
 // StellarSignedTx
@@ -2107,7 +2079,7 @@ export type TezosContractID = {
 
 export type TezosRevealOp = {
     source: Uint8Array;
-    fee: number;
+    fee: UintType;
     counter: number;
     gas_limit: number;
     storage_limit: number;
@@ -2115,8 +2087,8 @@ export type TezosRevealOp = {
 };
 
 export type TezosManagerTransfer = {
-    destination?: TezosContractID;
-    amount?: number;
+    destination: TezosContractID;
+    amount: UintType;
 };
 
 export type TezosParametersManager = {
@@ -2127,11 +2099,11 @@ export type TezosParametersManager = {
 
 export type TezosTransactionOp = {
     source: Uint8Array;
-    fee: number;
+    fee: UintType;
     counter: number;
     gas_limit: number;
     storage_limit: number;
-    amount: number;
+    amount: UintType;
     destination: TezosContractID;
     parameters?: number[];
     parameters_manager?: TezosParametersManager;
@@ -2139,7 +2111,7 @@ export type TezosTransactionOp = {
 
 export type TezosOriginationOp = {
     source: Uint8Array;
-    fee: number;
+    fee: UintType;
     counter: number;
     gas_limit: number;
     storage_limit: number;
@@ -2153,7 +2125,7 @@ export type TezosOriginationOp = {
 
 export type TezosDelegationOp = {
     source: Uint8Array;
-    fee: number;
+    fee: UintType;
     counter: number;
     gas_limit: number;
     storage_limit: number;
@@ -2161,8 +2133,8 @@ export type TezosDelegationOp = {
 };
 
 export type TezosProposalOp = {
-    source?: string;
-    period?: number;
+    source: string;
+    period: number;
     proposals: string[];
 };
 
@@ -2173,10 +2145,10 @@ export enum TezosBallotType {
 }
 
 export type TezosBallotOp = {
-    source?: string;
-    period?: number;
-    proposal?: string;
-    ballot?: TezosBallotType;
+    source: string;
+    period: number;
+    proposal: string;
+    ballot: TezosBallotType;
 };
 
 // TezosSignTx

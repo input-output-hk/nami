@@ -6,6 +6,7 @@ export type TezosGetAddress = {
     path: string | number[],
     address?: string,
     showOnTrezor?: boolean,
+    useEventListener?: boolean, // set automatically if UI.ADDRESS_VALIDATION listener is used
 };
 
 export type TezosAddress = {

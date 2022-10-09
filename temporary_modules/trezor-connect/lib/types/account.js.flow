@@ -1,5 +1,5 @@
 /* @flow */
-import type { TxInputType, TxOutputType } from './trezor/protobuf';
+import type { TxInputType, TxOutputType, CardanoDerivationType } from './trezor/protobuf';
 import type { VinVout, BlockbookTransaction } from './backend/transactions';
 
 export type DiscoveryAccountType = 'p2pkh' | 'p2sh' | 'p2tr' | 'p2wpkh';
@@ -22,6 +22,7 @@ export type GetAccountInfo = {
         seq: number,
     },
     defaultAccountType?: DiscoveryAccountType,
+    derivationType?: CardanoDerivationType,
 };
 
 export type TokenInfo = {
@@ -37,7 +38,7 @@ export type TokenInfo = {
 export type AccountAddress = {
     address: string,
     path: string,
-    transfers: number,
+    transfers?: number,
     balance?: string,
     sent?: string,
     received?: string,
@@ -59,6 +60,9 @@ export type AccountUtxo = {
     confirmations: number,
     coinbase?: boolean,
     required?: boolean,
+    cardanoSpecific?: {
+        unit: string,
+    },
 };
 
 // Transaction object
@@ -101,6 +105,16 @@ export type AccountTransaction = {
     tokens: TokenTransfer[],
     rbf?: boolean,
     ethereumSpecific?: $ElementType<BlockbookTransaction, 'ethereumSpecific'>,
+    cardanoSpecific?: {
+        subtype:
+            | 'withdrawal'
+            | 'stake_delegation'
+            | 'stake_registration'
+            | 'stake_deregistration'
+            | null,
+        withdrawal?: string,
+        deposit?: string,
+    },
     details: {
         vin: VinVout[],
         vout: VinVout[],
@@ -135,6 +149,13 @@ export type AccountInfo = {
         // XRP
         sequence?: number,
         reserve?: string,
+        // ADA
+        staking: {
+            address: string,
+            isActive: boolean,
+            rewards: string,
+            poolId: string | null,
+        },
     },
     page?: {
         // blockbook
@@ -154,12 +175,14 @@ export type AccountInfo = {
 export type RegularOutput = {
     type?: 'external',
     address: string,
+    address_n?: typeof undefined,
     amount: string,
     script_type?: 'PAYTOADDRESS',
 };
 
 export type InternalOutput = {
     type?: 'internal',
+    address?: typeof undefined,
     address_n: number[],
     amount: string,
     script_type?: string,
@@ -242,6 +265,9 @@ export type ComposeParams = {
     sequence?: number,
     account?: typeof undefined,
     feeLevels?: typeof undefined,
+    baseFee?: number,
+    floorBaseFee?: boolean,
+    skipPermutation?: boolean,
 };
 
 export type DiscoveryAccount = {

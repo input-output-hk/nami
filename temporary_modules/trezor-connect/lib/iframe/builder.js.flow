@@ -2,12 +2,12 @@
 
 import { create as createDeferred } from '../utils/deferred';
 import { IFRAME, ERRORS } from '../constants';
-import { getOrigin } from '../env/browser/networkUtils';
+import { getOrigin } from '../utils/urlUtils';
 import css from './inline-styles';
 import type { ConnectSettings, Deferred } from '../types';
 
 /* eslint-disable import/no-mutable-exports */
-export let instance: ?HTMLIFrameElement;
+export let instance: HTMLIFrameElement | null;
 export let origin: string;
 export let initPromise: Deferred<void> = createDeferred();
 export let timeout: number = 0;

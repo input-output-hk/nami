@@ -1,7 +1,12 @@
 // Stellar types from stellar-sdk
 // https://github.com/stellar/js-stellar-base
 
-import type { StellarAssetType, StellarSignerType, StellarMemoType } from '../trezor/protobuf';
+import type {
+    UintType,
+    StellarAssetType,
+    StellarSignerType,
+    StellarMemoType,
+} from '../trezor/protobuf';
 
 export interface StellarAsset {
     type: StellarAssetType;
@@ -86,10 +91,10 @@ export interface StellarSetOptionsOperation {
     inflationDest?: string; // Proto: "inflation_destination_account"
     clearFlags?: number; // Proto: "clear_flags"
     setFlags?: number; // Proto: "set_flags"
-    masterWeight?: number | string; // Proto: "master_weight"
-    lowThreshold?: number | string; // Proto: "low_threshold"
-    medThreshold?: number | string; // Proto: "medium_threshold"
-    highThreshold?: number | string; // Proto: "high_threshold"
+    masterWeight?: UintType; // Proto: "master_weight"
+    lowThreshold?: UintType; // Proto: "low_threshold"
+    medThreshold?: UintType; // Proto: "medium_threshold"
+    highThreshold?: UintType; // Proto: "high_threshold"
     homeDomain?: string; // Proto: "home_domain"
 }
 
@@ -154,7 +159,7 @@ export type StellarOperation =
 export interface StellarTransaction {
     source: string; // Proto: "source_account"
     fee: number; // Proto: ok
-    sequence: string | number; // Proto: "sequence_number"
+    sequence: UintType; // Proto: "sequence_number"
     timebounds?: {
         minTime: number; // Proto: "timebounds_start"
         maxTime: number; // Proto: "timebounds_end"

@@ -25,7 +25,7 @@ var UI = _interopRequireWildcard(require("../constants/ui"));
 
 var _showPopupRequest = require("./showPopupRequest");
 
-var _networkUtils = require("../env/browser/networkUtils");
+var _urlUtils = require("../utils/urlUtils");
 
 var _deferred = require("../utils/deferred");
 
@@ -50,7 +50,7 @@ var PopupManager = /*#__PURE__*/function (_EventEmitter) {
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "closeInterval", 0);
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "extensionTabId", 0);
     _this.settings = settings;
-    _this.origin = (0, _networkUtils.getOrigin)(settings.popupSrc);
+    _this.origin = (0, _urlUtils.getOrigin)(settings.popupSrc);
     _this.handleMessage = _this.handleMessage.bind((0, _assertThisInitialized2["default"])(_this));
     _this.iframeHandshake = (0, _deferred.create)(IFRAME.LOADED);
 
@@ -272,7 +272,7 @@ var PopupManager = /*#__PURE__*/function (_EventEmitter) {
     // ignore messages from domain other then popup origin and without data
     // const data: CoreMessage = message.data;
     var data = message.data;
-    if ((0, _networkUtils.getOrigin)(message.origin) !== this.origin || !data || typeof data !== 'object') return;
+    if ((0, _urlUtils.getOrigin)(message.origin) !== this.origin || !data || typeof data !== 'object') return;
 
     if (data.type === IFRAME.LOADED) {
       var useBroadcastChannel = data.payload && typeof data.payload.useBroadcastChannel === 'boolean' ? data.payload.useBroadcastChannel : false;

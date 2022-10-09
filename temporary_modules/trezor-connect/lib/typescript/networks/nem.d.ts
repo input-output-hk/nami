@@ -1,6 +1,8 @@
 // NEM types from nem-sdk
 // https://nemproject.github.io/#transferTransaction
 
+import type { UintType } from '../trezor/protobuf';
+
 export interface MosaicID {
     namespaceId: string;
     name: string;
@@ -41,14 +43,14 @@ export interface TransactionCommon {
     version: number;
     timeStamp: number;
     fee: number;
-    deadline?: number;
+    deadline: number;
     signer?: string;
 }
 
 export type NEMTransferTransaction = TransactionCommon & {
     type: 0x0101;
     recipient: string;
-    amount: number | string;
+    amount: UintType;
     mosaics?: NEMMosaic[];
     message?: Message;
 };
@@ -71,24 +73,24 @@ export type NEMAggregateModificationTransaction = TransactionCommon & {
 
 export type NEMProvisionNamespaceTransaction = TransactionCommon & {
     type: 0x2001;
-    newPart?: string;
+    newPart: string;
     parent?: string;
-    rentalFeeSink?: string;
-    rentalFee?: number;
+    rentalFeeSink: string;
+    rentalFee: number;
 };
 
 export type NEMMosaicCreationTransaction = TransactionCommon & {
     type: 0x4001;
     mosaicDefinition: MosaicDefinition;
-    creationFeeSink?: string;
-    creationFee?: number;
+    creationFeeSink: string;
+    creationFee: number;
 };
 
 export type NEMSupplyChangeTransaction = TransactionCommon & {
     type: 0x4002;
     mosaicId: MosaicID;
     supplyType: number;
-    delta?: number;
+    delta: number;
 };
 
 export type NEMRegularTransaction =

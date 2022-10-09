@@ -153,7 +153,7 @@ const StoreInit = ({ children }) => {
           {children}
           {info && info.length ? <UpgradeModal info={info} ref={refB} /> : ''}
           {/* Settings Overlay */}
-          {settings?.network?.id === NETWORK_ID.testnet && (
+          {settings?.network?.id !== NETWORK_ID.mainnet && (
             <Box
               position="absolute"
               left="3"
@@ -166,7 +166,18 @@ const StoreInit = ({ children }) => {
             >
               <InfoOutlineIcon />
               <Box width="1" />
-              <Text>Testnet</Text>
+              <Text>
+                {(() => {
+                  switch (settings.network.id) {
+                    case NETWORK_ID.testnet:
+                      return 'Testnet';
+                    case NETWORK_ID.preview:
+                      return 'Preview';
+                    case NETWORK_ID.preprod:
+                      return 'Preprod';
+                  }
+                })()}
+              </Text>
             </Box>
           )}
         </>
