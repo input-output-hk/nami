@@ -34,10 +34,10 @@ const settings = {
   settings: null,
   setSettings: action((state, settings) => {
     setCurrency(settings.currency);
-    setNetwork(settings.network);
+    setNetwork(settings?.network);
     state.settings = {
       ...settings,
-      adaSymbol: settings.network.id === NETWORK_ID.mainnet ? '₳' : 't₳',
+      adaSymbol: settings?.network?.id === NETWORK_ID.mainnet ? '₳' : 't₳',
     };
   }),
 };
@@ -168,7 +168,7 @@ const StoreInit = ({ children }) => {
               <Box width="1" />
               <Text>
                 {(() => {
-                  switch (settings.network.id) {
+                  switch (settings?.network?.id) {
                     case NETWORK_ID.testnet:
                       return 'Testnet';
                     case NETWORK_ID.preview:
