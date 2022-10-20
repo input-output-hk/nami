@@ -1746,14 +1746,12 @@ export const getAsset = async (unit) => {
 
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
-        console.log(refUtxo);
         asset.displayName = metadata.name;
         asset.image = metadata.image
           ? linkToSrc(convertMetadataPropToString(metadata.image))
           : '';
         asset.decimals = 0;
       } catch (_e) {
-        console.log(_e);
         asset.mint = true;
       }
     } else if (label === 333) {
