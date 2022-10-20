@@ -26,12 +26,13 @@ import {
   networkNameToId,
   utxoFromJson,
   assetsToValue,
-  valueToAssets,
-  sumUtxos,
   txToLedger,
   txToTrezor,
   linkToSrc,
   convertMetadataPropToString,
+  fromAssetUnit,
+  toAssetUnit,
+  Data,
 } from '../util';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import Ada, { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
@@ -1715,42 +1716,95 @@ export const getAsset = async (unit) => {
   if (asset && asset.time && time - asset.time <= h1 && !asset.mint) {
     return asset;
   } else {
+    const { policyId, name, label } = fromAssetUnit(unit);
+    const bufferName = Buffer.from(name, 'hex');
     asset.unit = unit;
-    asset.policy = unit.slice(0, 56);
-    asset.name = Buffer.from(unit.slice(56), 'hex');
+    asset.policy = policyId;
     asset.fingerprint = new AssetFingerprint(
-      Buffer.from(asset.policy, 'hex'),
-      asset.name
+      Buffer.from(policyId, 'hex'),
+      bufferName
     ).fingerprint();
-    asset.name = asset.name.toString();
-    let result = await blockfrostRequest(`/assets/${unit}`);
-    if (!result || result.error) {
-      result = {};
-      asset.mint = true;
-    }
-    const onchainMetadata = 
-      result.onchain_metadata &&
-        ((result.onchain_metadata.version === 2 && 
-           result.onchain_metadata?.[`0x${asset.policy}`]?.[`0x${unit.slice(56)}`]) ||
-        result.onchain_metadata);
-    asset.displayName =
-      (onchainMetadata && onchainMetadata.name) ||
-      (result.metadata && result.metadata.name) ||
-      asset.name;
-    asset.image =
-      (onchainMetadata &&
-        onchainMetadata.image &&
-        linkToSrc(
-          convertMetadataPropToString(onchainMetadata.image)
-        )) ||
-      (result.metadata &&
-        result.metadata.logo &&
-        linkToSrc(result.metadata.logo, true)) ||
-      '';
-    asset.decimals = (result.metadata && result.metadata.decimals) || 0;
-    if (!asset.name) {
-      if (asset.displayName) asset.name = asset.displayName[0];
-      else asset.name = '-';
+    asset.name = bufferName.toString();
+
+    // CIP-0067 & CIP-0068 (support 222 and 333 sub standards)
+
+    if (label === 222) {
+      const refUnit = toAssetUnit(policyId, name, 100);
+      try {
+        const owners = await blockfrostRequest(`/assets/${refUnit}/addresses`);
+        if (!owners || owners.error) {
+          throw new Error('No owner found.');
+        }
+        const [refUtxo] = await blockfrostRequest(
+          `/addresses/${owners[0].address}/utxos/${refUnit}`
+        );
+        const datum =
+          refUtxo?.inline_datum ||
+          (await blockfrostRequest(`/scripts/datum/${refUtxo?.data_hash}/cbor`))
+            ?.cbor;
+        const metadataDatum = datum && (await Data.from(datum));
+
+        const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
+
+        asset.displayName = metadata.name;
+        asset.image = metadata.image
+          ? linkToSrc(convertMetadataPropToString(metadata.image))
+          : '';
+        asset.decimals = 0;
+      } catch (_e) {
+        asset.mint = true;
+      }
+    } else if (label === 333) {
+      const refUnit = toAssetUnit(policyId, name, 100);
+
+      const owners = await blockfrostRequest(`/assets/${refUnit}/addresses`);
+      if (!owners || owners.error) {
+        throw new Error('No owner found.');
+      }
+      const [refUtxo] = await blockfrostRequest(
+        `/addresses/${owners[0].address}/utxos/${refUnit}`
+      );
+      const datum =
+        refUtxo?.datum ||
+        (await blockfrostRequest(`/scripts/datum${refUtxo?.datumHash}/cbor`))
+          ?.cbor;
+      const metadataDatum = datum && Data.from(datum);
+
+      const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
+
+      asset.displayName = metadata.name;
+      asset.image = linkToSrc(metadata.logo, true) || '';
+      asset.decimals = metadata.decimals || 0;
+    } else {
+      let result = await blockfrostRequest(`/assets/${unit}`);
+      if (!result || result.error) {
+        result = {};
+        asset.mint = true;
+      }
+      const onchainMetadata =
+        result.onchain_metadata &&
+          ((result.onchain_metadata.version === 2 &&
+             result.onchain_metadata?.[`0x${policyId}`]?.[`0x${name}`]) ||
+          result.onchain_metadata);
+      asset.displayName =
+        (onchainMetadata && onchainMetadata.name) ||
+        (result.metadata && result.metadata.name) ||
+        asset.name;
+      asset.image =
+        (onchainMetadata &&
+          onchainMetadata.image &&
+          linkToSrc(
+            convertMetadataPropToString(onchainMetadata.image)
+          )) ||
+        (result.metadata &&
+          result.metadata.logo &&
+          linkToSrc(result.metadata.logo, true)) ||
+        '';
+      asset.decimals = (result.metadata && result.metadata.decimals) || 0;
+      if (!asset.name) {
+        if (asset.displayName) asset.name = asset.displayName[0];
+        else asset.name = '-';
+      }
     }
     asset.time = Date.now();
     assets[unit] = asset;

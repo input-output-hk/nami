@@ -32,6 +32,7 @@ import {
   CardanoPoolRelayType,
   CardanoTxSigningMode,
 } from '../../temporary_modules/trezor-connect/';
+import crc8 from 'crc/calculators/crc8';
 
 export async function delay(delayInMs) {
   return new Promise((resolve) => {
@@ -1240,3 +1241,226 @@ const bytesToIp = (bytes) => {
   }
   return null;
 };
+
+function checksum(num) {
+  return crc8(Buffer.from(num, 'hex')).toString(16).padStart(2, '0');
+}
+
+export function toLabel(num) {
+  if (num < 0 || num > 65535) {
+    throw new Error(
+      `Label ${num} out of range: min label 1 - max label 65535.`
+    );
+  }
+  const numHex = num.toString(16).padStart(4, '0');
+  return '0' + numHex + checksum(numHex) + '0';
+}
+
+export function fromLabel(label) {
+  if (label.length !== 8 || !(label[0] === '0' && label[7] === '0')) {
+    return null;
+  }
+  const numHex = label.slice(1, 5);
+  const num = parseInt(numHex, 16);
+  const check = label.slice(5, 7);
+  return check === checksum(numHex) ? num : null;
+}
+
+export function toAssetUnit(policyId, name, label) {
+  const hexLabel = Number.isInteger(label) ? toLabel(label) : '';
+  const n = name ? name : '';
+  if ((n + hexLabel).length > 64) {
+    throw new Error('Asset name size exceeds 32 bytes.');
+  }
+  if (policyId.length !== 56) {
+    throw new Error(`Policy id invalid: ${policyId}.`);
+  }
+  return policyId + hexLabel + n;
+}
+
+export function fromAssetUnit(unit) {
+  const policyId = unit.slice(0, 56);
+  const label = fromLabel(unit.slice(56, 64));
+  const name = (() => {
+    const hexName = Number.isInteger(label) ? unit.slice(64) : unit.slice(56);
+    return hexName || null;
+  })();
+  return { policyId, name, label };
+}
+
+export class Constr {
+  constructor(index, fields) {
+    this.index = index;
+    this.fields = fields;
+  }
+}
+
+export class Data {
+  /** Convert PlutusData to Cbor encoded data */
+  static async to(plutusData) {
+    await Loader.load();
+    function serialize(data) {
+      try {
+        if (
+          typeof data === 'bigint' ||
+          typeof data === 'number' ||
+          (typeof data === 'string' &&
+            !isNaN(parseInt(data)) &&
+            data.slice(-1) === 'n')
+        ) {
+          const bigint =
+            typeof data === 'string' ? BigInt(data.slice(0, -1)) : data;
+          return Loader.Cardano.PlutusData.new_integer(
+            Loader.Cardano.BigInt.from_str(bigint.toString())
+          );
+        } else if (typeof data === 'string') {
+          return Loader.Cardano.PlutusData.new_bytes(Buffer.from(data, 'hex'));
+        } else if (data instanceof Uint8Array) {
+          return Loader.Cardano.PlutusData.new_bytes(data);
+        } else if (data instanceof Constr) {
+          const { index, fields } = data;
+          const plutusList = Loader.Cardano.PlutusList.new();
+
+          fields.forEach((field) => plutusList.add(serialize(field)));
+
+          return Loader.Cardano.PlutusData.new_constr_plutus_data(
+            Loader.Cardano.ConstrPlutusData.new(
+              Loader.Cardano.BigNum.from_str(index.toString()),
+              plutusList
+            )
+          );
+        } else if (data instanceof Array) {
+          const plutusList = Loader.Cardano.PlutusList.new();
+
+          data.forEach((arg) => plutusList.add(serialize(arg)));
+
+          return Loader.Cardano.PlutusData.new_list(plutusList);
+        } else if (data instanceof Map) {
+          const plutusMap = Loader.Cardano.PlutusMap.new();
+
+          for (const [key, value] of data.entries()) {
+            plutusMap.insert(serialize(key), serialize(value));
+          }
+
+          return Loader.Cardano.PlutusData.new_map(plutusMap);
+        }
+        throw new Error('Unsupported type');
+      } catch (error) {
+        throw new Error('Could not serialize the data: ' + error);
+      }
+    }
+    return toHex(serialize(plutusData).to_bytes());
+  }
+
+  /** Convert Cbor encoded data to PlutusData */
+  static async from(data) {
+    await Loader.load();
+    const plutusData = Loader.Cardano.PlutusData.from_bytes(
+      Buffer.from(data, 'hex')
+    );
+    function deserialize(data) {
+      if (data.kind() === 0) {
+        const constr = data.as_constr_plutus_data();
+        const l = constr.data();
+        const desL = [];
+        for (let i = 0; i < l.len(); i++) {
+          desL.push(deserialize(l.get(i)));
+        }
+        return new Constr(parseInt(constr.alternative().to_str()), desL);
+      } else if (data.kind() === 1) {
+        const m = data.as_map();
+        const desM = new Map();
+        const keys = m.keys();
+        for (let i = 0; i < keys.len(); i++) {
+          desM.set(deserialize(keys.get(i)), deserialize(m.get(keys.get(i))));
+        }
+        return desM;
+      } else if (data.kind() === 2) {
+        const l = data.as_list();
+        const desL = [];
+        for (let i = 0; i < l.len(); i++) {
+          desL.push(deserialize(l.get(i)));
+        }
+        return desL;
+      } else if (data.kind() === 3) {
+        return BigInt(data.as_integer().to_str());
+      } else if (data.kind() === 4) {
+        return Buffer.from(data.as_bytes()).toString('hex');
+      }
+      throw new Error('Unsupported type');
+    }
+    return deserialize(plutusData);
+  }
+
+  /**
+   * Convert conveniently a Json object (e.g. Metadata) to PlutusData.
+   * Note: Constructor cannot be used here.
+   */
+  static fromJson(json) {
+    function toPlutusData(json) {
+      if (typeof json === 'string') {
+        return Buffer.from(json);
+      }
+      if (typeof json === 'number') return BigInt(json);
+      if (typeof json === 'bigint') return json;
+      if (json instanceof Array) return json.map((v) => toPlutusData(v));
+      if (json instanceof Object) {
+        const tempMap = new Map();
+        Object.entries(json).forEach(([key, value]) => {
+          tempMap.set(toPlutusData(key), toPlutusData(value));
+        });
+        return tempMap;
+      }
+      throw new Error('Unsupported type');
+    }
+    return toPlutusData(json);
+  }
+
+  /**
+   * Convert PlutusData to a Json object.
+   * Note: Constructor cannot be used here, also only bytes/integers as Json keys.
+   */
+  static toJson(plutusData) {
+    function fromPlutusData(data) {
+      if (
+        typeof data === 'bigint' ||
+        typeof data === 'number' ||
+        (typeof data === 'string' &&
+          !isNaN(parseInt(data)) &&
+          data.slice(-1) === 'n')
+      ) {
+        const bigint =
+          typeof data === 'string' ? BigInt(data.slice(0, -1)) : data;
+        return parseInt(bigint.toString());
+      }
+      if (typeof data === 'string') {
+        return Buffer.from(data, 'hex').toString();
+      }
+      if (data instanceof Array) return data.map((v) => fromPlutusData(v));
+      if (data instanceof Map) {
+        const tempJson = {};
+        data.forEach((value, key) => {
+          const convertedKey = fromPlutusData(key);
+          if (
+            typeof convertedKey !== 'string' &&
+            typeof convertedKey !== 'number'
+          ) {
+            throw new Error(
+              'Unsupported type (Note: Only bytes or integers can be keys of a JSON object)'
+            );
+          }
+          tempJson[convertedKey] = fromPlutusData(value);
+        });
+        return tempJson;
+      }
+      throw new Error(
+        'Unsupported type (Note: Constructor cannot be converted to JSON)'
+      );
+    }
+    return fromPlutusData(plutusData);
+  }
+
+  static empty() {
+    return 'd87980';
+  }
+}
