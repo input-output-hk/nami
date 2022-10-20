@@ -84,7 +84,7 @@ import Copy from '../components/copy';
 import About from '../components/about';
 import { useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
-import { currencyToSymbol } from '../../../api/util';
+import { currencyToSymbol, fromAssetUnit } from '../../../api/util';
 import TransactionBuilder from '../components/transactionBuilder';
 import { NETWORK_ID, TAB } from '../../../config/config';
 import { FaGamepad, FaRegFileCode } from 'react-icons/fa';
@@ -184,7 +184,10 @@ const Wallet = () => {
         asset.name
       ).fingerprint();
       asset.name = asset.name.toString();
-      if (asset.has_nft_onchain_metadata === true)
+      if (
+        asset.has_nft_onchain_metadata === true ||
+        fromAssetUnit(asset.unit).label === 222
+      )
         currentAccount.nft.push(asset);
       else currentAccount.ft.push(asset);
     });
