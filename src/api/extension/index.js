@@ -1724,7 +1724,7 @@ export const getAsset = async (unit) => {
       Buffer.from(policyId, 'hex'),
       bufferName
     ).fingerprint();
-    asset.name = bufferName.toString();
+    asset.name = `(${label}) ` + bufferName.toString();
 
     // CIP-0067 & CIP-0068 (support 222 and 333 sub standards)
 
@@ -1747,9 +1747,7 @@ export const getAsset = async (unit) => {
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = metadata.image
-          ? linkToSrc(convertMetadataPropToString(metadata.image))
-          : '';
+        asset.image = metadata.image ? linkToSrc(metadata.image) : '';
         asset.decimals = 0;
       } catch (_e) {
         asset.mint = true;
@@ -1765,17 +1763,19 @@ export const getAsset = async (unit) => {
         `/addresses/${owners[0].address}/utxos/${refUnit}`
       );
       const datum =
-        refUtxo?.datum ||
-        (await blockfrostRequest(`/scripts/datum${refUtxo?.datumHash}/cbor`))
+        refUtxo?.inline_datum ||
+        (await blockfrostRequest(`/scripts/datum/${refUtxo?.data_hash}/cbor`))
           ?.cbor;
-      const metadataDatum = datum && Data.from(datum);
+      const metadataDatum = datum && (await Data.from(datum));
 
       const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
       asset.displayName = metadata.name;
-      asset.image = linkToSrc(metadata.logo, true) || '';
+      asset.image = linkToSrc(metadata.image) || '';
       asset.decimals = metadata.decimals || 0;
     } else {
+      asset.name = bufferName.toString();
+
       let result = await blockfrostRequest(`/assets/${unit}`);
       if (!result || result.error) {
         result = {};
@@ -1783,8 +1783,8 @@ export const getAsset = async (unit) => {
       }
       const onchainMetadata =
         result.onchain_metadata &&
-          ((result.onchain_metadata.version === 2 &&
-             result.onchain_metadata?.[`0x${policyId}`]?.[`0x${name}`]) ||
+        ((result.onchain_metadata.version === 2 &&
+          result.onchain_metadata?.[`0x${policyId}`]?.[`0x${name}`]) ||
           result.onchain_metadata);
       asset.displayName =
         (onchainMetadata && onchainMetadata.name) ||
@@ -1793,9 +1793,7 @@ export const getAsset = async (unit) => {
       asset.image =
         (onchainMetadata &&
           onchainMetadata.image &&
-          linkToSrc(
-            convertMetadataPropToString(onchainMetadata.image)
-          )) ||
+          linkToSrc(convertMetadataPropToString(onchainMetadata.image))) ||
         (result.metadata &&
           result.metadata.logo &&
           linkToSrc(result.metadata.logo, true)) ||
