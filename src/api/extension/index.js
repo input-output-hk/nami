@@ -1781,15 +1781,20 @@ export const getAsset = async (unit) => {
         result = {};
         asset.mint = true;
       }
+      const onchainMetadata =
+        result.onchain_metadata &&
+          ((result.onchain_metadata.version === 2 &&
+             result.onchain_metadata?.[`0x${policyId}`]?.[`0x${name}`]) ||
+          result.onchain_metadata);
       asset.displayName =
-        (result.onchain_metadata && result.onchain_metadata.name) ||
+        (onchainMetadata && onchainMetadata.name) ||
         (result.metadata && result.metadata.name) ||
         asset.name;
       asset.image =
-        (result.onchain_metadata &&
-          result.onchain_metadata.image &&
+        (onchainMetadata &&
+          onchainMetadata.image &&
           linkToSrc(
-            convertMetadataPropToString(result.onchain_metadata.image)
+            convertMetadataPropToString(onchainMetadata.image)
           )) ||
         (result.metadata &&
           result.metadata.logo &&
