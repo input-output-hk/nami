@@ -1717,11 +1717,12 @@ export const getAsset = async (unit) => {
   } else {
     asset.unit = unit;
     asset.policy = unit.slice(0, 56);
-    asset.name = Buffer.from(unit.slice(56), 'hex').toString();
+    asset.name = Buffer.from(unit.slice(56), 'hex');
     asset.fingerprint = new AssetFingerprint(
       Buffer.from(asset.policy, 'hex'),
-      Buffer.from(asset.name)
+      asset.name
     ).fingerprint();
+    asset.name = asset.name.toString();
     let result = await blockfrostRequest(`/assets/${unit}`);
     if (!result || result.error) {
       result = {};
