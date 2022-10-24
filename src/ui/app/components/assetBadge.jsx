@@ -99,9 +99,9 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
                       src={token.image}
                       fallback={
                         !token.image ? (
-                          <Avatar size="xs" name={token.name} />
+                          <Avatar size="xs" name={token.displayName} />
                         ) : (
-                          <Fallback name={token.name} />
+                          <Fallback name={token.displayName} />
                         )
                       }
                     />

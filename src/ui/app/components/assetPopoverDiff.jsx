@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from '@chakra-ui/popover';
 import { Box, Stack, Text } from '@chakra-ui/layout';
-import { Button, Skeleton } from '@chakra-ui/react';
+import { Button, Image, Skeleton } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { Portal } from '@chakra-ui/portal';
 import { FixedSizeList as List } from 'react-window';
@@ -150,7 +150,16 @@ const Asset = ({ asset, isDifference }) => {
           alignItems="center"
           justifyContent="start"
         >
-          <Avatar userSelect="none" size="xs" name={token.name} />
+          <Image
+            src={token.image}
+            width="24px"
+            rounded="sm"
+            draggable={false}
+            userSelect="none"
+            fallback={
+              <Avatar userSelect="none" size="xs" name={token.displayName} />
+            }
+          />
 
           <Box
             textAlign="left"
@@ -161,7 +170,7 @@ const Asset = ({ asset, isDifference }) => {
             <Copy label="Copied asset" copy={token.fingerprint}>
               <Box mb="-0.5">
                 <MiddleEllipsis>
-                  <span>{token.name}</span>
+                  <span>{token.displayName}</span>
                 </MiddleEllipsis>
               </Box>
               <Box whiteSpace="nowrap" fontSize="xx-small" fontWeight="light">

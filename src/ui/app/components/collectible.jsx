@@ -71,9 +71,9 @@ const Collectible = React.forwardRef(({ asset }, ref) => {
               src={token.image}
               fallback={
                 !token.image ? (
-                  <Avatar width="210px" height="210px" name={token.name} />
+                  <Avatar width="210px" height="210px" name={token.displayName} />
                 ) : (
-                  <Fallback name={token.name} />
+                  <Fallback name={token.displayName} />
                 )
               }
             />

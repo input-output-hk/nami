@@ -99,10 +99,10 @@ const Asset = ({ asset, enableSend, ...props }) => {
                       {settings.adaSymbol}
                     </Box>
                   ) : (
-                    <Avatar width="full" height="full" name={token.name} />
+                    <Avatar width="full" height="full" name={token.displayName} />
                   )
                 ) : (
-                  <Fallback name={token.name} />
+                  <Fallback name={token.displayName} />
                 )
               }
             />

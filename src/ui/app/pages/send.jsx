@@ -57,6 +57,7 @@ import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
 import { ERROR } from '../../../config/config';
 import {
+  Image,
   InputRightElement,
   InputLeftElement,
   Spinner,
@@ -1429,6 +1430,7 @@ const Asset = ({ asset, choice, select, setChoice, onClose, addAssets }) => {
         >
           <Selection
             asset={asset}
+            token={token}
             select={select}
             choice={choice}
             setChoice={setChoice}
@@ -1442,7 +1444,7 @@ const Asset = ({ asset, choice, select, setChoice, onClose, addAssets }) => {
           >
             <Box mb="-1px">
               <MiddleEllipsis>
-                <span>{token.name}</span>
+                <span>{token.displayName}</span>
               </MiddleEllipsis>
             </Box>
             <Box whiteSpace="nowrap" fontSize="xx-small" fontWeight="light">
@@ -1460,8 +1462,14 @@ const Asset = ({ asset, choice, select, setChoice, onClose, addAssets }) => {
   );
 };
 
-const Selection = ({ select, asset, choice, setChoice }) => {
+const Selection = ({ select, asset, token, choice, setChoice }) => {
   const selectColor = useColorModeValue('orange.500', 'orange.200');
+
+  const selectAsset = (e) => {
+    choice[asset.unit] = true;
+    setChoice({ ...choice });
+  }
+
   return (
     <Box
       rounded="full"
@@ -1487,14 +1495,21 @@ const Selection = ({ select, asset, choice, setChoice }) => {
           <CheckIcon />
         </Box>
       ) : (
-        <Avatar
-          onClick={(e) => {
-            choice[asset.unit] = true;
-            setChoice({ ...choice });
-          }}
+        <Image
+          src={token.image}
+          width="24px"
+          rounded="sm"
+          draggable={false}
+          onClick={selectAsset}
           userSelect="none"
-          size="xs"
-          name={asset.name}
+          fallback={
+            <Avatar
+              onClick={selectAsset}
+              userSelect="none"
+              size="xs"
+              name={token.displayName}
+            />
+          }
         />
       )}
     </Box>
