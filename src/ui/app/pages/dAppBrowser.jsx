@@ -3,14 +3,14 @@ import { Box, IconButton, Image, SkeletonCircle, Text } from "@chakra-ui/react";
 import Account from '../components/account';
 import { ChevronLeftIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useHistory } from 'react-router-dom';
-import { Messaging } from '../../../api/messaging';
 import useAppDetails from '../hooks/useAppDetails';
+import { initConnection } from '../../../pages/Content/bridge';
 
 const DAppBrowser = () => {
   const history = useHistory();
   const accountRef = React.useRef();
 
-  const dApp = 'https://caart.store';
+  const dApp = 'http://localhost:3000';
   const app = useAppDetails(dApp);
 
   React.useEffect(() => {
@@ -19,11 +19,8 @@ const DAppBrowser = () => {
     div.id = modalId;
     document.body.prepend(div);
 
-    window.addEventListener('message', Messaging.handleMessageFromBrowser);
-
     return () => {
       document.body.removeChild(document.getElementById(modalId));
-      window.removeEventListener('message', Messaging.handleMessageFromBrowser);
     };
   }, []);
 
@@ -71,6 +68,7 @@ const DAppBrowser = () => {
         style={{ width: "100%", height: "calc(100vh - 140px)", backgroundColor: "white" }}
         src={dApp}
         title={app.name}
+        onLoad={evt => initConnection(evt.target, dApp)}
       />
     </Box>
   );

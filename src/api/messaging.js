@@ -216,45 +216,27 @@ export const Messaging = {
       });
     });
   },
-  handleMessageFromBrowser: async (e) => {
-    const browser = e.source;
-    const origin = e.origin;
-    const request = e.data;
-    if (
-      typeof request !== 'object' ||
-      request === null ||
-      !request.target ||
-      request.target !== TARGET ||
-      !request.sender ||
-      request.sender !== SENDER.dAppBrowser
-    )
-      return;
-    request.origin = origin;
-
+  handleMessageFromBrowser: async (request, callback = () => {}) => {
     // only allow enable function, before checking for whitelisted
     if (
       request.method === METHOD.enable ||
       request.method === METHOD.isEnabled
     ) {
-      Messaging.sendToBackground({
-        ...request,
-      }).then((response) => browser.postMessage(response, origin));
+      Messaging.sendToBackground(request).then(callback);
       return;
     }
 
     const whitelisted = await Messaging.sendToBackground({
       method: METHOD.isWhitelisted,
-      origin,
+      origin: request.origin,
     });
 
     // protect background by not allowing not whitelisted
     if (!whitelisted || whitelisted.error) {
-      browser.postMessage({ ...whitelisted, id: request.id }, origin);
+      callback({ ...whitelisted, id: request.id });
       return;
     }
-    await Messaging.sendToBackground(request).then((response) => {
-      browser.postMessage(response, origin);
-    });
+    Messaging.sendToBackground(request).then(callback);
   },
   createBackgroundController: () => new BackgroundController(),
 };
