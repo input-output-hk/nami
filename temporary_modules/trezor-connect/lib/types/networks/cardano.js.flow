@@ -12,6 +12,7 @@ import type {
     CardanoTxSigningMode,
     CardanoTxWitnessType,
     CardanoDerivationType,
+    CardanoTxOutputSerializationFormat,
 } from '../trezor/protobuf';
 
 // GetPublicKey
@@ -95,6 +96,11 @@ export type CardanoInput = {
     prev_index: number,
 };
 
+export type CardanoReferenceInput = {
+    prev_hash: string,
+    prev_index: number,
+};
+
 export type CardanoToken = {
     assetNameBytes: string,
     amount?: string,
@@ -106,19 +112,21 @@ export type CardanoAssetGroup = {
     tokenAmounts: CardanoToken[],
 };
 
-export type CardanoOutput =
+export type CardanoOutput = (
     | {
           addressParameters: CardanoAddressParameters,
-          amount: string,
-          tokenBundle?: CardanoAssetGroup[],
-          datumHash?: string,
       }
     | {
           address: string,
-          amount: string,
-          tokenBundle?: CardanoAssetGroup[],
-          datumHash?: string,
-      };
+      }
+) & {
+    amount: string,
+    tokenBundle?: CardanoAssetGroup[],
+    datumHash?: string,
+    format?: CardanoTxOutputSerializationFormat,
+    inlineDatum?: string,
+    referenceScript?: string,
+};
 
 export type CardanoPoolOwner = {
     stakingKeyPath?: string | number[],
@@ -215,6 +223,10 @@ export type CardanoSignTransaction = {
     signingMode: CardanoTxSigningMode,
     derivationType?: CardanoDerivationType,
     includeNetworkId?: boolean,
+    //Babbage
+    collateralReturn?: CardanoOutput,
+    totalCollateral?: number,
+    referenceInputs?: CardanoReferenceInput[],
 };
 
 export type CardanoSignedTxWitness = {
@@ -244,4 +256,5 @@ export {
     Enum_CardanoPoolRelayType as CardanoPoolRelayType,
     Enum_CardanoTxSigningMode as CardanoTxSigningMode,
     Enum_CardanoTxWitnessType as CardanoTxWitnessType,
+    Enum_CardanoTxOutputSerializationFormat as CardanoTxOutputSerializationFormat,
 } from '../trezor/protobuf';

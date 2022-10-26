@@ -730,11 +730,30 @@ export type CardanoSignTxInit = {
     validity_interval_start?: UintType,
     witness_requests_count: number,
     minting_asset_groups_count: number,
-    derivation_type: CardanoDerivationType,
-    include_network_id?: boolean,
     script_data_hash?: string,
     collateral_inputs_count: number,
     required_signers_count: number,
+    has_collateral_return: boolean,
+    total_collateral?: UintType,
+    reference_inputs_count: number,
+    derivation_type: CardanoDerivationType,
+    include_network_id?: boolean,
+};
+
+// CardanoTxInlineDatumChunk
+export type CardanoTxInlineDatumChunk = {
+    data: string,
+};
+
+// CardanoTxReferenceScriptChunk
+export type CardanoTxReferenceScriptChunk = {
+    data: string,
+};
+
+// CardanoTxReferenceInput
+export type CardanoTxReferenceInput = {
+    prev_hash: string,
+    prev_index: number,
 };
 
 // CardanoTxInput
@@ -750,6 +769,9 @@ export type CardanoTxOutput = {
     amount: UintType,
     asset_groups_count: number,
     datum_hash?: string,
+    format?: CardanoTxOutputSerializationFormat,
+    inline_datum_size?: number,
+    reference_script_size?: number,
 };
 
 // CardanoAssetGroup
@@ -965,6 +987,14 @@ export type CardanoSignedTx = {
     tx_hash: string,
     serialized_tx?: string,
 };
+
+export const Enum_CardanoTxOutputSerializationFormat = Object.freeze({
+    ARRAY_LEGACY: 0,
+    MAP_BABBAGE: 1,
+});
+export type CardanoTxOutputSerializationFormat = $Values<
+    typeof Enum_CardanoTxOutputSerializationFormat,
+>;
 
 // Success
 export type Success = {
@@ -2278,6 +2308,9 @@ export type MessageType = {
     CardanoPublicKey: $Exact<CardanoPublicKey>,
     CardanoSignTxInit: $Exact<CardanoSignTxInit>,
     CardanoTxInput: $Exact<CardanoTxInput>,
+    CardanoTxReferenceInput: $Exact<CardanoTxReferenceInput>,
+    CardanoTxInlineDatumChunk: $Exact<CardanoTxInlineDatumChunk>,
+    CardanoTxReferenceScriptChunk: $Exact<CardanoTxReferenceScriptChunk>,
     CardanoTxOutput: $Exact<CardanoTxOutput>,
     CardanoAssetGroup: $Exact<CardanoAssetGroup>,
     CardanoToken: $Exact<CardanoToken>,

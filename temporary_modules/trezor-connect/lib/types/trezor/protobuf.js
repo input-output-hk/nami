@@ -1,7 +1,7 @@
 "use strict";
 
 exports.__esModule = true;
-exports.Enum_WordRequestType = exports.Enum_TezosContractType = exports.Enum_TezosBallotType = exports.Enum_StellarSignerType = exports.Enum_StellarMemoType = exports.Enum_StellarAssetType = exports.Enum_SdProtectOperationType = exports.Enum_SafetyCheckLevel = exports.Enum_RequestType = exports.Enum_RecoveryDeviceType = exports.Enum_PinMatrixRequestType = exports.Enum_OutputScriptType = exports.Enum_NEMSupplyChangeType = exports.Enum_NEMMosaicLevy = exports.Enum_NEMModificationType = exports.Enum_NEMImportanceTransferMode = exports.Enum_InputScriptType = exports.Enum_FailureType = exports.Enum_EthereumDataType = exports.Enum_DecredStakingSpendType = exports.Enum_DebugButton = exports.Enum_CardanoTxWitnessType = exports.Enum_CardanoTxSigningMode = exports.Enum_CardanoTxAuxiliaryDataSupplementType = exports.Enum_CardanoPoolRelayType = exports.Enum_CardanoNativeScriptType = exports.Enum_CardanoNativeScriptHashDisplayFormat = exports.Enum_CardanoDerivationType = exports.Enum_CardanoCertificateType = exports.Enum_CardanoAddressType = exports.Enum_Capability = exports.Enum_ButtonRequestType = exports.Enum_BinanceTimeInForce = exports.Enum_BinanceOrderType = exports.Enum_BinanceOrderSide = exports.Enum_BackupType = exports.Enum_AmountUnit = void 0;
+exports.Enum_WordRequestType = exports.Enum_TezosContractType = exports.Enum_TezosBallotType = exports.Enum_StellarSignerType = exports.Enum_StellarMemoType = exports.Enum_StellarAssetType = exports.Enum_SdProtectOperationType = exports.Enum_SafetyCheckLevel = exports.Enum_RequestType = exports.Enum_RecoveryDeviceType = exports.Enum_PinMatrixRequestType = exports.Enum_OutputScriptType = exports.Enum_NEMSupplyChangeType = exports.Enum_NEMMosaicLevy = exports.Enum_NEMModificationType = exports.Enum_NEMImportanceTransferMode = exports.Enum_InputScriptType = exports.Enum_FailureType = exports.Enum_EthereumDataType = exports.Enum_DecredStakingSpendType = exports.Enum_DebugButton = exports.Enum_CardanoTxWitnessType = exports.Enum_CardanoTxSigningMode = exports.Enum_CardanoTxOutputSerializationFormat = exports.Enum_CardanoTxAuxiliaryDataSupplementType = exports.Enum_CardanoPoolRelayType = exports.Enum_CardanoNativeScriptType = exports.Enum_CardanoNativeScriptHashDisplayFormat = exports.Enum_CardanoDerivationType = exports.Enum_CardanoCertificateType = exports.Enum_CardanoAddressType = exports.Enum_Capability = exports.Enum_ButtonRequestType = exports.Enum_BinanceTimeInForce = exports.Enum_BinanceOrderType = exports.Enum_BinanceOrderSide = exports.Enum_BackupType = exports.Enum_AmountUnit = void 0;
 // This file is auto generated from data/messages/message.json
 // custom type uint32/64 may be represented as string
 // BinanceGetAddress
@@ -138,6 +138,11 @@ var Enum_CardanoTxWitnessType = Object.freeze({
   SHELLEY_WITNESS: 1
 });
 exports.Enum_CardanoTxWitnessType = Enum_CardanoTxWitnessType;
+var Enum_CardanoTxOutputSerializationFormat = Object.freeze({
+  ARRAY_LEGACY: 0,
+  MAP_BABBAGE: 1
+});
+exports.Enum_CardanoTxOutputSerializationFormat = Enum_CardanoTxOutputSerializationFormat;
 var Enum_FailureType = Object.freeze({
   Failure_UnexpectedMessage: 1,
   Failure_ButtonExpected: 2,

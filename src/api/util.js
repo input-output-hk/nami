@@ -332,26 +332,7 @@ export const minAdaRequired = async (output, coinsPerUtxoWord) => {
   return Loader.Cardano.min_ada_required(output, coinsPerUtxoWord).to_str();
 };
 
-/**
- *
- * @param {Transaction} tx
- */
-export const txToTrezor = async (tx, network, keys, address, index) => {
-  await Loader.load();
-
-  let signingMode = CardanoTxSigningMode.ORDINARY_TRANSACTION;
-  const inputs = tx.body().inputs();
-  const trezorInputs = [];
-  for (let i = 0; i < inputs.len(); i++) {
-    const input = inputs.get(i);
-    trezorInputs.push({
-      prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString('hex'),
-      prev_index: parseInt(input.index().to_str()),
-      path: keys.payment.path, // needed to include payment key witness if available
-    });
-  }
-
-  const outputs = tx.body().outputs();
+const outputsToTrezor = (outputs, address, index) => {
   const trezorOutputs = [];
   for (let i = 0; i < outputs.len(); i++) {
     const output = outputs.get(i);
@@ -422,21 +403,57 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         : {
             address: outputAddressHuman,
           };
-    // TODO: babbage
     const datumHash =
       output.datum() && output.datum().kind() === 0
         ? Buffer.from(output.datum().as_data_hash().to_bytes()).toString('hex')
         : null;
+    const inlineDatum =
+      output.datum() && output.datum().kind() === 1
+        ? Buffer.from(output.datum().as_data().get().to_bytes()).toString('hex')
+        : null;
+    const referenceScript = output.script_ref()
+      ? Buffer.from(output.script_ref().get().to_bytes()).toString('hex')
+      : null;
     const outputRes = {
       amount: output.amount().coin().to_str(),
       tokenBundle,
       datumHash,
+      format: inlineDatum || referenceScript ? 1 : 0,
+      inlineDatum,
+      referenceScript,
       ...destination,
     };
     if (!tokenBundle) delete outputRes.tokenBundle;
     if (!datumHash) delete outputRes.datumHash;
+    if (!inlineDatum) delete outputRes.inlineDatum;
+    if (!referenceScript) delete outputRes.referenceScript;
     trezorOutputs.push(outputRes);
   }
+  return trezorOutputs;
+};
+
+/**
+ *
+ * @param {Transaction} tx
+ */
+export const txToTrezor = async (tx, network, keys, address, index) => {
+  await Loader.load();
+
+  let signingMode = CardanoTxSigningMode.ORDINARY_TRANSACTION;
+  const inputs = tx.body().inputs();
+  const trezorInputs = [];
+  for (let i = 0; i < inputs.len(); i++) {
+    const input = inputs.get(i);
+    trezorInputs.push({
+      prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString('hex'),
+      prev_index: parseInt(input.index().to_str()),
+      path: keys.payment.path, // needed to include payment key witness if available
+    });
+  }
+
+  const outputs = tx.body().outputs();
+  const trezorOutputs = outputsToTrezor(outputs, address, index);
+
   let trezorCertificates = null;
   const certificates = tx.body().certs();
   if (certificates) {
@@ -599,7 +616,9 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         ),
       }
     : null;
-  const validityStartInterval = tx.body().validity_start_interval();
+  const validityIntervalStart = tx.body().validity_start_interval()
+    ? tx.body().validity_start_interval().to_str()
+    : null;
 
   const mint = tx.body().mint();
   let additionalWitnessRequests = null;
@@ -687,15 +706,40 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
   }
 
+  let referenceInputs = null;
+  if (tx.body().reference_inputs()) {
+    referenceInputs = [];
+    const ri = tx.body().reference_inputs();
+    for (let i = 0; i < ri.len(); i++) {
+      referenceInputs.push({
+        prev_hash: ri.get(i).transaction_id().to_hex(),
+        prev_index: parseInt(ri.get(i).index().to_str()),
+      });
+    }
+    signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
+  }
+
+  const totalCollateral = tx.body().total_collateral()
+    ? tx.body().total_collateral().to_str()
+    : null;
+
+  let collateralReturn = (() => {
+    if (tx.body().collateral_return()) {
+      const outputs = Loader.Cardano.TransactionOutputs.new();
+      outputs.add(tx.body().collateral_return());
+      const [out] = outputsToTrezor(outputs, address, index);
+      return out;
+    }
+    return null;
+  })();
+
   const trezorTx = {
     signingMode,
     inputs: trezorInputs,
     outputs: trezorOutputs,
     fee,
     ttl: ttl ? ttl.to_str() : null,
-    validityStartInterval: validityStartInterval
-      ? validityStartInterval.toString()
-      : null,
+    validityIntervalStart,
     certificates: trezorCertificates,
     withdrawals: trezorWithdrawals,
     auxiliaryData,
@@ -706,7 +750,9 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     protocolMagic: network === 1 ? 764824073 : 42,
     networkId: network,
     additionalWitnessRequests,
-    // TODO: babbage
+    collateralReturn,
+    totalCollateral,
+    referenceInputs,
   };
   Object.keys(trezorTx).forEach(
     (key) => !trezorTx[key] && trezorTx[key] != 0 && delete trezorTx[key]
@@ -787,6 +833,7 @@ const outputsToLedger = (outputs, address, index) => {
     const outputRes = isBabbage
       ? {
           format: TxOutputFormat.MAP_BABBAGE,
+          amount: output.amount().coin().to_str(),
           tokenBundle,
           destination,
           datum: datum
@@ -799,10 +846,13 @@ const outputsToLedger = (outputs, address, index) => {
                 }
               : {
                   type: DatumType.INLINE,
-                  datumHashHex: Buffer.from(
-                    datum.as_data().to_bytes()
+                  datumHex: Buffer.from(
+                    datum.as_data().get().to_bytes()
                   ).toString('hex'),
                 }
+            : null,
+          referenceScriptHex: refScript
+            ? Buffer.from(refScript.get().to_bytes()).toString('hex')
             : null,
         }
       : {
@@ -1038,7 +1088,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     }
   }
   const fee = tx.body().fee().to_str();
-  const ttl = tx.body().ttl();
+  const ttl = tx.body().ttl() ? tx.body().ttl().to_str() : null;
   const withdrawals = tx.body().withdrawals();
   let ledgerWithdrawals = null;
   if (withdrawals) {
@@ -1069,7 +1119,9 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         },
       }
     : null;
-  const validityStartInterval = tx.body().validity_start_interval();
+  const validityIntervalStart = tx.body().validity_start_interval()
+    ? tx.body().validity_start_interval().to_str()
+    : null;
 
   const mint = tx.body().mint();
   let additionalWitnessPaths = null;
@@ -1142,7 +1194,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     if (tx.body().collateral_return()) {
       const outputs = Loader.Cardano.TransactionOutputs.new();
       outputs.add(tx.body().collateral_return());
-      const [out] = outputsToLedger(outputs);
+      const [out] = outputsToLedger(outputs, address, index);
       return out;
     }
     return null;
@@ -1154,13 +1206,12 @@ export const txToLedger = async (tx, network, keys, address, index) => {
 
   let referenceInputs = null;
   if (tx.body().reference_inputs()) {
+    referenceInputs = [];
     const refInputs = tx.body().reference_inputs();
     for (let i = 0; i < refInputs.len(); i++) {
       const input = refInputs.get(i);
       referenceInputs.push({
-        txHashHex: Buffer.from(input.transaction_id().to_bytes()).toString(
-          'hex'
-        ),
+        txHashHex: input.transaction_id().to_hex(),
         outputIndex: parseInt(input.index().to_str()),
         path: null,
       });
@@ -1196,19 +1247,18 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     inputs: ledgerInputs,
     outputs: ledgerOutputs,
     fee,
-    ttl: ttl ? ttl.to_str() : null,
+    ttl,
     certificates: ledgerCertificates,
     withdrawals: ledgerWithdrawals,
     auxiliaryData,
-    validityStartInterval,
+    validityIntervalStart,
     mint: mintBundle,
     scriptDataHashHex,
     collateralInputs,
     requiredSigners,
-    // TODO: babbage
-    // collateralOutput,
-    // totalCollateral,
-    // referenceInputs,
+    collateralOutput,
+    totalCollateral,
+    referenceInputs,
   };
 
   Object.keys(ledgerTx).forEach(

@@ -1,7 +1,7 @@
 "use strict";
 
 exports.__esModule = true;
-exports.CardanoTxWitnessType = exports.CardanoTxSigningMode = exports.CardanoPoolRelayType = exports.CardanoNativeScriptType = exports.CardanoNativeScriptHashDisplayFormat = exports.CardanoCertificateType = exports.CardanoAddressType = void 0;
+exports.CardanoTxWitnessType = exports.CardanoTxSigningMode = exports.CardanoTxOutputSerializationFormat = exports.CardanoPoolRelayType = exports.CardanoNativeScriptType = exports.CardanoNativeScriptHashDisplayFormat = exports.CardanoCertificateType = exports.CardanoAddressType = void 0;
 
 var _protobuf = require("../trezor/protobuf");
 
@@ -12,3 +12,4 @@ exports.CardanoNativeScriptHashDisplayFormat = _protobuf.Enum_CardanoNativeScrip
 exports.CardanoPoolRelayType = _protobuf.Enum_CardanoPoolRelayType;
 exports.CardanoTxSigningMode = _protobuf.Enum_CardanoTxSigningMode;
 exports.CardanoTxWitnessType = _protobuf.Enum_CardanoTxWitnessType;
+exports.CardanoTxOutputSerializationFormat = _protobuf.Enum_CardanoTxOutputSerializationFormat;

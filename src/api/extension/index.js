@@ -1713,7 +1713,7 @@ export const getAsset = async (unit) => {
   const asset = assets[unit] || {};
   const time = Date.now();
   const h1 = 6000000;
-  if (asset && asset.time && time - asset.time <= h1 && !asset.mint) {
+  if (asset && asset.time && time - asset.time <= h1 && !asset.mint && false) {
     return asset;
   } else {
     const { policyId, name, label } = fromAssetUnit(unit);
@@ -1724,7 +1724,9 @@ export const getAsset = async (unit) => {
       Buffer.from(policyId, 'hex'),
       bufferName
     ).fingerprint();
-    asset.name = `(${label}) ` + bufferName.toString();
+    asset.name = Number.isInteger(label)
+      ? `(${label}) ` + bufferName.toString()
+      : bufferName.toString();
 
     // CIP-0067 & CIP-0068 (support 222 and 333 sub standards)
 
@@ -1750,32 +1752,35 @@ export const getAsset = async (unit) => {
         asset.image = metadata.image ? linkToSrc(metadata.image) : '';
         asset.decimals = 0;
       } catch (_e) {
+        asset.displayName = asset.name;
         asset.mint = true;
       }
     } else if (label === 333) {
       const refUnit = toAssetUnit(policyId, name, 100);
+      try {
+        const owners = await blockfrostRequest(`/assets/${refUnit}/addresses`);
+        if (!owners || owners.error) {
+          throw new Error('No owner found.');
+        }
+        const [refUtxo] = await blockfrostRequest(
+          `/addresses/${owners[0].address}/utxos/${refUnit}`
+        );
+        const datum =
+          refUtxo?.inline_datum ||
+          (await blockfrostRequest(`/scripts/datum/${refUtxo?.data_hash}/cbor`))
+            ?.cbor;
+        const metadataDatum = datum && (await Data.from(datum));
 
-      const owners = await blockfrostRequest(`/assets/${refUnit}/addresses`);
-      if (!owners || owners.error) {
-        throw new Error('No owner found.');
+        const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
+
+        asset.displayName = metadata.name;
+        asset.image = linkToSrc(metadata.image) || '';
+        asset.decimals = metadata.decimals || 0;
+      } catch (_e) {
+        asset.displayName = asset.name;
+        asset.mint = true;
       }
-      const [refUtxo] = await blockfrostRequest(
-        `/addresses/${owners[0].address}/utxos/${refUnit}`
-      );
-      const datum =
-        refUtxo?.inline_datum ||
-        (await blockfrostRequest(`/scripts/datum/${refUtxo?.data_hash}/cbor`))
-          ?.cbor;
-      const metadataDatum = datum && (await Data.from(datum));
-
-      const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
-
-      asset.displayName = metadata.name;
-      asset.image = linkToSrc(metadata.image) || '';
-      asset.decimals = metadata.decimals || 0;
     } else {
-      asset.name = bufferName.toString();
-
       let result = await blockfrostRequest(`/assets/${unit}`);
       if (!result || result.error) {
         result = {};
