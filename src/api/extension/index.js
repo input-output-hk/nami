@@ -1713,7 +1713,7 @@ export const getAsset = async (unit) => {
   const asset = assets[unit] || {};
   const time = Date.now();
   const h1 = 6000000;
-  if (asset && asset.time && time - asset.time <= h1 && !asset.mint && false) {
+  if (asset && asset.time && time - asset.time <= h1 && !asset.mint) {
     return asset;
   } else {
     const { policyId, name, label } = fromAssetUnit(unit);
