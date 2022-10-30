@@ -1,6 +1,6 @@
 {
   "name": "nami-wallet",
-  "version": "3.3.0",
+  "version": "3.4.1",
   "description": "A wallet to experience Cardano to the fullest",
   "license": "MIT",
   "repository": {
@@ -38,6 +38,7 @@
     "awesome-debounce-promise": "^2.1.0",
     "bip39": "^3.0.4",
     "chakra-ui-autocomplete": "^1.3.0",
+    "crc": "^4.1.1",
     "crypto-random-string": "^4.0.0",
     "easy-peasy": "^5.0.3",
     "file-type": "^16.5.2",

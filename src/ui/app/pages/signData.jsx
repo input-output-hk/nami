@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import { getCurrentAccount, isHW, signData, signDataCIP30 } from '../../../api/extension';
 import { Box, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
@@ -29,6 +29,18 @@ const SignData = ({ request, controller }) => {
     const payload = Buffer.from(request.data.payload, 'hex').toString('utf8');
     setPayload(payload);
   };
+
+  const signDataMsg = useMemo(() => {
+    const result = [];
+    payload.split(/\r?\n/).forEach(line => {
+      result.push(
+          <p style={{wordBreak: 'break-word', paddingBlockEnd: '8px'}}>
+            {line}
+          </p>
+      );
+    })
+    return result;
+  }, [payload]);
 
   const getAddress = async () => {
     await Loader.load();
@@ -120,13 +132,15 @@ const SignData = ({ request, controller }) => {
           <Box h="4" />
           <Box
             width="76%"
-            height="200px"
+            height="278px"
             rounded="xl"
             background={background}
             padding="2.5"
             wordBreak="break-all"
           >
-            <Scrollbars autoHide>{payload}</Scrollbars>
+            <Scrollbars autoHide>
+              {signDataMsg}
+            </Scrollbars>
           </Box>
 
           <Box

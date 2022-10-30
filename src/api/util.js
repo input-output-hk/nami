@@ -32,6 +32,7 @@ import {
   CardanoPoolRelayType,
   CardanoTxSigningMode,
 } from '../../temporary_modules/trezor-connect/';
+import crc8 from 'crc/calculators/crc8';
 
 export async function delay(delayInMs) {
   return new Promise((resolve) => {
@@ -331,26 +332,7 @@ export const minAdaRequired = async (output, coinsPerUtxoWord) => {
   return Loader.Cardano.min_ada_required(output, coinsPerUtxoWord).to_str();
 };
 
-/**
- *
- * @param {Transaction} tx
- */
-export const txToTrezor = async (tx, network, keys, address, index) => {
-  await Loader.load();
-
-  let signingMode = CardanoTxSigningMode.ORDINARY_TRANSACTION;
-  const inputs = tx.body().inputs();
-  const trezorInputs = [];
-  for (let i = 0; i < inputs.len(); i++) {
-    const input = inputs.get(i);
-    trezorInputs.push({
-      prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString('hex'),
-      prev_index: parseInt(input.index().to_str()),
-      path: keys.payment.path, // needed to include payment key witness if available
-    });
-  }
-
-  const outputs = tx.body().outputs();
+const outputsToTrezor = (outputs, address, index) => {
   const trezorOutputs = [];
   for (let i = 0; i < outputs.len(); i++) {
     const output = outputs.get(i);
@@ -421,21 +403,57 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         : {
             address: outputAddressHuman,
           };
-    // TODO: babbage
     const datumHash =
       output.datum() && output.datum().kind() === 0
         ? Buffer.from(output.datum().as_data_hash().to_bytes()).toString('hex')
         : null;
+    const inlineDatum =
+      output.datum() && output.datum().kind() === 1
+        ? Buffer.from(output.datum().as_data().get().to_bytes()).toString('hex')
+        : null;
+    const referenceScript = output.script_ref()
+      ? Buffer.from(output.script_ref().get().to_bytes()).toString('hex')
+      : null;
     const outputRes = {
       amount: output.amount().coin().to_str(),
       tokenBundle,
       datumHash,
+      format: inlineDatum || referenceScript ? 1 : 0,
+      inlineDatum,
+      referenceScript,
       ...destination,
     };
     if (!tokenBundle) delete outputRes.tokenBundle;
     if (!datumHash) delete outputRes.datumHash;
+    if (!inlineDatum) delete outputRes.inlineDatum;
+    if (!referenceScript) delete outputRes.referenceScript;
     trezorOutputs.push(outputRes);
   }
+  return trezorOutputs;
+};
+
+/**
+ *
+ * @param {Transaction} tx
+ */
+export const txToTrezor = async (tx, network, keys, address, index) => {
+  await Loader.load();
+
+  let signingMode = CardanoTxSigningMode.ORDINARY_TRANSACTION;
+  const inputs = tx.body().inputs();
+  const trezorInputs = [];
+  for (let i = 0; i < inputs.len(); i++) {
+    const input = inputs.get(i);
+    trezorInputs.push({
+      prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString('hex'),
+      prev_index: parseInt(input.index().to_str()),
+      path: keys.payment.path, // needed to include payment key witness if available
+    });
+  }
+
+  const outputs = tx.body().outputs();
+  const trezorOutputs = outputsToTrezor(outputs, address, index);
+
   let trezorCertificates = null;
   const certificates = tx.body().certs();
   if (certificates) {
@@ -598,7 +616,9 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         ),
       }
     : null;
-  const validityStartInterval = tx.body().validity_start_interval();
+  const validityIntervalStart = tx.body().validity_start_interval()
+    ? tx.body().validity_start_interval().to_str()
+    : null;
 
   const mint = tx.body().mint();
   let additionalWitnessRequests = null;
@@ -686,15 +706,40 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
   }
 
+  let referenceInputs = null;
+  if (tx.body().reference_inputs()) {
+    referenceInputs = [];
+    const ri = tx.body().reference_inputs();
+    for (let i = 0; i < ri.len(); i++) {
+      referenceInputs.push({
+        prev_hash: ri.get(i).transaction_id().to_hex(),
+        prev_index: parseInt(ri.get(i).index().to_str()),
+      });
+    }
+    signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
+  }
+
+  const totalCollateral = tx.body().total_collateral()
+    ? tx.body().total_collateral().to_str()
+    : null;
+
+  let collateralReturn = (() => {
+    if (tx.body().collateral_return()) {
+      const outputs = Loader.Cardano.TransactionOutputs.new();
+      outputs.add(tx.body().collateral_return());
+      const [out] = outputsToTrezor(outputs, address, index);
+      return out;
+    }
+    return null;
+  })();
+
   const trezorTx = {
     signingMode,
     inputs: trezorInputs,
     outputs: trezorOutputs,
     fee,
     ttl: ttl ? ttl.to_str() : null,
-    validityStartInterval: validityStartInterval
-      ? validityStartInterval.toString()
-      : null,
+    validityIntervalStart,
     certificates: trezorCertificates,
     withdrawals: trezorWithdrawals,
     auxiliaryData,
@@ -705,7 +750,9 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     protocolMagic: network === 1 ? 764824073 : 42,
     networkId: network,
     additionalWitnessRequests,
-    // TODO: babbage
+    collateralReturn,
+    totalCollateral,
+    referenceInputs,
   };
   Object.keys(trezorTx).forEach(
     (key) => !trezorTx[key] && trezorTx[key] != 0 && delete trezorTx[key]
@@ -786,6 +833,7 @@ const outputsToLedger = (outputs, address, index) => {
     const outputRes = isBabbage
       ? {
           format: TxOutputFormat.MAP_BABBAGE,
+          amount: output.amount().coin().to_str(),
           tokenBundle,
           destination,
           datum: datum
@@ -798,10 +846,13 @@ const outputsToLedger = (outputs, address, index) => {
                 }
               : {
                   type: DatumType.INLINE,
-                  datumHashHex: Buffer.from(
-                    datum.as_data().to_bytes()
+                  datumHex: Buffer.from(
+                    datum.as_data().get().to_bytes()
                   ).toString('hex'),
                 }
+            : null,
+          referenceScriptHex: refScript
+            ? Buffer.from(refScript.get().to_bytes()).toString('hex')
             : null,
         }
       : {
@@ -1037,7 +1088,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     }
   }
   const fee = tx.body().fee().to_str();
-  const ttl = tx.body().ttl();
+  const ttl = tx.body().ttl() ? tx.body().ttl().to_str() : null;
   const withdrawals = tx.body().withdrawals();
   let ledgerWithdrawals = null;
   if (withdrawals) {
@@ -1068,7 +1119,9 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         },
       }
     : null;
-  const validityStartInterval = tx.body().validity_start_interval();
+  const validityIntervalStart = tx.body().validity_start_interval()
+    ? tx.body().validity_start_interval().to_str()
+    : null;
 
   const mint = tx.body().mint();
   let additionalWitnessPaths = null;
@@ -1141,7 +1194,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     if (tx.body().collateral_return()) {
       const outputs = Loader.Cardano.TransactionOutputs.new();
       outputs.add(tx.body().collateral_return());
-      const [out] = outputsToLedger(outputs);
+      const [out] = outputsToLedger(outputs, address, index);
       return out;
     }
     return null;
@@ -1153,13 +1206,12 @@ export const txToLedger = async (tx, network, keys, address, index) => {
 
   let referenceInputs = null;
   if (tx.body().reference_inputs()) {
+    referenceInputs = [];
     const refInputs = tx.body().reference_inputs();
     for (let i = 0; i < refInputs.len(); i++) {
       const input = refInputs.get(i);
       referenceInputs.push({
-        txHashHex: Buffer.from(input.transaction_id().to_bytes()).toString(
-          'hex'
-        ),
+        txHashHex: input.transaction_id().to_hex(),
         outputIndex: parseInt(input.index().to_str()),
         path: null,
       });
@@ -1195,19 +1247,18 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     inputs: ledgerInputs,
     outputs: ledgerOutputs,
     fee,
-    ttl: ttl ? ttl.to_str() : null,
+    ttl,
     certificates: ledgerCertificates,
     withdrawals: ledgerWithdrawals,
     auxiliaryData,
-    validityStartInterval,
+    validityIntervalStart,
     mint: mintBundle,
     scriptDataHashHex,
     collateralInputs,
     requiredSigners,
-    // TODO: babbage
-    // collateralOutput,
-    // totalCollateral,
-    // referenceInputs,
+    collateralOutput,
+    totalCollateral,
+    referenceInputs,
   };
 
   Object.keys(ledgerTx).forEach(
@@ -1240,3 +1291,226 @@ const bytesToIp = (bytes) => {
   }
   return null;
 };
+
+function checksum(num) {
+  return crc8(Buffer.from(num, 'hex')).toString(16).padStart(2, '0');
+}
+
+export function toLabel(num) {
+  if (num < 0 || num > 65535) {
+    throw new Error(
+      `Label ${num} out of range: min label 1 - max label 65535.`
+    );
+  }
+  const numHex = num.toString(16).padStart(4, '0');
+  return '0' + numHex + checksum(numHex) + '0';
+}
+
+export function fromLabel(label) {
+  if (label.length !== 8 || !(label[0] === '0' && label[7] === '0')) {
+    return null;
+  }
+  const numHex = label.slice(1, 5);
+  const num = parseInt(numHex, 16);
+  const check = label.slice(5, 7);
+  return check === checksum(numHex) ? num : null;
+}
+
+export function toAssetUnit(policyId, name, label) {
+  const hexLabel = Number.isInteger(label) ? toLabel(label) : '';
+  const n = name ? name : '';
+  if ((n + hexLabel).length > 64) {
+    throw new Error('Asset name size exceeds 32 bytes.');
+  }
+  if (policyId.length !== 56) {
+    throw new Error(`Policy id invalid: ${policyId}.`);
+  }
+  return policyId + hexLabel + n;
+}
+
+export function fromAssetUnit(unit) {
+  const policyId = unit.slice(0, 56);
+  const label = fromLabel(unit.slice(56, 64));
+  const name = (() => {
+    const hexName = Number.isInteger(label) ? unit.slice(64) : unit.slice(56);
+    return hexName || null;
+  })();
+  return { policyId, name, label };
+}
+
+export class Constr {
+  constructor(index, fields) {
+    this.index = index;
+    this.fields = fields;
+  }
+}
+
+export class Data {
+  /** Convert PlutusData to Cbor encoded data */
+  static async to(plutusData) {
+    await Loader.load();
+    function serialize(data) {
+      try {
+        if (
+          typeof data === 'bigint' ||
+          typeof data === 'number' ||
+          (typeof data === 'string' &&
+            !isNaN(parseInt(data)) &&
+            data.slice(-1) === 'n')
+        ) {
+          const bigint =
+            typeof data === 'string' ? BigInt(data.slice(0, -1)) : data;
+          return Loader.Cardano.PlutusData.new_integer(
+            Loader.Cardano.BigInt.from_str(bigint.toString())
+          );
+        } else if (typeof data === 'string') {
+          return Loader.Cardano.PlutusData.new_bytes(Buffer.from(data, 'hex'));
+        } else if (data instanceof Uint8Array) {
+          return Loader.Cardano.PlutusData.new_bytes(data);
+        } else if (data instanceof Constr) {
+          const { index, fields } = data;
+          const plutusList = Loader.Cardano.PlutusList.new();
+
+          fields.forEach((field) => plutusList.add(serialize(field)));
+
+          return Loader.Cardano.PlutusData.new_constr_plutus_data(
+            Loader.Cardano.ConstrPlutusData.new(
+              Loader.Cardano.BigNum.from_str(index.toString()),
+              plutusList
+            )
+          );
+        } else if (data instanceof Array) {
+          const plutusList = Loader.Cardano.PlutusList.new();
+
+          data.forEach((arg) => plutusList.add(serialize(arg)));
+
+          return Loader.Cardano.PlutusData.new_list(plutusList);
+        } else if (data instanceof Map) {
+          const plutusMap = Loader.Cardano.PlutusMap.new();
+
+          for (const [key, value] of data.entries()) {
+            plutusMap.insert(serialize(key), serialize(value));
+          }
+
+          return Loader.Cardano.PlutusData.new_map(plutusMap);
+        }
+        throw new Error('Unsupported type');
+      } catch (error) {
+        throw new Error('Could not serialize the data: ' + error);
+      }
+    }
+    return toHex(serialize(plutusData).to_bytes());
+  }
+
+  /** Convert Cbor encoded data to PlutusData */
+  static async from(data) {
+    await Loader.load();
+    const plutusData = Loader.Cardano.PlutusData.from_bytes(
+      Buffer.from(data, 'hex')
+    );
+    function deserialize(data) {
+      if (data.kind() === 0) {
+        const constr = data.as_constr_plutus_data();
+        const l = constr.data();
+        const desL = [];
+        for (let i = 0; i < l.len(); i++) {
+          desL.push(deserialize(l.get(i)));
+        }
+        return new Constr(parseInt(constr.alternative().to_str()), desL);
+      } else if (data.kind() === 1) {
+        const m = data.as_map();
+        const desM = new Map();
+        const keys = m.keys();
+        for (let i = 0; i < keys.len(); i++) {
+          desM.set(deserialize(keys.get(i)), deserialize(m.get(keys.get(i))));
+        }
+        return desM;
+      } else if (data.kind() === 2) {
+        const l = data.as_list();
+        const desL = [];
+        for (let i = 0; i < l.len(); i++) {
+          desL.push(deserialize(l.get(i)));
+        }
+        return desL;
+      } else if (data.kind() === 3) {
+        return BigInt(data.as_integer().to_str());
+      } else if (data.kind() === 4) {
+        return Buffer.from(data.as_bytes()).toString('hex');
+      }
+      throw new Error('Unsupported type');
+    }
+    return deserialize(plutusData);
+  }
+
+  /**
+   * Convert conveniently a Json object (e.g. Metadata) to PlutusData.
+   * Note: Constructor cannot be used here.
+   */
+  static fromJson(json) {
+    function toPlutusData(json) {
+      if (typeof json === 'string') {
+        return Buffer.from(json);
+      }
+      if (typeof json === 'number') return BigInt(json);
+      if (typeof json === 'bigint') return json;
+      if (json instanceof Array) return json.map((v) => toPlutusData(v));
+      if (json instanceof Object) {
+        const tempMap = new Map();
+        Object.entries(json).forEach(([key, value]) => {
+          tempMap.set(toPlutusData(key), toPlutusData(value));
+        });
+        return tempMap;
+      }
+      throw new Error('Unsupported type');
+    }
+    return toPlutusData(json);
+  }
+
+  /**
+   * Convert PlutusData to a Json object.
+   * Note: Constructor cannot be used here, also only bytes/integers as Json keys.
+   */
+  static toJson(plutusData) {
+    function fromPlutusData(data) {
+      if (
+        typeof data === 'bigint' ||
+        typeof data === 'number' ||
+        (typeof data === 'string' &&
+          !isNaN(parseInt(data)) &&
+          data.slice(-1) === 'n')
+      ) {
+        const bigint =
+          typeof data === 'string' ? BigInt(data.slice(0, -1)) : data;
+        return parseInt(bigint.toString());
+      }
+      if (typeof data === 'string') {
+        return Buffer.from(data, 'hex').toString();
+      }
+      if (data instanceof Array) return data.map((v) => fromPlutusData(v));
+      if (data instanceof Map) {
+        const tempJson = {};
+        data.forEach((value, key) => {
+          const convertedKey = fromPlutusData(key);
+          if (
+            typeof convertedKey !== 'string' &&
+            typeof convertedKey !== 'number'
+          ) {
+            throw new Error(
+              'Unsupported type (Note: Only bytes or integers can be keys of a JSON object)'
+            );
+          }
+          tempJson[convertedKey] = fromPlutusData(value);
+        });
+        return tempJson;
+      }
+      throw new Error(
+        'Unsupported type (Note: Constructor cannot be converted to JSON)'
+      );
+    }
+    return fromPlutusData(plutusData);
+  }
+
+  static empty() {
+    return 'd87980';
+  }
+}
