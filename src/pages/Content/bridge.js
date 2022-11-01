@@ -21,8 +21,8 @@ export function initConnection(iframe, origin) {
 
     enable:                   'enable',
     isEnabled:                'isEnabled',
-    getNetworkId:             'getNetworkId',
 
+    getNetworkId:             'getNetworkId',
     getBalance:               'getBalance',
     getChangeAddress:         'getChangeAddress',
     getRewardAddresses:       'getRewardAddresses',
@@ -147,6 +147,8 @@ export function initConnection(iframe, origin) {
     let callback = handleResponse;
   
     switch (api) {
+      case _methodMap.handshake:
+        return;
       case _methodMap.enable:
         callback = (response) => {
           if (!response.error) response.data = _fullApiObject;
@@ -238,7 +240,7 @@ export function initConnection(iframe, origin) {
 
           } else {
 
-            reject('DApp connection to failed (handshake).')
+            reject('DApp connection failed (handshake).')
           }
         }
 
@@ -251,7 +253,7 @@ export function initConnection(iframe, origin) {
 
         console.error(e)
 
-        return reject('DApp connection to failed (message).')
+        return reject('DApp connection failed (message).')
       }
 
     } else {
