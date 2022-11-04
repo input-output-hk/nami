@@ -8,9 +8,13 @@ function useAppDetails(origin) {
   const getAppDetails = async () => {
     setName();
     setIcon();
+    if (!origin) {
+      return;
+    }
     if (chrome.namiApp) {
       if (origin.includes('//')) { // Website
-        setName(origin.split('//')[1]);
+        origin = origin.split('//')[1];
+        setName(origin);
         setIcon(`https://www.google.com/s2/favicons?domain=${origin}&sz=32`);
       }
       else { // App

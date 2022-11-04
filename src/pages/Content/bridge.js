@@ -86,6 +86,7 @@ export function initConnection(iframe, origin) {
   function isValidMessage(payload) {
 
     if(!payload.origin || !payload.source || !payload.data)       return false
+    if(payload.origin !== _origin)                                return false
     if(payload.data.type !== _bridge.type)                        return false
     if(_walletNamespace && payload.data.to !== _walletNamespace)  return false
 
@@ -187,6 +188,8 @@ export function initConnection(iframe, origin) {
     Messaging.handleMessageFromBrowser(req, callback);
   }
 
+  let disconnectHandler = () => {};
+
   return new Promise((resolve, reject) => {
 
     if(!_iframe) return reject('iframe not initialized.')
@@ -222,8 +225,12 @@ export function initConnection(iframe, origin) {
 
           clearTimeout(toId)
 
-          window.removeEventListener("message", onMessage, false)
-          window.removeEventListener("message", onAPIMessage, false)
+          disconnectHandler = () => {
+            window.removeEventListener("message", onMessage, false)
+            window.removeEventListener("message", onAPIMessage, false)
+          };
+          disconnectHandler();
+          window.nami = { disconnectHandler };
 
           if(_debug) { console.log('Wallet: onMessage: handshake?: ',  (payload.data.method === _methodMap.handshake)) }
 
@@ -239,7 +246,7 @@ export function initConnection(iframe, origin) {
             resolve(true)
 
           } else {
-
+            disconnectHandler();
             reject('DApp connection failed (handshake).')
           }
         }
@@ -250,9 +257,8 @@ export function initConnection(iframe, origin) {
         _sendInitialAPI()
 
       } catch (e) {
-
         console.error(e)
-
+        disconnectHandler();
         return reject('DApp connection failed (message).')
       }
 
