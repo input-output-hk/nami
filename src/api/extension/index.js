@@ -1746,6 +1746,8 @@ export const getAsset = async (unit) => {
             ?.cbor;
         const metadataDatum = datum && (await Data.from(datum));
 
+        if (metadataDatum.index !== 0) throw new Error('No correct metadata.');
+
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
@@ -1771,10 +1773,12 @@ export const getAsset = async (unit) => {
             ?.cbor;
         const metadataDatum = datum && (await Data.from(datum));
 
+        if (metadataDatum.index !== 0) throw new Error('No correct metadata.');
+
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = linkToSrc(metadata.image) || '';
+        asset.image = linkToSrc(metadata.logo) || '';
         asset.decimals = metadata.decimals || 0;
       } catch (_e) {
         asset.displayName = asset.name;
