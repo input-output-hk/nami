@@ -733,6 +733,8 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     return null;
   })();
 
+  const includeNetworkId = !!tx.body().network_id();
+
   const trezorTx = {
     signingMode,
     inputs: trezorInputs,
@@ -749,6 +751,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     requiredSigners,
     protocolMagic: network === 1 ? 764824073 : 42,
     networkId: network,
+    includeNetworkId,
     additionalWitnessRequests,
     collateralReturn,
     totalCollateral,
@@ -1239,6 +1242,8 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     signingMode = TransactionSigningMode.PLUTUS_TRANSACTION;
   }
 
+  const includeNetworkId = !!tx.body().network_id();
+
   const ledgerTx = {
     network: {
       protocolMagic: network === 1 ? 764824073 : 42,
@@ -1256,6 +1261,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     scriptDataHashHex,
     collateralInputs,
     requiredSigners,
+    includeNetworkId,
     collateralOutput,
     totalCollateral,
     referenceInputs,
