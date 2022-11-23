@@ -531,7 +531,7 @@ const getExtra = (info, txType) => {
   } else if (txType === 'multisig') {
     extra.push('multisig');
   }
-  if (info.withdrawal_count && txType === 'internalIn')
+  if (info.withdrawal_count && txType === 'self')
     extra.push('withdrawal');
   if (info.delegation_count) extra.push('delegation');
   if (info.asset_mint_or_burn_count) extra.push('mint');
