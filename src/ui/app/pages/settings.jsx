@@ -26,15 +26,19 @@ import {
 import React from 'react';
 import {
   getCurrentAccount,
+  getCurrentAccountIndex,
+  getNetwork,
+  getStorage,
   getWhitelisted,
   removeWhitelisted,
   resetStorage,
   setAccountAvatar,
   setAccountName,
+  setStorage,
 } from '../../../api/extension';
 import Account from '../components/account';
 import { Route, Switch, useHistory } from 'react-router-dom';
-import { NETWORK_ID, NODE } from '../../../config/config';
+import { NETWORK_ID, NODE, STORAGE } from '../../../config/config';
 import ConfirmModal from '../components/confirmModal';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import { MdModeEdit } from 'react-icons/md';
@@ -127,10 +131,12 @@ const Overview = () => {
 };
 
 const GeneralSettings = ({ accountRef }) => {
+  const history = useHistory();
   const settings = useStoreState((state) => state.settings.settings);
   const setSettings = useStoreActions(
     (actions) => actions.settings.setSettings
   );
+  const [refreshed, setRefreshed] = React.useState(false);
   const [account, setAccount] = React.useState({ name: '', avatar: '' });
   const [originalName, setOriginalName] = React.useState('');
   const { colorMode, toggleColorMode } = useColorMode();
@@ -148,6 +154,24 @@ const GeneralSettings = ({ accountRef }) => {
     await setAccountAvatar(account.avatar);
     setAccount({ ...account });
     accountRef.current.updateAccount();
+  };
+
+  const refreshHandler = async () => {
+    setRefreshed(true);
+
+    const currentIndex = await getCurrentAccountIndex();
+    const accounts = await getStorage(STORAGE.accounts);
+    const currentAccount = accounts[currentIndex];
+    const network = await getNetwork();
+    currentAccount[network.id].forceUpdate = true;
+
+    await setStorage({
+      [STORAGE.accounts]: {
+        ...accounts,
+      },
+    });
+
+    history.push('/wallet');
   };
 
   React.useEffect(() => {
@@ -241,6 +265,10 @@ const GeneralSettings = ({ accountRef }) => {
         <Box width="2" />
         <Text>EUR</Text>
       </Box>
+      <Box height="10" />
+      <Button disabled={refreshed} size="sm" onClick={refreshHandler}>
+        Refresh Balance
+      </Button>
       <Box height="10" />
       <Button
         size="xs"
