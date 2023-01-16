@@ -326,9 +326,9 @@ const TxDetail = ({ displayInfo, network }) => {
                 (() => {
                   switch (network.id) {
                     case NETWORK_ID.mainnet:
-                      return 'https://cardanoscan.io/transaction/';
+                      return 'https://cexplorer.io/tx/';
                     case NETWORK_ID.preprod:
-                      return 'https://testnet.cardanoscan.io/transaction/';
+                      return 'https://preprod.cexplorer.io/tx/';
                     case NETWORK_ID.preview:
                       return 'https://preview.cexplorer.io/tx/';
                     case NETWORK_ID.testnet:
