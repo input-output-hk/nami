@@ -636,7 +636,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
           assetNameBytes: Buffer.from(assetName.name()).toString('hex'),
           mintAmount: amount.is_positive()
             ? amount.as_positive().to_str()
-            : amount.as_negative().to_str(),
+            : '-' + amount.as_negative().to_str(),
         });
       }
       // sort canonical
@@ -1142,7 +1142,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           assetNameHex: Buffer.from(assetName.name()).toString('hex'),
           amount: amount.is_positive()
             ? amount.as_positive().to_str()
-            : amount.as_negative().to_str(),
+            : '-' + amount.as_negative().to_str(),
         });
       }
       // sort canonical
@@ -1157,10 +1157,10 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         tokens,
       });
     }
-    additionalWitnessPaths = [];
-    if (keys.payment.path) additionalWitnessPaths.push(keys.payment.path);
-    if (keys.stake.path) additionalWitnessPaths.push(keys.stake.path);
   }
+  additionalWitnessPaths = [];
+  if (keys.payment.path) additionalWitnessPaths.push(keys.payment.path);
+  if (keys.stake.path) additionalWitnessPaths.push(keys.stake.path);
 
   // Plutus
   const scriptDataHashHex = tx.body().script_data_hash()
