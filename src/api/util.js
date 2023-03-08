@@ -1339,7 +1339,7 @@ export function fromAssetUnit(unit) {
   const label = fromLabel(unit.slice(56, 64));
   const name = (() => {
     const hexName = Number.isInteger(label) ? unit.slice(64) : unit.slice(56);
-    return hexName || null;
+    return unit.length === 56 ? "" : hexName || null;
   })();
   return { policyId, name, label };
 }
