@@ -530,7 +530,7 @@ const Send = () => {
                     children={
                       <Box pl={4}>
                         {!isLoading ? (
-                          <Box>{settings.adaSymbol}</Box>
+                          <Box>{settings?.adaSymbol}</Box>
                         ) : (
                           <Spinner
                             color="teal"

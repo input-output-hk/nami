@@ -8,6 +8,7 @@ import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import { DataSignError } from '../../../config/config';
 import { Image, Spinner, useColorModeValue } from '@chakra-ui/react';
+import useAppDetails from '../hooks/useAppDetails';
 
 const SignData = ({ request, controller }) => {
   const ref = React.useRef();
@@ -17,6 +18,7 @@ const SignData = ({ request, controller }) => {
   const [error, setError] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
   const background = useColorModeValue('gray.100', 'gray.700');
+  const app = useAppDetails(request.origin);
   const getAccount = async () => {
     const currentAccount = await getCurrentAccount();
     if (isHW(currentAccount.index)) setError('HW not supported');
@@ -117,12 +119,12 @@ const SignData = ({ request, controller }) => {
                 draggable={false}
                 width={4}
                 height={4}
-                src={`chrome://favicon/size/16@2x/${request.origin}`}
+                src={app.icon}
               />
             </Box>
             <Box w="3" />
             <Text fontSize={'xs'} fontWeight="bold">
-              {request.origin.split('//')[1]}
+              {app.name}
             </Text>
           </Box>
           <Box h="8" />
@@ -229,6 +231,7 @@ const SignData = ({ request, controller }) => {
           if (status === true)
             await controller.returnData({ data: signedMessage });
           else await controller.returnData({ error: signedMessage });
+          ref.current.closeModal();
           window.close();
         }}
       />

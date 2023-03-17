@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Nami Wallet</string>
+    <string name="title_activity_main">Nami Wallet</string>
+    <string name="package_name">io.nami.app</string>
+    <string name="custom_url_scheme">io.nami.app</string>
+</resources>

@@ -74,7 +74,7 @@ class BackgroundController {
 
   listen = () => {
     chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
-      if (request.sender === SENDER.webpage) {
+      if (request.sender !== SENDER.extension) {
         this._methodList[request.method](request, sendResponse);
       }
       return true;
@@ -215,6 +215,28 @@ export const Messaging = {
         window.postMessage(response);
       });
     });
+  },
+  handleMessageFromBrowser: async (request, callback = () => {}) => {
+    // only allow enable function, before checking for whitelisted
+    if (
+      request.method === METHOD.enable ||
+      request.method === METHOD.isEnabled
+    ) {
+      Messaging.sendToBackground(request).then(callback);
+      return;
+    }
+
+    const whitelisted = await Messaging.sendToBackground({
+      method: METHOD.isWhitelisted,
+      origin: request.origin,
+    });
+
+    // protect background by not allowing not whitelisted
+    if (!whitelisted || whitelisted.error) {
+      callback({ ...whitelisted, id: request.id });
+      return;
+    }
+    Messaging.sendToBackground(request).then(callback);
   },
   createBackgroundController: () => new BackgroundController(),
 };

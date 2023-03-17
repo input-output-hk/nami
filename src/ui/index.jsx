@@ -29,14 +29,14 @@ const Main = ({ children }) => {
   }, []);
   return (
     <Box
-      width={isMain ? POPUP_WINDOW.width + 'px' : '100%'}
-      height={isMain ? POPUP_WINDOW.height + 'px' : '100vh'}
+      width={(isMain && !chrome.namiApp) ? POPUP_WINDOW.width + 'px' : '100%'}
+      height={(isMain && !chrome.namiApp) ? POPUP_WINDOW.height + 'px' : '100vh'}
     >
       <Theme>
         <StoreProvider>
           <Scrollbars
             id="scroll"
-            style={{ width: '100vw', height: '100vh' }}
+            style={{ width: '100%', height: '100%' }}
             autoHide
             onScroll={(e) => {
               setScroll({ el: e.target, y: e.target.scrollTop });
