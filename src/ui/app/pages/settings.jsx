@@ -43,6 +43,7 @@ import ConfirmModal from '../components/confirmModal';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import { MdModeEdit } from 'react-icons/md';
 import AvatarLoader from '../components/avatarLoader';
+import {ChangePasswordModal} from "../components/changePasswordModal";
 
 const Settings = () => {
   const history = useHistory();
@@ -141,6 +142,7 @@ const GeneralSettings = ({ accountRef }) => {
   const [originalName, setOriginalName] = React.useState('');
   const { colorMode, toggleColorMode } = useColorMode();
   const ref = React.useRef();
+	const changePasswordRef = React.useRef();
 
   const nameHandler = async () => {
     await setAccountName(account.name);
@@ -269,6 +271,10 @@ const GeneralSettings = ({ accountRef }) => {
       <Button disabled={refreshed} size="sm" onClick={refreshHandler}>
         Refresh Balance
       </Button>
+			<Box height="5" />
+      <Button colorScheme="orange" size="sm" onClick={() => changePasswordRef.current.openModal()}>
+          Change Password
+      </Button>
       <Box height="10" />
       <Button
         size="xs"
@@ -293,6 +299,7 @@ const GeneralSettings = ({ accountRef }) => {
           if (status === true) window.close();
         }}
       />
+			<ChangePasswordModal ref={changePasswordRef}/>
     </>
   );
 };
