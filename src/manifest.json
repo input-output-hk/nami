@@ -27,7 +27,7 @@
         "internalPopup.html",
         "Trezor/*"
       ],
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"]
+      "matches": ["http://*/*", "https://*/*", "file://*/*"]
     }
   ],
   "content_security_policy": {
