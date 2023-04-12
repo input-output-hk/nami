@@ -43,7 +43,7 @@ import ConfirmModal from '../components/confirmModal';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import { MdModeEdit } from 'react-icons/md';
 import AvatarLoader from '../components/avatarLoader';
-import {ChangePasswordModal} from "../components/changePasswordModal";
+import { ChangePasswordModal } from '../components/changePasswordModal';
 
 const Settings = () => {
   const history = useHistory();
@@ -142,7 +142,7 @@ const GeneralSettings = ({ accountRef }) => {
   const [originalName, setOriginalName] = React.useState('');
   const { colorMode, toggleColorMode } = useColorMode();
   const ref = React.useRef();
-	const changePasswordRef = React.useRef();
+  const changePasswordRef = React.useRef();
 
   const nameHandler = async () => {
     await setAccountName(account.name);
@@ -271,9 +271,13 @@ const GeneralSettings = ({ accountRef }) => {
       <Button disabled={refreshed} size="sm" onClick={refreshHandler}>
         Refresh Balance
       </Button>
-			<Box height="5" />
-      <Button colorScheme="orange" size="sm" onClick={() => changePasswordRef.current.openModal()}>
-          Change Password
+      <Box height="5" />
+      <Button
+        colorScheme="orange"
+        size="sm"
+        onClick={() => changePasswordRef.current.openModal()}
+      >
+        Change Password
       </Button>
       <Box height="10" />
       <Button
@@ -299,7 +303,7 @@ const GeneralSettings = ({ accountRef }) => {
           if (status === true) window.close();
         }}
       />
-			<ChangePasswordModal ref={changePasswordRef}/>
+      <ChangePasswordModal ref={changePasswordRef} />
     </>
   );
 };
@@ -339,7 +343,7 @@ const Whitelisted = () => {
             >
               <Image
                 width="24px"
-                src={`chrome://favicon/size/16@2x/${origin}`}
+                src={`chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${origin}&size=32`}
                 fallback={<SkeletonCircle width="24px" height="24px" />}
               />
               <Text>{origin.split('//')[1]}</Text>

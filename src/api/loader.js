@@ -1,3 +1,6 @@
+import * as wasm from '../../temporary_modules/@emurgo/cardano-multiplatform-lib-browser';
+import * as wasm2 from '../../temporary_modules/@emurgo/cardano-message-signing-browser/emurgo_message_signing';
+
 /**
  * Loads the WASM modules
  */
@@ -8,15 +11,11 @@ class Loader {
     /**
      * @private
      */
-    this._wasm = await import(
-      '../../temporary_modules/@emurgo/cardano-multiplatform-lib-browser'
-    );
+    this._wasm = wasm;
     /**
      * @private
      */
-    this._wasm2 = await import(
-      '../../temporary_modules/@emurgo/cardano-message-signing-browser/emurgo_message_signing'
-    );
+    this._wasm2 = wasm2;
   }
 
   get Cardano() {

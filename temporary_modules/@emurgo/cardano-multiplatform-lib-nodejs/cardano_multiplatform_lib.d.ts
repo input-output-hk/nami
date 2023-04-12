@@ -1,6 +1,13 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
+/**
 * @param {Uint8Array} bytes
 * @returns {TransactionMetadatum}
 */
@@ -36,6 +43,12 @@ export function encrypt_with_password(password: string, salt: string, nonce: str
 * @returns {string}
 */
 export function decrypt_with_password(password: string, data: string): string;
+/**
+* @param {PlutusList} params
+* @param {PlutusScript} plutus_script
+* @returns {PlutusScript}
+*/
+export function apply_params_to_plutus_script(params: PlutusList, plutus_script: PlutusScript): PlutusScript;
 /**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
@@ -136,85 +149,78 @@ export function encode_json_str_to_plutus_datum(json: string, schema: number): P
 */
 export function decode_plutus_datum_to_json_str(datum: PlutusData, schema: number): string;
 /**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
-/**
 */
 export enum CertificateKind {
-  StakeRegistration,
-  StakeDeregistration,
-  StakeDelegation,
-  PoolRegistration,
-  PoolRetirement,
-  GenesisKeyDelegation,
-  MoveInstantaneousRewardsCert,
+  StakeRegistration = 0,
+  StakeDeregistration = 1,
+  StakeDelegation = 2,
+  PoolRegistration = 3,
+  PoolRetirement = 4,
+  GenesisKeyDelegation = 5,
+  MoveInstantaneousRewardsCert = 6,
 }
 /**
 */
 export enum MIRPot {
-  Reserves,
-  Treasury,
+  Reserves = 0,
+  Treasury = 1,
 }
 /**
 */
 export enum MIRKind {
-  ToOtherPot,
-  ToStakeCredentials,
+  ToOtherPot = 0,
+  ToStakeCredentials = 1,
 }
 /**
 */
 export enum RelayKind {
-  SingleHostAddr,
-  SingleHostName,
-  MultiHostName,
+  SingleHostAddr = 0,
+  SingleHostName = 1,
+  MultiHostName = 2,
 }
 /**
 */
 export enum NativeScriptKind {
-  ScriptPubkey,
-  ScriptAll,
-  ScriptAny,
-  ScriptNOfK,
-  TimelockStart,
-  TimelockExpiry,
+  ScriptPubkey = 0,
+  ScriptAll = 1,
+  ScriptAny = 2,
+  ScriptNOfK = 3,
+  TimelockStart = 4,
+  TimelockExpiry = 5,
 }
 /**
 */
 export enum NetworkIdKind {
-  Testnet,
-  Mainnet,
+  Testnet = 0,
+  Mainnet = 1,
 }
 /**
 */
 export enum TransactionMetadatumKind {
-  MetadataMap,
-  MetadataList,
-  Int,
-  Bytes,
-  Text,
+  MetadataMap = 0,
+  MetadataList = 1,
+  Int = 2,
+  Bytes = 3,
+  Text = 4,
 }
 /**
 */
 export enum MetadataJsonSchema {
-  NoConversions,
-  BasicConversions,
-  DetailedSchema,
+  NoConversions = 0,
+  BasicConversions = 1,
+  DetailedSchema = 2,
 }
 /**
 */
 export enum StakeCredKind {
-  Key,
-  Script,
+  Key = 0,
+  Script = 1,
 }
 /**
 */
 export enum ScriptWitnessKind {
-  NativeWitness,
-  PlutusWitness,
+  NativeWitness = 0,
+  PlutusWitness = 1,
 }
 /**
 * Each new language uses a different namespace for hashing its script
@@ -224,39 +230,39 @@ export enum ScriptWitnessKind {
 * https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
 */
 export enum ScriptHashNamespace {
-  NativeScript,
-  PlutusV1,
-  PlutusV2,
+  NativeScript = 0,
+  PlutusV1 = 1,
+  PlutusV2 = 2,
 }
 /**
 * Used to choose the schema for a script JSON string
 */
 export enum ScriptSchema {
-  Wallet,
-  Node,
+  Wallet = 0,
+  Node = 1,
 }
 /**
 */
 export enum LanguageKind {
-  PlutusV1,
-  PlutusV2,
+  PlutusV1 = 0,
+  PlutusV2 = 1,
 }
 /**
 */
 export enum PlutusDataKind {
-  ConstrPlutusData,
-  Map,
-  List,
-  Integer,
-  Bytes,
+  ConstrPlutusData = 0,
+  Map = 1,
+  List = 2,
+  Integer = 3,
+  Bytes = 4,
 }
 /**
 */
 export enum RedeemerTagKind {
-  Spend,
-  Mint,
-  Cert,
-  Reward,
+  Spend = 0,
+  Mint = 1,
+  Cert = 2,
+  Reward = 3,
 }
 /**
 * JSON <-> PlutusData conversion schemas.
@@ -283,7 +289,7 @@ export enum PlutusDatumSchema {
 * * Lists not supported in keys
 * * Maps not supported in keys
 */
-  BasicConversions,
+  BasicConversions = 0,
 /**
 * ScriptDataJsonDetailedSchema in cardano-node.
 *
@@ -308,20 +314,20 @@ export enum PlutusDatumSchema {
 * To JSON:
 * * all Plutus datums should be fully supported outside of the integer range limitations outlined above.
 */
-  DetailedSchema,
+  DetailedSchema = 1,
 }
 /**
 */
 export enum ScriptKind {
-  NativeScript,
-  PlutusScriptV1,
-  PlutusScriptV2,
+  NativeScript = 0,
+  PlutusScriptV1 = 1,
+  PlutusScriptV2 = 2,
 }
 /**
 */
 export enum DatumKind {
-  Hash,
-  Data,
+  Hash = 0,
+  Data = 1,
 }
 /**
 */
@@ -2909,6 +2915,13 @@ export class NativeScript {
 * @returns {Ed25519KeyHashes}
 */
   get_required_signers(): Ed25519KeyHashes;
+/**
+* @param {BigNum | undefined} lower_bound
+* @param {BigNum | undefined} upper_bound
+* @param {Ed25519KeyHashes} key_hashes
+* @returns {boolean}
+*/
+  verify(lower_bound: BigNum | undefined, upper_bound: BigNum | undefined, key_hashes: Ed25519KeyHashes): boolean;
 }
 /**
 */
@@ -3391,19 +3404,19 @@ export class PoolMetadata {
 */
   static from_json(json: string): PoolMetadata;
 /**
-* @returns {URL}
+* @returns {Url}
 */
-  url(): URL;
+  url(): Url;
 /**
 * @returns {PoolMetadataHash}
 */
   pool_metadata_hash(): PoolMetadataHash;
 /**
-* @param {URL} url
+* @param {Url} url
 * @param {PoolMetadataHash} pool_metadata_hash
 * @returns {PoolMetadata}
 */
-  static new(url: URL, pool_metadata_hash: PoolMetadataHash): PoolMetadata;
+  static new(url: Url, pool_metadata_hash: PoolMetadataHash): PoolMetadata;
 }
 /**
 */
@@ -5694,9 +5707,10 @@ export class TransactionBuilder {
 * NOTE: is_valid set to true
 * @param {TransactionUnspentOutputs | undefined} collateral_utxos
 * @param {Address | undefined} collateral_change_address
+* @param {boolean | undefined} native_uplc
 * @returns {Promise<Transaction>}
 */
-  construct(collateral_utxos?: TransactionUnspentOutputs, collateral_change_address?: Address): Promise<Transaction>;
+  construct(collateral_utxos?: TransactionUnspentOutputs, collateral_change_address?: Address, native_uplc?: boolean): Promise<Transaction>;
 /**
 * Returns full Transaction object with the body and the auxiliary data
 * NOTE: witness_set will contain all mint_scripts if any been added or set
@@ -5761,6 +5775,11 @@ export class TransactionBuilderConfigBuilder {
 */
   ex_unit_prices(ex_unit_prices: ExUnitPrices): TransactionBuilderConfigBuilder;
 /**
+* @param {ExUnits} max_tx_ex_units
+* @returns {TransactionBuilderConfigBuilder}
+*/
+  max_tx_ex_units(max_tx_ex_units: ExUnits): TransactionBuilderConfigBuilder;
+/**
 * @param {Costmdls} costmdls
 * @returns {TransactionBuilderConfigBuilder}
 */
@@ -5775,6 +5794,13 @@ export class TransactionBuilderConfigBuilder {
 * @returns {TransactionBuilderConfigBuilder}
 */
   max_collateral_inputs(max_collateral_inputs: number): TransactionBuilderConfigBuilder;
+/**
+* @param {BigNum} zero_time
+* @param {BigNum} zero_slot
+* @param {number} slot_length
+* @returns {TransactionBuilderConfigBuilder}
+*/
+  slot_config(zero_time: BigNum, zero_slot: BigNum, slot_length: number): TransactionBuilderConfigBuilder;
 /**
 * @param {Blockfrost} blockfrost
 * @returns {TransactionBuilderConfigBuilder}
@@ -5933,6 +5959,9 @@ export class TransactionInputs {
 * @param {TransactionInput} elem
 */
   add(elem: TransactionInput): void;
+/**
+*/
+  sort(): void;
 }
 /**
 */
@@ -6432,29 +6461,6 @@ export class TransactionWitnessSets {
 }
 /**
 */
-export class URL {
-  free(): void;
-/**
-* @returns {Uint8Array}
-*/
-  to_bytes(): Uint8Array;
-/**
-* @param {Uint8Array} bytes
-* @returns {URL}
-*/
-  static from_bytes(bytes: Uint8Array): URL;
-/**
-* @param {string} url
-* @returns {URL}
-*/
-  static new(url: string): URL;
-/**
-* @returns {string}
-*/
-  url(): string;
-}
-/**
-*/
 export class UnitInterval {
   free(): void;
 /**
@@ -6539,6 +6545,29 @@ export class Update {
 * @returns {Update}
 */
   static new(proposed_protocol_parameter_updates: ProposedProtocolParameterUpdates, epoch: number): Update;
+}
+/**
+*/
+export class Url {
+  free(): void;
+/**
+* @returns {Uint8Array}
+*/
+  to_bytes(): Uint8Array;
+/**
+* @param {Uint8Array} bytes
+* @returns {Url}
+*/
+  static from_bytes(bytes: Uint8Array): Url;
+/**
+* @param {string} url
+* @returns {Url}
+*/
+  static new(url: string): Url;
+/**
+* @returns {string}
+*/
+  url(): string;
 }
 /**
 */
@@ -7149,7 +7178,7 @@ export type PlutusScriptJSON = string;
 export type PlutusScriptsJSON = string[];
 export interface PoolMetadataJSON {
   pool_metadata_hash: string;
-  url: URLJSON;
+  url: UrlJSON;
 }
 export type PoolMetadataHashJSON = string;
 export interface PoolParamsJSON {
@@ -7354,7 +7383,7 @@ export interface TransactionWitnessSetJSON {
   vkeys?: VkeywitnessesJSON | null;
 }
 export type TransactionWitnessSetsJSON = TransactionWitnessSetJSON[];
-export type URLJSON = string;
+export type UrlJSON = string;
 export interface UnitIntervalJSON {
   denominator: string;
   numerator: string;

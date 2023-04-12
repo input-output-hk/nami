@@ -6,6 +6,18 @@
  */
 
 /**
+ * @param {Transaction} tx
+ * @param {LinearFee} linear_fee
+ * @param {ExUnitPrices} ex_unit_prices
+ * @returns {BigNum}
+ */
+declare export function min_fee(
+  tx: Transaction,
+  linear_fee: LinearFee,
+  ex_unit_prices: ExUnitPrices
+): BigNum;
+
+/**
  * @param {Uint8Array} bytes
  * @returns {TransactionMetadatum}
  */
@@ -64,6 +76,16 @@ declare export function decrypt_with_password(
   password: string,
   data: string
 ): string;
+
+/**
+ * @param {PlutusList} params
+ * @param {PlutusScript} plutus_script
+ * @returns {PlutusScript}
+ */
+declare export function apply_params_to_plutus_script(
+  params: PlutusList,
+  plutus_script: PlutusScript
+): PlutusScript;
 
 /**
  * @param {TransactionHash} tx_body_hash
@@ -218,18 +240,6 @@ declare export function decode_plutus_datum_to_json_str(
   datum: PlutusData,
   schema: number
 ): string;
-
-/**
- * @param {Transaction} tx
- * @param {LinearFee} linear_fee
- * @param {ExUnitPrices} ex_unit_prices
- * @returns {BigNum}
- */
-declare export function min_fee(
-  tx: Transaction,
-  linear_fee: LinearFee,
-  ex_unit_prices: ExUnitPrices
-): BigNum;
 
 /**
  */
@@ -3548,6 +3558,18 @@ declare export class NativeScript {
    * @returns {Ed25519KeyHashes}
    */
   get_required_signers(): Ed25519KeyHashes;
+
+  /**
+   * @param {BigNum | void} lower_bound
+   * @param {BigNum | void} upper_bound
+   * @param {Ed25519KeyHashes} key_hashes
+   * @returns {boolean}
+   */
+  verify(
+    lower_bound: BigNum | void,
+    upper_bound: BigNum | void,
+    key_hashes: Ed25519KeyHashes
+  ): boolean;
 }
 /**
  */
@@ -4135,9 +4157,9 @@ declare export class PoolMetadata {
   static from_json(json: string): PoolMetadata;
 
   /**
-   * @returns {URL}
+   * @returns {Url}
    */
-  url(): URL;
+  url(): Url;
 
   /**
    * @returns {PoolMetadataHash}
@@ -4145,11 +4167,11 @@ declare export class PoolMetadata {
   pool_metadata_hash(): PoolMetadataHash;
 
   /**
-   * @param {URL} url
+   * @param {Url} url
    * @param {PoolMetadataHash} pool_metadata_hash
    * @returns {PoolMetadata}
    */
-  static new(url: URL, pool_metadata_hash: PoolMetadataHash): PoolMetadata;
+  static new(url: Url, pool_metadata_hash: PoolMetadataHash): PoolMetadata;
 }
 /**
  */
@@ -6956,11 +6978,13 @@ declare export class TransactionBuilder {
    * NOTE: is_valid set to true
    * @param {TransactionUnspentOutputs | void} collateral_utxos
    * @param {Address | void} collateral_change_address
+   * @param {boolean | void} native_uplc
    * @returns {Promise<Transaction>}
    */
   construct(
     collateral_utxos?: TransactionUnspentOutputs,
-    collateral_change_address?: Address
+    collateral_change_address?: Address,
+    native_uplc?: boolean
   ): Promise<Transaction>;
 
   /**
@@ -7039,6 +7063,12 @@ declare export class TransactionBuilderConfigBuilder {
   ex_unit_prices(ex_unit_prices: ExUnitPrices): TransactionBuilderConfigBuilder;
 
   /**
+   * @param {ExUnits} max_tx_ex_units
+   * @returns {TransactionBuilderConfigBuilder}
+   */
+  max_tx_ex_units(max_tx_ex_units: ExUnits): TransactionBuilderConfigBuilder;
+
+  /**
    * @param {Costmdls} costmdls
    * @returns {TransactionBuilderConfigBuilder}
    */
@@ -7058,6 +7088,18 @@ declare export class TransactionBuilderConfigBuilder {
    */
   max_collateral_inputs(
     max_collateral_inputs: number
+  ): TransactionBuilderConfigBuilder;
+
+  /**
+   * @param {BigNum} zero_time
+   * @param {BigNum} zero_slot
+   * @param {number} slot_length
+   * @returns {TransactionBuilderConfigBuilder}
+   */
+  slot_config(
+    zero_time: BigNum,
+    zero_slot: BigNum,
+    slot_length: number
   ): TransactionBuilderConfigBuilder;
 
   /**
@@ -7248,6 +7290,10 @@ declare export class TransactionInputs {
    * @param {TransactionInput} elem
    */
   add(elem: TransactionInput): void;
+
+  /**
+   */
+  sort(): void;
 }
 /**
  */
@@ -7856,33 +7902,6 @@ declare export class TransactionWitnessSets {
 }
 /**
  */
-declare export class URL {
-  free(): void;
-
-  /**
-   * @returns {Uint8Array}
-   */
-  to_bytes(): Uint8Array;
-
-  /**
-   * @param {Uint8Array} bytes
-   * @returns {URL}
-   */
-  static from_bytes(bytes: Uint8Array): URL;
-
-  /**
-   * @param {string} url
-   * @returns {URL}
-   */
-  static new(url: string): URL;
-
-  /**
-   * @returns {string}
-   */
-  url(): string;
-}
-/**
- */
 declare export class UnitInterval {
   free(): void;
 
@@ -7987,6 +8006,33 @@ declare export class Update {
     proposed_protocol_parameter_updates: ProposedProtocolParameterUpdates,
     epoch: number
   ): Update;
+}
+/**
+ */
+declare export class Url {
+  free(): void;
+
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes(): Uint8Array;
+
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {Url}
+   */
+  static from_bytes(bytes: Uint8Array): Url;
+
+  /**
+   * @param {string} url
+   * @returns {Url}
+   */
+  static new(url: string): Url;
+
+  /**
+   * @returns {string}
+   */
+  url(): string;
 }
 /**
  */
@@ -8686,7 +8732,7 @@ export type PlutusScriptJSON = string;
 export type PlutusScriptsJSON = string[];
 export interface PoolMetadataJSON {
   pool_metadata_hash: string;
-  url: URLJSON;
+  url: UrlJSON;
 }
 export type PoolMetadataHashJSON = string;
 export interface PoolParamsJSON {
@@ -8902,7 +8948,7 @@ export interface TransactionWitnessSetJSON {
   vkeys?: VkeywitnessesJSON | null;
 }
 export type TransactionWitnessSetsJSON = TransactionWitnessSetJSON[];
-export type URLJSON = string;
+export type UrlJSON = string;
 export interface UnitIntervalJSON {
   denominator: string;
   numerator: string;

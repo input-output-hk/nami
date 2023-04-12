@@ -22,6 +22,12 @@ import {
   TARGET,
 } from '../../config/config';
 
+globalThis.document = {
+  getElementsByTagName: () => [],
+  createElement: () => ({ setAttribute: () => {} }),
+  head: { appendChild: () => {} },
+};
+
 const app = Messaging.createBackgroundController();
 
 /**
@@ -340,11 +346,11 @@ app.add(METHOD.signTx, async (request, sendResponse) => {
 app.listen();
 
 //delete localStorage globalModel
-chrome.runtime.onStartup.addListener(function () {
-  const entry = Object.keys(localStorage).find((l) =>
-    l.includes('globalModel')
-  );
-  window.localStorage.removeItem(entry);
-});
-const entry = Object.keys(localStorage).find((l) => l.includes('globalModel'));
-window.localStorage.removeItem(entry);
+// chrome.runtime.onStartup.addListener(function () {
+//   const entry = Object.keys(localStorage).find((l) =>
+//     l.includes('globalModel')
+//   );
+//   window.localStorage.removeItem(entry);
+// });
+// const entry = Object.keys(localStorage).find((l) => l.includes('globalModel'));
+// window.localStorage.removeItem(entry);
