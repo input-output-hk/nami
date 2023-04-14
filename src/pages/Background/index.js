@@ -22,11 +22,12 @@ import {
   TARGET,
 } from '../../config/config';
 
-globalThis.document = {
-  getElementsByTagName: () => [],
-  createElement: () => ({ setAttribute: () => {} }),
-  head: { appendChild: () => {} },
-};
+// TODO: For MV3
+// globalThis.document = {
+//   getElementsByTagName: () => [],
+//   createElement: () => ({ setAttribute: () => {} }),
+//   head: { appendChild: () => {} },
+// };
 
 const app = Messaging.createBackgroundController();
 
