@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Nami",
-  "version": "3.4.6",
+  "version": "3.4.7",
   "description": "A wallet to experience Cardano to the fullest",
   "background": { "service_worker": "background.bundle.js" },
   "action": {
@@ -41,6 +41,7 @@ TODO:
   - Change `chrome://favicon/size/16@2x/${request.origin}` to `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${request.origin}&size=32` in src/ui/pages/enable.jsx
   - Change `chrome://favicon/size/16@2x/${origin}` to `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${origin}&size=32` in src/ui/pages/settings.jsx
   - Replace manifest.json with the json object of THIS file
+  - Need to wait for dynamic imports in service workers
 
 Timeline support for MV2 is currently till January 2024
 */
