@@ -185,7 +185,8 @@ const Wallet = () => {
       ).fingerprint();
       asset.name = asset.name.toString();
       if (
-        asset.has_nft_onchain_metadata === true ||
+        (asset.has_nft_onchain_metadata === true &&
+          !fromAssetUnit(asset.unit).label) ||
         fromAssetUnit(asset.unit).label === 222
       )
         currentAccount.nft.push(asset);
