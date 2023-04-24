@@ -418,7 +418,9 @@ const outputsToTrezor = (outputs, address, index) => {
       amount: output.amount().coin().to_str(),
       tokenBundle,
       datumHash,
-      format: inlineDatum || referenceScript ? 1 : 0,
+      format: Buffer.from(output.to_bytes()).toString('hex').startsWith('a')
+        ? 1
+        : 0,
       inlineDatum,
       referenceScript,
       ...destination,
@@ -697,6 +699,10 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         requiredSigners.push({
           keyPath: keys.payment.path,
         });
+      } else if (signer === keys.stake.hash) {
+        requiredSigners.push({
+          keyPath: keys.stake.path,
+        });
       } else {
         requiredSigners.push({
           keyHash: signer,
@@ -832,7 +838,9 @@ const outputsToLedger = (outputs, address, index) => {
           };
     const datum = output.datum();
     const refScript = output.script_ref();
-    const isBabbage = (datum && datum.kind() === 1) || refScript;
+    const isBabbage = Buffer.from(output.to_bytes())
+      .toString('hex')
+      .startsWith('a');
     const outputRes = isBabbage
       ? {
           format: TxOutputFormat.MAP_BABBAGE,
@@ -1232,6 +1240,11 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           type: TxRequiredSignerType.PATH,
           path: keys.payment.path,
         });
+      } else if (signer === keys.stake.hash) {
+        requiredSigners.push({
+          type: TxRequiredSignerType.PATH,
+          path: keys.stake.path,
+        });
       } else {
         requiredSigners.push({
           type: TxRequiredSignerType.HASH,
@@ -1339,7 +1352,7 @@ export function fromAssetUnit(unit) {
   const label = fromLabel(unit.slice(56, 64));
   const name = (() => {
     const hexName = Number.isInteger(label) ? unit.slice(64) : unit.slice(56);
-    return unit.length === 56 ? "" : hexName || null;
+    return unit.length === 56 ? '' : hexName || null;
   })();
   return { policyId, name, label };
 }
