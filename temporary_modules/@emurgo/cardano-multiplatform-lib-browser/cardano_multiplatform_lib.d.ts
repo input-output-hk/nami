@@ -5460,8 +5460,9 @@ export class TransactionBuilder {
 * change_address is required here in order to determine the min ada requirement precisely
 * @param {TransactionUnspentOutputs} inputs
 * @param {Address} change_address
+* @param {Uint32Array} weights
 */
-  add_inputs_from(inputs: TransactionUnspentOutputs, change_address: Address): void;
+  add_inputs_from(inputs: TransactionUnspentOutputs, change_address: Address, weights: Uint32Array): void;
 /**
 * @param {TransactionUnspentOutput} utxo
 * @param {ScriptWitness | undefined} script_witness
@@ -6113,6 +6114,10 @@ export class TransactionOutput {
 * @returns {TransactionOutput}
 */
   static new(address: Address, amount: Value): TransactionOutput;
+/**
+* @returns {number}
+*/
+  format(): number;
 /**
 * legacy support: serialize output as array array
 *
@@ -7370,6 +7375,7 @@ export interface TransactionOutputJSON {
   address: string;
   amount: ValueJSON;
   datum?: DatumJSON | null;
+  format: number;
   script_ref?: ScriptJSON | null;
 }
 export type TransactionOutputsJSON = TransactionOutputJSON[];

@@ -105,6 +105,7 @@ export function transactionoutput_script_ref(a: number): number;
 export function transactionoutput_set_datum(a: number, b: number): void;
 export function transactionoutput_set_script_ref(a: number, b: number): void;
 export function transactionoutput_new(a: number, b: number): number;
+export function transactionoutput_format(a: number): number;
 export function transactionoutput_to_legacy_bytes(a: number, b: number): void;
 export function stakeregistration_to_bytes(a: number, b: number): void;
 export function stakeregistration_from_bytes(a: number, b: number, c: number): void;
@@ -1092,7 +1093,7 @@ export function transactionbuilderconfigbuilder_slot_config(a: number, b: number
 export function transactionbuilderconfigbuilder_blockfrost(a: number, b: number): number;
 export function transactionbuilderconfigbuilder_build(a: number, b: number): void;
 export function __wbg_transactionbuilder_free(a: number): void;
-export function transactionbuilder_add_inputs_from(a: number, b: number, c: number, d: number): void;
+export function transactionbuilder_add_inputs_from(a: number, b: number, c: number, d: number, e: number, f: number): void;
 export function transactionbuilder_add_input(a: number, b: number, c: number): void;
 export function transactionbuilder_add_reference_input(a: number, b: number): void;
 export function transactionbuilder_fee_for_input(a: number, b: number, c: number, d: number, e: number): void;

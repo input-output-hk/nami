@@ -418,9 +418,7 @@ const outputsToTrezor = (outputs, address, index) => {
       amount: output.amount().coin().to_str(),
       tokenBundle,
       datumHash,
-      format: Buffer.from(output.to_bytes()).toString('hex').startsWith('a')
-        ? 1
-        : 0,
+      format: output.format(),
       inlineDatum,
       referenceScript,
       ...destination,
@@ -838,9 +836,7 @@ const outputsToLedger = (outputs, address, index) => {
           };
     const datum = output.datum();
     const refScript = output.script_ref();
-    const isBabbage = Buffer.from(output.to_bytes())
-      .toString('hex')
-      .startsWith('a');
+    const isBabbage = output.format();
     const outputRes = isBabbage
       ? {
           format: TxOutputFormat.MAP_BABBAGE,
