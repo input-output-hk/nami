@@ -3,6 +3,15 @@ import { ERROR, TX } from '../../config/config';
 import Loader from '../loader';
 import { blockfrostRequest } from '../util';
 
+const WEIGHTS = Uint32Array.from([
+  200, // weight ideal > 100 inputs
+  1000, // weight ideal < 100 inputs
+  1500, // weight assets if plutus
+  800, // weight assets if not plutus
+  800, // weight distance if not plutus
+  5000, // weight utxos
+]);
+
 export const initTx = async () => {
   const latest_block = await blockfrostRequest('/blocks/latest');
   const p = await blockfrostRequest(`/epochs/latest/parameters`);
@@ -73,7 +82,8 @@ export const buildTx = async (
 
   txBuilder.add_inputs_from(
     utxosCore,
-    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+    Loader.Cardano.Address.from_bech32(account.paymentAddr),
+    WEIGHTS
   );
 
   txBuilder.balance(Loader.Cardano.Address.from_bech32(account.paymentAddr));
@@ -205,7 +215,8 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
 
   txBuilder.add_inputs_from(
     utxosCore,
-    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+    Loader.Cardano.Address.from_bech32(account.paymentAddr),
+    WEIGHTS
   );
 
   txBuilder.balance(Loader.Cardano.Address.from_bech32(account.paymentAddr));
@@ -261,7 +272,8 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
 
   txBuilder.add_inputs_from(
     utxosCore,
-    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+    Loader.Cardano.Address.from_bech32(account.paymentAddr),
+    WEIGHTS
   );
 
   txBuilder.balance(Loader.Cardano.Address.from_bech32(account.paymentAddr));
@@ -331,7 +343,8 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
 
   txBuilder.add_inputs_from(
     utxosCore,
-    Loader.Cardano.Address.from_bech32(account.paymentAddr)
+    Loader.Cardano.Address.from_bech32(account.paymentAddr),
+    WEIGHTS
   );
 
   txBuilder.balance(Loader.Cardano.Address.from_bech32(account.paymentAddr));
