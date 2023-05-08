@@ -122,6 +122,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       const protocolParameters = await initTx();
       try {
         const tx = await withdrawalTx(account, delegation, protocolParameters);
+        console.log(Buffer.from(tx.to_bytes()).toString('hex'));
         setData({
           tx,
           account,
