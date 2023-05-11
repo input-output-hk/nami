@@ -288,7 +288,8 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
   const currentAccount = await getCurrentAccount();
   let result = [];
   let page = paginate && paginate.page ? paginate.page + 1 : 1;
-  const limit = paginate && paginate.limit ? `&count=${paginate.limit}` : '';
+  let page_limit = paginate && paginate.limit ? Math.min(paginate.limit, 100) : false;
+  const limit = page_limit ? `&count=${page_limit}` : '';
   while (true) {
     let pageResult = await blockfrostRequest(
       `/addresses/${currentAccount.paymentKeyHashBech32}/utxos?page=${page}${limit}`
