@@ -513,7 +513,7 @@ const Send = () => {
                   <Tooltip
                     offset={[40, 8]}
                     hasArrow
-                    label="Transfer ADA from your Cardano wallet to an address on Milkomeda."
+                    label="Transfer ADA from your Cardano wallet to an address on the Milkomeda Sidechain."
                   >
                     <InfoOutlineIcon ml="1" cursor="help" />
                   </Tooltip>
