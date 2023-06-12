@@ -269,7 +269,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               >
                 Berry Pool
               </Link>{' '}
-              and earn approximately <b>5%</b> staking rewards per year.
+              and earn approximately <b>3.7%</b> staking rewards per year. Alternatively, head to https://pool.pm/, connect your Nami wallet and delegate to a stake pool of your choice.
             </Text>
             <Box h="6" />
             {data.error ? (
