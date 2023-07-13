@@ -10,6 +10,7 @@ import {
   getNetwork,
   setNetwork,
   getCurrentAccount,
+  generateDRepKey,
 } from '../../../../api/extension';
 import Loader from '../../../../api/loader';
 import { ERROR, NODE, STORAGE } from '../../../../config/config';
@@ -30,7 +31,7 @@ test('storage initialized correctly', async () => {
   expect(store).toHaveProperty(STORAGE.encryptedKey);
   expect(store).toHaveProperty(STORAGE.currentAccount);
   expect(store).toHaveProperty(STORAGE.network);
-  expect(Object.keys(store).length).toBe(5);
+  expect(Object.keys(store).length).toBe(6);
 });
 
 test('should have whitelist', async () => {
@@ -39,7 +40,7 @@ test('should have whitelist', async () => {
   expect(store).toHaveProperty(STORAGE.whitelisted);
   const whitelisted = await getWhitelisted();
   expect(whitelisted).toEqual(['https://namiwallet.io']);
-  expect(Object.keys(store).length).toBe(6);
+  expect(Object.keys(store).length).toBe(7);
 });
 
 test('account structure is correct', async () => {
@@ -106,4 +107,12 @@ test('should encrypt/decrypt root key correctly', async () => {
   );
   const decryptedKey = await decryptWithPassword(password, encryptedKey);
   expect(Buffer.from(rootKeyBytes, 'hex').toString('hex')).toBe(decryptedKey);
+});
+
+test('should generate drep key from password', async () => {
+  const drepKey = await generateDRepKey('password123');
+
+  expect(drepKey).toBe(
+    '24e10383e0be54476b6941dd2d26fe2e540b6d87ffc4434da695fe1ade16a2f1'
+  );
 });

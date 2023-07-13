@@ -74,6 +74,7 @@ export const decryptWithPassword = async (password, encryptedKeyHex) => {
   await Loader.load();
   const passwordHex = Buffer.from(password).toString('hex');
   let decryptedHex;
+
   try {
     decryptedHex = Loader.Cardano.decrypt_with_password(
       passwordHex,
@@ -1484,6 +1485,38 @@ export const getNativeAccounts = (accounts) => {
   return nativeAccounts;
 };
 
+// CIP-95
+export const generateDRepKey = async (password) => {
+  await Loader.load();
+  const encryptedRootKey = await getStorage(STORAGE.encryptedKey);
+  let privDRepKey;
+
+  const currentAccountIndex = await getCurrentAccountIndex();
+
+  try {
+    privDRepKey = Loader.Cardano.Bip32PrivateKey.from_bytes(
+      Buffer.from(await decryptWithPassword(password, encryptedRootKey), 'hex')
+    )
+      .derive(harden(1718))
+      .derive(harden(1815))
+      .derive(harden(parseInt(currentAccountIndex)))
+      .derive(0)
+      .derive(0);
+  } catch (e) {
+    throw ERROR.wrongPassword;
+  }
+  const pubDRepKey = Buffer.from(
+    privDRepKey.to_raw_key().to_public().as_bytes()
+  ).toString('hex');
+
+  return pubDRepKey;
+};
+
+export const getDRepKey = async () => {
+  const result = await getStorage(STORAGE.pubDRepKey);
+  return result ? result : [];
+};
+
 export const indexToHw = (accountIndex) => ({
   device: accountIndex.split('-')[0],
   id: accountIndex.split('-')[1],
@@ -1647,6 +1680,7 @@ export const createWallet = async (name, seedPhrase, password) => {
       password,
       searchIndex
     );
+
     const paymentKeyHashBech32 = paymentKey
       .to_public()
       .hash()
@@ -1672,7 +1706,28 @@ export const createWallet = async (name, seedPhrase, password) => {
     searchIndex++;
   }
 
+  // CIP-95
+  const dRepKey = await generateDRepKey(password);
+
+  await setStorage({
+    [STORAGE.pubDRepKey]: dRepKey,
+  });
+
+  let { stakeKey } = await requestAccountKey(
+    password,
+    getCurrentAccountIndex()
+  );
+
+  const pubStakeKey = Buffer.from(stakeKey.to_public().as_bytes()).toString(
+    'hex'
+  );
+
+  await setStorage({
+    [STORAGE.pubStakeKey]: pubStakeKey,
+  });
+
   password = null;
+
   await switchAccount(index);
 
   return true;

@@ -4,6 +4,8 @@ import {
   getBalance,
   getCollateral,
   getNetworkId,
+  getDRepKey,
+  getStakeKey,
   getRewardAddress,
   getUtxos,
   isEnabled,
@@ -13,10 +15,15 @@ import {
   signDataCIP30,
   signTx,
   submitTx,
+  submitDelegation,
+  submitDRepRegistrationCertificate,
+  submitDRepRetirementCertificate,
+  submitGovernanceAction,
+  submitVote,
 } from '../../api/webpage';
 import { EVENT } from '../../config/config';
 
-//dApp connector API follows https://github.com/cardano-foundation/CIPs/pull/88
+// dApp connector API follows https://github.com/cardano-foundation/CIPs/pull/88
 
 const logDeprecated = () => {
   console.warn(
@@ -25,7 +32,7 @@ const logDeprecated = () => {
   return true;
 };
 
-//Initial version (deprecated soon)
+// Initial version (deprecated soon)
 window.cardano = {
   ...(window.cardano || {}),
   enable: () => logDeprecated() && enable(),
@@ -49,12 +56,35 @@ window.cardano = {
   _events: {},
 };
 
-// // CIP-30
-
+// // CIP-30 and CIP-95
 window.cardano = {
   ...(window.cardano || {}),
   nami: {
-    enable: async () => {
+    enable: async ({ extensions }) => {
+      let CIP95Functions = {};
+
+      if (extensions && Array.isArray(extensions)) {
+        extensions = extensions.map((extension) => extension.toLowerCase());
+
+        if (extensions.includes('cip-95')) {
+          console.info('Cardano CIP-95 extension is enabled');
+
+          CIP95Functions = {
+            getPubDRepKey: () => getDRepKey(),
+            getActivePubStakeKeys: () => getStakeKey(),
+            submitVoteDelegation: (delegationCertificate) =>
+              submitDelegation(delegationCertificate),
+            submitDRepRegistrationCertificate: (dRepRegistrationCertificate) =>
+              submitDRepRegistrationCertificate(dRepRegistrationCertificate),
+            submitDRepRetirementCertificate: (dRepRetirementCertificate) =>
+              submitDRepRetirementCertificate(dRepRetirementCertificate),
+            submitVote: (vote) => submitVote(vote),
+            submitGovernanceAction: (governanceAction) =>
+              submitGovernanceAction(governanceAction),
+          };
+        }
+      }
+
       if (await enable()) {
         return {
           getBalance: () => getBalance(),
@@ -72,6 +102,7 @@ window.cardano = {
             off: (eventName, callback) => off(eventName, callback),
             getCollateral: () => getCollateral(),
           },
+          ...CIP95Functions,
         };
       }
     },

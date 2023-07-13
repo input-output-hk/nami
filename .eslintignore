@@ -1,0 +1,5 @@
+temporary_modules
+node_modules
+src/assets
+build
+coverage

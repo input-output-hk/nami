@@ -9,6 +9,8 @@ export const METHOD = {
   getBalance: 'getBalance',
   getDelegation: 'getDelegation',
   getUtxos: 'getUtxos',
+  getDRepKey: 'getDRepKey',
+  getStakeKey: 'getStakeKey',
   getCollateral: 'getCollateral',
   getRewardAddress: 'getRewardAddress',
   getAddress: 'getAddress',
@@ -186,3 +188,5 @@ export const TxSignError = {
   },
   UserDeclined: { code: 2, info: 'User declined to sign the transaction.' },
 };
+
+export const EXTENSIONS = ['cip-95'];
