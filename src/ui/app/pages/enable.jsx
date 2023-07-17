@@ -39,7 +39,7 @@ const Enable = ({ request, controller }) => {
             draggable={false}
             width={6}
             height={6}
-            src={`chrome://favicon/size/16@2x/${request.origin}`}
+            src={`chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${request.origin}&size=32`}
           />
         </Box>
         <Box height="3" />

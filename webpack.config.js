@@ -36,7 +36,7 @@ if (fileSystem.existsSync(secretsPath)) {
 
 var options = {
   experiments: {
-    syncWebAssembly: true,
+    asyncWebAssembly: true,
   },
   mode: process.env.NODE_ENV || 'development',
   entry: {
@@ -51,9 +51,17 @@ var options = {
       'tabs',
       'createWallet.jsx'
     ),
+    trezorTx: path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'trezorTx.jsx'),
     background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
     contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
     injected: path.join(__dirname, 'src', 'pages', 'Content', 'injected.js'),
+    trezorContentScript: path.join(
+      __dirname,
+      'src',
+      'pages',
+      'Content',
+      'trezorContentScript.js'
+    ),
   },
   chromeExtensionBoilerplate: {
     notHotReload: ['contentScript', 'devtools', 'injected'],
@@ -128,6 +136,13 @@ var options = {
       .concat(['.js', '.jsx', '.ts', '.tsx', '.css']),
   },
   plugins: [
+    new webpack.BannerPlugin({
+      banner: () => {
+        return 'globalThis.document={getElementsByTagName:()=>[],createElement:()=>({ setAttribute:()=>{}}),head:{appendChild:()=>{}}};';
+      },
+      test: /background.bundle.js/,
+      raw: true,
+    }),
     new NodePolyfillPlugin(),
     new webpack.ProgressPlugin(),
     // clean the build folder
@@ -174,14 +189,6 @@ var options = {
         },
       ],
     }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: 'src/pages/Trezor',
-          to: path.join(__dirname, 'build/Trezor'),
-        },
-      ],
-    }),
     new HtmlWebpackPlugin({
       template: path.join(
         __dirname,
@@ -216,6 +223,12 @@ var options = {
       ),
       filename: 'createWalletTab.html',
       chunks: ['createWalletTab'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Tab', 'trezorTx.html'),
+      filename: 'trezorTx.html',
+      chunks: ['trezorTx'],
       cache: false,
     }),
   ],

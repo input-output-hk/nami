@@ -15,7 +15,6 @@ import React from 'react';
 import { MdUsb } from 'react-icons/md';
 import { indexToHw, initHW, isHW } from '../../../api/extension';
 import { ERROR, HW } from '../../../config/config';
-import TrezorWidget from './trezorWidget';
 
 const ConfirmModal = React.forwardRef(
   ({ ready, onConfirm, sign, onCloseBtn, title, info }, ref) => {
@@ -174,19 +173,15 @@ const ConfirmModalNormal = ({ props, isOpen, onClose }) => {
 const ConfirmModalHw = ({ props, isOpen, onClose, hw }) => {
   const [waitReady, setWaitReady] = React.useState(true);
   const [error, setError] = React.useState('');
-  const ref = React.useRef();
 
   const confirmHandler = async () => {
     if (props.ready === false || !waitReady) return;
     try {
       setWaitReady(false);
       const appAda = await initHW({ device: hw.device, id: hw.id });
-      if (hw.device == HW.trezor) ref.current.openModal();
       const signedMessage = await props.sign(null, { ...hw, appAda });
-      if (hw.device == HW.trezor) ref.current.closeModal();
       await props.onConfirm(true, signedMessage);
     } catch (e) {
-      if (hw.device == HW.trezor) ref.current.closeModal();
       if (e === ERROR.submit) props.onConfirm(false, e);
       else setError('An error occured');
     }
@@ -260,7 +255,6 @@ const ConfirmModalHw = ({ props, isOpen, onClose, hw }) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      <TrezorWidget ref={ref} />
     </>
   );
 };

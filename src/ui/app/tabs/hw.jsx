@@ -19,7 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
-import TrezorConnect from '../../../../temporary_modules/trezor-connect';
+import TrezorConnect from '@trezor/connect-web';
 
 // assets
 import LogoOriginal from '../../../assets/img/logo.svg';
@@ -330,7 +330,6 @@ const SelectAccounts = ({ data, onConfirm }) => {
                 );
               } else if (device == HW.trezor) {
                 await initHW({ device });
-                trezorRef.current.openModal();
                 const trezorKeys = await TrezorConnect.cardanoGetPublicKey({
                   bundle: accountIndexes.map((index) => ({
                     path: `m/1852'/1815'/${parseInt(index)}'`,
