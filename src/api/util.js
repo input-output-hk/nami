@@ -8,7 +8,7 @@ import {
   Value,
   MultiAsset,
   Transaction,
-} from '../../temporary_modules/@emurgo/cardano-message-signing-browser';
+} from '../wasm/cardano_multiplatform_lib/cardano_multiplatform_lib.generated';
 import AssetFingerprint from '@emurgo/cip14-js';
 import {
   AddressType,
@@ -31,7 +31,7 @@ import {
   CardanoCertificateType,
   CardanoPoolRelayType,
   CardanoTxSigningMode,
-} from '../../temporary_modules/trezor-connect/';
+} from 'trezor-connect';
 import crc8 from 'crc/calculators/crc8';
 
 export async function delay(delayInMs) {

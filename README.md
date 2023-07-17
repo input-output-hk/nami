@@ -232,6 +232,10 @@ npm run build
 npm test
 ```
 
+### Additional
+
+[Wasm packages](./src/wasm/) commit hash: [22b6a46b6fb1e5909f62e8cdb3426b05d52ac0c8](https://github.com/spacebudz/lucid)
+
 ### Website
 
 Visit [namiwallet.io](https://namiwallet.io)<br/>
