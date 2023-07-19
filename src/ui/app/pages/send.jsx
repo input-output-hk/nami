@@ -1,6 +1,7 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import {
+  createTab,
   displayUnit,
   getAccounts,
   getAdaHandle,
@@ -55,7 +56,7 @@ import {
 import { FixedSizeList as List } from 'react-window';
 import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
-import { ERROR } from '../../../config/config';
+import { ERROR, HW, TAB } from '../../../config/config';
 import {
   InputRightElement,
   InputLeftElement,
@@ -786,13 +787,16 @@ const Send = () => {
           const txDes = Loader.Cardano.Transaction.from_bytes(
             Buffer.from(tx, 'hex')
           );
-          if (hw)
+          if (hw) {
+            if (hw.device === HW.trezor) {
+              return createTab(TAB.trezorTx, `?tx=${tx}`);
+            }
             return await signAndSubmitHW(txDes, {
               keyHashes: [account.current.paymentKeyHash],
               account: account.current,
               hw,
             });
-          else
+          } else
             return await signAndSubmit(
               txDes,
               {

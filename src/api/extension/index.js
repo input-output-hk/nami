@@ -36,7 +36,7 @@ import {
 } from '../util';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import Ada, { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
-import TrezorConnect from '../../../temporary_modules/trezor-connect';
+import TrezorConnect from '@trezor/connect-web';
 import AssetFingerprint from '@emurgo/cip14-js';
 import Web3Utils from 'web3-utils';
 import { milkomedaNetworks } from '@dcspark/milkomeda-constants';
@@ -1564,11 +1564,8 @@ export const initHW = async ({ device, id }) => {
     await appAda.getVersion(); // check if Ledger has Cardano app opened
     return appAda;
   } else if (device == HW.trezor) {
-    const url = chrome.runtime.getURL('Trezor/');
     try {
       await TrezorConnect.init({
-        connectSrc: url,
-        webusb: true,
         manifest: {
           email: 'namiwallet.cardano@gmail.com',
           appUrl: 'http://namiwallet.io',

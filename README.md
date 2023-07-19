@@ -4,6 +4,7 @@
 
 Nami is a browser based wallet extension to interact with the Cardano blockchain. It's an open-source project and built by [**Berry Pool**](https://pipool.online).
 
+
 ### Testnet
 
 [Download testnet version](./build.zip)
@@ -214,6 +215,10 @@ The `project_id` for API requests can be created under [blockfrost.io](https://b
 
 The quick solution is to go under `./src/config/provider.js` and replace `secrets.PROJECT_ID_MAINNET` and `secrets.PROJECT_ID_TESTNET` with the project ids from blockfrost.
 
+##### Requirements
+
+- Node.js 14
+
 ##### Start development server
 
 ```
@@ -231,6 +236,10 @@ npm run build
 ```
 npm test
 ```
+
+### Additional
+
+[Wasm packages](./src/wasm/) commit hash: [0d513ff8b81a7bfac04fc06258731740c1b7a4d9](https://github.com/spacebudz/lucid)
 
 ### Website
 

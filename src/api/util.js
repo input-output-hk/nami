@@ -24,7 +24,7 @@ import {
   CardanoCertificateType,
   CardanoPoolRelayType,
   CardanoTxSigningMode,
-} from '../../temporary_modules/trezor-connect/';
+} from 'trezor-connect';
 import { crc8 } from 'crc';
 
 export async function delay(delayInMs) {

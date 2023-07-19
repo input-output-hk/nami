@@ -1,5 +1,10 @@
-import React, {useMemo} from 'react';
-import { getCurrentAccount, isHW, signData, signDataCIP30 } from '../../../api/extension';
+import React, { useMemo } from 'react';
+import {
+  getCurrentAccount,
+  isHW,
+  signData,
+  signDataCIP30,
+} from '../../../api/extension';
 import { Box, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
@@ -30,13 +35,13 @@ const SignData = ({ request, controller }) => {
 
   const signDataMsg = useMemo(() => {
     const result = [];
-    payload.split(/\r?\n/).forEach(line => {
+    payload.split(/\r?\n/).forEach((line) => {
       result.push(
-          <p style={{wordBreak: 'break-word', paddingBlockEnd: '8px'}}>
-            {line}
-          </p>
+        <p style={{ wordBreak: 'break-word', paddingBlockEnd: '8px' }}>
+          {line}
+        </p>
       );
-    })
+    });
     return result;
   }, [payload]);
 
@@ -117,7 +122,7 @@ const SignData = ({ request, controller }) => {
                 draggable={false}
                 width={4}
                 height={4}
-                src={`chrome://favicon/size/16@2x/${request.origin}`}
+                src={`chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${request.origin}&size=32`}
               />
             </Box>
             <Box w="3" />
@@ -136,9 +141,7 @@ const SignData = ({ request, controller }) => {
             padding="2.5"
             wordBreak="break-all"
           >
-            <Scrollbars autoHide>
-              {signDataMsg}
-            </Scrollbars>
+            <Scrollbars autoHide>{signDataMsg}</Scrollbars>
           </Box>
 
           <Box
@@ -209,21 +212,21 @@ const SignData = ({ request, controller }) => {
       )}
       <ConfirmModal
         ref={ref}
-        sign={(password) => request.data.CIP30 ?
-            signDataCIP30(
-              request.data.address,
-              request.data.payload,
-              password,
-              account.index
-            )
-          :
-          // deprecated soon
-          signData(
-            request.data.address,
-            request.data.payload,
-            password,
-            account.index
-          )
+        sign={(password) =>
+          request.data.CIP30
+            ? signDataCIP30(
+                request.data.address,
+                request.data.payload,
+                password,
+                account.index
+              )
+            : // deprecated soon
+              signData(
+                request.data.address,
+                request.data.payload,
+                password,
+                account.index
+              )
         }
         onConfirm={async (status, signedMessage) => {
           if (status === true)
