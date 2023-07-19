@@ -179,6 +179,7 @@ to_from_bytes!(CostModel);
 
 const OP_COUNT_V1: usize = 166;
 const OP_COUNT_V2: usize = 175;
+const OP_COUNT_V3: usize = 179;
 
 #[wasm_bindgen]
 impl CostModel {
@@ -193,6 +194,14 @@ impl CostModel {
     pub fn new_plutus_v2() -> Self {
         let mut costs = Vec::with_capacity(OP_COUNT_V2);
         for _ in 0..OP_COUNT_V2 {
+            costs.push(Int::new_i32(0));
+        }
+        Self(costs)
+    }
+
+    pub fn new_plutus_v3() -> Self {
+        let mut costs = Vec::with_capacity(OP_COUNT_V3);
+        for _ in 0..OP_COUNT_V3 {
             costs.push(Int::new_i32(0));
         }
         Self(costs)
@@ -293,7 +302,7 @@ impl Costmdls {
                         .write_bytes(cost_model_serializer.finalize())
                         .unwrap();
                 }
-                LanguageKind::PlutusV2 => {
+                LanguageKind::PlutusV2 | LanguageKind::PlutusV3 => {
                     key.serialize(&mut serializer).unwrap();
                     let cost_model = self.0.get(&key).unwrap();
 
@@ -403,6 +412,7 @@ impl ExUnits {
 pub enum LanguageKind {
     PlutusV1,
     PlutusV2,
+    PlutusV3,
 }
 
 #[wasm_bindgen]
@@ -431,6 +441,10 @@ impl Language {
 
     pub fn new_plutus_v2() -> Self {
         Self(LanguageKind::PlutusV2)
+    }
+
+    pub fn new_plutus_v3() -> Self {
+        Self(LanguageKind::PlutusV3)
     }
 
     pub fn kind(&self) -> LanguageKind {
@@ -726,6 +740,7 @@ pub enum RedeemerTagKind {
     Mint,
     Cert,
     Reward,
+    Drep,
 }
 
 #[wasm_bindgen]
@@ -761,6 +776,10 @@ impl RedeemerTag {
 
     pub fn new_reward() -> Self {
         Self(RedeemerTagKind::Reward)
+    }
+
+    pub fn new_drep() -> Self {
+        Self(RedeemerTagKind::Drep)
     }
 
     pub fn kind(&self) -> RedeemerTagKind {
@@ -911,6 +930,7 @@ pub enum ScriptEnum {
     NativeScript(NativeScript),
     PlutusScriptV1(PlutusScript),
     PlutusScriptV2(PlutusScript),
+    PlutusScriptV3(PlutusScript),
 }
 
 #[wasm_bindgen]
@@ -921,6 +941,7 @@ pub enum ScriptKind {
     NativeScript,
     PlutusScriptV1,
     PlutusScriptV2,
+    PlutusScriptV3,
 }
 
 #[wasm_bindgen]
@@ -946,11 +967,16 @@ impl Script {
         Self(ScriptEnum::PlutusScriptV2(plutus_script.clone()))
     }
 
+    pub fn new_plutus_v3(plutus_script: &PlutusScript) -> Self {
+        Self(ScriptEnum::PlutusScriptV3(plutus_script.clone()))
+    }
+
     pub fn kind(&self) -> ScriptKind {
         match &self.0 {
             ScriptEnum::NativeScript(_) => ScriptKind::NativeScript,
             ScriptEnum::PlutusScriptV1(_) => ScriptKind::PlutusScriptV1,
             ScriptEnum::PlutusScriptV2(_) => ScriptKind::PlutusScriptV2,
+            ScriptEnum::PlutusScriptV3(_) => ScriptKind::PlutusScriptV3,
         }
     }
 
@@ -971,6 +997,13 @@ impl Script {
     pub fn as_plutus_v2(&self) -> Option<PlutusScript> {
         match &self.0 {
             ScriptEnum::PlutusScriptV2(plutus_script) => Some(plutus_script.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn as_plutus_v3(&self) -> Option<PlutusScript> {
+        match &self.0 {
+            ScriptEnum::PlutusScriptV3(plutus_script) => Some(plutus_script.clone()),
             _ => None,
         }
     }
@@ -1379,6 +1412,10 @@ impl cbor_event::se::Serialize for Script {
                 serializer.write_unsigned_integer(2u64)?;
                 plutus_script.serialize(serializer)
             }
+            ScriptEnum::PlutusScriptV3(plutus_script) => {
+                serializer.write_unsigned_integer(3u64)?;
+                plutus_script.serialize(serializer)
+            }
         }
     }
 }
@@ -1401,6 +1438,7 @@ impl Deserialize for Script {
                 0 => ScriptEnum::NativeScript(NativeScript::deserialize(raw)?),
                 1 => ScriptEnum::PlutusScriptV1(PlutusScript::deserialize(raw)?),
                 2 => ScriptEnum::PlutusScriptV2(PlutusScript::deserialize(raw)?),
+                3 => ScriptEnum::PlutusScriptV3(PlutusScript::deserialize(raw)?),
                 n => {
                     return Err(DeserializeFailure::FixedValueMismatch {
                         found: Key::Uint(n),
@@ -1748,6 +1786,7 @@ impl cbor_event::se::Serialize for Language {
         match self.0 {
             LanguageKind::PlutusV1 => serializer.write_unsigned_integer(0u64),
             LanguageKind::PlutusV2 => serializer.write_unsigned_integer(1u64),
+            LanguageKind::PlutusV3 => serializer.write_unsigned_integer(2u64),
         }
     }
 }
@@ -1757,6 +1796,8 @@ impl Deserialize for Language {
         (|| -> Result<_, DeserializeError> {
             match raw.unsigned_integer()? {
                 0 => Ok(Language::new_plutus_v1()),
+                1 => Ok(Language::new_plutus_v2()),
+                2 => Ok(Language::new_plutus_v3()),
                 _ => Err(DeserializeError::new(
                     "Language",
                     DeserializeFailure::NoVariantMatched.into(),
@@ -2059,6 +2100,7 @@ impl cbor_event::se::Serialize for RedeemerTagKind {
             RedeemerTagKind::Mint => serializer.write_unsigned_integer(1u64),
             RedeemerTagKind::Cert => serializer.write_unsigned_integer(2u64),
             RedeemerTagKind::Reward => serializer.write_unsigned_integer(3u64),
+            RedeemerTagKind::Drep => serializer.write_unsigned_integer(4u64),
         }
     }
 }
@@ -2071,6 +2113,7 @@ impl Deserialize for RedeemerTagKind {
                 Ok(1) => Ok(RedeemerTagKind::Mint),
                 Ok(2) => Ok(RedeemerTagKind::Cert),
                 Ok(3) => Ok(RedeemerTagKind::Reward),
+                Ok(4) => Ok(RedeemerTagKind::Drep),
                 Ok(_) | Err(_) => Err(DeserializeFailure::NoVariantMatched.into()),
             }
         })()

@@ -364,6 +364,7 @@ pub struct AuxiliaryData {
     native_scripts: Option<NativeScripts>,
     plutus_scripts: Option<PlutusScripts>,
     plutus_v2_scripts: Option<PlutusScripts>,
+    plutus_v3_scripts: Option<PlutusScripts>,
 }
 
 to_from_bytes!(AuxiliaryData);
@@ -378,6 +379,7 @@ impl AuxiliaryData {
             native_scripts: None,
             plutus_scripts: None,
             plutus_v2_scripts: None,
+            plutus_v3_scripts: None,
         }
     }
 
@@ -401,12 +403,24 @@ impl AuxiliaryData {
         self.plutus_scripts.clone()
     }
 
+    pub fn plutus_v2_scripts(&self) -> Option<PlutusScripts> {
+        self.plutus_v2_scripts.clone()
+    }
+
+    pub fn plutus_v3_scripts(&self) -> Option<PlutusScripts> {
+        self.plutus_v3_scripts.clone()
+    }
+
     pub fn set_plutus_scripts(&mut self, plutus_scripts: &PlutusScripts) {
         self.plutus_scripts = Some(plutus_scripts.clone())
     }
 
     pub fn set_plutus_v2_scripts(&mut self, plutus_scripts: &PlutusScripts) {
         self.plutus_v2_scripts = Some(plutus_scripts.clone())
+    }
+
+    pub fn set_plutus_v3_scripts(&mut self, plutus_scripts: &PlutusScripts) {
+        self.plutus_v3_scripts = Some(plutus_scripts.clone())
     }
 }
 
@@ -988,6 +1002,11 @@ impl cbor_event::se::Serialize for AuxiliaryData {
                         1
                     } else {
                         0
+                    }
+                    + if self.plutus_v3_scripts.is_some() {
+                        1
+                    } else {
+                        0
                     },
             ))?;
             if let Some(metadata) = &self.metadata {
@@ -1005,6 +1024,10 @@ impl cbor_event::se::Serialize for AuxiliaryData {
             if let Some(plutus_v2_scripts) = &self.plutus_v2_scripts {
                 serializer.write_unsigned_integer(3)?;
                 plutus_v2_scripts.serialize(serializer)?;
+            }
+            if let Some(plutus_v3_scripts) = &self.plutus_v3_scripts {
+                serializer.write_unsigned_integer(4)?;
+                plutus_v3_scripts.serialize(serializer)?;
             }
             Ok(serializer)
         }
@@ -1033,6 +1056,7 @@ impl Deserialize for AuxiliaryData {
                     let mut native_scripts = None;
                     let mut plutus_scripts = None;
                     let mut plutus_v2_scripts = None;
+                    let mut plutus_v3_scripts = None;
                     let mut read = 0;
                     while match len {
                         cbor_event::Len::Len(n) => read < n as usize,
@@ -1096,6 +1120,20 @@ impl Deserialize for AuxiliaryData {
                                         .map_err(|e| e.annotate("plutus_v2_scripts"))?,
                                     );
                                 }
+                                3 => {
+                                    if plutus_v3_scripts.is_some() {
+                                        return Err(
+                                            DeserializeFailure::DuplicateKey(Key::Uint(3)).into()
+                                        );
+                                    }
+                                    plutus_v3_scripts = Some(
+                                        (|| -> Result<_, DeserializeError> {
+                                            read_len.read_elems(1)?;
+                                            Ok(PlutusScripts::deserialize(raw)?)
+                                        })()
+                                        .map_err(|e| e.annotate("plutus_v3_scripts"))?,
+                                    );
+                                }
                                 unknown_key => {
                                     return Err(DeserializeFailure::UnknownKey(Key::Uint(
                                         unknown_key,
@@ -1132,6 +1170,7 @@ impl Deserialize for AuxiliaryData {
                         native_scripts,
                         plutus_scripts,
                         plutus_v2_scripts,
+                        plutus_v3_scripts,
                     })
                 }
                 // shelley mary format (still valid for alonzo)
@@ -1159,6 +1198,7 @@ impl Deserialize for AuxiliaryData {
                         native_scripts: Some(native_scripts),
                         plutus_scripts: None,
                         plutus_v2_scripts: None,
+                        plutus_v3_scripts: None,
                     })
                 }
                 // shelley pre-mary format (still valid for alonzo + mary)
@@ -1170,6 +1210,7 @@ impl Deserialize for AuxiliaryData {
                     native_scripts: None,
                     plutus_scripts: None,
                     plutus_v2_scripts: None,
+                    plutus_v3_scripts: None,
                 }),
                 _ => return Err(DeserializeFailure::NoVariantMatched)?,
             }

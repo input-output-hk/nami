@@ -17,6 +17,7 @@ extern crate hex;
 use std::convert::TryInto;
 use std::io::{BufRead, Seek, Write};
 
+use conway::*;
 use fraction::Fraction;
 use itertools::Itertools;
 #[cfg(not(all(target_arch = "wasm32", not(target_os = "emscripten"))))]
@@ -39,6 +40,7 @@ use cbor_event::{
 pub mod address;
 pub mod chain_core;
 pub mod chain_crypto;
+pub mod conway;
 pub mod crypto;
 pub mod emip3;
 pub mod error;
@@ -283,6 +285,8 @@ pub struct TransactionBody {
     collateral_return: Option<TransactionOutput>,
     total_collateral: Option<Coin>,
     reference_inputs: Option<TransactionInputs>,
+    voting_procedures: Option<VotingProcedures>,
+    proposal_procedures: Option<ProposalProcedures>,
 }
 
 to_from_bytes!(TransactionBody);
@@ -329,6 +333,14 @@ impl TransactionBody {
 
     pub fn update(&self) -> Option<Update> {
         self.update.clone()
+    }
+
+    pub fn voting_procedures(&self) -> Option<VotingProcedures> {
+        self.voting_procedures.clone()
+    }
+
+    pub fn proposal_procedures(&self) -> Option<ProposalProcedures> {
+        self.proposal_procedures.clone()
     }
 
     pub fn set_auxiliary_data_hash(&mut self, auxiliary_data_hash: &AuxiliaryDataHash) {
@@ -411,6 +423,14 @@ impl TransactionBody {
         self.reference_inputs.clone()
     }
 
+    pub fn set_voting_procedures(&mut self, voting_procedures: &VotingProcedures) {
+        self.voting_procedures = Some(voting_procedures.clone())
+    }
+
+    pub fn set_proposal_procedures(&mut self, proposal_procedures: &ProposalProcedures) {
+        self.proposal_procedures = Some(proposal_procedures.clone())
+    }
+
     pub fn new(
         inputs: &TransactionInputs,
         outputs: &TransactionOutputs,
@@ -437,6 +457,8 @@ impl TransactionBody {
             collateral_return: None,
             total_collateral: None,
             reference_inputs: None,
+            voting_procedures: None,
+            proposal_procedures: None,
         }
     }
 
@@ -927,6 +949,18 @@ pub enum CertificateKind {
     PoolRetirement,
     GenesisKeyDelegation,
     MoveInstantaneousRewardsCert,
+    // Conway
+    RegCert,
+    UnregCert,
+    VoteDelegCert,
+    StakeVoteDelegCert,
+    StakeRegDelegCert,
+    VoteRegDelegCert,
+    StakeVoteRegDelegCert,
+    RegCommitteeHotKeyCert,
+    UnregCommitteeHotKeyCert,
+    RegDrepCert,
+    UnregDrepCert,
 }
 
 #[derive(
@@ -940,6 +974,17 @@ pub enum CertificateEnum {
     PoolRetirement(PoolRetirement),
     GenesisKeyDelegation(GenesisKeyDelegation),
     MoveInstantaneousRewardsCert(MoveInstantaneousRewardsCert),
+    RegCert(RegCert),
+    UnregCert(UnregCert),
+    VoteDelegCert(VoteDelegCert),
+    StakeVoteDelegCert(StakeVoteDelegCert),
+    StakeRegDelegCert(StakeRegDelegCert),
+    VoteRegDelegCert(VoteRegDelegCert),
+    StakeVoteRegDelegCert(StakeVoteRegDelegCert),
+    RegCommitteeHotKeyCert(RegCommitteeHotKeyCert),
+    UnregCommitteeHotKeyCert(UnregCommitteeHotKeyCert),
+    RegDrepCert(RegDrepCert),
+    UnregDrepCert(UnregDrepCert),
 }
 
 #[wasm_bindgen]
@@ -1003,6 +1048,20 @@ impl Certificate {
             CertificateEnum::MoveInstantaneousRewardsCert(_) => {
                 CertificateKind::MoveInstantaneousRewardsCert
             }
+            // Conway
+            CertificateEnum::RegCert(_) => CertificateKind::RegCert,
+            CertificateEnum::UnregCert(_) => CertificateKind::UnregCert,
+            CertificateEnum::VoteDelegCert(_) => CertificateKind::VoteDelegCert,
+            CertificateEnum::StakeVoteDelegCert(_) => CertificateKind::StakeVoteDelegCert,
+            CertificateEnum::StakeRegDelegCert(_) => CertificateKind::StakeRegDelegCert,
+            CertificateEnum::VoteRegDelegCert(_) => CertificateKind::VoteRegDelegCert,
+            CertificateEnum::StakeVoteRegDelegCert(_) => CertificateKind::StakeVoteRegDelegCert,
+            CertificateEnum::RegCommitteeHotKeyCert(_) => CertificateKind::RegCommitteeHotKeyCert,
+            CertificateEnum::UnregCommitteeHotKeyCert(_) => {
+                CertificateKind::UnregCommitteeHotKeyCert
+            }
+            CertificateEnum::RegDrepCert(_) => CertificateKind::RegDrepCert,
+            CertificateEnum::UnregDrepCert(_) => CertificateKind::UnregDrepCert,
         }
     }
 
@@ -1051,6 +1110,74 @@ impl Certificate {
     pub fn as_move_instantaneous_rewards_cert(&self) -> Option<MoveInstantaneousRewardsCert> {
         match &self.0 {
             CertificateEnum::MoveInstantaneousRewardsCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+
+    // Conway
+    pub fn as_reg_cert(&self) -> Option<RegCert> {
+        match &self.0 {
+            CertificateEnum::RegCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_unreg_cert(&self) -> Option<UnregCert> {
+        match &self.0 {
+            CertificateEnum::UnregCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_vote_deleg_cert(&self) -> Option<VoteDelegCert> {
+        match &self.0 {
+            CertificateEnum::VoteDelegCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_stake_vote_deleg_cert(&self) -> Option<StakeVoteDelegCert> {
+        match &self.0 {
+            CertificateEnum::StakeVoteDelegCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_stake_reg_deleg_cert(&self) -> Option<StakeRegDelegCert> {
+        match &self.0 {
+            CertificateEnum::StakeRegDelegCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_vote_reg_deleg_cert(&self) -> Option<VoteRegDelegCert> {
+        match &self.0 {
+            CertificateEnum::VoteRegDelegCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_stake_vote_reg_deleg_cert(&self) -> Option<StakeVoteRegDelegCert> {
+        match &self.0 {
+            CertificateEnum::StakeVoteRegDelegCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_reg_committee_hot_key_cert(&self) -> Option<RegCommitteeHotKeyCert> {
+        match &self.0 {
+            CertificateEnum::RegCommitteeHotKeyCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_unreg_committee_hot_key_cert(&self) -> Option<UnregCommitteeHotKeyCert> {
+        match &self.0 {
+            CertificateEnum::UnregCommitteeHotKeyCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_reg_drep_cert(&self) -> Option<RegDrepCert> {
+        match &self.0 {
+            CertificateEnum::RegDrepCert(x) => Some(x.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_unreg_drep_cert(&self) -> Option<UnregDrepCert> {
+        match &self.0 {
+            CertificateEnum::UnregDrepCert(x) => Some(x.clone()),
             _ => None,
         }
     }
@@ -1730,6 +1857,7 @@ pub struct TransactionWitnessSet {
     plutus_data: Option<PlutusList>,
     redeemers: Option<Redeemers>,
     plutus_v2_scripts: Option<PlutusScripts>,
+    plutus_v3_scripts: Option<PlutusScripts>,
 }
 
 to_from_bytes!(TransactionWitnessSet);
@@ -1786,12 +1914,20 @@ impl TransactionWitnessSet {
         self.plutus_v2_scripts = Some(plutus_scripts.clone())
     }
 
+    pub fn set_plutus_v3_scripts(&mut self, plutus_scripts: &PlutusScripts) {
+        self.plutus_v3_scripts = Some(plutus_scripts.clone())
+    }
+
     pub fn redeemers(&self) -> Option<Redeemers> {
         self.redeemers.clone()
     }
 
     pub fn plutus_v2_scripts(&self) -> Option<PlutusScripts> {
         self.plutus_v2_scripts.clone()
+    }
+
+    pub fn plutus_v3_scripts(&self) -> Option<PlutusScripts> {
+        self.plutus_v3_scripts.clone()
     }
 
     pub fn new() -> Self {
@@ -1803,6 +1939,7 @@ impl TransactionWitnessSet {
             plutus_data: None,
             redeemers: None,
             plutus_v2_scripts: None,
+            plutus_v3_scripts: None,
         }
     }
 }
@@ -2408,6 +2545,7 @@ pub struct ProtocolParamUpdate {
     max_value_size: Option<u32>,
     collateral_percentage: Option<u32>,
     max_collateral_inputs: Option<u32>,
+    // (TODO: drep deposit needs to be added)
 }
 
 to_from_bytes!(ProtocolParamUpdate);

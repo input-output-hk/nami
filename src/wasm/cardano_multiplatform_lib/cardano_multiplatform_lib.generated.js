@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: af75a833cd852bfe905f2f323fc0077290205bd5
+// source-hash: 783b19dd84d46feeecff45257b573e95230d5002
 let wasm;
 
 const cachedTextDecoder = new TextDecoder("utf-8", {
@@ -817,7 +817,7 @@ function handleError(f, args) {
     wasm.__wbindgen_exn_store(addHeapObject(e));
   }
 }
-function __wbg_adapter_1372(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1634(arg0, arg1, arg2, arg3) {
   wasm.wasm_bindgen__convert__closures__invoke2_mut__h36afefe016e25d40(
     arg0,
     arg1,
@@ -832,6 +832,56 @@ export const StakeCredKind = Object.freeze({
   "0": "Key",
   Script: 1,
   "1": "Script",
+});
+/** */
+export const GovernanceActionKind = Object.freeze({
+  ParameterChangeAction: 0,
+  "0": "ParameterChangeAction",
+  HardForkInitiationAction: 1,
+  "1": "HardForkInitiationAction",
+  TreasuryWithdrawalsAction: 2,
+  "2": "TreasuryWithdrawalsAction",
+  NoConfidence: 3,
+  "3": "NoConfidence",
+  NewCommittee: 4,
+  "4": "NewCommittee",
+  NewConstitution: 5,
+  "5": "NewConstitution",
+  InfoAction: 6,
+  "6": "InfoAction",
+});
+/** */
+export const VoterKind = Object.freeze({
+  CommitteeHotKeyHash: 0,
+  "0": "CommitteeHotKeyHash",
+  CommitteeHotScriptHash: 1,
+  "1": "CommitteeHotScriptHash",
+  DrepKeyHash: 2,
+  "2": "DrepKeyHash",
+  DrepScriptHash: 3,
+  "3": "DrepScriptHash",
+  StakingPoolKeyHash: 4,
+  "4": "StakingPoolKeyHash",
+});
+/** */
+export const VoteKind = Object.freeze({
+  No: 0,
+  "0": "No",
+  Yes: 1,
+  "1": "Yes",
+  Abstain: 2,
+  "2": "Abstain",
+});
+/** */
+export const DrepKind = Object.freeze({
+  KeyHash: 0,
+  "0": "KeyHash",
+  ScriptHash: 1,
+  "1": "ScriptHash",
+  Abstain: 2,
+  "2": "Abstain",
+  NoConfidence: 3,
+  "3": "NoConfidence",
 });
 /** */
 export const TransactionMetadatumKind = Object.freeze({
@@ -861,6 +911,8 @@ export const LanguageKind = Object.freeze({
   "0": "PlutusV1",
   PlutusV2: 1,
   "1": "PlutusV2",
+  PlutusV3: 2,
+  "2": "PlutusV3",
 });
 /** */
 export const PlutusDataKind = Object.freeze({
@@ -885,6 +937,8 @@ export const RedeemerTagKind = Object.freeze({
   "2": "Cert",
   Reward: 3,
   "3": "Reward",
+  Drep: 4,
+  "4": "Drep",
 });
 /**
  * JSON <-> PlutusData conversion schemas.
@@ -948,6 +1002,8 @@ export const ScriptKind = Object.freeze({
   "1": "PlutusScriptV1",
   PlutusScriptV2: 2,
   "2": "PlutusScriptV2",
+  PlutusScriptV3: 3,
+  "3": "PlutusScriptV3",
 });
 /** */
 export const DatumKind = Object.freeze({
@@ -1003,6 +1059,28 @@ export const CertificateKind = Object.freeze({
   "5": "GenesisKeyDelegation",
   MoveInstantaneousRewardsCert: 6,
   "6": "MoveInstantaneousRewardsCert",
+  RegCert: 7,
+  "7": "RegCert",
+  UnregCert: 8,
+  "8": "UnregCert",
+  VoteDelegCert: 9,
+  "9": "VoteDelegCert",
+  StakeVoteDelegCert: 10,
+  "10": "StakeVoteDelegCert",
+  StakeRegDelegCert: 11,
+  "11": "StakeRegDelegCert",
+  VoteRegDelegCert: 12,
+  "12": "VoteRegDelegCert",
+  StakeVoteRegDelegCert: 13,
+  "13": "StakeVoteRegDelegCert",
+  RegCommitteeHotKeyCert: 14,
+  "14": "RegCommitteeHotKeyCert",
+  UnregCommitteeHotKeyCert: 15,
+  "15": "UnregCommitteeHotKeyCert",
+  RegDrepCert: 16,
+  "16": "RegDrepCert",
+  UnregDrepCert: 17,
+  "17": "UnregDrepCert",
 });
 /** */
 export const MIRPot = Object.freeze({
@@ -1287,6 +1365,160 @@ export class Address {
   as_base() {
     const ret = wasm.address_as_base(this.ptr);
     return ret === 0 ? undefined : BaseAddress.__wrap(ret);
+  }
+}
+
+const AnchorFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_anchor_free(ptr)
+);
+/** */
+export class Anchor {
+  static __wrap(ptr) {
+    const obj = Object.create(Anchor.prototype);
+    obj.ptr = ptr;
+    AnchorFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    AnchorFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_anchor_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.anchor_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {Anchor}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.anchor_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Anchor.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.anchor_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.anchor_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {Anchor}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.anchor_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Anchor.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {Url}
+   */
+  anchor_url() {
+    const ret = wasm.anchor_anchor_url(this.ptr);
+    return Url.__wrap(ret);
+  }
+  /**
+   * @returns {DataHash}
+   */
+  anchor_data_hash() {
+    const ret = wasm.anchor_anchor_data_hash(this.ptr);
+    return DataHash.__wrap(ret);
+  }
+  /**
+   * @param {Url} anchor_url
+   * @param {DataHash} anchor_data_hash
+   * @returns {Anchor}
+   */
+  static new(anchor_url, anchor_data_hash) {
+    _assertClass(anchor_url, Url);
+    _assertClass(anchor_data_hash, DataHash);
+    const ret = wasm.anchor_new(anchor_url.ptr, anchor_data_hash.ptr);
+    return Anchor.__wrap(ret);
   }
 }
 
@@ -1954,6 +2186,20 @@ export class AuxiliaryData {
     return ret === 0 ? undefined : PlutusScripts.__wrap(ret);
   }
   /**
+   * @returns {PlutusScripts | undefined}
+   */
+  plutus_v2_scripts() {
+    const ret = wasm.auxiliarydata_plutus_v2_scripts(this.ptr);
+    return ret === 0 ? undefined : PlutusScripts.__wrap(ret);
+  }
+  /**
+   * @returns {PlutusScripts | undefined}
+   */
+  plutus_v3_scripts() {
+    const ret = wasm.auxiliarydata_plutus_v3_scripts(this.ptr);
+    return ret === 0 ? undefined : PlutusScripts.__wrap(ret);
+  }
+  /**
    * @param {PlutusScripts} plutus_scripts
    */
   set_plutus_scripts(plutus_scripts) {
@@ -1966,6 +2212,13 @@ export class AuxiliaryData {
   set_plutus_v2_scripts(plutus_scripts) {
     _assertClass(plutus_scripts, PlutusScripts);
     wasm.auxiliarydata_set_plutus_v2_scripts(this.ptr, plutus_scripts.ptr);
+  }
+  /**
+   * @param {PlutusScripts} plutus_scripts
+   */
+  set_plutus_v3_scripts(plutus_scripts) {
+    _assertClass(plutus_scripts, PlutusScripts);
+    wasm.auxiliarydata_set_plutus_v3_scripts(this.ptr, plutus_scripts.ptr);
   }
 }
 
@@ -4130,6 +4383,83 @@ export class Certificate {
     const ret = wasm.certificate_as_move_instantaneous_rewards_cert(this.ptr);
     return ret === 0 ? undefined : MoveInstantaneousRewardsCert.__wrap(ret);
   }
+  /**
+   * @returns {RegCert | undefined}
+   */
+  as_reg_cert() {
+    const ret = wasm.certificate_as_reg_cert(this.ptr);
+    return ret === 0 ? undefined : RegCert.__wrap(ret);
+  }
+  /**
+   * @returns {UnregCert | undefined}
+   */
+  as_unreg_cert() {
+    const ret = wasm.certificate_as_unreg_cert(this.ptr);
+    return ret === 0 ? undefined : UnregCert.__wrap(ret);
+  }
+  /**
+   * @returns {VoteDelegCert | undefined}
+   */
+  as_vote_deleg_cert() {
+    const ret = wasm.certificate_as_vote_deleg_cert(this.ptr);
+    return ret === 0 ? undefined : VoteDelegCert.__wrap(ret);
+  }
+  /**
+   * @returns {StakeVoteDelegCert | undefined}
+   */
+  as_stake_vote_deleg_cert() {
+    const ret = wasm.certificate_as_stake_vote_deleg_cert(this.ptr);
+    return ret === 0 ? undefined : StakeVoteDelegCert.__wrap(ret);
+  }
+  /**
+   * @returns {StakeRegDelegCert | undefined}
+   */
+  as_stake_reg_deleg_cert() {
+    const ret = wasm.certificate_as_stake_reg_deleg_cert(this.ptr);
+    return ret === 0 ? undefined : StakeRegDelegCert.__wrap(ret);
+  }
+  /**
+   * @returns {VoteRegDelegCert | undefined}
+   */
+  as_vote_reg_deleg_cert() {
+    const ret = wasm.certificate_as_vote_reg_deleg_cert(this.ptr);
+    return ret === 0 ? undefined : VoteRegDelegCert.__wrap(ret);
+  }
+  /**
+   * @returns {StakeVoteRegDelegCert | undefined}
+   */
+  as_stake_vote_reg_deleg_cert() {
+    const ret = wasm.certificate_as_stake_vote_reg_deleg_cert(this.ptr);
+    return ret === 0 ? undefined : StakeVoteRegDelegCert.__wrap(ret);
+  }
+  /**
+   * @returns {RegCommitteeHotKeyCert | undefined}
+   */
+  as_reg_committee_hot_key_cert() {
+    const ret = wasm.certificate_as_reg_committee_hot_key_cert(this.ptr);
+    return ret === 0 ? undefined : RegCommitteeHotKeyCert.__wrap(ret);
+  }
+  /**
+   * @returns {UnregCommitteeHotKeyCert | undefined}
+   */
+  as_unreg_committee_hot_key_cert() {
+    const ret = wasm.certificate_as_unreg_committee_hot_key_cert(this.ptr);
+    return ret === 0 ? undefined : UnregCommitteeHotKeyCert.__wrap(ret);
+  }
+  /**
+   * @returns {RegDrepCert | undefined}
+   */
+  as_reg_drep_cert() {
+    const ret = wasm.certificate_as_reg_drep_cert(this.ptr);
+    return ret === 0 ? undefined : RegDrepCert.__wrap(ret);
+  }
+  /**
+   * @returns {UnregDrepCert | undefined}
+   */
+  as_unreg_drep_cert() {
+    const ret = wasm.certificate_as_unreg_drep_cert(this.ptr);
+    return ret === 0 ? undefined : UnregDrepCert.__wrap(ret);
+  }
 }
 
 const CertificatesFinalization = new FinalizationRegistry((ptr) =>
@@ -4449,6 +4779,13 @@ export class CostModel {
    */
   static new_plutus_v2() {
     const ret = wasm.costmodel_new_plutus_v2();
+    return CostModel.__wrap(ret);
+  }
+  /**
+   * @returns {CostModel}
+   */
+  static new_plutus_v3() {
+    const ret = wasm.costmodel_new_plutus_v3();
     return CostModel.__wrap(ret);
   }
   /**
@@ -5275,6 +5612,188 @@ export class Datum {
   as_data() {
     const ret = wasm.datum_as_data(this.ptr);
     return ret === 0 ? undefined : Data.__wrap(ret);
+  }
+}
+
+const DrepFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_drep_free(ptr)
+);
+/** */
+export class Drep {
+  static __wrap(ptr) {
+    const obj = Object.create(Drep.prototype);
+    obj.ptr = ptr;
+    DrepFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    DrepFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_drep_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.drep_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {Drep}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.drep_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Drep.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.drep_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.drep_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {Drep}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.drep_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Drep.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Ed25519KeyHash} keyhash
+   * @returns {Drep}
+   */
+  static new_keyhash(keyhash) {
+    _assertClass(keyhash, Ed25519KeyHash);
+    const ret = wasm.drep_new_keyhash(keyhash.ptr);
+    return Drep.__wrap(ret);
+  }
+  /**
+   * @param {ScriptHash} scripthash
+   * @returns {Drep}
+   */
+  static new_scripthash(scripthash) {
+    _assertClass(scripthash, ScriptHash);
+    const ret = wasm.drep_new_scripthash(scripthash.ptr);
+    return Drep.__wrap(ret);
+  }
+  /**
+   * @returns {Drep}
+   */
+  static new_abstain() {
+    const ret = wasm.drep_new_abstain();
+    return Drep.__wrap(ret);
+  }
+  /**
+   * @returns {Drep}
+   */
+  static new_no_confidence() {
+    const ret = wasm.drep_new_no_confidence();
+    return Drep.__wrap(ret);
+  }
+  /**
+   * @returns {number}
+   */
+  kind() {
+    const ret = wasm.drep_kind(this.ptr);
+    return ret >>> 0;
+  }
+  /**
+   * @returns {Ed25519KeyHash | undefined}
+   */
+  as_keyhash() {
+    const ret = wasm.drep_as_keyhash(this.ptr);
+    return ret === 0 ? undefined : Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @returns {ScriptHash | undefined}
+   */
+  as_scripthash() {
+    const ret = wasm.drep_as_scripthash(this.ptr);
+    return ret === 0 ? undefined : ScriptHash.__wrap(ret);
   }
 }
 
@@ -6792,6 +7311,546 @@ export class GenesisKeyDelegation {
   }
 }
 
+const GovernanceActionFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_governanceaction_free(ptr)
+);
+/** */
+export class GovernanceAction {
+  static __wrap(ptr) {
+    const obj = Object.create(GovernanceAction.prototype);
+    obj.ptr = ptr;
+    GovernanceActionFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    GovernanceActionFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_governanceaction_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.governanceaction_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {GovernanceAction}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.governanceaction_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return GovernanceAction.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.governanceaction_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.governanceaction_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {GovernanceAction}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.governanceaction_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return GovernanceAction.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {ParameterChangeAction} parameter_change_action
+   * @returns {GovernanceAction}
+   */
+  static new_parameter_change_action(parameter_change_action) {
+    _assertClass(parameter_change_action, ParameterChangeAction);
+    const ret = wasm.governanceaction_new_parameter_change_action(
+      parameter_change_action.ptr,
+    );
+    return GovernanceAction.__wrap(ret);
+  }
+  /**
+   * @param {HardForkInitiationAction} hard_fork_initiation_action
+   * @returns {GovernanceAction}
+   */
+  static new_hard_fork_initiation_action(hard_fork_initiation_action) {
+    _assertClass(hard_fork_initiation_action, HardForkInitiationAction);
+    const ret = wasm.governanceaction_new_hard_fork_initiation_action(
+      hard_fork_initiation_action.ptr,
+    );
+    return GovernanceAction.__wrap(ret);
+  }
+  /**
+   * @param {TreasuryWithdrawalsAction} treasury_withdrawals_action
+   * @returns {GovernanceAction}
+   */
+  static new_treasury_withdrawals_action(treasury_withdrawals_action) {
+    _assertClass(treasury_withdrawals_action, TreasuryWithdrawalsAction);
+    const ret = wasm.governanceaction_new_treasury_withdrawals_action(
+      treasury_withdrawals_action.ptr,
+    );
+    return GovernanceAction.__wrap(ret);
+  }
+  /**
+   * @returns {GovernanceAction}
+   */
+  static new_no_confidence() {
+    const ret = wasm.governanceaction_new_no_confidence();
+    return GovernanceAction.__wrap(ret);
+  }
+  /**
+   * @param {NewCommittee} new_committe
+   * @returns {GovernanceAction}
+   */
+  static new_new_committee(new_committe) {
+    _assertClass(new_committe, NewCommittee);
+    const ret = wasm.governanceaction_new_new_committee(new_committe.ptr);
+    return GovernanceAction.__wrap(ret);
+  }
+  /**
+   * @param {NewConstitution} new_constitution
+   * @returns {GovernanceAction}
+   */
+  static new_new_constitution(new_constitution) {
+    _assertClass(new_constitution, NewConstitution);
+    const ret = wasm.governanceaction_new_new_constitution(
+      new_constitution.ptr,
+    );
+    return GovernanceAction.__wrap(ret);
+  }
+  /**
+   * @returns {GovernanceAction}
+   */
+  static new_info_action() {
+    const ret = wasm.governanceaction_new_info_action();
+    return GovernanceAction.__wrap(ret);
+  }
+  /**
+   * @returns {number}
+   */
+  kind() {
+    const ret = wasm.governanceaction_kind(this.ptr);
+    return ret >>> 0;
+  }
+  /**
+   * @returns {ParameterChangeAction | undefined}
+   */
+  as_parameter_change_action() {
+    const ret = wasm.governanceaction_as_parameter_change_action(this.ptr);
+    return ret === 0 ? undefined : ParameterChangeAction.__wrap(ret);
+  }
+  /**
+   * @returns {HardForkInitiationAction | undefined}
+   */
+  as_hard_fork_initiation_action() {
+    const ret = wasm.governanceaction_as_hard_fork_initiation_action(this.ptr);
+    return ret === 0 ? undefined : HardForkInitiationAction.__wrap(ret);
+  }
+  /**
+   * @returns {TreasuryWithdrawalsAction | undefined}
+   */
+  as_treasury_withdrawals_action() {
+    const ret = wasm.governanceaction_as_treasury_withdrawals_action(this.ptr);
+    return ret === 0 ? undefined : TreasuryWithdrawalsAction.__wrap(ret);
+  }
+  /**
+   * @returns {NewCommittee | undefined}
+   */
+  as_new_committee() {
+    const ret = wasm.governanceaction_as_new_committee(this.ptr);
+    return ret === 0 ? undefined : NewCommittee.__wrap(ret);
+  }
+  /**
+   * @returns {NewConstitution | undefined}
+   */
+  as_new_constitution() {
+    const ret = wasm.governanceaction_as_new_constitution(this.ptr);
+    return ret === 0 ? undefined : NewConstitution.__wrap(ret);
+  }
+}
+
+const GovernanceActionIdFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_governanceactionid_free(ptr)
+);
+/** */
+export class GovernanceActionId {
+  static __wrap(ptr) {
+    const obj = Object.create(GovernanceActionId.prototype);
+    obj.ptr = ptr;
+    GovernanceActionIdFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    GovernanceActionIdFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_governanceactionid_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.governanceactionid_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {GovernanceActionId}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.governanceactionid_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return GovernanceActionId.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.governanceactionid_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.governanceactionid_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {GovernanceActionId}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.governanceactionid_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return GovernanceActionId.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {TransactionHash}
+   */
+  transaction_id() {
+    const ret = wasm.governanceactionid_transaction_id(this.ptr);
+    return TransactionHash.__wrap(ret);
+  }
+  /**
+   * @returns {BigNum}
+   */
+  governance_action_index() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @param {TransactionHash} transaction_id
+   * @param {BigNum} governance_action_index
+   * @returns {GovernanceActionId}
+   */
+  static new(transaction_id, governance_action_index) {
+    _assertClass(transaction_id, TransactionHash);
+    _assertClass(governance_action_index, BigNum);
+    const ret = wasm.governanceactionid_new(
+      transaction_id.ptr,
+      governance_action_index.ptr,
+    );
+    return GovernanceActionId.__wrap(ret);
+  }
+}
+
+const HardForkInitiationActionFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_hardforkinitiationaction_free(ptr)
+);
+/** */
+export class HardForkInitiationAction {
+  static __wrap(ptr) {
+    const obj = Object.create(HardForkInitiationAction.prototype);
+    obj.ptr = ptr;
+    HardForkInitiationActionFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    HardForkInitiationActionFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_hardforkinitiationaction_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.hardforkinitiationaction_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {HardForkInitiationAction}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.hardforkinitiationaction_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return HardForkInitiationAction.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.hardforkinitiationaction_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.hardforkinitiationaction_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {HardForkInitiationAction}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.hardforkinitiationaction_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return HardForkInitiationAction.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {ProtocolVersion}
+   */
+  protocol_version() {
+    const ret = wasm.hardforkinitiationaction_new(this.ptr);
+    return ProtocolVersion.__wrap(ret);
+  }
+  /**
+   * @param {ProtocolVersion} protocol_version
+   * @returns {HardForkInitiationAction}
+   */
+  static new(protocol_version) {
+    _assertClass(protocol_version, ProtocolVersion);
+    const ret = wasm.hardforkinitiationaction_new(protocol_version.ptr);
+    return HardForkInitiationAction.__wrap(ret);
+  }
+}
+
 const HeaderFinalization = new FinalizationRegistry((ptr) =>
   wasm.__wbg_header_free(ptr)
 );
@@ -8047,6 +9106,13 @@ export class Language {
    */
   static new_plutus_v2() {
     const ret = wasm.language_new_plutus_v2();
+    return Language.__wrap(ret);
+  }
+  /**
+   * @returns {Language}
+   */
+  static new_plutus_v3() {
+    const ret = wasm.language_new_plutus_v3();
     return Language.__wrap(ret);
   }
   /**
@@ -9669,7 +10735,7 @@ export class MultiHostName {
    * @returns {DNSRecordSRV}
    */
   dns_name() {
-    const ret = wasm.multihostname_dns_name(this.ptr);
+    const ret = wasm.anchor_anchor_url(this.ptr);
     return DNSRecordSRV.__wrap(ret);
   }
   /**
@@ -10139,21 +11205,21 @@ export class NetworkId {
    * @returns {NetworkId}
    */
   static testnet() {
-    const ret = wasm.language_new_plutus_v1();
+    const ret = wasm.networkid_testnet();
     return NetworkId.__wrap(ret);
   }
   /**
    * @returns {NetworkId}
    */
   static mainnet() {
-    const ret = wasm.language_new_plutus_v2();
+    const ret = wasm.networkid_mainnet();
     return NetworkId.__wrap(ret);
   }
   /**
    * @returns {number}
    */
   kind() {
-    const ret = wasm.language_kind(this.ptr);
+    const ret = wasm.networkid_kind(this.ptr);
     return ret >>> 0;
   }
 }
@@ -10217,6 +11283,305 @@ export class NetworkInfo {
   static mainnet() {
     const ret = wasm.networkinfo_mainnet();
     return NetworkInfo.__wrap(ret);
+  }
+}
+
+const NewCommitteeFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_newcommittee_free(ptr)
+);
+/** */
+export class NewCommittee {
+  static __wrap(ptr) {
+    const obj = Object.create(NewCommittee.prototype);
+    obj.ptr = ptr;
+    NewCommitteeFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    NewCommitteeFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_newcommittee_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.newcommittee_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {NewCommittee}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.newcommittee_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return NewCommittee.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.newcommittee_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.newcommittee_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {NewCommittee}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.newcommittee_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return NewCommittee.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {Ed25519KeyHashes}
+   */
+  committee() {
+    const ret = wasm.newcommittee_committee(this.ptr);
+    return Ed25519KeyHashes.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  rational() {
+    const ret = wasm.exunitprices_mem_price(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @param {Ed25519KeyHashes} committee
+   * @param {UnitInterval} rational
+   * @returns {NewCommittee}
+   */
+  static new(committee, rational) {
+    _assertClass(committee, Ed25519KeyHashes);
+    _assertClass(rational, UnitInterval);
+    const ret = wasm.newcommittee_new(committee.ptr, rational.ptr);
+    return NewCommittee.__wrap(ret);
+  }
+}
+
+const NewConstitutionFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_newconstitution_free(ptr)
+);
+/** */
+export class NewConstitution {
+  static __wrap(ptr) {
+    const obj = Object.create(NewConstitution.prototype);
+    obj.ptr = ptr;
+    NewConstitutionFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    NewConstitutionFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_newconstitution_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.newconstitution_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {NewConstitution}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.newconstitution_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return NewConstitution.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.newconstitution_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.newconstitution_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {NewConstitution}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.newconstitution_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return NewConstitution.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {DataHash}
+   */
+  hash() {
+    const ret = wasm.newconstitution_hash(this.ptr);
+    return DataHash.__wrap(ret);
+  }
+  /**
+   * @param {DataHash} hash
+   * @returns {NewConstitution}
+   */
+  static new(hash) {
+    _assertClass(hash, DataHash);
+    const ret = wasm.newconstitution_new(hash.ptr);
+    return NewConstitution.__wrap(ret);
   }
 }
 
@@ -10501,6 +11866,151 @@ export class OperationalCert {
       sigma.ptr,
     );
     return OperationalCert.__wrap(ret);
+  }
+}
+
+const ParameterChangeActionFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_parameterchangeaction_free(ptr)
+);
+/** */
+export class ParameterChangeAction {
+  static __wrap(ptr) {
+    const obj = Object.create(ParameterChangeAction.prototype);
+    obj.ptr = ptr;
+    ParameterChangeActionFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    ParameterChangeActionFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_parameterchangeaction_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.parameterchangeaction_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {ParameterChangeAction}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.parameterchangeaction_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return ParameterChangeAction.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.parameterchangeaction_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.parameterchangeaction_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {ParameterChangeAction}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.parameterchangeaction_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return ParameterChangeAction.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {ProtocolParamUpdate}
+   */
+  protocol_param_update() {
+    const ret = wasm.parameterchangeaction_protocol_param_update(this.ptr);
+    return ProtocolParamUpdate.__wrap(ret);
+  }
+  /**
+   * @param {ProtocolParamUpdate} protocol_param_update
+   * @returns {ParameterChangeAction}
+   */
+  static new(protocol_param_update) {
+    _assertClass(protocol_param_update, ProtocolParamUpdate);
+    const ret = wasm.parameterchangeaction_new(protocol_param_update.ptr);
+    return ParameterChangeAction.__wrap(ret);
   }
 }
 
@@ -11407,14 +12917,14 @@ export class PoolMetadata {
    * @returns {Url}
    */
   url() {
-    const ret = wasm.multihostname_dns_name(this.ptr);
+    const ret = wasm.anchor_anchor_url(this.ptr);
     return Url.__wrap(ret);
   }
   /**
    * @returns {PoolMetadataHash}
    */
   pool_metadata_hash() {
-    const ret = wasm.poolmetadata_pool_metadata_hash(this.ptr);
+    const ret = wasm.anchor_anchor_data_hash(this.ptr);
     return PoolMetadataHash.__wrap(ret);
   }
   /**
@@ -11425,7 +12935,7 @@ export class PoolMetadata {
   static new(url, pool_metadata_hash) {
     _assertClass(url, Url);
     _assertClass(pool_metadata_hash, PoolMetadataHash);
-    const ret = wasm.poolmetadata_new(url.ptr, pool_metadata_hash.ptr);
+    const ret = wasm.anchor_new(url.ptr, pool_metadata_hash.ptr);
     return PoolMetadata.__wrap(ret);
   }
 }
@@ -12351,6 +13861,278 @@ export class PrivateKey {
     } finally {
       wasm.__wbindgen_add_to_stack_pointer(16);
     }
+  }
+}
+
+const ProposalProcedureFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_proposalprocedure_free(ptr)
+);
+/** */
+export class ProposalProcedure {
+  static __wrap(ptr) {
+    const obj = Object.create(ProposalProcedure.prototype);
+    obj.ptr = ptr;
+    ProposalProcedureFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    ProposalProcedureFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_proposalprocedure_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.proposalprocedure_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {ProposalProcedure}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.proposalprocedure_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return ProposalProcedure.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.proposalprocedure_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.proposalprocedure_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {ProposalProcedure}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.proposalprocedure_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return ProposalProcedure.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {BigNum}
+   */
+  deposit() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @returns {ScriptHash}
+   */
+  hash() {
+    const ret = wasm.proposalprocedure_hash(this.ptr);
+    return ScriptHash.__wrap(ret);
+  }
+  /**
+   * @returns {GovernanceAction}
+   */
+  governance_action() {
+    const ret = wasm.proposalprocedure_governance_action(this.ptr);
+    return GovernanceAction.__wrap(ret);
+  }
+  /**
+   * @returns {Anchor | undefined}
+   */
+  anchor() {
+    const ret = wasm.proposalprocedure_anchor(this.ptr);
+    return ret === 0 ? undefined : Anchor.__wrap(ret);
+  }
+  /**
+   * @param {BigNum} deposit
+   * @param {ScriptHash} hash
+   * @param {GovernanceAction} governance_action
+   * @param {Anchor | undefined} anchor
+   * @returns {ProposalProcedure}
+   */
+  static new(deposit, hash, governance_action, anchor) {
+    _assertClass(deposit, BigNum);
+    _assertClass(hash, ScriptHash);
+    _assertClass(governance_action, GovernanceAction);
+    let ptr0 = 0;
+    if (!isLikeNone(anchor)) {
+      _assertClass(anchor, Anchor);
+      ptr0 = anchor.__destroy_into_raw();
+    }
+    const ret = wasm.proposalprocedure_new(
+      deposit.ptr,
+      hash.ptr,
+      governance_action.ptr,
+      ptr0,
+    );
+    return ProposalProcedure.__wrap(ret);
+  }
+}
+
+const ProposalProceduresFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_proposalprocedures_free(ptr)
+);
+/** */
+export class ProposalProcedures {
+  static __wrap(ptr) {
+    const obj = Object.create(ProposalProcedures.prototype);
+    obj.ptr = ptr;
+    ProposalProceduresFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    ProposalProceduresFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_proposalprocedures_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.proposalprocedures_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {ProposalProcedures}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.proposalprocedures_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return ProposalProcedures.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {ProposalProcedures}
+   */
+  static new() {
+    const ret = wasm.certificates_new();
+    return ProposalProcedures.__wrap(ret);
+  }
+  /**
+   * @returns {number}
+   */
+  len() {
+    const ret = wasm.assetnames_len(this.ptr);
+    return ret >>> 0;
+  }
+  /**
+   * @param {number} index
+   * @returns {ProposalProcedure}
+   */
+  get(index) {
+    const ret = wasm.proposalprocedures_get(this.ptr, index);
+    return ProposalProcedure.__wrap(ret);
+  }
+  /**
+   * @param {ProposalProcedure} elem
+   */
+  add(elem) {
+    _assertClass(elem, ProposalProcedure);
+    wasm.proposalprocedures_add(this.ptr, elem.ptr);
   }
 }
 
@@ -13576,21 +15358,21 @@ export class RedeemerTag {
    * @returns {RedeemerTag}
    */
   static new_spend() {
-    const ret = wasm.redeemertag_new_spend();
+    const ret = wasm.language_new_plutus_v1();
     return RedeemerTag.__wrap(ret);
   }
   /**
    * @returns {RedeemerTag}
    */
   static new_mint() {
-    const ret = wasm.redeemertag_new_mint();
+    const ret = wasm.language_new_plutus_v2();
     return RedeemerTag.__wrap(ret);
   }
   /**
    * @returns {RedeemerTag}
    */
   static new_cert() {
-    const ret = wasm.redeemertag_new_cert();
+    const ret = wasm.language_new_plutus_v3();
     return RedeemerTag.__wrap(ret);
   }
   /**
@@ -13598,6 +15380,13 @@ export class RedeemerTag {
    */
   static new_reward() {
     const ret = wasm.redeemertag_new_reward();
+    return RedeemerTag.__wrap(ret);
+  }
+  /**
+   * @returns {RedeemerTag}
+   */
+  static new_drep() {
+    const ret = wasm.redeemertag_new_drep();
     return RedeemerTag.__wrap(ret);
   }
   /**
@@ -13747,6 +15536,471 @@ export class Redeemers {
   add(elem) {
     _assertClass(elem, Redeemer);
     wasm.redeemers_add(this.ptr, elem.ptr);
+  }
+}
+
+const RegCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_regcert_free(ptr)
+);
+/** */
+export class RegCert {
+  static __wrap(ptr) {
+    const obj = Object.create(RegCert.prototype);
+    obj.ptr = ptr;
+    RegCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    RegCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_regcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {RegCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.regcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return RegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {RegCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.regcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return RegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  stake_credential() {
+    const ret = wasm.regcert_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {BigNum}
+   */
+  coin() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} stake_credential
+   * @param {BigNum} coin
+   * @returns {RegCert}
+   */
+  static new(stake_credential, coin) {
+    _assertClass(stake_credential, StakeCredential);
+    _assertClass(coin, BigNum);
+    const ret = wasm.regcert_new(stake_credential.ptr, coin.ptr);
+    return RegCert.__wrap(ret);
+  }
+}
+
+const RegCommitteeHotKeyCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_regcommitteehotkeycert_free(ptr)
+);
+/** */
+export class RegCommitteeHotKeyCert {
+  static __wrap(ptr) {
+    const obj = Object.create(RegCommitteeHotKeyCert.prototype);
+    obj.ptr = ptr;
+    RegCommitteeHotKeyCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    RegCommitteeHotKeyCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_regcommitteehotkeycert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regcommitteehotkeycert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {RegCommitteeHotKeyCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.regcommitteehotkeycert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return RegCommitteeHotKeyCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regcommitteehotkeycert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regcommitteehotkeycert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {RegCommitteeHotKeyCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.regcommitteehotkeycert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return RegCommitteeHotKeyCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {Ed25519KeyHash}
+   */
+  committee_cold_keyhash() {
+    const ret = wasm.genesiskeydelegation_genesishash(this.ptr);
+    return Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @returns {Ed25519KeyHash}
+   */
+  committee_hot_keyhash() {
+    const ret = wasm.genesiskeydelegation_genesis_delegate_hash(this.ptr);
+    return Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @param {Ed25519KeyHash} committee_cold_keyhash
+   * @param {Ed25519KeyHash} committee_hot_keyhash
+   * @returns {RegCommitteeHotKeyCert}
+   */
+  static new(committee_cold_keyhash, committee_hot_keyhash) {
+    _assertClass(committee_cold_keyhash, Ed25519KeyHash);
+    _assertClass(committee_hot_keyhash, Ed25519KeyHash);
+    const ret = wasm.regcommitteehotkeycert_new(
+      committee_cold_keyhash.ptr,
+      committee_hot_keyhash.ptr,
+    );
+    return RegCommitteeHotKeyCert.__wrap(ret);
+  }
+}
+
+const RegDrepCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_regdrepcert_free(ptr)
+);
+/** */
+export class RegDrepCert {
+  static __wrap(ptr) {
+    const obj = Object.create(RegDrepCert.prototype);
+    obj.ptr = ptr;
+    RegDrepCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    RegDrepCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_regdrepcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regdrepcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {RegDrepCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.regdrepcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return RegDrepCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regdrepcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regdrepcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {RegDrepCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.regdrepcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return RegDrepCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  voting_credential() {
+    const ret = wasm.regcert_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {BigNum}
+   */
+  coin() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} voting_credential
+   * @param {BigNum} coin
+   * @returns {RegDrepCert}
+   */
+  static new(voting_credential, coin) {
+    _assertClass(voting_credential, StakeCredential);
+    _assertClass(coin, BigNum);
+    const ret = wasm.regcert_new(voting_credential.ptr, coin.ptr);
+    return RegDrepCert.__wrap(ret);
   }
 }
 
@@ -14607,6 +16861,15 @@ export class Script {
     return Script.__wrap(ret);
   }
   /**
+   * @param {PlutusScript} plutus_script
+   * @returns {Script}
+   */
+  static new_plutus_v3(plutus_script) {
+    _assertClass(plutus_script, PlutusScript);
+    const ret = wasm.script_new_plutus_v3(plutus_script.ptr);
+    return Script.__wrap(ret);
+  }
+  /**
    * @returns {number}
    */
   kind() {
@@ -14632,6 +16895,13 @@ export class Script {
    */
   as_plutus_v2() {
     const ret = wasm.script_as_plutus_v2(this.ptr);
+    return ret === 0 ? undefined : PlutusScript.__wrap(ret);
+  }
+  /**
+   * @returns {PlutusScript | undefined}
+   */
+  as_plutus_v3() {
+    const ret = wasm.script_as_plutus_v3(this.ptr);
     return ret === 0 ? undefined : PlutusScript.__wrap(ret);
   }
 }
@@ -16286,7 +18556,7 @@ export class SingleHostName {
    * @returns {DNSRecordAorAAAA}
    */
   dns_name() {
-    const ret = wasm.multihostname_dns_name(this.ptr);
+    const ret = wasm.anchor_anchor_url(this.ptr);
     return DNSRecordAorAAAA.__wrap(ret);
   }
   /**
@@ -16333,7 +18603,7 @@ export class StakeCredential {
    */
   static from_keyhash(hash) {
     _assertClass(hash, Ed25519KeyHash);
-    const ret = wasm.stakecredential_from_keyhash(hash.ptr);
+    const ret = wasm.drep_new_keyhash(hash.ptr);
     return StakeCredential.__wrap(ret);
   }
   /**
@@ -16342,7 +18612,7 @@ export class StakeCredential {
    */
   static from_scripthash(hash) {
     _assertClass(hash, ScriptHash);
-    const ret = wasm.stakecredential_from_scripthash(hash.ptr);
+    const ret = wasm.drep_new_scripthash(hash.ptr);
     return StakeCredential.__wrap(ret);
   }
   /**
@@ -16363,7 +18633,7 @@ export class StakeCredential {
    * @returns {number}
    */
   kind() {
-    const ret = wasm.language_kind(this.ptr);
+    const ret = wasm.networkid_kind(this.ptr);
     return ret >>> 0;
   }
   /**
@@ -16932,6 +19202,173 @@ export class StakeDeregistration {
   }
 }
 
+const StakeRegDelegCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_stakeregdelegcert_free(ptr)
+);
+/** */
+export class StakeRegDelegCert {
+  static __wrap(ptr) {
+    const obj = Object.create(StakeRegDelegCert.prototype);
+    obj.ptr = ptr;
+    StakeRegDelegCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    StakeRegDelegCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_stakeregdelegcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakeregdelegcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {StakeRegDelegCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.stakeregdelegcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return StakeRegDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakeregdelegcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakeregdelegcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {StakeRegDelegCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.stakeregdelegcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return StakeRegDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  stake_credential() {
+    const ret = wasm.regcert_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {Ed25519KeyHash}
+   */
+  pool_keyhash() {
+    const ret = wasm.stakeregdelegcert_pool_keyhash(this.ptr);
+    return Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @returns {BigNum}
+   */
+  coin() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} stake_credential
+   * @param {Ed25519KeyHash} pool_keyhash
+   * @param {BigNum} coin
+   * @returns {StakeRegDelegCert}
+   */
+  static new(stake_credential, pool_keyhash, coin) {
+    _assertClass(stake_credential, StakeCredential);
+    _assertClass(pool_keyhash, Ed25519KeyHash);
+    _assertClass(coin, BigNum);
+    const ret = wasm.stakeregdelegcert_new(
+      stake_credential.ptr,
+      pool_keyhash.ptr,
+      coin.ptr,
+    );
+    return StakeRegDelegCert.__wrap(ret);
+  }
+}
+
 const StakeRegistrationFinalization = new FinalizationRegistry((ptr) =>
   wasm.__wbg_stakeregistration_free(ptr)
 );
@@ -17074,6 +19511,350 @@ export class StakeRegistration {
     _assertClass(stake_credential, StakeCredential);
     const ret = wasm.stakederegistration_new(stake_credential.ptr);
     return StakeRegistration.__wrap(ret);
+  }
+}
+
+const StakeVoteDelegCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_stakevotedelegcert_free(ptr)
+);
+/** */
+export class StakeVoteDelegCert {
+  static __wrap(ptr) {
+    const obj = Object.create(StakeVoteDelegCert.prototype);
+    obj.ptr = ptr;
+    StakeVoteDelegCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    StakeVoteDelegCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_stakevotedelegcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakevotedelegcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {StakeVoteDelegCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.stakevotedelegcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return StakeVoteDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakevotedelegcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakevotedelegcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {StakeVoteDelegCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.stakevotedelegcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return StakeVoteDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  stake_credential() {
+    const ret = wasm.stakedelegation_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {Ed25519KeyHash}
+   */
+  pool_keyhash() {
+    const ret = wasm.stakedelegation_pool_keyhash(this.ptr);
+    return Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @returns {Drep}
+   */
+  drep() {
+    const ret = wasm.stakevotedelegcert_drep(this.ptr);
+    return Drep.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} stake_credential
+   * @param {Ed25519KeyHash} pool_keyhash
+   * @param {Drep} drep
+   * @returns {StakeVoteDelegCert}
+   */
+  static new(stake_credential, pool_keyhash, drep) {
+    _assertClass(stake_credential, StakeCredential);
+    _assertClass(pool_keyhash, Ed25519KeyHash);
+    _assertClass(drep, Drep);
+    const ret = wasm.stakevotedelegcert_new(
+      stake_credential.ptr,
+      pool_keyhash.ptr,
+      drep.ptr,
+    );
+    return StakeVoteDelegCert.__wrap(ret);
+  }
+}
+
+const StakeVoteRegDelegCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_stakevoteregdelegcert_free(ptr)
+);
+/** */
+export class StakeVoteRegDelegCert {
+  static __wrap(ptr) {
+    const obj = Object.create(StakeVoteRegDelegCert.prototype);
+    obj.ptr = ptr;
+    StakeVoteRegDelegCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    StakeVoteRegDelegCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_stakevoteregdelegcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakevoteregdelegcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {StakeVoteRegDelegCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.stakevoteregdelegcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return StakeVoteRegDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakevoteregdelegcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.stakevoteregdelegcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {StakeVoteRegDelegCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.stakevoteregdelegcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return StakeVoteRegDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  stake_credential() {
+    const ret = wasm.regcert_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {Ed25519KeyHash}
+   */
+  pool_keyhash() {
+    const ret = wasm.stakeregdelegcert_pool_keyhash(this.ptr);
+    return Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @returns {Drep}
+   */
+  drep() {
+    const ret = wasm.stakevoteregdelegcert_drep(this.ptr);
+    return Drep.__wrap(ret);
+  }
+  /**
+   * @returns {BigNum}
+   */
+  coin() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} stake_credential
+   * @param {Ed25519KeyHash} pool_keyhash
+   * @param {Drep} drep
+   * @param {BigNum} coin
+   * @returns {StakeVoteRegDelegCert}
+   */
+  static new(stake_credential, pool_keyhash, drep, coin) {
+    _assertClass(stake_credential, StakeCredential);
+    _assertClass(pool_keyhash, Ed25519KeyHash);
+    _assertClass(drep, Drep);
+    _assertClass(coin, BigNum);
+    const ret = wasm.stakevoteregdelegcert_new(
+      stake_credential.ptr,
+      pool_keyhash.ptr,
+      drep.ptr,
+      coin.ptr,
+    );
+    return StakeVoteRegDelegCert.__wrap(ret);
   }
 }
 
@@ -17970,6 +20751,20 @@ export class TransactionBody {
     return ret === 0 ? undefined : Update.__wrap(ret);
   }
   /**
+   * @returns {VotingProcedures | undefined}
+   */
+  voting_procedures() {
+    const ret = wasm.transactionbody_voting_procedures(this.ptr);
+    return ret === 0 ? undefined : VotingProcedures.__wrap(ret);
+  }
+  /**
+   * @returns {ProposalProcedures | undefined}
+   */
+  proposal_procedures() {
+    const ret = wasm.transactionbody_proposal_procedures(this.ptr);
+    return ret === 0 ? undefined : ProposalProcedures.__wrap(ret);
+  }
+  /**
    * @param {AuxiliaryDataHash} auxiliary_data_hash
    */
   set_auxiliary_data_hash(auxiliary_data_hash) {
@@ -18114,6 +20909,23 @@ export class TransactionBody {
   reference_inputs() {
     const ret = wasm.transactionbody_reference_inputs(this.ptr);
     return ret === 0 ? undefined : TransactionInputs.__wrap(ret);
+  }
+  /**
+   * @param {VotingProcedures} voting_procedures
+   */
+  set_voting_procedures(voting_procedures) {
+    _assertClass(voting_procedures, VotingProcedures);
+    wasm.transactionbody_set_voting_procedures(this.ptr, voting_procedures.ptr);
+  }
+  /**
+   * @param {ProposalProcedures} proposal_procedures
+   */
+  set_proposal_procedures(proposal_procedures) {
+    _assertClass(proposal_procedures, ProposalProcedures);
+    wasm.transactionbody_set_proposal_procedures(
+      this.ptr,
+      proposal_procedures.ptr,
+    );
   }
   /**
    * @param {TransactionInputs} inputs
@@ -19533,7 +22345,7 @@ export class TransactionInput {
    * @returns {TransactionHash}
    */
   transaction_id() {
-    const ret = wasm.transactioninput_transaction_id(this.ptr);
+    const ret = wasm.governanceactionid_transaction_id(this.ptr);
     return TransactionHash.__wrap(ret);
   }
   /**
@@ -19551,7 +22363,7 @@ export class TransactionInput {
   static new(transaction_id, index) {
     _assertClass(transaction_id, TransactionHash);
     _assertClass(index, BigNum);
-    const ret = wasm.transactioninput_new(transaction_id.ptr, index.ptr);
+    const ret = wasm.governanceactionid_new(transaction_id.ptr, index.ptr);
     return TransactionInput.__wrap(ret);
   }
 }
@@ -20977,6 +23789,16 @@ export class TransactionWitnessSet {
     );
   }
   /**
+   * @param {PlutusScripts} plutus_scripts
+   */
+  set_plutus_v3_scripts(plutus_scripts) {
+    _assertClass(plutus_scripts, PlutusScripts);
+    wasm.transactionwitnessset_set_plutus_v3_scripts(
+      this.ptr,
+      plutus_scripts.ptr,
+    );
+  }
+  /**
    * @returns {Redeemers | undefined}
    */
   redeemers() {
@@ -20988,6 +23810,13 @@ export class TransactionWitnessSet {
    */
   plutus_v2_scripts() {
     const ret = wasm.transactionwitnessset_plutus_v2_scripts(this.ptr);
+    return ret === 0 ? undefined : PlutusScripts.__wrap(ret);
+  }
+  /**
+   * @returns {PlutusScripts | undefined}
+   */
+  plutus_v3_scripts() {
+    const ret = wasm.transactionwitnessset_plutus_v3_scripts(this.ptr);
     return ret === 0 ? undefined : PlutusScripts.__wrap(ret);
   }
   /**
@@ -21287,6 +24116,321 @@ export class TransactionWitnessSets {
   }
 }
 
+const TreasuryWithdrawalsFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_treasurywithdrawals_free(ptr)
+);
+/** */
+export class TreasuryWithdrawals {
+  static __wrap(ptr) {
+    const obj = Object.create(TreasuryWithdrawals.prototype);
+    obj.ptr = ptr;
+    TreasuryWithdrawalsFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    TreasuryWithdrawalsFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_treasurywithdrawals_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.treasurywithdrawals_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {TreasuryWithdrawals}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.treasurywithdrawals_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return TreasuryWithdrawals.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.treasurywithdrawals_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.treasurywithdrawals_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {TreasuryWithdrawals}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.treasurywithdrawals_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return TreasuryWithdrawals.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {TreasuryWithdrawals}
+   */
+  static new() {
+    const ret = wasm.assets_new();
+    return TreasuryWithdrawals.__wrap(ret);
+  }
+  /**
+   * @returns {number}
+   */
+  len() {
+    const ret = wasm.assetnames_len(this.ptr);
+    return ret >>> 0;
+  }
+  /**
+   * @param {Ed25519KeyHash} key
+   * @param {BigNum} value
+   * @returns {BigNum | undefined}
+   */
+  insert(key, value) {
+    _assertClass(key, Ed25519KeyHash);
+    _assertClass(value, BigNum);
+    const ret = wasm.treasurywithdrawals_insert(this.ptr, key.ptr, value.ptr);
+    return ret === 0 ? undefined : BigNum.__wrap(ret);
+  }
+  /**
+   * @param {Ed25519KeyHash} key
+   * @returns {BigNum | undefined}
+   */
+  get(key) {
+    _assertClass(key, Ed25519KeyHash);
+    const ret = wasm.treasurywithdrawals_get(this.ptr, key.ptr);
+    return ret === 0 ? undefined : BigNum.__wrap(ret);
+  }
+  /**
+   * @returns {Ed25519KeyHashes}
+   */
+  keys() {
+    const ret = wasm.treasurywithdrawals_keys(this.ptr);
+    return Ed25519KeyHashes.__wrap(ret);
+  }
+}
+
+const TreasuryWithdrawalsActionFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_treasurywithdrawalsaction_free(ptr)
+);
+/** */
+export class TreasuryWithdrawalsAction {
+  static __wrap(ptr) {
+    const obj = Object.create(TreasuryWithdrawalsAction.prototype);
+    obj.ptr = ptr;
+    TreasuryWithdrawalsActionFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    TreasuryWithdrawalsActionFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_treasurywithdrawalsaction_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.treasurywithdrawalsaction_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {TreasuryWithdrawalsAction}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.treasurywithdrawalsaction_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return TreasuryWithdrawalsAction.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.treasurywithdrawalsaction_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.treasurywithdrawalsaction_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {TreasuryWithdrawalsAction}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.treasurywithdrawalsaction_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return TreasuryWithdrawalsAction.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {TreasuryWithdrawals}
+   */
+  withdrawals() {
+    const ret = wasm.treasurywithdrawalsaction_withdrawals(this.ptr);
+    return TreasuryWithdrawals.__wrap(ret);
+  }
+  /**
+   * @param {TreasuryWithdrawals} withdrawals
+   * @returns {TreasuryWithdrawalsAction}
+   */
+  static new(withdrawals) {
+    _assertClass(withdrawals, TreasuryWithdrawals);
+    const ret = wasm.treasurywithdrawalsaction_new(withdrawals.ptr);
+    return TreasuryWithdrawalsAction.__wrap(ret);
+  }
+}
+
 const UnitIntervalFinalization = new FinalizationRegistry((ptr) =>
   wasm.__wbg_unitinterval_free(ptr)
 );
@@ -21446,6 +24590,459 @@ export class UnitInterval {
   static from_float(float_number) {
     const ret = wasm.unitinterval_from_float(float_number);
     return UnitInterval.__wrap(ret);
+  }
+}
+
+const UnregCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_unregcert_free(ptr)
+);
+/** */
+export class UnregCert {
+  static __wrap(ptr) {
+    const obj = Object.create(UnregCert.prototype);
+    obj.ptr = ptr;
+    UnregCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    UnregCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_unregcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.unregcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {UnregCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.unregcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return UnregCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {UnregCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.unregcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return UnregCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  stake_credential() {
+    const ret = wasm.regcert_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {BigNum}
+   */
+  coin() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} stake_credential
+   * @param {BigNum} coin
+   * @returns {UnregCert}
+   */
+  static new(stake_credential, coin) {
+    _assertClass(stake_credential, StakeCredential);
+    _assertClass(coin, BigNum);
+    const ret = wasm.regcert_new(stake_credential.ptr, coin.ptr);
+    return UnregCert.__wrap(ret);
+  }
+}
+
+const UnregCommitteeHotKeyCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_unregcommitteehotkeycert_free(ptr)
+);
+/** */
+export class UnregCommitteeHotKeyCert {
+  static __wrap(ptr) {
+    const obj = Object.create(UnregCommitteeHotKeyCert.prototype);
+    obj.ptr = ptr;
+    UnregCommitteeHotKeyCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    UnregCommitteeHotKeyCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_unregcommitteehotkeycert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.unregcommitteehotkeycert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {UnregCommitteeHotKeyCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.unregcommitteehotkeycert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return UnregCommitteeHotKeyCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.unregcommitteehotkeycert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.unregcommitteehotkeycert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {UnregCommitteeHotKeyCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.unregcommitteehotkeycert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return UnregCommitteeHotKeyCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {Ed25519KeyHash}
+   */
+  committee_cold_keyhash() {
+    const ret = wasm.genesiskeydelegation_genesishash(this.ptr);
+    return Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @param {Ed25519KeyHash} committee_cold_keyhash
+   * @returns {UnregCommitteeHotKeyCert}
+   */
+  static new(committee_cold_keyhash) {
+    _assertClass(committee_cold_keyhash, Ed25519KeyHash);
+    const ret = wasm.scriptpubkey_new(committee_cold_keyhash.ptr);
+    return UnregCommitteeHotKeyCert.__wrap(ret);
+  }
+}
+
+const UnregDrepCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_unregdrepcert_free(ptr)
+);
+/** */
+export class UnregDrepCert {
+  static __wrap(ptr) {
+    const obj = Object.create(UnregDrepCert.prototype);
+    obj.ptr = ptr;
+    UnregDrepCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    UnregDrepCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_unregdrepcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.unregdrepcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {UnregDrepCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.unregdrepcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return UnregDrepCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regdrepcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.regdrepcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {UnregDrepCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.unregdrepcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return UnregDrepCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  voting_credential() {
+    const ret = wasm.regcert_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {BigNum}
+   */
+  coin() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} voting_credential
+   * @param {BigNum} coin
+   * @returns {UnregDrepCert}
+   */
+  static new(voting_credential, coin) {
+    _assertClass(voting_credential, StakeCredential);
+    _assertClass(coin, BigNum);
+    const ret = wasm.regcert_new(voting_credential.ptr, coin.ptr);
+    return UnregDrepCert.__wrap(ret);
   }
 }
 
@@ -22723,6 +26320,944 @@ export class Vkeywitnesses {
   }
 }
 
+const VoteFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_vote_free(ptr)
+);
+/** */
+export class Vote {
+  static __wrap(ptr) {
+    const obj = Object.create(Vote.prototype);
+    obj.ptr = ptr;
+    VoteFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    VoteFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_vote_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.vote_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {Vote}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.vote_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Vote.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.vote_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.vote_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {Vote}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.vote_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Vote.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+}
+
+const VoteDelegCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_votedelegcert_free(ptr)
+);
+/** */
+export class VoteDelegCert {
+  static __wrap(ptr) {
+    const obj = Object.create(VoteDelegCert.prototype);
+    obj.ptr = ptr;
+    VoteDelegCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    VoteDelegCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_votedelegcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.votedelegcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {VoteDelegCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.votedelegcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return VoteDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.votedelegcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.votedelegcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {VoteDelegCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.votedelegcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return VoteDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  stake_credential() {
+    const ret = wasm.stakedelegation_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {Drep}
+   */
+  drep() {
+    const ret = wasm.votedelegcert_drep(this.ptr);
+    return Drep.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} stake_credential
+   * @param {Drep} drep
+   * @returns {VoteDelegCert}
+   */
+  static new(stake_credential, drep) {
+    _assertClass(stake_credential, StakeCredential);
+    _assertClass(drep, Drep);
+    const ret = wasm.votedelegcert_new(stake_credential.ptr, drep.ptr);
+    return VoteDelegCert.__wrap(ret);
+  }
+}
+
+const VoteRegDelegCertFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_voteregdelegcert_free(ptr)
+);
+/** */
+export class VoteRegDelegCert {
+  static __wrap(ptr) {
+    const obj = Object.create(VoteRegDelegCert.prototype);
+    obj.ptr = ptr;
+    VoteRegDelegCertFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    VoteRegDelegCertFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_voteregdelegcert_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.voteregdelegcert_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {VoteRegDelegCert}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.voteregdelegcert_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return VoteRegDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.voteregdelegcert_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.voteregdelegcert_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {VoteRegDelegCert}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.voteregdelegcert_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return VoteRegDelegCert.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {StakeCredential}
+   */
+  stake_credential() {
+    const ret = wasm.regcert_stake_credential(this.ptr);
+    return StakeCredential.__wrap(ret);
+  }
+  /**
+   * @returns {Drep}
+   */
+  drep() {
+    const ret = wasm.voteregdelegcert_drep(this.ptr);
+    return Drep.__wrap(ret);
+  }
+  /**
+   * @returns {BigNum}
+   */
+  coin() {
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
+    return BigNum.__wrap(ret);
+  }
+  /**
+   * @param {StakeCredential} stake_credential
+   * @param {Drep} drep
+   * @param {BigNum} coin
+   * @returns {VoteRegDelegCert}
+   */
+  static new(stake_credential, drep, coin) {
+    _assertClass(stake_credential, StakeCredential);
+    _assertClass(drep, Drep);
+    _assertClass(coin, BigNum);
+    const ret = wasm.voteregdelegcert_new(
+      stake_credential.ptr,
+      drep.ptr,
+      coin.ptr,
+    );
+    return VoteRegDelegCert.__wrap(ret);
+  }
+}
+
+const VoterFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_voter_free(ptr)
+);
+/** */
+export class Voter {
+  static __wrap(ptr) {
+    const obj = Object.create(Voter.prototype);
+    obj.ptr = ptr;
+    VoterFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    VoterFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_voter_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.voter_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {Voter}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.voter_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Voter.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.voter_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.voter_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {Voter}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.voter_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Voter.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Ed25519KeyHash} keyhash
+   * @returns {Voter}
+   */
+  static new_committee_hot_keyhash(keyhash) {
+    _assertClass(keyhash, Ed25519KeyHash);
+    const ret = wasm.drep_new_keyhash(keyhash.ptr);
+    return Voter.__wrap(ret);
+  }
+  /**
+   * @param {ScriptHash} scripthash
+   * @returns {Voter}
+   */
+  static new_committee_hot_scripthash(scripthash) {
+    _assertClass(scripthash, ScriptHash);
+    const ret = wasm.drep_new_scripthash(scripthash.ptr);
+    return Voter.__wrap(ret);
+  }
+  /**
+   * @param {Ed25519KeyHash} keyhash
+   * @returns {Voter}
+   */
+  static new_drep_keyhash(keyhash) {
+    _assertClass(keyhash, Ed25519KeyHash);
+    const ret = wasm.voter_new_drep_keyhash(keyhash.ptr);
+    return Voter.__wrap(ret);
+  }
+  /**
+   * @param {ScriptHash} scripthash
+   * @returns {Voter}
+   */
+  static new_drep_scripthash(scripthash) {
+    _assertClass(scripthash, ScriptHash);
+    const ret = wasm.voter_new_drep_scripthash(scripthash.ptr);
+    return Voter.__wrap(ret);
+  }
+  /**
+   * @param {Ed25519KeyHash} keyhash
+   * @returns {Voter}
+   */
+  static new_staking_pool_keyhash(keyhash) {
+    _assertClass(keyhash, Ed25519KeyHash);
+    const ret = wasm.voter_new_staking_pool_keyhash(keyhash.ptr);
+    return Voter.__wrap(ret);
+  }
+  /**
+   * @returns {number}
+   */
+  kind() {
+    const ret = wasm.voter_kind(this.ptr);
+    return ret >>> 0;
+  }
+  /**
+   * @returns {Ed25519KeyHash | undefined}
+   */
+  as_committee_hot_keyhash() {
+    const ret = wasm.voter_as_committee_hot_keyhash(this.ptr);
+    return ret === 0 ? undefined : Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @returns {ScriptHash | undefined}
+   */
+  as_committee_hot_scripthash() {
+    const ret = wasm.voter_as_committee_hot_scripthash(this.ptr);
+    return ret === 0 ? undefined : ScriptHash.__wrap(ret);
+  }
+  /**
+   * @returns {Ed25519KeyHash | undefined}
+   */
+  as_drep_keyhash() {
+    const ret = wasm.voter_as_drep_keyhash(this.ptr);
+    return ret === 0 ? undefined : Ed25519KeyHash.__wrap(ret);
+  }
+  /**
+   * @returns {ScriptHash | undefined}
+   */
+  as_drep_scripthash() {
+    const ret = wasm.voter_as_drep_scripthash(this.ptr);
+    return ret === 0 ? undefined : ScriptHash.__wrap(ret);
+  }
+  /**
+   * @returns {Ed25519KeyHash | undefined}
+   */
+  as_staking_pool_keyhash() {
+    const ret = wasm.voter_as_staking_pool_keyhash(this.ptr);
+    return ret === 0 ? undefined : Ed25519KeyHash.__wrap(ret);
+  }
+}
+
+const VotingProcedureFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_votingprocedure_free(ptr)
+);
+/** */
+export class VotingProcedure {
+  static __wrap(ptr) {
+    const obj = Object.create(VotingProcedure.prototype);
+    obj.ptr = ptr;
+    VotingProcedureFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    VotingProcedureFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_votingprocedure_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.votingprocedure_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {VotingProcedure}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.votingprocedure_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return VotingProcedure.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.votingprocedure_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.votingprocedure_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {VotingProcedure}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.votingprocedure_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return VotingProcedure.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {GovernanceActionId}
+   */
+  governance_action_id() {
+    const ret = wasm.transactionunspentoutput_input(this.ptr);
+    return GovernanceActionId.__wrap(ret);
+  }
+  /**
+   * @returns {Voter}
+   */
+  voter() {
+    const ret = wasm.votingprocedure_voter(this.ptr);
+    return Voter.__wrap(ret);
+  }
+  /**
+   * @returns {number}
+   */
+  vote() {
+    const ret = wasm.votingprocedure_vote(this.ptr);
+    return ret >>> 0;
+  }
+  /**
+   * @returns {Anchor | undefined}
+   */
+  anchor() {
+    const ret = wasm.votingprocedure_anchor(this.ptr);
+    return ret === 0 ? undefined : Anchor.__wrap(ret);
+  }
+  /**
+   * @param {GovernanceActionId} governance_action_id
+   * @param {Voter} voter
+   * @param {Vote} vote
+   * @param {Anchor | undefined} anchor
+   * @returns {VotingProcedure}
+   */
+  static new(governance_action_id, voter, vote, anchor) {
+    _assertClass(governance_action_id, GovernanceActionId);
+    _assertClass(voter, Voter);
+    _assertClass(vote, Vote);
+    let ptr0 = 0;
+    if (!isLikeNone(anchor)) {
+      _assertClass(anchor, Anchor);
+      ptr0 = anchor.__destroy_into_raw();
+    }
+    const ret = wasm.votingprocedure_new(
+      governance_action_id.ptr,
+      voter.ptr,
+      vote.ptr,
+      ptr0,
+    );
+    return VotingProcedure.__wrap(ret);
+  }
+}
+
+const VotingProceduresFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_votingprocedures_free(ptr)
+);
+/** */
+export class VotingProcedures {
+  static __wrap(ptr) {
+    const obj = Object.create(VotingProcedures.prototype);
+    obj.ptr = ptr;
+    VotingProceduresFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    VotingProceduresFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_votingprocedures_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.votingprocedures_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {VotingProcedures}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.votingprocedures_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return VotingProcedures.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {VotingProcedures}
+   */
+  static new() {
+    const ret = wasm.certificates_new();
+    return VotingProcedures.__wrap(ret);
+  }
+  /**
+   * @returns {number}
+   */
+  len() {
+    const ret = wasm.assetnames_len(this.ptr);
+    return ret >>> 0;
+  }
+  /**
+   * @param {number} index
+   * @returns {VotingProcedure}
+   */
+  get(index) {
+    const ret = wasm.votingprocedures_get(this.ptr, index);
+    return VotingProcedure.__wrap(ret);
+  }
+  /**
+   * @param {VotingProcedure} elem
+   */
+  add(elem) {
+    _assertClass(elem, VotingProcedure);
+    wasm.votingprocedures_add(this.ptr, elem.ptr);
+  }
+}
+
 const WithdrawalsFinalization = new FinalizationRegistry((ptr) =>
   wasm.__wbg_withdrawals_free(ptr)
 );
@@ -23108,7 +27643,7 @@ const imports = {
           const a = state0.a;
           state0.a = 0;
           try {
-            return __wbg_adapter_1372(a, state0.b, arg0, arg1);
+            return __wbg_adapter_1634(a, state0.b, arg0, arg1);
           } finally {
             state0.a = a;
           }
@@ -23202,8 +27737,8 @@ const imports = {
       const ret = wasm.memory;
       return addHeapObject(ret);
     },
-    __wbindgen_closure_wrapper5962: function (arg0, arg1, arg2) {
-      const ret = makeMutClosure(arg0, arg1, 194, __wbg_adapter_30);
+    __wbindgen_closure_wrapper6917: function (arg0, arg1, arg2) {
+      const ret = makeMutClosure(arg0, arg1, 214, __wbg_adapter_30);
       return addHeapObject(ret);
     },
   },
@@ -23243,7 +27778,7 @@ let lastLoadPromise;
  * @param {InstantiateOptions=} opts
  * @returns {Promise<{
  *   instance: WebAssembly.Instance;
- *   exports: { encrypt_with_password: typeof encrypt_with_password; decrypt_with_password: typeof decrypt_with_password; min_fee: typeof min_fee; encode_arbitrary_bytes_as_metadatum: typeof encode_arbitrary_bytes_as_metadatum; decode_arbitrary_bytes_from_metadatum: typeof decode_arbitrary_bytes_from_metadatum; encode_json_str_to_metadatum: typeof encode_json_str_to_metadatum; decode_metadatum_to_json_str: typeof decode_metadatum_to_json_str; encode_json_str_to_plutus_datum: typeof encode_json_str_to_plutus_datum; decode_plutus_datum_to_json_str: typeof decode_plutus_datum_to_json_str; make_daedalus_bootstrap_witness: typeof make_daedalus_bootstrap_witness; make_icarus_bootstrap_witness: typeof make_icarus_bootstrap_witness; make_vkey_witness: typeof make_vkey_witness; hash_auxiliary_data: typeof hash_auxiliary_data; hash_transaction: typeof hash_transaction; hash_plutus_data: typeof hash_plutus_data; hash_blake2b256: typeof hash_blake2b256; hash_blake2b224: typeof hash_blake2b224; hash_script_data: typeof hash_script_data; get_implicit_input: typeof get_implicit_input; get_deposit: typeof get_deposit; min_ada_required: typeof min_ada_required; encode_json_str_to_native_script: typeof encode_json_str_to_native_script; apply_params_to_plutus_script: typeof apply_params_to_plutus_script; Address : typeof Address ; AssetName : typeof AssetName ; AssetNames : typeof AssetNames ; Assets : typeof Assets ; AuxiliaryData : typeof AuxiliaryData ; AuxiliaryDataHash : typeof AuxiliaryDataHash ; AuxiliaryDataSet : typeof AuxiliaryDataSet ; BaseAddress : typeof BaseAddress ; BigInt : typeof BigInt ; BigNum : typeof BigNum ; Bip32PrivateKey : typeof Bip32PrivateKey ; Bip32PublicKey : typeof Bip32PublicKey ; Block : typeof Block ; BlockHash : typeof BlockHash ; Blockfrost : typeof Blockfrost ; BootstrapWitness : typeof BootstrapWitness ; BootstrapWitnesses : typeof BootstrapWitnesses ; ByronAddress : typeof ByronAddress ; Certificate : typeof Certificate ; Certificates : typeof Certificates ; ConstrPlutusData : typeof ConstrPlutusData ; CostModel : typeof CostModel ; Costmdls : typeof Costmdls ; DNSRecordAorAAAA : typeof DNSRecordAorAAAA ; DNSRecordSRV : typeof DNSRecordSRV ; Data : typeof Data ; DataHash : typeof DataHash ; Datum : typeof Datum ; Ed25519KeyHash : typeof Ed25519KeyHash ; Ed25519KeyHashes : typeof Ed25519KeyHashes ; Ed25519Signature : typeof Ed25519Signature ; EnterpriseAddress : typeof EnterpriseAddress ; ExUnitPrices : typeof ExUnitPrices ; ExUnits : typeof ExUnits ; GeneralTransactionMetadata : typeof GeneralTransactionMetadata ; GenesisDelegateHash : typeof GenesisDelegateHash ; GenesisHash : typeof GenesisHash ; GenesisHashes : typeof GenesisHashes ; GenesisKeyDelegation : typeof GenesisKeyDelegation ; Header : typeof Header ; HeaderBody : typeof HeaderBody ; Int : typeof Int ; Ipv4 : typeof Ipv4 ; Ipv6 : typeof Ipv6 ; KESSignature : typeof KESSignature ; KESVKey : typeof KESVKey ; Language : typeof Language ; Languages : typeof Languages ; LegacyDaedalusPrivateKey : typeof LegacyDaedalusPrivateKey ; LinearFee : typeof LinearFee ; MIRToStakeCredentials : typeof MIRToStakeCredentials ; MetadataList : typeof MetadataList ; MetadataMap : typeof MetadataMap ; Mint : typeof Mint ; MintAssets : typeof MintAssets ; MoveInstantaneousReward : typeof MoveInstantaneousReward ; MoveInstantaneousRewardsCert : typeof MoveInstantaneousRewardsCert ; MultiAsset : typeof MultiAsset ; MultiHostName : typeof MultiHostName ; NativeScript : typeof NativeScript ; NativeScripts : typeof NativeScripts ; NetworkId : typeof NetworkId ; NetworkInfo : typeof NetworkInfo ; Nonce : typeof Nonce ; OperationalCert : typeof OperationalCert ; PlutusData : typeof PlutusData ; PlutusList : typeof PlutusList ; PlutusMap : typeof PlutusMap ; PlutusScript : typeof PlutusScript ; PlutusScripts : typeof PlutusScripts ; PlutusWitness : typeof PlutusWitness ; Pointer : typeof Pointer ; PointerAddress : typeof PointerAddress ; PoolMetadata : typeof PoolMetadata ; PoolMetadataHash : typeof PoolMetadataHash ; PoolParams : typeof PoolParams ; PoolRegistration : typeof PoolRegistration ; PoolRetirement : typeof PoolRetirement ; PrivateKey : typeof PrivateKey ; ProposedProtocolParameterUpdates : typeof ProposedProtocolParameterUpdates ; ProtocolParamUpdate : typeof ProtocolParamUpdate ; ProtocolVersion : typeof ProtocolVersion ; PublicKey : typeof PublicKey ; PublicKeys : typeof PublicKeys ; Redeemer : typeof Redeemer ; RedeemerTag : typeof RedeemerTag ; RedeemerWitnessKey : typeof RedeemerWitnessKey ; Redeemers : typeof Redeemers ; Relay : typeof Relay ; Relays : typeof Relays ; RequiredWitnessSet : typeof RequiredWitnessSet ; RewardAddress : typeof RewardAddress ; RewardAddresses : typeof RewardAddresses ; Script : typeof Script ; ScriptAll : typeof ScriptAll ; ScriptAny : typeof ScriptAny ; ScriptDataHash : typeof ScriptDataHash ; ScriptHash : typeof ScriptHash ; ScriptHashes : typeof ScriptHashes ; ScriptNOfK : typeof ScriptNOfK ; ScriptPubkey : typeof ScriptPubkey ; ScriptRef : typeof ScriptRef ; ScriptWitness : typeof ScriptWitness ; SingleHostAddr : typeof SingleHostAddr ; SingleHostName : typeof SingleHostName ; StakeCredential : typeof StakeCredential ; StakeCredentials : typeof StakeCredentials ; StakeDelegation : typeof StakeDelegation ; StakeDeregistration : typeof StakeDeregistration ; StakeRegistration : typeof StakeRegistration ; Strings : typeof Strings ; TimelockExpiry : typeof TimelockExpiry ; TimelockStart : typeof TimelockStart ; Transaction : typeof Transaction ; TransactionBodies : typeof TransactionBodies ; TransactionBody : typeof TransactionBody ; TransactionBuilder : typeof TransactionBuilder ; TransactionBuilderConfig : typeof TransactionBuilderConfig ; TransactionBuilderConfigBuilder : typeof TransactionBuilderConfigBuilder ; TransactionHash : typeof TransactionHash ; TransactionIndexes : typeof TransactionIndexes ; TransactionInput : typeof TransactionInput ; TransactionInputs : typeof TransactionInputs ; TransactionMetadatum : typeof TransactionMetadatum ; TransactionMetadatumLabels : typeof TransactionMetadatumLabels ; TransactionOutput : typeof TransactionOutput ; TransactionOutputAmountBuilder : typeof TransactionOutputAmountBuilder ; TransactionOutputBuilder : typeof TransactionOutputBuilder ; TransactionOutputs : typeof TransactionOutputs ; TransactionUnspentOutput : typeof TransactionUnspentOutput ; TransactionUnspentOutputs : typeof TransactionUnspentOutputs ; TransactionWitnessSet : typeof TransactionWitnessSet ; TransactionWitnessSetBuilder : typeof TransactionWitnessSetBuilder ; TransactionWitnessSets : typeof TransactionWitnessSets ; UnitInterval : typeof UnitInterval ; Update : typeof Update ; Url : typeof Url ; VRFCert : typeof VRFCert ; VRFKeyHash : typeof VRFKeyHash ; VRFVKey : typeof VRFVKey ; Value : typeof Value ; Vkey : typeof Vkey ; Vkeys : typeof Vkeys ; Vkeywitness : typeof Vkeywitness ; Vkeywitnesses : typeof Vkeywitnesses ; Withdrawals : typeof Withdrawals  }
+ *   exports: { encrypt_with_password: typeof encrypt_with_password; decrypt_with_password: typeof decrypt_with_password; min_fee: typeof min_fee; encode_arbitrary_bytes_as_metadatum: typeof encode_arbitrary_bytes_as_metadatum; decode_arbitrary_bytes_from_metadatum: typeof decode_arbitrary_bytes_from_metadatum; encode_json_str_to_metadatum: typeof encode_json_str_to_metadatum; decode_metadatum_to_json_str: typeof decode_metadatum_to_json_str; encode_json_str_to_plutus_datum: typeof encode_json_str_to_plutus_datum; decode_plutus_datum_to_json_str: typeof decode_plutus_datum_to_json_str; make_daedalus_bootstrap_witness: typeof make_daedalus_bootstrap_witness; make_icarus_bootstrap_witness: typeof make_icarus_bootstrap_witness; make_vkey_witness: typeof make_vkey_witness; hash_auxiliary_data: typeof hash_auxiliary_data; hash_transaction: typeof hash_transaction; hash_plutus_data: typeof hash_plutus_data; hash_blake2b256: typeof hash_blake2b256; hash_blake2b224: typeof hash_blake2b224; hash_script_data: typeof hash_script_data; get_implicit_input: typeof get_implicit_input; get_deposit: typeof get_deposit; min_ada_required: typeof min_ada_required; encode_json_str_to_native_script: typeof encode_json_str_to_native_script; apply_params_to_plutus_script: typeof apply_params_to_plutus_script; Address : typeof Address ; Anchor : typeof Anchor ; AssetName : typeof AssetName ; AssetNames : typeof AssetNames ; Assets : typeof Assets ; AuxiliaryData : typeof AuxiliaryData ; AuxiliaryDataHash : typeof AuxiliaryDataHash ; AuxiliaryDataSet : typeof AuxiliaryDataSet ; BaseAddress : typeof BaseAddress ; BigInt : typeof BigInt ; BigNum : typeof BigNum ; Bip32PrivateKey : typeof Bip32PrivateKey ; Bip32PublicKey : typeof Bip32PublicKey ; Block : typeof Block ; BlockHash : typeof BlockHash ; Blockfrost : typeof Blockfrost ; BootstrapWitness : typeof BootstrapWitness ; BootstrapWitnesses : typeof BootstrapWitnesses ; ByronAddress : typeof ByronAddress ; Certificate : typeof Certificate ; Certificates : typeof Certificates ; ConstrPlutusData : typeof ConstrPlutusData ; CostModel : typeof CostModel ; Costmdls : typeof Costmdls ; DNSRecordAorAAAA : typeof DNSRecordAorAAAA ; DNSRecordSRV : typeof DNSRecordSRV ; Data : typeof Data ; DataHash : typeof DataHash ; Datum : typeof Datum ; Drep : typeof Drep ; Ed25519KeyHash : typeof Ed25519KeyHash ; Ed25519KeyHashes : typeof Ed25519KeyHashes ; Ed25519Signature : typeof Ed25519Signature ; EnterpriseAddress : typeof EnterpriseAddress ; ExUnitPrices : typeof ExUnitPrices ; ExUnits : typeof ExUnits ; GeneralTransactionMetadata : typeof GeneralTransactionMetadata ; GenesisDelegateHash : typeof GenesisDelegateHash ; GenesisHash : typeof GenesisHash ; GenesisHashes : typeof GenesisHashes ; GenesisKeyDelegation : typeof GenesisKeyDelegation ; GovernanceAction : typeof GovernanceAction ; GovernanceActionId : typeof GovernanceActionId ; HardForkInitiationAction : typeof HardForkInitiationAction ; Header : typeof Header ; HeaderBody : typeof HeaderBody ; Int : typeof Int ; Ipv4 : typeof Ipv4 ; Ipv6 : typeof Ipv6 ; KESSignature : typeof KESSignature ; KESVKey : typeof KESVKey ; Language : typeof Language ; Languages : typeof Languages ; LegacyDaedalusPrivateKey : typeof LegacyDaedalusPrivateKey ; LinearFee : typeof LinearFee ; MIRToStakeCredentials : typeof MIRToStakeCredentials ; MetadataList : typeof MetadataList ; MetadataMap : typeof MetadataMap ; Mint : typeof Mint ; MintAssets : typeof MintAssets ; MoveInstantaneousReward : typeof MoveInstantaneousReward ; MoveInstantaneousRewardsCert : typeof MoveInstantaneousRewardsCert ; MultiAsset : typeof MultiAsset ; MultiHostName : typeof MultiHostName ; NativeScript : typeof NativeScript ; NativeScripts : typeof NativeScripts ; NetworkId : typeof NetworkId ; NetworkInfo : typeof NetworkInfo ; NewCommittee : typeof NewCommittee ; NewConstitution : typeof NewConstitution ; Nonce : typeof Nonce ; OperationalCert : typeof OperationalCert ; ParameterChangeAction : typeof ParameterChangeAction ; PlutusData : typeof PlutusData ; PlutusList : typeof PlutusList ; PlutusMap : typeof PlutusMap ; PlutusScript : typeof PlutusScript ; PlutusScripts : typeof PlutusScripts ; PlutusWitness : typeof PlutusWitness ; Pointer : typeof Pointer ; PointerAddress : typeof PointerAddress ; PoolMetadata : typeof PoolMetadata ; PoolMetadataHash : typeof PoolMetadataHash ; PoolParams : typeof PoolParams ; PoolRegistration : typeof PoolRegistration ; PoolRetirement : typeof PoolRetirement ; PrivateKey : typeof PrivateKey ; ProposalProcedure : typeof ProposalProcedure ; ProposalProcedures : typeof ProposalProcedures ; ProposedProtocolParameterUpdates : typeof ProposedProtocolParameterUpdates ; ProtocolParamUpdate : typeof ProtocolParamUpdate ; ProtocolVersion : typeof ProtocolVersion ; PublicKey : typeof PublicKey ; PublicKeys : typeof PublicKeys ; Redeemer : typeof Redeemer ; RedeemerTag : typeof RedeemerTag ; RedeemerWitnessKey : typeof RedeemerWitnessKey ; Redeemers : typeof Redeemers ; RegCert : typeof RegCert ; RegCommitteeHotKeyCert : typeof RegCommitteeHotKeyCert ; RegDrepCert : typeof RegDrepCert ; Relay : typeof Relay ; Relays : typeof Relays ; RequiredWitnessSet : typeof RequiredWitnessSet ; RewardAddress : typeof RewardAddress ; RewardAddresses : typeof RewardAddresses ; Script : typeof Script ; ScriptAll : typeof ScriptAll ; ScriptAny : typeof ScriptAny ; ScriptDataHash : typeof ScriptDataHash ; ScriptHash : typeof ScriptHash ; ScriptHashes : typeof ScriptHashes ; ScriptNOfK : typeof ScriptNOfK ; ScriptPubkey : typeof ScriptPubkey ; ScriptRef : typeof ScriptRef ; ScriptWitness : typeof ScriptWitness ; SingleHostAddr : typeof SingleHostAddr ; SingleHostName : typeof SingleHostName ; StakeCredential : typeof StakeCredential ; StakeCredentials : typeof StakeCredentials ; StakeDelegation : typeof StakeDelegation ; StakeDeregistration : typeof StakeDeregistration ; StakeRegDelegCert : typeof StakeRegDelegCert ; StakeRegistration : typeof StakeRegistration ; StakeVoteDelegCert : typeof StakeVoteDelegCert ; StakeVoteRegDelegCert : typeof StakeVoteRegDelegCert ; Strings : typeof Strings ; TimelockExpiry : typeof TimelockExpiry ; TimelockStart : typeof TimelockStart ; Transaction : typeof Transaction ; TransactionBodies : typeof TransactionBodies ; TransactionBody : typeof TransactionBody ; TransactionBuilder : typeof TransactionBuilder ; TransactionBuilderConfig : typeof TransactionBuilderConfig ; TransactionBuilderConfigBuilder : typeof TransactionBuilderConfigBuilder ; TransactionHash : typeof TransactionHash ; TransactionIndexes : typeof TransactionIndexes ; TransactionInput : typeof TransactionInput ; TransactionInputs : typeof TransactionInputs ; TransactionMetadatum : typeof TransactionMetadatum ; TransactionMetadatumLabels : typeof TransactionMetadatumLabels ; TransactionOutput : typeof TransactionOutput ; TransactionOutputAmountBuilder : typeof TransactionOutputAmountBuilder ; TransactionOutputBuilder : typeof TransactionOutputBuilder ; TransactionOutputs : typeof TransactionOutputs ; TransactionUnspentOutput : typeof TransactionUnspentOutput ; TransactionUnspentOutputs : typeof TransactionUnspentOutputs ; TransactionWitnessSet : typeof TransactionWitnessSet ; TransactionWitnessSetBuilder : typeof TransactionWitnessSetBuilder ; TransactionWitnessSets : typeof TransactionWitnessSets ; TreasuryWithdrawals : typeof TreasuryWithdrawals ; TreasuryWithdrawalsAction : typeof TreasuryWithdrawalsAction ; UnitInterval : typeof UnitInterval ; UnregCert : typeof UnregCert ; UnregCommitteeHotKeyCert : typeof UnregCommitteeHotKeyCert ; UnregDrepCert : typeof UnregDrepCert ; Update : typeof Update ; Url : typeof Url ; VRFCert : typeof VRFCert ; VRFKeyHash : typeof VRFKeyHash ; VRFVKey : typeof VRFVKey ; Value : typeof Value ; Vkey : typeof Vkey ; Vkeys : typeof Vkeys ; Vkeywitness : typeof Vkeywitness ; Vkeywitnesses : typeof Vkeywitnesses ; Vote : typeof Vote ; VoteDelegCert : typeof VoteDelegCert ; VoteRegDelegCert : typeof VoteRegDelegCert ; Voter : typeof Voter ; VotingProcedure : typeof VotingProcedure ; VotingProcedures : typeof VotingProcedures ; Withdrawals : typeof Withdrawals  }
  * }>}
  */
 export function instantiateWithInstance(opts) {
@@ -23296,6 +27831,7 @@ function getWasmInstanceExports() {
     encode_json_str_to_native_script,
     apply_params_to_plutus_script,
     Address,
+    Anchor,
     AssetName,
     AssetNames,
     Assets,
@@ -23323,6 +27859,7 @@ function getWasmInstanceExports() {
     Data,
     DataHash,
     Datum,
+    Drep,
     Ed25519KeyHash,
     Ed25519KeyHashes,
     Ed25519Signature,
@@ -23334,6 +27871,9 @@ function getWasmInstanceExports() {
     GenesisHash,
     GenesisHashes,
     GenesisKeyDelegation,
+    GovernanceAction,
+    GovernanceActionId,
+    HardForkInitiationAction,
     Header,
     HeaderBody,
     Int,
@@ -23358,8 +27898,11 @@ function getWasmInstanceExports() {
     NativeScripts,
     NetworkId,
     NetworkInfo,
+    NewCommittee,
+    NewConstitution,
     Nonce,
     OperationalCert,
+    ParameterChangeAction,
     PlutusData,
     PlutusList,
     PlutusMap,
@@ -23374,6 +27917,8 @@ function getWasmInstanceExports() {
     PoolRegistration,
     PoolRetirement,
     PrivateKey,
+    ProposalProcedure,
+    ProposalProcedures,
     ProposedProtocolParameterUpdates,
     ProtocolParamUpdate,
     ProtocolVersion,
@@ -23383,6 +27928,9 @@ function getWasmInstanceExports() {
     RedeemerTag,
     RedeemerWitnessKey,
     Redeemers,
+    RegCert,
+    RegCommitteeHotKeyCert,
+    RegDrepCert,
     Relay,
     Relays,
     RequiredWitnessSet,
@@ -23404,7 +27952,10 @@ function getWasmInstanceExports() {
     StakeCredentials,
     StakeDelegation,
     StakeDeregistration,
+    StakeRegDelegCert,
     StakeRegistration,
+    StakeVoteDelegCert,
+    StakeVoteRegDelegCert,
     Strings,
     TimelockExpiry,
     TimelockStart,
@@ -23429,7 +27980,12 @@ function getWasmInstanceExports() {
     TransactionWitnessSet,
     TransactionWitnessSetBuilder,
     TransactionWitnessSets,
+    TreasuryWithdrawals,
+    TreasuryWithdrawalsAction,
     UnitInterval,
+    UnregCert,
+    UnregCommitteeHotKeyCert,
+    UnregDrepCert,
     Update,
     Url,
     VRFCert,
@@ -23440,6 +27996,12 @@ function getWasmInstanceExports() {
     Vkeys,
     Vkeywitness,
     Vkeywitnesses,
+    Vote,
+    VoteDelegCert,
+    VoteRegDelegCert,
+    Voter,
+    VotingProcedure,
+    VotingProcedures,
     Withdrawals,
   };
 }

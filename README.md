@@ -239,7 +239,7 @@ npm test
 
 ### Additional
 
-[Wasm packages](./src/wasm/) commit hash: [22b6a46b6fb1e5909f62e8cdb3426b05d52ac0c8](https://github.com/spacebudz/lucid)
+[Wasm packages](./src/wasm/) commit hash: [a4df25db0ae1b2ce6c7684d941fe538aff9a2f5b](https://github.com/spacebudz/lucid)
 
 ### Website
 

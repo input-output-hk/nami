@@ -335,6 +335,12 @@ impl cbor_event::se::Serialize for TransactionBody {
             } + match &self.reference_inputs {
                 Some(_) => 1,
                 None => 0,
+            } + match &self.voting_procedures {
+                Some(_) => 1,
+                None => 0,
+            } + match &self.proposal_procedures {
+                Some(_) => 1,
+                None => 0,
             },
         ))?;
         serializer.write_unsigned_integer(0)?;
@@ -399,6 +405,14 @@ impl cbor_event::se::Serialize for TransactionBody {
             serializer.write_unsigned_integer(18)?;
             field.serialize(serializer)?;
         }
+        if let Some(field) = &self.voting_procedures {
+            serializer.write_unsigned_integer(19)?;
+            field.serialize(serializer)?;
+        }
+        if let Some(field) = &self.proposal_procedures {
+            serializer.write_unsigned_integer(20)?;
+            field.serialize(serializer)?;
+        }
         Ok(serializer)
     }
 }
@@ -428,6 +442,9 @@ impl Deserialize for TransactionBody {
             let mut collateral_return = None;
             let mut total_collateral = None;
             let mut reference_inputs = None;
+            let mut voting_procedures = None;
+            let mut proposal_procedures = None;
+
             let mut read = 0;
             while match len {
                 cbor_event::Len::Len(n) => read < n as usize,
@@ -637,6 +654,30 @@ impl Deserialize for TransactionBody {
                                 .map_err(|e| e.annotate("reference_inputs"))?,
                             );
                         }
+                        19 => {
+                            if voting_procedures.is_some() {
+                                return Err(DeserializeFailure::DuplicateKey(Key::Uint(15)).into());
+                            }
+                            voting_procedures = Some(
+                                (|| -> Result<_, DeserializeError> {
+                                    read_len.read_elems(1)?;
+                                    Ok(VotingProcedures::deserialize(raw)?)
+                                })()
+                                .map_err(|e| e.annotate("voting_procedures"))?,
+                            );
+                        }
+                        20 => {
+                            if proposal_procedures.is_some() {
+                                return Err(DeserializeFailure::DuplicateKey(Key::Uint(15)).into());
+                            }
+                            proposal_procedures = Some(
+                                (|| -> Result<_, DeserializeError> {
+                                    read_len.read_elems(1)?;
+                                    Ok(ProposalProcedures::deserialize(raw)?)
+                                })()
+                                .map_err(|e| e.annotate("proposal_procedures"))?,
+                            );
+                        }
                         unknown_key => {
                             return Err(
                                 DeserializeFailure::UnknownKey(Key::Uint(unknown_key)).into()
@@ -707,6 +748,8 @@ impl Deserialize for TransactionBody {
                 collateral_return,
                 total_collateral,
                 reference_inputs,
+                voting_procedures,
+                proposal_procedures,
             })
         })()
         .map_err(|e| e.annotate("TransactionBody"))
@@ -1760,6 +1803,18 @@ impl cbor_event::se::Serialize for CertificateEnum {
             CertificateEnum::PoolRetirement(x) => x.serialize(serializer),
             CertificateEnum::GenesisKeyDelegation(x) => x.serialize(serializer),
             CertificateEnum::MoveInstantaneousRewardsCert(x) => x.serialize(serializer),
+            // Conway
+            CertificateEnum::RegCert(x) => x.serialize(serializer),
+            CertificateEnum::UnregCert(x) => x.serialize(serializer),
+            CertificateEnum::VoteDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::StakeVoteDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::StakeRegDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::VoteRegDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::StakeVoteRegDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::RegCommitteeHotKeyCert(x) => x.serialize(serializer),
+            CertificateEnum::UnregCommitteeHotKeyCert(x) => x.serialize(serializer),
+            CertificateEnum::RegDrepCert(x) => x.serialize(serializer),
+            CertificateEnum::UnregDrepCert(x) => x.serialize(serializer),
         }
     }
 }
@@ -1867,6 +1922,122 @@ impl DeserializeEmbeddedGroup for CertificateEnum {
         })(raw)
         {
             Ok(variant) => return Ok(CertificateEnum::MoveInstantaneousRewardsCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(RegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::RegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(UnregCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::UnregCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(VoteDelegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::VoteDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(StakeVoteDelegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::StakeVoteDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(StakeRegDelegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::StakeRegDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(VoteRegDelegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::VoteRegDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(StakeVoteRegDelegCert::deserialize_as_embedded_group(
+                raw, len,
+            )?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::StakeVoteRegDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(RegCommitteeHotKeyCert::deserialize_as_embedded_group(
+                raw, len,
+            )?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::RegCommitteeHotKeyCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(UnregCommitteeHotKeyCert::deserialize_as_embedded_group(
+                raw, len,
+            )?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::UnregCommitteeHotKeyCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(RegDrepCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::RegDrepCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(UnregDrepCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::UnregDrepCert(variant)),
             Err(_) => raw
                 .as_mut_ref()
                 .seek(SeekFrom::Start(initial_position))
@@ -2636,6 +2807,9 @@ impl cbor_event::se::Serialize for TransactionWitnessSet {
             } + match &self.plutus_v2_scripts {
                 Some(_) => 1,
                 None => 0,
+            } + match &self.plutus_v3_scripts {
+                Some(_) => 1,
+                None => 0,
             },
         ))?;
         if let Some(field) = &self.vkeys {
@@ -2666,6 +2840,10 @@ impl cbor_event::se::Serialize for TransactionWitnessSet {
             serializer.write_unsigned_integer(6)?;
             field.serialize(serializer)?;
         }
+        if let Some(field) = &self.plutus_v3_scripts {
+            serializer.write_unsigned_integer(7)?;
+            field.serialize(serializer)?;
+        }
         Ok(serializer)
     }
 }
@@ -2682,6 +2860,7 @@ impl Deserialize for TransactionWitnessSet {
             let mut plutus_data = None;
             let mut redeemers = None;
             let mut plutus_v2_scripts = None;
+            let mut plutus_v3_scripts = None;
             let mut read = 0;
             while match len {
                 cbor_event::Len::Len(n) => read < n as usize,
@@ -2773,6 +2952,18 @@ impl Deserialize for TransactionWitnessSet {
                                 .map_err(|e| e.annotate("plutus_v2_scripts"))?,
                             );
                         }
+                        7 => {
+                            if plutus_v3_scripts.is_some() {
+                                return Err(DeserializeFailure::DuplicateKey(Key::Uint(3)).into());
+                            }
+                            plutus_v3_scripts = Some(
+                                (|| -> Result<_, DeserializeError> {
+                                    read_len.read_elems(1)?;
+                                    Ok(PlutusScripts::deserialize(raw)?)
+                                })()
+                                .map_err(|e| e.annotate("plutus_v3_scripts"))?,
+                            );
+                        }
                         unknown_key => {
                             return Err(
                                 DeserializeFailure::UnknownKey(Key::Uint(unknown_key)).into()
@@ -2811,6 +3002,7 @@ impl Deserialize for TransactionWitnessSet {
                 plutus_data,
                 redeemers,
                 plutus_v2_scripts,
+                plutus_v3_scripts,
             })
         })()
         .map_err(|e| e.annotate("TransactionWitnessSet"))
