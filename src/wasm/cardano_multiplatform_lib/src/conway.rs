@@ -289,12 +289,12 @@ impl DeserializeEmbeddedGroup for ProposalProcedure {
         _: cbor_event::Len,
     ) -> Result<Self, DeserializeError> {
         let deposit = (|| -> Result<_, DeserializeError> { Ok(Coin::deserialize(raw)?) })()
-            .map_err(|e| e.annotate("Coin"))?;
+            .map_err(|e| e.annotate("deposit"))?;
         let hash = (|| -> Result<_, DeserializeError> { Ok(ScriptHash::deserialize(raw)?) })()
-            .map_err(|e| e.annotate("ScriptHash"))?;
+            .map_err(|e| e.annotate("hash"))?;
         let governance_action =
             (|| -> Result<_, DeserializeError> { Ok(GovernanceAction::deserialize(raw)?) })()
-                .map_err(|e| e.annotate("GovernanceAction"))?;
+                .map_err(|e| e.annotate("governance_action"))?;
         let anchor = (|| -> Result<_, DeserializeError> {
             Ok(match raw.cbor_type()? != CBORType::Special {
                 true => Some(Anchor::deserialize(raw)?),
@@ -1569,6 +1569,25 @@ pub struct Vote(VoteKind);
 to_from_bytes!(Vote);
 
 to_from_json!(Vote);
+
+#[wasm_bindgen]
+impl Vote {
+    pub fn new_no() -> Self {
+        Self(VoteKind::No)
+    }
+
+    pub fn new_yes() -> Self {
+        Self(VoteKind::Yes)
+    }
+
+    pub fn new_abstain() -> Self {
+        Self(VoteKind::Abstain)
+    }
+
+    pub fn kind(&self) -> VoteKind {
+        self.0.clone()
+    }
+}
 
 impl cbor_event::se::Serialize for Vote {
     fn serialize<'se, W: Write>(

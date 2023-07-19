@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: 783b19dd84d46feeecff45257b573e95230d5002
+// source-hash: ef749e5a83976e1564fbf4bbc6b641bffd5739e0
 
 let imports = {};
 imports["__wbindgen_placeholder__"] = module.exports;
@@ -849,7 +849,7 @@ function handleError(f, args) {
     wasm.__wbindgen_exn_store(addHeapObject(e));
   }
 }
-function __wbg_adapter_1634(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1638(arg0, arg1, arg2, arg3) {
   wasm.wasm_bindgen__convert__closures__invoke2_mut__h36afefe016e25d40(
     arg0,
     arg1,
@@ -26647,6 +26647,34 @@ class Vote {
       wasm.__wbindgen_add_to_stack_pointer(16);
     }
   }
+  /**
+   * @returns {Vote}
+   */
+  static new_no() {
+    const ret = wasm.language_new_plutus_v1();
+    return Vote.__wrap(ret);
+  }
+  /**
+   * @returns {Vote}
+   */
+  static new_yes() {
+    const ret = wasm.language_new_plutus_v2();
+    return Vote.__wrap(ret);
+  }
+  /**
+   * @returns {Vote}
+   */
+  static new_abstain() {
+    const ret = wasm.language_new_plutus_v3();
+    return Vote.__wrap(ret);
+  }
+  /**
+   * @returns {number}
+   */
+  kind() {
+    const ret = wasm.vote_kind(this.ptr);
+    return ret >>> 0;
+  }
 }
 module.exports.Vote = Vote;
 
@@ -27874,7 +27902,7 @@ module.exports.__wbg_new_9d3a9ce4282a18a8 = function (arg0, arg1) {
       const a = state0.a;
       state0.a = 0;
       try {
-        return __wbg_adapter_1634(a, state0.b, arg0, arg1);
+        return __wbg_adapter_1638(a, state0.b, arg0, arg1);
       } finally {
         state0.a = a;
       }
@@ -27997,7 +28025,7 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper6917 = function (arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper6919 = function (arg0, arg1, arg2) {
   const ret = makeMutClosure(arg0, arg1, 214, __wbg_adapter_30);
   return addHeapObject(ret);
 };
