@@ -1,14 +1,11 @@
 import {
   getStorage,
-  decryptWithPassword,
   setStorage,
   createWallet,
   createAccount,
 } from '../../../api/extension';
-import { initTx } from '../../../api/extension/wallet';
 import Loader from '../../../api/loader';
-import { assetsToValue } from '../../../api/util';
-import { ERROR, NETWORK_ID, NODE, STORAGE } from '../../../config/config';
+import { STORAGE } from '../../../config/config';
 
 const harden = (num) => {
   return 0x80000000 + num;

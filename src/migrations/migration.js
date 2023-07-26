@@ -1,16 +1,16 @@
 import { STORAGE } from '../config/config';
 import { getStorage, setStorage } from '../api/extension';
-import v1_1_5 from '../migrations/1.1.5';
-import v1_1_7 from '../migrations/1.1.7';
-import v2_0_0 from '../migrations/2.0.0';
-import v2_1_0 from '../migrations/2.1.0';
-import v2_2_0 from '../migrations/2.2.0';
-import v2_3_0 from '../migrations/2.3.0';
-import v2_3_2 from '../migrations/2.3.2';
-import v2_3_3 from '../migrations/2.3.3';
-import v3_0_0 from '../migrations/3.0.0';
-import v3_0_2 from '../migrations/3.0.2';
-import v3_3_0 from '../migrations/3.3.0';
+import v1_1_5 from './versions/1.1.5';
+import v1_1_7 from './versions/1.1.7';
+import v2_0_0 from './versions/2.0.0';
+import v2_1_0 from './versions/2.1.0';
+import v2_2_0 from './versions/2.2.0';
+import v2_3_0 from './versions/2.3.0';
+import v2_3_2 from './versions/2.3.2';
+import v2_3_3 from './versions/2.3.3';
+import v3_0_0 from './versions/3.0.0';
+import v3_0_2 from './versions/3.0.2';
+import v3_3_0 from './versions/3.3.0';
 const MIG_SCRIPTS = [
   v1_1_5,
   v1_1_7,

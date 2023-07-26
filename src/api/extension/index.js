@@ -957,7 +957,7 @@ export const signDataCIP30 = async (
  * @param {string} tx - cbor hex string
  * @param {Array<string>} keyHashes
  * @param {string} password
- * @returns {string} witness set as hex string
+ * @returns {Promise<string>} witness set as hex string
  */
 export const signTx = async (
   tx,

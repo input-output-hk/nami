@@ -1,6 +1,6 @@
-import { NETWORK_ID, STORAGE } from '../config/config';
-import { getStorage, setStorage } from '../api/extension/index';
-import Loader from '../api/loader';
+import { NETWORK_ID, STORAGE } from '../../config/config';
+import { getStorage, setStorage } from '../../api/extension/index';
+import Loader from '../../api/loader';
 
 const migration = {
   version: '2.3.3',

@@ -10,7 +10,7 @@ pub struct VotingProcedure {
     governance_action_id: GovernanceActionId,
     voter: Voter,
     vote: Vote,
-    anchor: Option<Anchor>,
+    anchor: Anchor,
 }
 
 to_from_bytes!(VotingProcedure);
@@ -31,7 +31,7 @@ impl VotingProcedure {
         self.vote.0.clone()
     }
 
-    pub fn anchor(&self) -> Option<Anchor> {
+    pub fn anchor(&self) -> Anchor {
         self.anchor.clone()
     }
 
@@ -39,7 +39,7 @@ impl VotingProcedure {
         governance_action_id: &GovernanceActionId,
         voter: &Voter,
         vote: &Vote,
-        anchor: Option<Anchor>,
+        anchor: &Anchor,
     ) -> Self {
         Self {
             governance_action_id: governance_action_id.clone(),
@@ -59,10 +59,7 @@ impl cbor_event::se::Serialize for VotingProcedure {
         self.governance_action_id.serialize(serializer)?;
         self.voter.serialize(serializer)?;
         self.vote.serialize(serializer)?;
-        match &self.anchor {
-            Some(x) => x.serialize(serializer),
-            None => serializer.write_special(CBORSpecial::Null),
-        }?;
+        self.anchor.serialize(serializer)?;
         Ok(serializer)
     }
 }
@@ -105,18 +102,8 @@ impl DeserializeEmbeddedGroup for VotingProcedure {
             .map_err(|e| e.annotate("Voter"))?;
         let vote = (|| -> Result<_, DeserializeError> { Ok(Vote::deserialize(raw)?) })()
             .map_err(|e| e.annotate("Vote"))?;
-        let anchor = (|| -> Result<_, DeserializeError> {
-            Ok(match raw.cbor_type()? != CBORType::Special {
-                true => Some(Anchor::deserialize(raw)?),
-                false => {
-                    if raw.special()? != CBORSpecial::Null {
-                        return Err(DeserializeFailure::ExpectedNull.into());
-                    }
-                    None
-                }
-            })
-        })()
-        .map_err(|e| e.annotate("anchor"))?;
+        let anchor = (|| -> Result<_, DeserializeError> { Ok(Anchor::deserialize(raw)?) })()
+            .map_err(|e| e.annotate("anchor"))?;
         Ok(VotingProcedure {
             governance_action_id,
             voter,
@@ -200,7 +187,7 @@ pub struct ProposalProcedure {
     deposit: Coin,
     hash: ScriptHash,
     governance_action: GovernanceAction,
-    anchor: Option<Anchor>,
+    anchor: Anchor,
 }
 
 to_from_bytes!(ProposalProcedure);
@@ -221,7 +208,7 @@ impl ProposalProcedure {
         self.governance_action.clone()
     }
 
-    pub fn anchor(&self) -> Option<Anchor> {
+    pub fn anchor(&self) -> Anchor {
         self.anchor.clone()
     }
 
@@ -229,7 +216,7 @@ impl ProposalProcedure {
         deposit: &Coin,
         hash: &ScriptHash,
         governance_action: &GovernanceAction,
-        anchor: Option<Anchor>,
+        anchor: &Anchor,
     ) -> Self {
         Self {
             deposit: deposit.clone(),
@@ -249,10 +236,7 @@ impl cbor_event::se::Serialize for ProposalProcedure {
         self.deposit.serialize(serializer)?;
         self.hash.serialize(serializer)?;
         self.governance_action.serialize(serializer)?;
-        match &self.anchor {
-            Some(x) => x.serialize(serializer),
-            None => serializer.write_special(CBORSpecial::Null),
-        }?;
+        self.anchor.serialize(serializer)?;
         Ok(serializer)
     }
 }
@@ -295,18 +279,8 @@ impl DeserializeEmbeddedGroup for ProposalProcedure {
         let governance_action =
             (|| -> Result<_, DeserializeError> { Ok(GovernanceAction::deserialize(raw)?) })()
                 .map_err(|e| e.annotate("governance_action"))?;
-        let anchor = (|| -> Result<_, DeserializeError> {
-            Ok(match raw.cbor_type()? != CBORType::Special {
-                true => Some(Anchor::deserialize(raw)?),
-                false => {
-                    if raw.special()? != CBORSpecial::Null {
-                        return Err(DeserializeFailure::ExpectedNull.into());
-                    }
-                    None
-                }
-            })
-        })()
-        .map_err(|e| e.annotate("anchor"))?;
+        let anchor = (|| -> Result<_, DeserializeError> { Ok(Anchor::deserialize(raw)?) })()
+            .map_err(|e| e.annotate("anchor"))?;
         Ok(ProposalProcedure {
             deposit,
             hash,
@@ -3107,5 +3081,259 @@ impl DeserializeEmbeddedGroup for UnregDrepCert {
             voting_credential,
             coin,
         })
+    }
+}
+
+#[wasm_bindgen]
+#[derive(
+    Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize, JsonSchema,
+)]
+pub struct PoolVotingThresholds {
+    motion_no_confidence: UnitInterval,
+    committee_normal: UnitInterval,
+    committee_no_confidence: UnitInterval,
+    hard_fork_initiation: UnitInterval,
+}
+
+to_from_bytes!(PoolVotingThresholds);
+
+to_from_json!(PoolVotingThresholds);
+
+#[wasm_bindgen]
+impl PoolVotingThresholds {
+    pub fn motion_no_confidence(&self) -> UnitInterval {
+        self.motion_no_confidence.clone()
+    }
+
+    pub fn committee_normal(&self) -> UnitInterval {
+        self.committee_normal.clone()
+    }
+
+    pub fn committee_no_confidence(&self) -> UnitInterval {
+        self.committee_no_confidence.clone()
+    }
+
+    pub fn hard_fork_initiation(&self) -> UnitInterval {
+        self.hard_fork_initiation.clone()
+    }
+
+    pub fn new(
+        motion_no_confidence: &UnitInterval,
+        committee_normal: &UnitInterval,
+        committee_no_confidence: &UnitInterval,
+        hard_fork_initiation: &UnitInterval,
+    ) -> Self {
+        Self {
+            motion_no_confidence: motion_no_confidence.clone(),
+            committee_normal: committee_normal.clone(),
+            committee_no_confidence: committee_no_confidence.clone(),
+            hard_fork_initiation: hard_fork_initiation.clone(),
+        }
+    }
+}
+
+impl cbor_event::se::Serialize for PoolVotingThresholds {
+    fn serialize<'se, W: Write>(
+        &self,
+        serializer: &'se mut Serializer<W>,
+    ) -> cbor_event::Result<&'se mut Serializer<W>> {
+        serializer.write_array(cbor_event::Len::Len(4))?;
+        self.motion_no_confidence.serialize(serializer)?;
+        self.committee_normal.serialize(serializer)?;
+        self.committee_no_confidence.serialize(serializer)?;
+        self.hard_fork_initiation.serialize(serializer)?;
+        Ok(serializer)
+    }
+}
+
+impl Deserialize for PoolVotingThresholds {
+    fn deserialize<R: BufRead + Seek>(raw: &mut Deserializer<R>) -> Result<Self, DeserializeError> {
+        (|| -> Result<_, DeserializeError> {
+            let len = raw.array()?;
+            if let cbor_event::Len::Len(n) = len {
+                if n != 4 {
+                    return Err(DeserializeFailure::CBOR(cbor_event::Error::WrongLen(
+                        4,
+                        len,
+                        "[unit_interval, unit_interval, unit_interval, unit_interval]",
+                    ))
+                    .into());
+                }
+            }
+            let motion_no_confidence = UnitInterval::deserialize(raw)?;
+            let committee_normal = UnitInterval::deserialize(raw)?;
+            let committee_no_confidence = UnitInterval::deserialize(raw)?;
+            let hard_fork_initiation = UnitInterval::deserialize(raw)?;
+
+            if let cbor_event::Len::Indefinite = len {
+                if raw.special()? != CBORSpecial::Break {
+                    return Err(DeserializeFailure::EndingBreakMissing.into());
+                }
+            }
+            Ok(PoolVotingThresholds {
+                motion_no_confidence,
+                committee_normal,
+                committee_no_confidence,
+                hard_fork_initiation,
+            })
+        })()
+        .map_err(|e| e.annotate("PoolVotingThresholds"))
+    }
+}
+
+#[wasm_bindgen]
+#[derive(
+    Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize, JsonSchema,
+)]
+pub struct DrepVotingThresholds {
+    motion_no_confidence: UnitInterval,
+    committee_normal: UnitInterval,
+    committee_no_confidence: UnitInterval,
+    update_constitution: UnitInterval,
+    hard_fork_initiation: UnitInterval,
+    pp_network_group: UnitInterval,
+    pp_economic_group: UnitInterval,
+    pp_technical_group: UnitInterval,
+    pp_governance_group: UnitInterval,
+    treasury_withdrawal: UnitInterval,
+}
+
+to_from_bytes!(DrepVotingThresholds);
+
+to_from_json!(DrepVotingThresholds);
+
+#[wasm_bindgen]
+impl DrepVotingThresholds {
+    pub fn motion_no_confidence(&self) -> UnitInterval {
+        self.motion_no_confidence.clone()
+    }
+
+    pub fn committee_normal(&self) -> UnitInterval {
+        self.committee_normal.clone()
+    }
+
+    pub fn committee_no_confidence(&self) -> UnitInterval {
+        self.committee_no_confidence.clone()
+    }
+
+    pub fn update_constitution(&self) -> UnitInterval {
+        self.update_constitution.clone()
+    }
+
+    pub fn hard_fork_initiation(&self) -> UnitInterval {
+        self.hard_fork_initiation.clone()
+    }
+
+    pub fn pp_network_group(&self) -> UnitInterval {
+        self.pp_network_group.clone()
+    }
+
+    pub fn pp_economic_group(&self) -> UnitInterval {
+        self.pp_economic_group.clone()
+    }
+
+    pub fn pp_technical_group(&self) -> UnitInterval {
+        self.pp_technical_group.clone()
+    }
+
+    pub fn pp_governance_group(&self) -> UnitInterval {
+        self.pp_governance_group.clone()
+    }
+
+    pub fn treasury_withdrawal(&self) -> UnitInterval {
+        self.treasury_withdrawal.clone()
+    }
+
+    pub fn new(
+        motion_no_confidence: &UnitInterval,
+        committee_normal: &UnitInterval,
+        committee_no_confidence: &UnitInterval,
+        update_constitution: &UnitInterval,
+        hard_fork_initiation: &UnitInterval,
+        pp_network_group: &UnitInterval,
+        pp_economic_group: &UnitInterval,
+        pp_technical_group: &UnitInterval,
+        pp_governance_group: &UnitInterval,
+        treasury_withdrawal: &UnitInterval,
+    ) -> Self {
+        Self {
+            motion_no_confidence: motion_no_confidence.clone(),
+            committee_normal: committee_normal.clone(),
+            committee_no_confidence: committee_no_confidence.clone(),
+            update_constitution: update_constitution.clone(),
+            hard_fork_initiation: hard_fork_initiation.clone(),
+            pp_network_group: pp_network_group.clone(),
+            pp_economic_group: pp_economic_group.clone(),
+            pp_technical_group: pp_technical_group.clone(),
+            pp_governance_group: pp_governance_group.clone(),
+            treasury_withdrawal: treasury_withdrawal.clone(),
+        }
+    }
+}
+
+impl cbor_event::se::Serialize for DrepVotingThresholds {
+    fn serialize<'se, W: Write>(
+        &self,
+        serializer: &'se mut Serializer<W>,
+    ) -> cbor_event::Result<&'se mut Serializer<W>> {
+        serializer.write_array(cbor_event::Len::Len(10))?;
+        self.motion_no_confidence.serialize(serializer)?;
+        self.committee_normal.serialize(serializer)?;
+        self.committee_no_confidence.serialize(serializer)?;
+        self.update_constitution.serialize(serializer)?;
+        self.hard_fork_initiation.serialize(serializer)?;
+        self.pp_network_group.serialize(serializer)?;
+        self.pp_economic_group.serialize(serializer)?;
+        self.pp_technical_group.serialize(serializer)?;
+        self.pp_governance_group.serialize(serializer)?;
+        self.treasury_withdrawal.serialize(serializer)?;
+        Ok(serializer)
+    }
+}
+
+impl Deserialize for DrepVotingThresholds {
+    fn deserialize<R: BufRead + Seek>(raw: &mut Deserializer<R>) -> Result<Self, DeserializeError> {
+        (|| -> Result<_, DeserializeError> {
+            let len = raw.array()?;
+            if let cbor_event::Len::Len(n) = len {
+                if n != 10 {
+                    return Err(DeserializeFailure::CBOR(cbor_event::Error::WrongLen(
+                        10,
+                        len,
+                        "[unit_interval, unit_interval, unit_interval, unit_interval, unit_interval, unit_interval, unit_interval, unit_interval, unit_interval, unit_interval]",
+                    ))
+                    .into());
+                }
+            }
+            let motion_no_confidence = UnitInterval::deserialize(raw)?;
+            let committee_normal = UnitInterval::deserialize(raw)?;
+            let committee_no_confidence = UnitInterval::deserialize(raw)?;
+            let update_constitution = UnitInterval::deserialize(raw)?;
+            let hard_fork_initiation = UnitInterval::deserialize(raw)?;
+            let pp_network_group = UnitInterval::deserialize(raw)?;
+            let pp_economic_group = UnitInterval::deserialize(raw)?;
+            let pp_technical_group = UnitInterval::deserialize(raw)?;
+            let pp_governance_group = UnitInterval::deserialize(raw)?;
+            let treasury_withdrawal = UnitInterval::deserialize(raw)?;
+
+            if let cbor_event::Len::Indefinite = len {
+                if raw.special()? != CBORSpecial::Break {
+                    return Err(DeserializeFailure::EndingBreakMissing.into());
+                }
+            }
+            Ok(DrepVotingThresholds {
+                motion_no_confidence,
+                committee_normal,
+                committee_no_confidence,
+                update_constitution,
+                hard_fork_initiation,
+                pp_network_group,
+                pp_economic_group,
+                pp_technical_group,
+                pp_governance_group,
+                treasury_withdrawal,
+            })
+        })()
+        .map_err(|e| e.annotate("DrepVotingThresholds"))
     }
 }

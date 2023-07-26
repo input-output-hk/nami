@@ -1,4 +1,4 @@
-import { NODE, NETWORK_ID } from './config';
+import { NODE } from './config';
 import secrets from 'secrets';
 import { version } from '../../package.json';
 

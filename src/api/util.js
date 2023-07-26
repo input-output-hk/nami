@@ -32,7 +32,7 @@ import {
   CardanoPoolRelayType,
   CardanoTxSigningMode,
 } from 'trezor-connect';
-import crc8 from 'crc/calculators/crc8';
+import { crc8 } from 'crc';
 
 export async function delay(delayInMs) {
   return new Promise((resolve) => {

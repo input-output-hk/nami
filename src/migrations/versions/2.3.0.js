@@ -1,5 +1,5 @@
-import { getStorage, setStorage } from '../api/extension';
-import { NETWORK_ID, STORAGE } from '../config/config';
+import { getStorage, setStorage } from '../../api/extension';
+import { NETWORK_ID, STORAGE } from '../../config/config';
 
 const migration = {
   version: '2.3.0',

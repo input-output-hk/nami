@@ -10,8 +10,6 @@ import {
   getMilkomedaData,
   getNetwork,
   getUtxos,
-  indexToHw,
-  isHW,
   isValidAddress,
   isValidEthAddress,
   toUnit,

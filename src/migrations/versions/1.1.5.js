@@ -1,12 +1,12 @@
-import { NETWORK_ID, STORAGE } from '../config/config';
+import { NETWORK_ID, STORAGE } from '../../config/config';
 import {
   decryptWithPassword,
   getStorage,
   setStorage,
-} from '../api/extension/index';
-import { initTx } from '../api/extension/wallet';
-import Loader from '../api/loader';
-import { assetsToValue } from '../api/util';
+} from '../../api/extension/index';
+import { initTx } from '../../api/extension/wallet';
+import Loader from '../../api/loader';
+import { assetsToValue } from '../../api/util';
 
 const harden = (num) => {
   return 0x80000000 + num;

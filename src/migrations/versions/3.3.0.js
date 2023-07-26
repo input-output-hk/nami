@@ -1,8 +1,8 @@
-import { NETWORK_ID, STORAGE } from '../config/config';
-import { getStorage, setStorage } from '../api/extension/index';
-import Loader from '../api/loader';
-import { initTx } from '../api/extension/wallet';
-import { assetsToValue } from '../api/util';
+import { NETWORK_ID, STORAGE } from '../../config/config';
+import { getStorage, setStorage } from '../../api/extension/index';
+import Loader from '../../api/loader';
+import { initTx } from '../../api/extension/wallet';
+import { assetsToValue } from '../../api/util';
 
 const migration = {
   version: '3.3.0',

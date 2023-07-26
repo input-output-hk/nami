@@ -2545,7 +2545,15 @@ pub struct ProtocolParamUpdate {
     max_value_size: Option<u32>,
     collateral_percentage: Option<u32>,
     max_collateral_inputs: Option<u32>,
-    // (TODO: drep deposit needs to be added)
+    // Conway
+    pool_voting_thresholds: Option<PoolVotingThresholds>,
+    drep_voting_thresholds: Option<DrepVotingThresholds>,
+    min_committee_size: Option<Coin>,
+    committee_term_limit: Option<Coin>,
+    governance_action_expiration: Option<Coin>,
+    governance_action_deposit: Option<Coin>,
+    drep_deposit: Option<Coin>,
+    drep_inactivity_period: Option<Epoch>,
 }
 
 to_from_bytes!(ProtocolParamUpdate);
@@ -2746,6 +2754,63 @@ impl ProtocolParamUpdate {
         self.max_collateral_inputs.clone()
     }
 
+    pub fn set_pool_voting_thresholds(&mut self, pool_voting_thresholds: PoolVotingThresholds) {
+        self.pool_voting_thresholds = Some(pool_voting_thresholds)
+    }
+
+    pub fn pool_voting_thresholds(&self) -> Option<PoolVotingThresholds> {
+        self.pool_voting_thresholds.clone()
+    }
+    pub fn set_drep_voting_thresholds(&mut self, drep_voting_thresholds: DrepVotingThresholds) {
+        self.drep_voting_thresholds = Some(drep_voting_thresholds)
+    }
+
+    pub fn drep_voting_thresholds(&self) -> Option<DrepVotingThresholds> {
+        self.drep_voting_thresholds.clone()
+    }
+    pub fn set_min_committee_size(&mut self, min_committee_size: Coin) {
+        self.min_committee_size = Some(min_committee_size)
+    }
+
+    pub fn min_committee_size(&self) -> Option<Coin> {
+        self.min_committee_size.clone()
+    }
+    pub fn set_committee_term_limit(&mut self, committee_term_limit: Coin) {
+        self.committee_term_limit = Some(committee_term_limit)
+    }
+
+    pub fn committee_term_limit(&self) -> Option<Coin> {
+        self.committee_term_limit.clone()
+    }
+    pub fn set_governance_action_expiration(&mut self, governance_action_expiration: Coin) {
+        self.governance_action_expiration = Some(governance_action_expiration)
+    }
+
+    pub fn governance_action_expiration(&self) -> Option<Coin> {
+        self.governance_action_expiration.clone()
+    }
+    pub fn set_governance_action_deposit(&mut self, governance_action_deposit: Coin) {
+        self.governance_action_deposit = Some(governance_action_deposit)
+    }
+
+    pub fn governance_action_deposit(&self) -> Option<Coin> {
+        self.governance_action_deposit.clone()
+    }
+    pub fn set_drep_deposit(&mut self, drep_deposit: Coin) {
+        self.drep_deposit = Some(drep_deposit)
+    }
+
+    pub fn drep_deposit(&self) -> Option<Coin> {
+        self.drep_deposit.clone()
+    }
+    pub fn set_drep_inactivity_period(&mut self, drep_inactivity_period: Epoch) {
+        self.drep_inactivity_period = Some(drep_inactivity_period)
+    }
+
+    pub fn drep_inactivity_period(&self) -> Option<Epoch> {
+        self.drep_inactivity_period.clone()
+    }
+
     pub fn new() -> Self {
         Self {
             minfee_a: None,
@@ -2772,6 +2837,14 @@ impl ProtocolParamUpdate {
             max_value_size: None,
             collateral_percentage: None,
             max_collateral_inputs: None,
+            pool_voting_thresholds: None,
+            drep_voting_thresholds: None,
+            min_committee_size: None,
+            committee_term_limit: None,
+            governance_action_expiration: None,
+            governance_action_deposit: None,
+            drep_deposit: None,
+            drep_inactivity_period: None,
         }
     }
 }

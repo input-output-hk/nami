@@ -25,7 +25,7 @@ import {
   migrate,
   setPWD,
   isUpgrade,
-} from '../lib/migration';
+} from '../migrations/migration';
 import ConfirmModal from './app/components/confirmModal';
 import { UpgradeModal } from './app/components/UpgradeModal';
 import { sendStore } from './app/pages/send';

@@ -8,13 +8,16 @@ import * as wasm2 from '../wasm/cardano_message_signing/cardano_message_signing.
 class Loader {
   async load() {
     if (this._wasm && this._wasm2) return;
-    await wasm.instantiate();
+    try {
+      await wasm.instantiate();
+      await wasm2.instantiate();
+    } catch (_e) {
+      // Only happens when running with Jest (Node.js)
+    }
     /**
      * @private
      */
     this._wasm = wasm;
-
-    await wasm2.instantiate();
     /**
      * @private
      */

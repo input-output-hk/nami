@@ -1,6 +1,5 @@
 import React from 'react';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
-import { POPUP_WINDOW } from '../config/config';
 import './app/components/styles.css';
 import '@fontsource/ubuntu/latin.css';
 import 'focus-visible/dist/focus-visible';

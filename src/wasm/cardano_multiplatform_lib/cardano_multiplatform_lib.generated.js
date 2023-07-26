@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: ef749e5a83976e1564fbf4bbc6b641bffd5739e0
+// source-hash: ab17726f2df5571be15d036e67423022ed8f63e4
 let wasm;
 
 const cachedTextDecoder = new TextDecoder("utf-8", {
@@ -817,7 +817,7 @@ function handleError(f, args) {
     wasm.__wbindgen_exn_store(addHeapObject(e));
   }
 }
-function __wbg_adapter_1638(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1680(arg0, arg1, arg2, arg3) {
   wasm.wasm_bindgen__convert__closures__invoke2_mut__h36afefe016e25d40(
     arg0,
     arg1,
@@ -5797,6 +5797,254 @@ export class Drep {
   }
 }
 
+const DrepVotingThresholdsFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_drepvotingthresholds_free(ptr)
+);
+/** */
+export class DrepVotingThresholds {
+  static __wrap(ptr) {
+    const obj = Object.create(DrepVotingThresholds.prototype);
+    obj.ptr = ptr;
+    DrepVotingThresholdsFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    DrepVotingThresholdsFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_drepvotingthresholds_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.drepvotingthresholds_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {DrepVotingThresholds}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.drepvotingthresholds_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return DrepVotingThresholds.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.drepvotingthresholds_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.drepvotingthresholds_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {DrepVotingThresholds}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.drepvotingthresholds_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return DrepVotingThresholds.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  motion_no_confidence() {
+    const ret = wasm.drepvotingthresholds_motion_no_confidence(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  committee_normal() {
+    const ret = wasm.drepvotingthresholds_committee_normal(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  committee_no_confidence() {
+    const ret = wasm.drepvotingthresholds_committee_no_confidence(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  update_constitution() {
+    const ret = wasm.drepvotingthresholds_update_constitution(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  hard_fork_initiation() {
+    const ret = wasm.drepvotingthresholds_hard_fork_initiation(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  pp_network_group() {
+    const ret = wasm.drepvotingthresholds_pp_network_group(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  pp_economic_group() {
+    const ret = wasm.drepvotingthresholds_pp_economic_group(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  pp_technical_group() {
+    const ret = wasm.drepvotingthresholds_pp_technical_group(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  pp_governance_group() {
+    const ret = wasm.drepvotingthresholds_pp_governance_group(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  treasury_withdrawal() {
+    const ret = wasm.drepvotingthresholds_treasury_withdrawal(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @param {UnitInterval} motion_no_confidence
+   * @param {UnitInterval} committee_normal
+   * @param {UnitInterval} committee_no_confidence
+   * @param {UnitInterval} update_constitution
+   * @param {UnitInterval} hard_fork_initiation
+   * @param {UnitInterval} pp_network_group
+   * @param {UnitInterval} pp_economic_group
+   * @param {UnitInterval} pp_technical_group
+   * @param {UnitInterval} pp_governance_group
+   * @param {UnitInterval} treasury_withdrawal
+   * @returns {DrepVotingThresholds}
+   */
+  static new(
+    motion_no_confidence,
+    committee_normal,
+    committee_no_confidence,
+    update_constitution,
+    hard_fork_initiation,
+    pp_network_group,
+    pp_economic_group,
+    pp_technical_group,
+    pp_governance_group,
+    treasury_withdrawal,
+  ) {
+    _assertClass(motion_no_confidence, UnitInterval);
+    _assertClass(committee_normal, UnitInterval);
+    _assertClass(committee_no_confidence, UnitInterval);
+    _assertClass(update_constitution, UnitInterval);
+    _assertClass(hard_fork_initiation, UnitInterval);
+    _assertClass(pp_network_group, UnitInterval);
+    _assertClass(pp_economic_group, UnitInterval);
+    _assertClass(pp_technical_group, UnitInterval);
+    _assertClass(pp_governance_group, UnitInterval);
+    _assertClass(treasury_withdrawal, UnitInterval);
+    const ret = wasm.drepvotingthresholds_new(
+      motion_no_confidence.ptr,
+      committee_normal.ptr,
+      committee_no_confidence.ptr,
+      update_constitution.ptr,
+      hard_fork_initiation.ptr,
+      pp_network_group.ptr,
+      pp_economic_group.ptr,
+      pp_technical_group.ptr,
+      pp_governance_group.ptr,
+      treasury_withdrawal.ptr,
+    );
+    return DrepVotingThresholds.__wrap(ret);
+  }
+}
+
 const Ed25519KeyHashFinalization = new FinalizationRegistry((ptr) =>
   wasm.__wbg_ed25519keyhash_free(ptr)
 );
@@ -6377,14 +6625,14 @@ export class ExUnitPrices {
    * @returns {UnitInterval}
    */
   mem_price() {
-    const ret = wasm.exunitprices_mem_price(this.ptr);
+    const ret = wasm.drepvotingthresholds_motion_no_confidence(this.ptr);
     return UnitInterval.__wrap(ret);
   }
   /**
    * @returns {UnitInterval}
    */
   step_price() {
-    const ret = wasm.exunitprices_step_price(this.ptr);
+    const ret = wasm.drepvotingthresholds_committee_normal(this.ptr);
     return UnitInterval.__wrap(ret);
   }
   /**
@@ -11424,7 +11672,7 @@ export class NewCommittee {
    * @returns {UnitInterval}
    */
   rational() {
-    const ret = wasm.exunitprices_mem_price(this.ptr);
+    const ret = wasm.drepvotingthresholds_motion_no_confidence(this.ptr);
     return UnitInterval.__wrap(ret);
   }
   /**
@@ -13257,7 +13505,7 @@ export class PoolParams {
    * @returns {UnitInterval}
    */
   margin() {
-    const ret = wasm.exunitprices_step_price(this.ptr);
+    const ret = wasm.drepvotingthresholds_committee_normal(this.ptr);
     return UnitInterval.__wrap(ret);
   }
   /**
@@ -13643,6 +13891,188 @@ export class PoolRetirement {
   }
 }
 
+const PoolVotingThresholdsFinalization = new FinalizationRegistry((ptr) =>
+  wasm.__wbg_poolvotingthresholds_free(ptr)
+);
+/** */
+export class PoolVotingThresholds {
+  static __wrap(ptr) {
+    const obj = Object.create(PoolVotingThresholds.prototype);
+    obj.ptr = ptr;
+    PoolVotingThresholdsFinalization.register(obj, obj.ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.ptr;
+    this.ptr = 0;
+    PoolVotingThresholdsFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_poolvotingthresholds_free(ptr);
+  }
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.poolvotingthresholds_to_bytes(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var v0 = getArrayU8FromWasm0(r0, r1).slice();
+      wasm.__wbindgen_free(r0, r1 * 1);
+      return v0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {PoolVotingThresholds}
+   */
+  static from_bytes(bytes) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+      const len0 = WASM_VECTOR_LEN;
+      wasm.poolvotingthresholds_from_bytes(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return PoolVotingThresholds.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {string}
+   */
+  to_json() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.poolvotingthresholds_to_json(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      var ptr0 = r0;
+      var len0 = r1;
+      if (r3) {
+        ptr0 = 0;
+        len0 = 0;
+        throw takeObject(r2);
+      }
+      return getStringFromWasm0(ptr0, len0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(ptr0, len0);
+    }
+  }
+  /**
+   * @returns {any}
+   */
+  to_js_value() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.poolvotingthresholds_to_js_value(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return takeObject(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @param {string} json
+   * @returns {PoolVotingThresholds}
+   */
+  static from_json(json) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        json,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      wasm.poolvotingthresholds_from_json(retptr, ptr0, len0);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return PoolVotingThresholds.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  motion_no_confidence() {
+    const ret = wasm.drepvotingthresholds_motion_no_confidence(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  committee_normal() {
+    const ret = wasm.drepvotingthresholds_committee_normal(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  committee_no_confidence() {
+    const ret = wasm.drepvotingthresholds_committee_no_confidence(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @returns {UnitInterval}
+   */
+  hard_fork_initiation() {
+    const ret = wasm.drepvotingthresholds_update_constitution(this.ptr);
+    return UnitInterval.__wrap(ret);
+  }
+  /**
+   * @param {UnitInterval} motion_no_confidence
+   * @param {UnitInterval} committee_normal
+   * @param {UnitInterval} committee_no_confidence
+   * @param {UnitInterval} hard_fork_initiation
+   * @returns {PoolVotingThresholds}
+   */
+  static new(
+    motion_no_confidence,
+    committee_normal,
+    committee_no_confidence,
+    hard_fork_initiation,
+  ) {
+    _assertClass(motion_no_confidence, UnitInterval);
+    _assertClass(committee_normal, UnitInterval);
+    _assertClass(committee_no_confidence, UnitInterval);
+    _assertClass(hard_fork_initiation, UnitInterval);
+    const ret = wasm.poolvotingthresholds_new(
+      motion_no_confidence.ptr,
+      committee_normal.ptr,
+      committee_no_confidence.ptr,
+      hard_fork_initiation.ptr,
+    );
+    return PoolVotingThresholds.__wrap(ret);
+  }
+}
+
 const PrivateKeyFinalization = new FinalizationRegistry((ptr) =>
   wasm.__wbg_privatekey_free(ptr)
 );
@@ -14013,33 +14443,29 @@ export class ProposalProcedure {
     return GovernanceAction.__wrap(ret);
   }
   /**
-   * @returns {Anchor | undefined}
+   * @returns {Anchor}
    */
   anchor() {
     const ret = wasm.proposalprocedure_anchor(this.ptr);
-    return ret === 0 ? undefined : Anchor.__wrap(ret);
+    return Anchor.__wrap(ret);
   }
   /**
    * @param {BigNum} deposit
    * @param {ScriptHash} hash
    * @param {GovernanceAction} governance_action
-   * @param {Anchor | undefined} anchor
+   * @param {Anchor} anchor
    * @returns {ProposalProcedure}
    */
   static new(deposit, hash, governance_action, anchor) {
     _assertClass(deposit, BigNum);
     _assertClass(hash, ScriptHash);
     _assertClass(governance_action, GovernanceAction);
-    let ptr0 = 0;
-    if (!isLikeNone(anchor)) {
-      _assertClass(anchor, Anchor);
-      ptr0 = anchor.__destroy_into_raw();
-    }
+    _assertClass(anchor, Anchor);
     const ret = wasm.proposalprocedure_new(
       deposit.ptr,
       hash.ptr,
       governance_action.ptr,
-      ptr0,
+      anchor.ptr,
     );
     return ProposalProcedure.__wrap(ret);
   }
@@ -14849,6 +15275,134 @@ export class ProtocolParamUpdate {
     }
   }
   /**
+   * @param {PoolVotingThresholds} pool_voting_thresholds
+   */
+  set_pool_voting_thresholds(pool_voting_thresholds) {
+    _assertClass(pool_voting_thresholds, PoolVotingThresholds);
+    var ptr0 = pool_voting_thresholds.__destroy_into_raw();
+    wasm.protocolparamupdate_set_pool_voting_thresholds(this.ptr, ptr0);
+  }
+  /**
+   * @returns {PoolVotingThresholds | undefined}
+   */
+  pool_voting_thresholds() {
+    const ret = wasm.protocolparamupdate_pool_voting_thresholds(this.ptr);
+    return ret === 0 ? undefined : PoolVotingThresholds.__wrap(ret);
+  }
+  /**
+   * @param {DrepVotingThresholds} drep_voting_thresholds
+   */
+  set_drep_voting_thresholds(drep_voting_thresholds) {
+    _assertClass(drep_voting_thresholds, DrepVotingThresholds);
+    var ptr0 = drep_voting_thresholds.__destroy_into_raw();
+    wasm.protocolparamupdate_set_drep_voting_thresholds(this.ptr, ptr0);
+  }
+  /**
+   * @returns {DrepVotingThresholds | undefined}
+   */
+  drep_voting_thresholds() {
+    const ret = wasm.protocolparamupdate_drep_voting_thresholds(this.ptr);
+    return ret === 0 ? undefined : DrepVotingThresholds.__wrap(ret);
+  }
+  /**
+   * @param {BigNum} min_committee_size
+   */
+  set_min_committee_size(min_committee_size) {
+    _assertClass(min_committee_size, BigNum);
+    var ptr0 = min_committee_size.__destroy_into_raw();
+    wasm.protocolparamupdate_set_min_committee_size(this.ptr, ptr0);
+  }
+  /**
+   * @returns {BigNum | undefined}
+   */
+  min_committee_size() {
+    const ret = wasm.protocolparamupdate_min_committee_size(this.ptr);
+    return ret === 0 ? undefined : BigNum.__wrap(ret);
+  }
+  /**
+   * @param {BigNum} committee_term_limit
+   */
+  set_committee_term_limit(committee_term_limit) {
+    _assertClass(committee_term_limit, BigNum);
+    var ptr0 = committee_term_limit.__destroy_into_raw();
+    wasm.protocolparamupdate_set_committee_term_limit(this.ptr, ptr0);
+  }
+  /**
+   * @returns {BigNum | undefined}
+   */
+  committee_term_limit() {
+    const ret = wasm.protocolparamupdate_committee_term_limit(this.ptr);
+    return ret === 0 ? undefined : BigNum.__wrap(ret);
+  }
+  /**
+   * @param {BigNum} governance_action_expiration
+   */
+  set_governance_action_expiration(governance_action_expiration) {
+    _assertClass(governance_action_expiration, BigNum);
+    var ptr0 = governance_action_expiration.__destroy_into_raw();
+    wasm.protocolparamupdate_set_governance_action_expiration(this.ptr, ptr0);
+  }
+  /**
+   * @returns {BigNum | undefined}
+   */
+  governance_action_expiration() {
+    const ret = wasm.protocolparamupdate_governance_action_expiration(this.ptr);
+    return ret === 0 ? undefined : BigNum.__wrap(ret);
+  }
+  /**
+   * @param {BigNum} governance_action_deposit
+   */
+  set_governance_action_deposit(governance_action_deposit) {
+    _assertClass(governance_action_deposit, BigNum);
+    var ptr0 = governance_action_deposit.__destroy_into_raw();
+    wasm.protocolparamupdate_set_governance_action_deposit(this.ptr, ptr0);
+  }
+  /**
+   * @returns {BigNum | undefined}
+   */
+  governance_action_deposit() {
+    const ret = wasm.protocolparamupdate_governance_action_deposit(this.ptr);
+    return ret === 0 ? undefined : BigNum.__wrap(ret);
+  }
+  /**
+   * @param {BigNum} drep_deposit
+   */
+  set_drep_deposit(drep_deposit) {
+    _assertClass(drep_deposit, BigNum);
+    var ptr0 = drep_deposit.__destroy_into_raw();
+    wasm.protocolparamupdate_set_drep_deposit(this.ptr, ptr0);
+  }
+  /**
+   * @returns {BigNum | undefined}
+   */
+  drep_deposit() {
+    const ret = wasm.protocolparamupdate_drep_deposit(this.ptr);
+    return ret === 0 ? undefined : BigNum.__wrap(ret);
+  }
+  /**
+   * @param {number} drep_inactivity_period
+   */
+  set_drep_inactivity_period(drep_inactivity_period) {
+    wasm.protocolparamupdate_set_drep_inactivity_period(
+      this.ptr,
+      drep_inactivity_period,
+    );
+  }
+  /**
+   * @returns {number | undefined}
+   */
+  drep_inactivity_period() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.protocolparamupdate_drep_inactivity_period(retptr, this.ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      return r0 === 0 ? undefined : r1 >>> 0;
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
    * @returns {ProtocolParamUpdate}
    */
   static new() {
@@ -15274,7 +15828,7 @@ export class Redeemer {
    * @returns {ExUnits}
    */
   ex_units() {
-    const ret = wasm.redeemer_ex_units(this.ptr);
+    const ret = wasm.drepvotingthresholds_update_constitution(this.ptr);
     return ExUnits.__wrap(ret);
   }
   /**
@@ -27163,33 +27717,29 @@ export class VotingProcedure {
     return ret >>> 0;
   }
   /**
-   * @returns {Anchor | undefined}
+   * @returns {Anchor}
    */
   anchor() {
     const ret = wasm.votingprocedure_anchor(this.ptr);
-    return ret === 0 ? undefined : Anchor.__wrap(ret);
+    return Anchor.__wrap(ret);
   }
   /**
    * @param {GovernanceActionId} governance_action_id
    * @param {Voter} voter
    * @param {Vote} vote
-   * @param {Anchor | undefined} anchor
+   * @param {Anchor} anchor
    * @returns {VotingProcedure}
    */
   static new(governance_action_id, voter, vote, anchor) {
     _assertClass(governance_action_id, GovernanceActionId);
     _assertClass(voter, Voter);
     _assertClass(vote, Vote);
-    let ptr0 = 0;
-    if (!isLikeNone(anchor)) {
-      _assertClass(anchor, Anchor);
-      ptr0 = anchor.__destroy_into_raw();
-    }
+    _assertClass(anchor, Anchor);
     const ret = wasm.votingprocedure_new(
       governance_action_id.ptr,
       voter.ptr,
       vote.ptr,
-      ptr0,
+      anchor.ptr,
     );
     return VotingProcedure.__wrap(ret);
   }
@@ -27671,7 +28221,7 @@ const imports = {
           const a = state0.a;
           state0.a = 0;
           try {
-            return __wbg_adapter_1638(a, state0.b, arg0, arg1);
+            return __wbg_adapter_1680(a, state0.b, arg0, arg1);
           } finally {
             state0.a = a;
           }
@@ -27765,8 +28315,8 @@ const imports = {
       const ret = wasm.memory;
       return addHeapObject(ret);
     },
-    __wbindgen_closure_wrapper6919: function (arg0, arg1, arg2) {
-      const ret = makeMutClosure(arg0, arg1, 214, __wbg_adapter_30);
+    __wbindgen_closure_wrapper7018: function (arg0, arg1, arg2) {
+      const ret = makeMutClosure(arg0, arg1, 216, __wbg_adapter_30);
       return addHeapObject(ret);
     },
   },
@@ -27806,7 +28356,7 @@ let lastLoadPromise;
  * @param {InstantiateOptions=} opts
  * @returns {Promise<{
  *   instance: WebAssembly.Instance;
- *   exports: { encrypt_with_password: typeof encrypt_with_password; decrypt_with_password: typeof decrypt_with_password; min_fee: typeof min_fee; encode_arbitrary_bytes_as_metadatum: typeof encode_arbitrary_bytes_as_metadatum; decode_arbitrary_bytes_from_metadatum: typeof decode_arbitrary_bytes_from_metadatum; encode_json_str_to_metadatum: typeof encode_json_str_to_metadatum; decode_metadatum_to_json_str: typeof decode_metadatum_to_json_str; encode_json_str_to_plutus_datum: typeof encode_json_str_to_plutus_datum; decode_plutus_datum_to_json_str: typeof decode_plutus_datum_to_json_str; make_daedalus_bootstrap_witness: typeof make_daedalus_bootstrap_witness; make_icarus_bootstrap_witness: typeof make_icarus_bootstrap_witness; make_vkey_witness: typeof make_vkey_witness; hash_auxiliary_data: typeof hash_auxiliary_data; hash_transaction: typeof hash_transaction; hash_plutus_data: typeof hash_plutus_data; hash_blake2b256: typeof hash_blake2b256; hash_blake2b224: typeof hash_blake2b224; hash_script_data: typeof hash_script_data; get_implicit_input: typeof get_implicit_input; get_deposit: typeof get_deposit; min_ada_required: typeof min_ada_required; encode_json_str_to_native_script: typeof encode_json_str_to_native_script; apply_params_to_plutus_script: typeof apply_params_to_plutus_script; Address : typeof Address ; Anchor : typeof Anchor ; AssetName : typeof AssetName ; AssetNames : typeof AssetNames ; Assets : typeof Assets ; AuxiliaryData : typeof AuxiliaryData ; AuxiliaryDataHash : typeof AuxiliaryDataHash ; AuxiliaryDataSet : typeof AuxiliaryDataSet ; BaseAddress : typeof BaseAddress ; BigInt : typeof BigInt ; BigNum : typeof BigNum ; Bip32PrivateKey : typeof Bip32PrivateKey ; Bip32PublicKey : typeof Bip32PublicKey ; Block : typeof Block ; BlockHash : typeof BlockHash ; Blockfrost : typeof Blockfrost ; BootstrapWitness : typeof BootstrapWitness ; BootstrapWitnesses : typeof BootstrapWitnesses ; ByronAddress : typeof ByronAddress ; Certificate : typeof Certificate ; Certificates : typeof Certificates ; ConstrPlutusData : typeof ConstrPlutusData ; CostModel : typeof CostModel ; Costmdls : typeof Costmdls ; DNSRecordAorAAAA : typeof DNSRecordAorAAAA ; DNSRecordSRV : typeof DNSRecordSRV ; Data : typeof Data ; DataHash : typeof DataHash ; Datum : typeof Datum ; Drep : typeof Drep ; Ed25519KeyHash : typeof Ed25519KeyHash ; Ed25519KeyHashes : typeof Ed25519KeyHashes ; Ed25519Signature : typeof Ed25519Signature ; EnterpriseAddress : typeof EnterpriseAddress ; ExUnitPrices : typeof ExUnitPrices ; ExUnits : typeof ExUnits ; GeneralTransactionMetadata : typeof GeneralTransactionMetadata ; GenesisDelegateHash : typeof GenesisDelegateHash ; GenesisHash : typeof GenesisHash ; GenesisHashes : typeof GenesisHashes ; GenesisKeyDelegation : typeof GenesisKeyDelegation ; GovernanceAction : typeof GovernanceAction ; GovernanceActionId : typeof GovernanceActionId ; HardForkInitiationAction : typeof HardForkInitiationAction ; Header : typeof Header ; HeaderBody : typeof HeaderBody ; Int : typeof Int ; Ipv4 : typeof Ipv4 ; Ipv6 : typeof Ipv6 ; KESSignature : typeof KESSignature ; KESVKey : typeof KESVKey ; Language : typeof Language ; Languages : typeof Languages ; LegacyDaedalusPrivateKey : typeof LegacyDaedalusPrivateKey ; LinearFee : typeof LinearFee ; MIRToStakeCredentials : typeof MIRToStakeCredentials ; MetadataList : typeof MetadataList ; MetadataMap : typeof MetadataMap ; Mint : typeof Mint ; MintAssets : typeof MintAssets ; MoveInstantaneousReward : typeof MoveInstantaneousReward ; MoveInstantaneousRewardsCert : typeof MoveInstantaneousRewardsCert ; MultiAsset : typeof MultiAsset ; MultiHostName : typeof MultiHostName ; NativeScript : typeof NativeScript ; NativeScripts : typeof NativeScripts ; NetworkId : typeof NetworkId ; NetworkInfo : typeof NetworkInfo ; NewCommittee : typeof NewCommittee ; NewConstitution : typeof NewConstitution ; Nonce : typeof Nonce ; OperationalCert : typeof OperationalCert ; ParameterChangeAction : typeof ParameterChangeAction ; PlutusData : typeof PlutusData ; PlutusList : typeof PlutusList ; PlutusMap : typeof PlutusMap ; PlutusScript : typeof PlutusScript ; PlutusScripts : typeof PlutusScripts ; PlutusWitness : typeof PlutusWitness ; Pointer : typeof Pointer ; PointerAddress : typeof PointerAddress ; PoolMetadata : typeof PoolMetadata ; PoolMetadataHash : typeof PoolMetadataHash ; PoolParams : typeof PoolParams ; PoolRegistration : typeof PoolRegistration ; PoolRetirement : typeof PoolRetirement ; PrivateKey : typeof PrivateKey ; ProposalProcedure : typeof ProposalProcedure ; ProposalProcedures : typeof ProposalProcedures ; ProposedProtocolParameterUpdates : typeof ProposedProtocolParameterUpdates ; ProtocolParamUpdate : typeof ProtocolParamUpdate ; ProtocolVersion : typeof ProtocolVersion ; PublicKey : typeof PublicKey ; PublicKeys : typeof PublicKeys ; Redeemer : typeof Redeemer ; RedeemerTag : typeof RedeemerTag ; RedeemerWitnessKey : typeof RedeemerWitnessKey ; Redeemers : typeof Redeemers ; RegCert : typeof RegCert ; RegCommitteeHotKeyCert : typeof RegCommitteeHotKeyCert ; RegDrepCert : typeof RegDrepCert ; Relay : typeof Relay ; Relays : typeof Relays ; RequiredWitnessSet : typeof RequiredWitnessSet ; RewardAddress : typeof RewardAddress ; RewardAddresses : typeof RewardAddresses ; Script : typeof Script ; ScriptAll : typeof ScriptAll ; ScriptAny : typeof ScriptAny ; ScriptDataHash : typeof ScriptDataHash ; ScriptHash : typeof ScriptHash ; ScriptHashes : typeof ScriptHashes ; ScriptNOfK : typeof ScriptNOfK ; ScriptPubkey : typeof ScriptPubkey ; ScriptRef : typeof ScriptRef ; ScriptWitness : typeof ScriptWitness ; SingleHostAddr : typeof SingleHostAddr ; SingleHostName : typeof SingleHostName ; StakeCredential : typeof StakeCredential ; StakeCredentials : typeof StakeCredentials ; StakeDelegation : typeof StakeDelegation ; StakeDeregistration : typeof StakeDeregistration ; StakeRegDelegCert : typeof StakeRegDelegCert ; StakeRegistration : typeof StakeRegistration ; StakeVoteDelegCert : typeof StakeVoteDelegCert ; StakeVoteRegDelegCert : typeof StakeVoteRegDelegCert ; Strings : typeof Strings ; TimelockExpiry : typeof TimelockExpiry ; TimelockStart : typeof TimelockStart ; Transaction : typeof Transaction ; TransactionBodies : typeof TransactionBodies ; TransactionBody : typeof TransactionBody ; TransactionBuilder : typeof TransactionBuilder ; TransactionBuilderConfig : typeof TransactionBuilderConfig ; TransactionBuilderConfigBuilder : typeof TransactionBuilderConfigBuilder ; TransactionHash : typeof TransactionHash ; TransactionIndexes : typeof TransactionIndexes ; TransactionInput : typeof TransactionInput ; TransactionInputs : typeof TransactionInputs ; TransactionMetadatum : typeof TransactionMetadatum ; TransactionMetadatumLabels : typeof TransactionMetadatumLabels ; TransactionOutput : typeof TransactionOutput ; TransactionOutputAmountBuilder : typeof TransactionOutputAmountBuilder ; TransactionOutputBuilder : typeof TransactionOutputBuilder ; TransactionOutputs : typeof TransactionOutputs ; TransactionUnspentOutput : typeof TransactionUnspentOutput ; TransactionUnspentOutputs : typeof TransactionUnspentOutputs ; TransactionWitnessSet : typeof TransactionWitnessSet ; TransactionWitnessSetBuilder : typeof TransactionWitnessSetBuilder ; TransactionWitnessSets : typeof TransactionWitnessSets ; TreasuryWithdrawals : typeof TreasuryWithdrawals ; TreasuryWithdrawalsAction : typeof TreasuryWithdrawalsAction ; UnitInterval : typeof UnitInterval ; UnregCert : typeof UnregCert ; UnregCommitteeHotKeyCert : typeof UnregCommitteeHotKeyCert ; UnregDrepCert : typeof UnregDrepCert ; Update : typeof Update ; Url : typeof Url ; VRFCert : typeof VRFCert ; VRFKeyHash : typeof VRFKeyHash ; VRFVKey : typeof VRFVKey ; Value : typeof Value ; Vkey : typeof Vkey ; Vkeys : typeof Vkeys ; Vkeywitness : typeof Vkeywitness ; Vkeywitnesses : typeof Vkeywitnesses ; Vote : typeof Vote ; VoteDelegCert : typeof VoteDelegCert ; VoteRegDelegCert : typeof VoteRegDelegCert ; Voter : typeof Voter ; VotingProcedure : typeof VotingProcedure ; VotingProcedures : typeof VotingProcedures ; Withdrawals : typeof Withdrawals  }
+ *   exports: { encrypt_with_password: typeof encrypt_with_password; decrypt_with_password: typeof decrypt_with_password; min_fee: typeof min_fee; encode_arbitrary_bytes_as_metadatum: typeof encode_arbitrary_bytes_as_metadatum; decode_arbitrary_bytes_from_metadatum: typeof decode_arbitrary_bytes_from_metadatum; encode_json_str_to_metadatum: typeof encode_json_str_to_metadatum; decode_metadatum_to_json_str: typeof decode_metadatum_to_json_str; encode_json_str_to_plutus_datum: typeof encode_json_str_to_plutus_datum; decode_plutus_datum_to_json_str: typeof decode_plutus_datum_to_json_str; make_daedalus_bootstrap_witness: typeof make_daedalus_bootstrap_witness; make_icarus_bootstrap_witness: typeof make_icarus_bootstrap_witness; make_vkey_witness: typeof make_vkey_witness; hash_auxiliary_data: typeof hash_auxiliary_data; hash_transaction: typeof hash_transaction; hash_plutus_data: typeof hash_plutus_data; hash_blake2b256: typeof hash_blake2b256; hash_blake2b224: typeof hash_blake2b224; hash_script_data: typeof hash_script_data; get_implicit_input: typeof get_implicit_input; get_deposit: typeof get_deposit; min_ada_required: typeof min_ada_required; encode_json_str_to_native_script: typeof encode_json_str_to_native_script; apply_params_to_plutus_script: typeof apply_params_to_plutus_script; Address : typeof Address ; Anchor : typeof Anchor ; AssetName : typeof AssetName ; AssetNames : typeof AssetNames ; Assets : typeof Assets ; AuxiliaryData : typeof AuxiliaryData ; AuxiliaryDataHash : typeof AuxiliaryDataHash ; AuxiliaryDataSet : typeof AuxiliaryDataSet ; BaseAddress : typeof BaseAddress ; BigInt : typeof BigInt ; BigNum : typeof BigNum ; Bip32PrivateKey : typeof Bip32PrivateKey ; Bip32PublicKey : typeof Bip32PublicKey ; Block : typeof Block ; BlockHash : typeof BlockHash ; Blockfrost : typeof Blockfrost ; BootstrapWitness : typeof BootstrapWitness ; BootstrapWitnesses : typeof BootstrapWitnesses ; ByronAddress : typeof ByronAddress ; Certificate : typeof Certificate ; Certificates : typeof Certificates ; ConstrPlutusData : typeof ConstrPlutusData ; CostModel : typeof CostModel ; Costmdls : typeof Costmdls ; DNSRecordAorAAAA : typeof DNSRecordAorAAAA ; DNSRecordSRV : typeof DNSRecordSRV ; Data : typeof Data ; DataHash : typeof DataHash ; Datum : typeof Datum ; Drep : typeof Drep ; DrepVotingThresholds : typeof DrepVotingThresholds ; Ed25519KeyHash : typeof Ed25519KeyHash ; Ed25519KeyHashes : typeof Ed25519KeyHashes ; Ed25519Signature : typeof Ed25519Signature ; EnterpriseAddress : typeof EnterpriseAddress ; ExUnitPrices : typeof ExUnitPrices ; ExUnits : typeof ExUnits ; GeneralTransactionMetadata : typeof GeneralTransactionMetadata ; GenesisDelegateHash : typeof GenesisDelegateHash ; GenesisHash : typeof GenesisHash ; GenesisHashes : typeof GenesisHashes ; GenesisKeyDelegation : typeof GenesisKeyDelegation ; GovernanceAction : typeof GovernanceAction ; GovernanceActionId : typeof GovernanceActionId ; HardForkInitiationAction : typeof HardForkInitiationAction ; Header : typeof Header ; HeaderBody : typeof HeaderBody ; Int : typeof Int ; Ipv4 : typeof Ipv4 ; Ipv6 : typeof Ipv6 ; KESSignature : typeof KESSignature ; KESVKey : typeof KESVKey ; Language : typeof Language ; Languages : typeof Languages ; LegacyDaedalusPrivateKey : typeof LegacyDaedalusPrivateKey ; LinearFee : typeof LinearFee ; MIRToStakeCredentials : typeof MIRToStakeCredentials ; MetadataList : typeof MetadataList ; MetadataMap : typeof MetadataMap ; Mint : typeof Mint ; MintAssets : typeof MintAssets ; MoveInstantaneousReward : typeof MoveInstantaneousReward ; MoveInstantaneousRewardsCert : typeof MoveInstantaneousRewardsCert ; MultiAsset : typeof MultiAsset ; MultiHostName : typeof MultiHostName ; NativeScript : typeof NativeScript ; NativeScripts : typeof NativeScripts ; NetworkId : typeof NetworkId ; NetworkInfo : typeof NetworkInfo ; NewCommittee : typeof NewCommittee ; NewConstitution : typeof NewConstitution ; Nonce : typeof Nonce ; OperationalCert : typeof OperationalCert ; ParameterChangeAction : typeof ParameterChangeAction ; PlutusData : typeof PlutusData ; PlutusList : typeof PlutusList ; PlutusMap : typeof PlutusMap ; PlutusScript : typeof PlutusScript ; PlutusScripts : typeof PlutusScripts ; PlutusWitness : typeof PlutusWitness ; Pointer : typeof Pointer ; PointerAddress : typeof PointerAddress ; PoolMetadata : typeof PoolMetadata ; PoolMetadataHash : typeof PoolMetadataHash ; PoolParams : typeof PoolParams ; PoolRegistration : typeof PoolRegistration ; PoolRetirement : typeof PoolRetirement ; PoolVotingThresholds : typeof PoolVotingThresholds ; PrivateKey : typeof PrivateKey ; ProposalProcedure : typeof ProposalProcedure ; ProposalProcedures : typeof ProposalProcedures ; ProposedProtocolParameterUpdates : typeof ProposedProtocolParameterUpdates ; ProtocolParamUpdate : typeof ProtocolParamUpdate ; ProtocolVersion : typeof ProtocolVersion ; PublicKey : typeof PublicKey ; PublicKeys : typeof PublicKeys ; Redeemer : typeof Redeemer ; RedeemerTag : typeof RedeemerTag ; RedeemerWitnessKey : typeof RedeemerWitnessKey ; Redeemers : typeof Redeemers ; RegCert : typeof RegCert ; RegCommitteeHotKeyCert : typeof RegCommitteeHotKeyCert ; RegDrepCert : typeof RegDrepCert ; Relay : typeof Relay ; Relays : typeof Relays ; RequiredWitnessSet : typeof RequiredWitnessSet ; RewardAddress : typeof RewardAddress ; RewardAddresses : typeof RewardAddresses ; Script : typeof Script ; ScriptAll : typeof ScriptAll ; ScriptAny : typeof ScriptAny ; ScriptDataHash : typeof ScriptDataHash ; ScriptHash : typeof ScriptHash ; ScriptHashes : typeof ScriptHashes ; ScriptNOfK : typeof ScriptNOfK ; ScriptPubkey : typeof ScriptPubkey ; ScriptRef : typeof ScriptRef ; ScriptWitness : typeof ScriptWitness ; SingleHostAddr : typeof SingleHostAddr ; SingleHostName : typeof SingleHostName ; StakeCredential : typeof StakeCredential ; StakeCredentials : typeof StakeCredentials ; StakeDelegation : typeof StakeDelegation ; StakeDeregistration : typeof StakeDeregistration ; StakeRegDelegCert : typeof StakeRegDelegCert ; StakeRegistration : typeof StakeRegistration ; StakeVoteDelegCert : typeof StakeVoteDelegCert ; StakeVoteRegDelegCert : typeof StakeVoteRegDelegCert ; Strings : typeof Strings ; TimelockExpiry : typeof TimelockExpiry ; TimelockStart : typeof TimelockStart ; Transaction : typeof Transaction ; TransactionBodies : typeof TransactionBodies ; TransactionBody : typeof TransactionBody ; TransactionBuilder : typeof TransactionBuilder ; TransactionBuilderConfig : typeof TransactionBuilderConfig ; TransactionBuilderConfigBuilder : typeof TransactionBuilderConfigBuilder ; TransactionHash : typeof TransactionHash ; TransactionIndexes : typeof TransactionIndexes ; TransactionInput : typeof TransactionInput ; TransactionInputs : typeof TransactionInputs ; TransactionMetadatum : typeof TransactionMetadatum ; TransactionMetadatumLabels : typeof TransactionMetadatumLabels ; TransactionOutput : typeof TransactionOutput ; TransactionOutputAmountBuilder : typeof TransactionOutputAmountBuilder ; TransactionOutputBuilder : typeof TransactionOutputBuilder ; TransactionOutputs : typeof TransactionOutputs ; TransactionUnspentOutput : typeof TransactionUnspentOutput ; TransactionUnspentOutputs : typeof TransactionUnspentOutputs ; TransactionWitnessSet : typeof TransactionWitnessSet ; TransactionWitnessSetBuilder : typeof TransactionWitnessSetBuilder ; TransactionWitnessSets : typeof TransactionWitnessSets ; TreasuryWithdrawals : typeof TreasuryWithdrawals ; TreasuryWithdrawalsAction : typeof TreasuryWithdrawalsAction ; UnitInterval : typeof UnitInterval ; UnregCert : typeof UnregCert ; UnregCommitteeHotKeyCert : typeof UnregCommitteeHotKeyCert ; UnregDrepCert : typeof UnregDrepCert ; Update : typeof Update ; Url : typeof Url ; VRFCert : typeof VRFCert ; VRFKeyHash : typeof VRFKeyHash ; VRFVKey : typeof VRFVKey ; Value : typeof Value ; Vkey : typeof Vkey ; Vkeys : typeof Vkeys ; Vkeywitness : typeof Vkeywitness ; Vkeywitnesses : typeof Vkeywitnesses ; Vote : typeof Vote ; VoteDelegCert : typeof VoteDelegCert ; VoteRegDelegCert : typeof VoteRegDelegCert ; Voter : typeof Voter ; VotingProcedure : typeof VotingProcedure ; VotingProcedures : typeof VotingProcedures ; Withdrawals : typeof Withdrawals  }
  * }>}
  */
 export function instantiateWithInstance(opts) {
@@ -27888,6 +28438,7 @@ function getWasmInstanceExports() {
     DataHash,
     Datum,
     Drep,
+    DrepVotingThresholds,
     Ed25519KeyHash,
     Ed25519KeyHashes,
     Ed25519Signature,
@@ -27944,6 +28495,7 @@ function getWasmInstanceExports() {
     PoolParams,
     PoolRegistration,
     PoolRetirement,
+    PoolVotingThresholds,
     PrivateKey,
     ProposalProcedure,
     ProposalProcedures,
