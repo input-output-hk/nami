@@ -1547,14 +1547,15 @@ export const initHW = async ({ device, id }) => {
  * @param {string} assetName utf8 encoded
  */
 export const getAdaHandle = async (assetName) => {
-  const network = await getNetwork();
-  const assetNameHex = Buffer.from(assetName).toString('hex');
-  if (!assetNameHex || assetNameHex.length == 0) return null;
-  const policy = ADA_HANDLE[network.id];
-  const asset = policy + assetNameHex;
-  const resolvedAddress = await blockfrostRequest(`/assets/${asset}/addresses`);
-  if (!resolvedAddress || resolvedAddress.error) return null;
-  return resolvedAddress[0].address;
+  try {
+    const network = await getNetwork();
+    if( !network || network.id != 'mainnet' ) return null;
+    const response = await fetch(`https://api.handle.me/handles/${assetName}`)
+    const data = response && response.ok ? await response.json() : null
+    return data && data.resolved_addresses && data.resolved_addresses.ada ? data.resolved_addresses.ada : null
+  } catch (e) {
+    return null
+  }
 };
 
 /**
