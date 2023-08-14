@@ -29,12 +29,12 @@ import {
 import { GoStop } from 'react-icons/go';
 // Assets
 import Berry from '../../../assets/img/berry.svg';
-import { ERROR, HW } from '../../../config/config';
+import { ERROR, HW, TAB } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
 import Loader from '../../../api/loader';
 import {
+  createTab,
   getUtxos,
-  isHW,
   removeCollateral,
   setCollateral,
   toUnit,
@@ -208,7 +208,13 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ready={data.ready}
         title="Delegate to Berry"
         sign={async (password, hw) => {
-          if (hw)
+          if (hw) {
+            if (hw.device === HW.trezor) {
+              return createTab(
+                TAB.trezorTx,
+                `?tx=${Buffer.from(data.tx.to_bytes()).toString('hex')}`
+              );
+            }
             return await signAndSubmitHW(data.tx, {
               keyHashes: [
                 data.account.paymentKeyHash,
@@ -217,6 +223,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               account: data.account,
               hw,
             });
+          }
           return await signAndSubmit(
             data.tx,
             {
@@ -269,7 +276,9 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               >
                 Berry Pool
               </Link>{' '}
-              and earn approximately <b>3.7%</b> staking rewards per year. Alternatively, head to https://pool.pm/, connect your Nami wallet and delegate to a stake pool of your choice.
+              and earn approximately <b>3.7%</b> staking rewards per year.
+              Alternatively, head to https://pool.pm/, connect your Nami wallet
+              and delegate to a stake pool of your choice.
             </Text>
             <Box h="6" />
             {data.error ? (
@@ -313,7 +322,13 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       />
       <ConfirmModal
         sign={async (password, hw) => {
-          if (hw)
+          if (hw) {
+            if (hw.device === HW.trezor) {
+              return createTab(
+                TAB.trezorTx,
+                `?tx=${Buffer.from(data.tx.to_bytes()).toString('hex')}`
+              );
+            }
             return await signAndSubmitHW(data.tx, {
               keyHashes: [
                 data.account.paymentKeyHash,
@@ -322,6 +337,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               account: data.account,
               hw,
             });
+          }
           return await signAndSubmit(
             data.tx,
             {
@@ -409,7 +425,13 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ready={data.ready}
         title="Stake deregistration"
         sign={async (password, hw) => {
-          if (hw)
+          if (hw) {
+            if (hw.device === HW.trezor) {
+              return createTab(
+                TAB.trezorTx,
+                `?tx=${Buffer.from(data.tx.to_bytes()).toString('hex')}`
+              );
+            }
             return await signAndSubmitHW(data.tx, {
               keyHashes: [
                 data.account.paymentKeyHash,
@@ -418,6 +440,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               account: data.account,
               hw,
             });
+          }
           return await signAndSubmit(
             data.tx,
             {
@@ -516,12 +539,19 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           </Box>
         }
         sign={async (password, hw) => {
-          if (hw)
+          if (hw) {
+            if (hw.device === HW.trezor) {
+              return createTab(
+                TAB.trezorTx,
+                `?tx=${Buffer.from(data.tx.to_bytes()).toString('hex')}`
+              );
+            }
             return await signAndSubmitHW(data.tx, {
               keyHashes: [data.account.paymentKeyHash],
               account: data.account,
               hw,
             });
+          }
           return await signAndSubmit(
             data.tx,
             {
