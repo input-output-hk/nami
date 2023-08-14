@@ -26,13 +26,14 @@ import {
   TxOutputFormat,
   TxRequiredSignerType,
 } from '@cardano-foundation/ledgerjs-hw-app-cardano';
-import {
+import { crc8 } from 'crc';
+import { PROTO } from '@trezor/connect-web';
+const {
   CardanoAddressType,
   CardanoCertificateType,
   CardanoPoolRelayType,
   CardanoTxSigningMode,
-} from 'trezor-connect';
-import { crc8 } from 'crc';
+} = PROTO;
 
 export async function delay(delayInMs) {
   return new Promise((resolve) => {
