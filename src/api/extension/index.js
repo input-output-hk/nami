@@ -468,6 +468,9 @@ export const setNetwork = async (network) => {
   } else if (network.id === NETWORK_ID.preview) {
     id = NETWORK_ID.preview;
     node = NODE.preview;
+  } else if (network.id === NETWORK_ID.sancho) {
+    id = NETWORK_ID.sancho;
+    node = NODE.sancho;
   } else {
     id = NETWORK_ID.preprod;
     node = NODE.preprod;
@@ -654,6 +657,7 @@ export const isValidAddress = async (address) => {
       (addr.network_id() === 0 &&
         (network.id === NETWORK_ID.testnet ||
           network.id === NETWORK_ID.preview ||
+          network.id === NETWORK_ID.sancho ||
           network.id === NETWORK_ID.preprod))
     )
       return addr.to_bytes();
@@ -666,6 +670,7 @@ export const isValidAddress = async (address) => {
       (addr.network_id() === 0 &&
         (network.id === NETWORK_ID.testnet ||
           network.id === NETWORK_ID.preview ||
+          network.id === NETWORK_ID.sancho ||
           network.id === NETWORK_ID.preprod))
     )
       return addr.to_address().to_bytes();
@@ -684,6 +689,7 @@ const isValidAddressBytes = async (address) => {
       (addr.network_id() === 0 &&
         (network.id === NETWORK_ID.testnet ||
           network.id === NETWORK_ID.preview ||
+          network.id === NETWORK_ID.sancho ||
           network.id === NETWORK_ID.preprod))
     )
       return true;
@@ -696,6 +702,7 @@ const isValidAddressBytes = async (address) => {
       (addr.network_id() === 0 &&
         (network.id === NETWORK_ID.testnet ||
           network.id === NETWORK_ID.preview ||
+          network.id === NETWORK_ID.sancho ||
           network.id === NETWORK_ID.preprod))
     )
       return true;
@@ -1360,6 +1367,11 @@ export const createAccount = async (name, password, accountIndex = null) => {
         paymentAddr: paymentAddrTestnet,
         rewardAddr: rewardAddrTestnet,
       },
+      [NETWORK_ID.sancho]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
       avatar: Math.random().toString(),
     },
   };
@@ -1454,6 +1466,11 @@ export const createHWAccounts = async (accounts) => {
         rewardAddr: rewardAddrTestnet,
       },
       [NETWORK_ID.preprod]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
+      [NETWORK_ID.sancho]: {
         ...networkDefault,
         paymentAddr: paymentAddrTestnet,
         rewardAddr: rewardAddrTestnet,

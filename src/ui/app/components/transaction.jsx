@@ -331,6 +331,8 @@ const TxDetail = ({ displayInfo, network }) => {
                       return 'https://testnet.cardanoscan.io/transaction/';
                     case NETWORK_ID.preview:
                       return 'https://preview.cexplorer.io/tx/';
+                    case NETWORK_ID.preview:
+                      return 'https://sanchonet.cexplorer.io/tx/';
                     case NETWORK_ID.testnet:
                       return 'https://testnet.cexplorer.io/tx/';
                   }
@@ -531,8 +533,7 @@ const getExtra = (info, txType) => {
   } else if (txType === 'multisig') {
     extra.push('multisig');
   }
-  if (info.withdrawal_count && txType === 'self')
-    extra.push('withdrawal');
+  if (info.withdrawal_count && txType === 'self') extra.push('withdrawal');
   if (info.delegation_count) extra.push('delegation');
   if (info.asset_mint_or_burn_count) extra.push('mint');
   if (info.stake_cert_count && parseInt(info.deposit) >= 0) extra.push('stake');

@@ -443,6 +443,7 @@ const Network = () => {
           <option value={NETWORK_ID.preprod}>Preprod</option>
           <option value={NETWORK_ID.preview}>Preview</option>
           <option value={NETWORK_ID.testnet}>Testnet</option>
+          <option value={NETWORK_ID.sancho}>SanchoNet</option>
         </Select>
       </Box>
       <Box height="8" />

@@ -16,7 +16,7 @@ import { Messaging } from '../../api/messaging';
 import {
   APIError,
   METHOD,
-  NETWORKD_ID_NUMBER,
+  NETWORK_ID_NUMBER,
   POPUP,
   SENDER,
   TARGET,
@@ -244,7 +244,7 @@ app.add(METHOD.getNetworkId, async (request, sendResponse) => {
   if (network)
     sendResponse({
       id: request.id,
-      data: NETWORKD_ID_NUMBER[network.id],
+      data: NETWORK_ID_NUMBER[network.id],
       target: TARGET,
       sender: SENDER.extension,
     });
