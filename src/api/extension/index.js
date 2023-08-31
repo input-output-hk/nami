@@ -1252,6 +1252,8 @@ export const requestAccountKey = async (password, accountIndex) => {
     accountKey,
     paymentKey: accountKey.derive(0).derive(0).to_raw_key(),
     stakeKey: accountKey.derive(2).derive(0).to_raw_key(),
+    // cip-95 -----------------------------
+    dRepKey: accountKey.derive(3).derive(0).to_raw_key(),
   };
 };
 
@@ -1272,7 +1274,7 @@ export const createAccount = async (name, password, accountIndex = null) => {
     ? Object.keys(getNativeAccounts(existingAccounts)).length
     : 0;
 
-  let { accountKey, paymentKey, stakeKey } = await requestAccountKey(
+  let { accountKey, paymentKey, stakeKey, dRepKey } = await requestAccountKey(
     password,
     index
   );
@@ -1282,13 +1284,23 @@ export const createAccount = async (name, password, accountIndex = null) => {
   ); // BIP32 Public key
   const paymentKeyPub = paymentKey.to_public();
   const stakeKeyPub = stakeKey.to_public();
+  // cip-95 -----------------------------
+  const dRepKeyPub = Buffer.from(dRepKey.to_public().as_bytes()).toString(
+    'hex'
+  );
+  const stakeKeyPubHex = Buffer.from(stakeKeyPub.as_bytes()).toString(
+    'hex'
+  );
+  // cip-95 -----------------------------
 
   accountKey.free();
   paymentKey.free();
   stakeKey.free();
+  dRepKey.free();
   accountKey = null;
   paymentKey = null;
   stakeKey = null;
+  dRepKey = null;
 
   const paymentKeyHash = Buffer.from(
     paymentKeyPub.hash().to_bytes(),
@@ -1367,12 +1379,9 @@ export const createAccount = async (name, password, accountIndex = null) => {
         paymentAddr: paymentAddrTestnet,
         rewardAddr: rewardAddrTestnet,
       },
-      [NETWORK_ID.sancho]: {
-        ...networkDefault,
-        paymentAddr: paymentAddrTestnet,
-        rewardAddr: rewardAddrTestnet,
-      },
       avatar: Math.random().toString(),
+      dRepKeyPub,
+      stakeKeyPub: stakeKeyPubHex,
     },
   };
 
@@ -1502,43 +1511,23 @@ export const getNativeAccounts = (accounts) => {
   return nativeAccounts;
 };
 
-// CIP-95
-export const generateDRepKey = async (password) => {
-  await Loader.load();
-  const encryptedRootKey = await getStorage(STORAGE.encryptedKey);
-  let privDRepKey;
+// CIP-95 -----------------------------
 
-  const currentAccountIndex = await getCurrentAccountIndex();
-
-  try {
-    privDRepKey = Loader.Cardano.Bip32PrivateKey.from_bytes(
-      Buffer.from(await decryptWithPassword(password, encryptedRootKey), 'hex')
-    )
-      .derive(harden(1718))
-      .derive(harden(1815))
-      .derive(harden(parseInt(currentAccountIndex)))
-      .derive(0)
-      .derive(0);
-  } catch (e) {
-    throw ERROR.wrongPassword;
-  }
-  const pubDRepKey = Buffer.from(
-    privDRepKey.to_raw_key().to_public().as_bytes()
-  ).toString('hex');
-
-  return pubDRepKey;
-};
-
+// Get the account's pub DRep key
 export const getDRepKey = async () => {
-  const result = await getStorage(STORAGE.pubDRepKey);
-  return result ? result : [];
+  await Loader.load();
+  const currentAccount = await getCurrentAccount();
+  return currentAccount.dRepKeyPub;
 };
 
-export const indexToHw = (accountIndex) => ({
-  device: accountIndex.split('-')[0],
-  id: accountIndex.split('-')[1],
-  account: parseInt(accountIndex.split('-')[2]),
-});
+// Get the account's pub stake key
+export const getStakeKey = async () => {
+  await Loader.load();
+  const currentAccount = await getCurrentAccount();
+  return [currentAccount.stakeKeyPub];
+};
+
+// CIP-95 -----------------------------
 
 export const getHwAccounts = (accounts, { device, id }) => {
   const hwAccounts = {};
@@ -1719,26 +1708,6 @@ export const createWallet = async (name, seedPhrase, password) => {
     else break;
     searchIndex++;
   }
-
-  // CIP-95
-  const dRepKey = await generateDRepKey(password);
-
-  await setStorage({
-    [STORAGE.pubDRepKey]: dRepKey,
-  });
-
-  let { stakeKey } = await requestAccountKey(
-    password,
-    getCurrentAccountIndex()
-  );
-
-  const pubStakeKey = Buffer.from(stakeKey.to_public().as_bytes()).toString(
-    'hex'
-  );
-
-  await setStorage({
-    [STORAGE.pubStakeKey]: pubStakeKey,
-  });
 
   password = null;
 
