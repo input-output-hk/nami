@@ -1379,6 +1379,11 @@ export const createAccount = async (name, password, accountIndex = null) => {
         paymentAddr: paymentAddrTestnet,
         rewardAddr: rewardAddrTestnet,
       },
+      [NETWORK_ID.sancho]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
       avatar: Math.random().toString(),
       dRepKeyPub,
       stakeKeyPub: stakeKeyPubHex,
@@ -1528,6 +1533,12 @@ export const getStakeKey = async () => {
 };
 
 // CIP-95 -----------------------------
+
+export const indexToHw = (accountIndex) => ({
+  device: accountIndex.split('-')[0],
+  id: accountIndex.split('-')[1],
+  account: parseInt(accountIndex.split('-')[2]),
+});
 
 export const getHwAccounts = (accounts, { device, id }) => {
   const hwAccounts = {};
