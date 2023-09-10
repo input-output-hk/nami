@@ -1379,6 +1379,11 @@ export const createAccount = async (name, password, accountIndex = null) => {
         paymentAddr: paymentAddrTestnet,
         rewardAddr: rewardAddrTestnet,
       },
+      [NETWORK_ID.sancho]: {
+        ...networkDefault,
+        paymentAddr: paymentAddrTestnet,
+        rewardAddr: rewardAddrTestnet,
+      },
       avatar: Math.random().toString(),
       dRepKeyPub,
       stakeKeyPub: stakeKeyPubHex,
