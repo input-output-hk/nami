@@ -9,8 +9,6 @@ export const METHOD = {
   getBalance: 'getBalance',
   getDelegation: 'getDelegation',
   getUtxos: 'getUtxos',
-  getDRepKey: 'getDRepKey',
-  getStakeKey: 'getStakeKey',
   getCollateral: 'getCollateral',
   getRewardAddress: 'getRewardAddress',
   getAddress: 'getAddress',
@@ -20,6 +18,10 @@ export const METHOD = {
   //internal
   requestData: 'requestData',
   returnData: 'returnData',
+  // CIP-95
+  getPubDRepKey: 'getPubDRepKey',
+  getRegisteredPubStakeKeys: 'getRegisteredPubStakeKeys',
+  getUnregisteredPubStakeKeys: 'getUnregisteredPubStakeKeys',
 };
 
 /*

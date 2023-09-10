@@ -87,63 +87,25 @@ export const submitTx = async (tx) => {
 
 export { on, off } from './eventRegistration';
 
-export const getDRepKey = async () => {
-  const result = await Messaging.sendToContent({ method: METHOD.getDRepKey });
+// CIP-95
 
-  return result.data;
-};
-
-export const getStakeKey = async () => {
-  const result = await Messaging.sendToContent({ method: METHOD.getStakeKey });
-
-  return result.data;
-};
-
-export const submitDelegation = async (delegationCertificate) => {
-  const result = await Messaging.sendToContent({
-    method: METHOD.submitDelegation,
-    data: delegationCertificate,
+export const getPubDRepKey = async () => {
+  const result = await Messaging.sendToContent({ 
+    method: METHOD.getPubDRepKey 
   });
-
   return result.data;
 };
 
-export const submitDRepRegistrationCertificate = async (
-  dRepRegistrationCertificate
-) => {
-  const result = await Messaging.sendToContent({
-    method: METHOD.submitDRepRegistrationCertificate,
-    data: { dRepRegistrationCertificate },
+export const getRegisteredPubStakeKeys = async () => {
+  const result = await Messaging.sendToContent({ 
+    method: METHOD.getRegisteredPubStakeKeys 
   });
-
   return result.data;
 };
 
-export const submitDRepRetirementCertificate = async (
-  dRepRetirementCertificate
-) => {
-  const result = await Messaging.sendToContent({
-    method: METHOD.submitDRepRetirementCertificate,
-    data: { dRepRetirementCertificate },
+export const getUnregisteredPubStakeKeys = async () => {
+  const result = await Messaging.sendToContent({ 
+    method: METHOD.getUnregisteredPubStakeKeys 
   });
-
-  return result.data;
-};
-
-export const submitVote = async (vote) => {
-  const result = await Messaging.sendToContent({
-    method: METHOD.submitVote,
-    data: { vote },
-  });
-
-  return result.data;
-};
-
-export const submitGovernanceAction = async (governanceAction) => {
-  const result = await Messaging.sendToContent({
-    method: METHOD.submitGovernanceAction,
-    data: { governanceAction },
-  });
-
   return result.data;
 };

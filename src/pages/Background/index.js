@@ -11,6 +11,10 @@ import {
   submitTx,
   verifyPayload,
   verifyTx,
+  // CIP-95
+  getPubDRepKey,
+  getRegisteredPubStakeKeys,
+  getUnregisteredPubStakeKeys,
 } from '../../api/extension';
 import { Messaging } from '../../api/messaging';
 import {
@@ -331,6 +335,65 @@ app.add(METHOD.signTx, async (request, sendResponse) => {
     sendResponse({
       id: request.id,
       error: e,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  }
+});
+
+// CIP-95
+
+app.add(METHOD.getPubDRepKey, async (request, sendResponse) => {
+  const pubDRepKey = await getPubDRepKey();
+  if (pubDRepKey) {
+    sendResponse({
+      id: request.id,
+      data: pubDRepKey,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  } else {
+    sendResponse({
+      id: request.id,
+      error: APIError.InternalError,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  }
+});
+
+app.add(METHOD.getRegisteredPubStakeKeys, async (request, sendResponse) => {
+  const pubStakeKeys = await getRegisteredPubStakeKeys();
+  if (pubStakeKeys) {
+    sendResponse({
+      id: request.id,
+      data: pubStakeKeys,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  } else {
+    sendResponse({
+      id: request.id,
+      error: APIError.InternalError,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  }
+});
+
+app.add(METHOD.getUnregisteredPubStakeKeys, async (request, sendResponse) => {
+  const pubStakeKeys = await getUnregisteredPubStakeKeys();
+  if (pubStakeKeys) {
+    sendResponse({
+      id: request.id,
+      data: pubStakeKeys,
+      target: TARGET,
+      sender: SENDER.extension,
+    });
+  } else {
+    sendResponse({
+      id: request.id,
+      error: APIError.InternalError,
       target: TARGET,
       sender: SENDER.extension,
     });
