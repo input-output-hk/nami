@@ -1519,18 +1519,54 @@ export const getNativeAccounts = (accounts) => {
 // CIP-95 -----------------------------
 
 // Get the account's pub DRep key
-export const getDRepKey = async () => {
+export const getPubDRepKey = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
   return currentAccount.dRepKeyPub;
 };
 
 // Get the account's pub stake key
-export const getStakeKey = async () => {
+export const getPubStakeKey = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
-  return [currentAccount.stakeKeyPub];
+  return currentAccount.stakeKeyPub;
 };
+
+// Check if stake key is active or not
+export const isStakeKeyRegistered = async () => {
+  const currentAccount = await getCurrentAccount();
+  let registrations = await blockfrostRequest(
+    `/accounts/${currentAccount.rewardAddr}/registrations`
+  );
+  // if error return false
+  if (!registrations || registrations.error || registrations.length == 0){
+    return false;
+  }
+  // if the most recent action was to register
+  if((registrations.reverse())[0].action == "registered"){
+    return true;
+  }
+
+  return false;
+};
+
+// If account's stake key registered return stake key, otherwise return []
+export const getRegisteredPubStakeKeys = async () => {
+  if (await isStakeKeyRegistered()){
+    return [(await getPubStakeKey())];
+  } else {
+    return [];
+  }
+}
+
+// If account's stake key registered return [], otherwise return stake key
+export const getUnregisteredPubStakeKeys = async () => {
+  if (await isStakeKeyRegistered()){
+    return [];
+  } else {
+    return [(await getPubStakeKey())];
+  }
+}
 
 // CIP-95 -----------------------------
 
