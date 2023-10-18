@@ -1749,7 +1749,7 @@ export const getAsset = async (unit) => {
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = metadata.image ? linkToSrc(metadata.image) : '';
+        asset.image = metadata.image ? linkToSrc(convertMetadataPropToString(metadata.image)) : '';
         asset.decimals = 0;
       } catch (_e) {
         asset.displayName = asset.name;
@@ -1776,7 +1776,7 @@ export const getAsset = async (unit) => {
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = linkToSrc(metadata.logo) || '';
+        asset.image = linkToSrc(convertMetadataPropToString(metadata.logo)) || '';
         asset.decimals = metadata.decimals || 0;
       } catch (_e) {
         asset.displayName = asset.name;
@@ -1803,7 +1803,7 @@ export const getAsset = async (unit) => {
           linkToSrc(convertMetadataPropToString(onchainMetadata.image))) ||
         (result.metadata &&
           result.metadata.logo &&
-          linkToSrc(result.metadata.logo, true)) ||
+          linkToSrc(convertMetadataPropToString(result.metadata.logo), true)) ||
         '';
       asset.decimals = (result.metadata && result.metadata.decimals) || 0;
       if (!asset.name) {
