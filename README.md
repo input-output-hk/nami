@@ -217,7 +217,7 @@ The quick solution is to go under `./src/config/provider.js` and replace `secret
 
 ##### Requirements
 
-- Node.js 14
+- Node.js 20
 
 ##### Start development server
 
