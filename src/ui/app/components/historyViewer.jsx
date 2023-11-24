@@ -7,18 +7,22 @@ import { File } from 'react-kawaii';
 import {
   getTransactions,
   setTransactions,
+  setMempoolTransactions,
   setTxDetail,
+  getMempoolTransactions,
 } from '../../../api/extension';
 import Transaction from './transaction';
 
 const BATCH = 5;
 
 let slice = [];
+let memSlice = [];
 
 let txObject = {};
 
 const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
   const [historySlice, setHistorySlice] = React.useState(null);
+  const [mempoolSlice, setMempoolSlice] = React.useState(null);
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
   const [loadNext, setLoadNext] = React.useState(false);
@@ -45,7 +49,15 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
         await setTransactions(slice);
       }
     }
+    // Update the pending transactions only on first load, do load all of them
+    if (page === 1) {
+      const memTxs = await getMempoolTransactions();
+      // Filter out transactions that are accepted in the history
+      memSlice = Array.from(memTxs.map((tx) => tx.txHash).filter((tx) => !history.confirmed.includes(tx)));
+      await setMempoolTransactions(memSlice);
+    }
     if (slice.length < page * BATCH) setFinal(true);
+    setMempoolSlice(memSlice);
     setHistorySlice(slice);
   };
 
@@ -94,6 +106,24 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
       ) : (
         <>
           <Accordion allowToggle borderBottom="none">
+            {mempoolSlice.map((txHash, index) => {
+              if (!history.details[txHash]) history.details[txHash] = {};
+
+              return (
+                <Transaction
+                  onLoad={(txHash, txDetail) => {
+                    txObject[txHash] = txDetail;
+                  }}
+                  key={("mem", index)}
+                  txHash={txHash}
+                  detail={history.details[txHash]}
+                  currentAddr={currentAddr}
+                  addresses={addresses}
+                  network={network}
+                  pending={true}
+                />
+              );
+            })}
             {historySlice.map((txHash, index) => {
               if (!history.details[txHash]) history.details[txHash] = {};
 
@@ -102,12 +132,13 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
                   onLoad={(txHash, txDetail) => {
                     txObject[txHash] = txDetail;
                   }}
-                  key={index}
+                  key={("hist", index)}
                   txHash={txHash}
                   detail={history.details[txHash]}
                   currentAddr={currentAddr}
                   addresses={addresses}
                   network={network}
+                  pending={false}
                 />
               );
             })}

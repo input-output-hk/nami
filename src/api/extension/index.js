@@ -208,8 +208,26 @@ export const getTransactions = async (paginate = 1, count = 10) => {
   }));
 };
 
+export const getMempoolTransactions = async (paginate = 1, count = 100) => {
+  // We do not expect a large number of pending transactions anyways
+  const currentAccount = await getCurrentAccount();
+  const result = await blockfrostRequest(
+    `/mempool/addresses/${currentAccount.paymentKeyHashBech32}?page=${paginate}&order=desc&count=${count}`
+  );
+  if (!result || result.error) return [];
+  return result.map((tx) => ({
+    txHash: tx.tx_hash,
+  }));
+};
+
 export const getTxInfo = async (txHash) => {
   const result = await blockfrostRequest(`/txs/${txHash}`);
+  if (!result || result.error) return null;
+  return result;
+};
+
+export const getMempoolTxInfo = async (txHash) => {
+  const result = await blockfrostRequest(`/mempool/${txHash}`);
   if (!result || result.error) return null;
   return result;
 };
@@ -232,22 +250,43 @@ export const getTxMetadata = async (txHash) => {
   return result;
 };
 
-export const updateTxInfo = async (txHash) => {
+export const updateTxInfo = async (txHash, pending) => {
   const currentAccount = await getCurrentAccount();
   const network = await getNetwork();
 
   let detail = await currentAccount[network.id].history.details[txHash];
 
-  if (typeof detail !== 'object' || Object.keys(detail).length < 4) {
+  // If the tx has moved from the mempool to confirmed txs, refetch the tx info
+  if (typeof detail !== 'object' || Object.keys(detail).length < 4 || (!pending && detail.block === "mempool")) {
     detail = {};
-    const info = getTxInfo(txHash);
-    const uTxOs = getTxUTxOs(txHash);
-    const metadata = getTxMetadata(txHash);
+    if (!pending){
+      const info = getTxInfo(txHash);
+      const uTxOs = getTxUTxOs(txHash);
+      const metadata = getTxMetadata(txHash);
 
-    detail.info = await info;
-    if (info) detail.block = await getBlock(detail.info.block_height);
-    detail.utxos = await uTxOs;
-    detail.metadata = await metadata;
+      detail.info = await info;
+      if (info) detail.block = await getBlock(detail.info.block_height);
+      detail.utxos = await uTxOs;
+      detail.metadata = await metadata;
+    } else {
+      const txInfo = await getMempoolTxInfo(txHash);
+      const uTxOs = {
+        hash: txHash,
+        inputs: txInfo && txInfo.inputs,
+        outputs: txInfo && txInfo.outputs,
+      }
+      // Need to manually resolve outputs here
+      // TODO automatically check if respective UTxO has to be fetched from mempool
+      for (const input of uTxOs.inputs) {
+        const uTxOs = await getTxUTxOs(input.tx_hash);
+        input.amount = uTxOs.outputs[input.output_index].amount;
+      }
+      detail.info = txInfo && txInfo.tx;
+      detail.utxos = uTxOs;
+      detail.block = "mempool";
+      // This is not provided by blockfrost yet
+      detail.metadata = [];
+    }
   }
 
   return detail;
@@ -1877,6 +1916,18 @@ export const setTransactions = async (txs) => {
   const network = await getNetwork();
   const accounts = await getStorage(STORAGE.accounts);
   accounts[currentIndex][network.id].history.confirmed = txs;
+  return await setStorage({
+    [STORAGE.accounts]: {
+      ...accounts,
+    },
+  });
+};
+
+export const setMempoolTransactions = async (txs) => {
+  const currentIndex = await getCurrentAccountIndex();
+  const network = await getNetwork();
+  const accounts = await getStorage(STORAGE.accounts);
+  accounts[currentIndex][network.id].history.pending = txs;
   return await setStorage({
     [STORAGE.accounts]: {
       ...accounts,
