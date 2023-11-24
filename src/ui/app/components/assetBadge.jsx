@@ -1,7 +1,7 @@
 import { SmallCloseIcon } from '@chakra-ui/icons';
-import { Box } from '@chakra-ui/layout';
 import {
   Avatar,
+  Box,
   Button,
   Image,
   Input,

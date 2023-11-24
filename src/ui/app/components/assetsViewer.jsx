@@ -1,5 +1,5 @@
-import { Box, SimpleGrid } from '@chakra-ui/layout';
 import {
+  Box,
   IconButton,
   Input,
   InputGroup,

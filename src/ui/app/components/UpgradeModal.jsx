@@ -14,8 +14,8 @@ import {
   UnorderedList,
   ListItem,
   Heading,
+  useDisclosure
 } from '@chakra-ui/react';
-import { useDisclosure } from '@chakra-ui/hooks';
 
 export const UpgradeModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();

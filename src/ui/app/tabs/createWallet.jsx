@@ -8,31 +8,33 @@ import {
   mnemonicFromObject,
   mnemonicToObject,
 } from '../../../api/extension';
-import { Button } from '@chakra-ui/button';
 import {
   BrowserRouter as Router,
   Route,
   Switch,
   useHistory,
 } from 'react-router-dom';
-import { Icon, Image, useColorModeValue } from '@chakra-ui/react';
 import {
+  Box, 
+  Spacer, 
+  Stack, 
+  Text, 
+  Button,
+  Checkbox,
   Input,
   InputGroup,
-  InputLeftAddon,
-  InputRightAddon,
   InputRightElement,
-} from '@chakra-ui/input';
-import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
+  Icon, 
+  Image, 
+  useColorModeValue
+} from '@chakra-ui/react';
 import {
   generateMnemonic,
   getDefaultWordlist,
   validateMnemonic,
   wordlists,
 } from 'bip39';
-import { CloseButton } from '@chakra-ui/close-button';
-import { Checkbox } from '@chakra-ui/checkbox';
-import { ChevronRightIcon, DownloadIcon } from '@chakra-ui/icons';
+import { ChevronRightIcon } from '@chakra-ui/icons';
 import { render } from 'react-dom';
 import Main from '../../index';
 import { TAB } from '../../../config/config';

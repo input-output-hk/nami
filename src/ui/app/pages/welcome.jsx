@@ -1,9 +1,15 @@
 import React from 'react';
-import { Button } from '@chakra-ui/button';
 import { Backpack } from 'react-kawaii';
 import { Checkbox, Image, useColorModeValue } from '@chakra-ui/react';
 import { useHistory } from 'react-router-dom';
 import {
+  Box, 
+  Button, 
+  Spacer, 
+  Text, 
+  Link, 
+  Select, 
+  useDisclosure,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,11 +17,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-} from '@chakra-ui/modal';
-import { Box, Spacer, Text, Link } from '@chakra-ui/layout';
-import { useDisclosure } from '@chakra-ui/hooks';
-import { Select } from '@chakra-ui/select';
-
+} from '@chakra-ui/react';
 import BannerWhite from '../../../assets/img/bannerWhite.svg';
 import BannerBlack from '../../../assets/img/bannerBlack.svg';
 import TermsOfUse from '../components/termsOfUse';

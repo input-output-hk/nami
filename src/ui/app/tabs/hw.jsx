@@ -26,7 +26,7 @@ import LogoOriginal from '../../../assets/img/logo.svg';
 import LogoWhite from '../../../assets/img/logoWhite.svg';
 import LedgerLogo from '../../../assets/img/ledgerLogo.svg';
 import TrezorLogo from '../../../assets/img/trezorLogo.svg';
-import { CheckCircleIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { ChevronRightIcon } from '@chakra-ui/icons';
 import TrezorWidget from '../components/trezorWidget';
 import {
   createHWAccounts,

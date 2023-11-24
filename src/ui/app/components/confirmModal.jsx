@@ -1,16 +1,19 @@
-import { Button } from '@chakra-ui/button';
-import { useDisclosure } from '@chakra-ui/hooks';
 import Icon from '@chakra-ui/icon';
-import { Input, InputGroup, InputRightElement } from '@chakra-ui/input';
-import { Box, Text } from '@chakra-ui/layout';
-import {
+import { 
+  Box, 
+  Text, 
+  Button, 
+  useDisclosure,
+  Input, 
+  InputGroup, 
+  InputRightElement,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  ModalOverlay,
-} from '@chakra-ui/modal';
+  ModalOverlay
+} from '@chakra-ui/react';
 import React from 'react';
 import { MdUsb } from 'react-icons/md';
 import { indexToHw, initHW, isHW } from '../../../api/extension';

@@ -1,5 +1,4 @@
-import { Box } from '@chakra-ui/layout';
-import { Avatar, Image, Skeleton, useColorModeValue } from '@chakra-ui/react';
+import { Box, Avatar, Image, Skeleton, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import './styles.css';
 import { Transition } from 'react-transition-group';

@@ -5,14 +5,12 @@ import {
   signData,
   signDataCIP30,
 } from '../../../api/extension';
-import { Box, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
-import { Button } from '@chakra-ui/button';
+import { Box, Text, Button, Image, Spinner, useColorModeValue } from '@chakra-ui/react';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import { DataSignError } from '../../../config/config';
-import { Image, Spinner, useColorModeValue } from '@chakra-ui/react';
 
 const SignData = ({ request, controller }) => {
   const ref = React.useRef();

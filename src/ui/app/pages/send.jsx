@@ -15,10 +15,8 @@ import {
   toUnit,
   updateRecentSentToAddress,
 } from '../../../api/extension';
-import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
-import { Button, IconButton } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import {
   CheckIcon,
@@ -27,17 +25,31 @@ import {
   InfoOutlineIcon,
   SmallCloseIcon,
 } from '@chakra-ui/icons';
-import { Input, InputGroup, InputLeftAddon } from '@chakra-ui/input';
 import {
+  Box, 
+  Stack, 
+  Text, 
+  Button, 
+  Avatar,
+  IconButton, 
+  Input, 
+  InputGroup,
   Popover,
   PopoverArrow,
   PopoverBody,
   PopoverContent,
   PopoverHeader,
   PopoverTrigger,
-} from '@chakra-ui/popover';
+  useDisclosure,
+  InputRightElement,
+  InputLeftElement,
+  Spinner,
+  Tooltip,
+  useColorModeValue,
+  useToast,
+  Icon,
+} from '@chakra-ui/react';
 import MiddleEllipsis from 'react-middle-ellipsis';
-import { Avatar } from '@chakra-ui/avatar';
 import UnitDisplay from '../components/unitDisplay';
 import {
   buildTx,
@@ -52,18 +64,8 @@ import {
   minAdaRequired,
 } from '../../../api/util';
 import { FixedSizeList as List } from 'react-window';
-import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
 import { ERROR, HW, TAB } from '../../../config/config';
-import {
-  InputRightElement,
-  InputLeftElement,
-  Spinner,
-  Tooltip,
-  useColorModeValue,
-  useToast,
-  Icon,
-} from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
 import { action, useStoreActions, useStoreState } from 'easy-peasy';

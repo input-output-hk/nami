@@ -1,5 +1,5 @@
 import React from 'react';
-import { InfoIcon, InfoOutlineIcon, WarningTwoIcon } from '@chakra-ui/icons';
+import { InfoIcon } from '@chakra-ui/icons';
 import { flash } from 'react-animations';
 import styled, { keyframes } from 'styled-components';
 import {
@@ -16,7 +16,7 @@ import {
   UnorderedList,
   ListItem,
 } from '@chakra-ui/react';
-import { useDisclosure } from '@chakra-ui/hooks';
+import { useDisclosure } from '@chakra-ui/react';
 import UnitDisplay from './unitDisplay';
 
 const animation = keyframes`${flash}`;

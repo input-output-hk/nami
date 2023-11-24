@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@chakra-ui/button';
 import { useHistory } from 'react-router-dom';
 import {
   createAccount,
@@ -17,14 +16,17 @@ import {
   switchAccount,
   updateAccount,
 } from '../../../api/extension';
-import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
-
 import {
   BsArrowDownRight,
   BsArrowUpRight,
   BsClockHistory,
 } from 'react-icons/bs';
 import {
+  Button, 
+  Box, 
+  Spacer, 
+  Stack, 
+  Text,
   Icon,
   Image,
   Input,

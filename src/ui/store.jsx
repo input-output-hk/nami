@@ -16,9 +16,8 @@ import {
   persist,
   useStoreRehydrated,
 } from 'easy-peasy';
-import { Box, Text } from '@chakra-ui/layout';
+import { Box, Text, Spinner } from '@chakra-ui/react';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
-import { Spinner } from '@chakra-ui/react';
 import {
   needUpgrade,
   needPWD,

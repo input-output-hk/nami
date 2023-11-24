@@ -1,6 +1,6 @@
-import { Button } from '@chakra-ui/button';
 import {
   Box,
+  Button,
   IconButton,
   Text,
   useColorMode,

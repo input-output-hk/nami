@@ -1,5 +1,5 @@
-import { Box } from '@chakra-ui/layout';
 import {
+  Box,
   Avatar,
   Image,
   Skeleton,

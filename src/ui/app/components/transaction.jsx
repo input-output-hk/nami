@@ -1,9 +1,11 @@
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { Box, Link, Text } from '@chakra-ui/layout';
 import React from 'react';
 import { updateTxInfo } from '../../../api/extension';
 import UnitDisplay from './unitDisplay';
 import {
+  Box, 
+  Link, 
+  Text,
   AccordionButton,
   AccordionIcon,
   AccordionItem,
@@ -17,7 +19,7 @@ import { compileOutputs } from '../../../api/util';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import ReactTimeAgo from 'react-time-ago';
-import { Button } from '@chakra-ui/button';
+import { Button } from '@chakra-ui/react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import ReactDOMServer from 'react-dom/server';

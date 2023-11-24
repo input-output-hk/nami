@@ -8,10 +8,8 @@ import {
   signTx,
   signTxHW,
 } from '../../../api/extension';
-import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
 import Scrollbars from 'react-custom-scrollbars';
-import { Button } from '@chakra-ui/button';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import UnitDisplay from '../components/unitDisplay';
@@ -23,6 +21,10 @@ import { valueToAssets } from '../../../api/util';
 import { TxSignError } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
 import {
+  Box, 
+  Stack, 
+  Text, 
+  Button,
   Image,
   Modal,
   ModalBody,

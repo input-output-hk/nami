@@ -1,7 +1,5 @@
-import { useDisclosure } from '@chakra-ui/hooks';
 import { CloseIcon } from '@chakra-ui/icons';
-import { Box } from '@chakra-ui/layout';
-import { Modal, ModalContent, ModalOverlay } from '@chakra-ui/modal';
+import { Box, Modal, ModalContent, ModalOverlay, useDisclosure } from '@chakra-ui/react';
 import React from 'react';
 
 const TrezorWidget = React.forwardRef((props, ref) => {
