@@ -10,9 +10,7 @@ var webpack = require('webpack'),
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
-var alias = {
-  'react-dom': '@hot-loader/react-dom',
-};
+var alias = {};
 
 // load the secrets
 var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
@@ -122,6 +120,12 @@ var options = {
           },
           {
             loader: 'babel-loader',
+            options: {
+              plugins: [
+                process.env.NODE_ENV === 'development' &&
+                  require.resolve('react-refresh/babel'),
+              ].filter(Boolean),
+            },
           },
         ],
         exclude: [/node_modules/, /temporary_modules/],
