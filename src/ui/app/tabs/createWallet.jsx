@@ -15,18 +15,18 @@ import {
   useHistory,
 } from 'react-router-dom';
 import {
-  Box, 
-  Spacer, 
-  Stack, 
-  Text, 
+  Box,
+  Spacer,
+  Stack,
+  Text,
   Button,
   Checkbox,
   Input,
   InputGroup,
   InputRightElement,
-  Icon, 
-  Image, 
-  useColorModeValue
+  Icon,
+  Image,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import {
   generateMnemonic,
@@ -35,7 +35,7 @@ import {
   wordlists,
 } from 'bip39';
 import { ChevronRightIcon } from '@chakra-ui/icons';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import Main from '../../index';
 import { TAB } from '../../../config/config';
 import { Planet } from 'react-kawaii';
@@ -744,13 +744,13 @@ const SuccessAndClose = () => {
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${TAB.createWallet}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${TAB.createWallet}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();

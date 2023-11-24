@@ -1,5 +1,5 @@
-import Icon from '@chakra-ui/icon';
 import { 
+  Icon,
   Box, 
   Text, 
   Button, 

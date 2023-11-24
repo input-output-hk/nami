@@ -6,7 +6,7 @@ import React from 'react';
 import { HW, STORAGE, TAB } from '../../../config/config';
 import Main from '../../index';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import {
   Button,
   Box,
@@ -394,13 +394,13 @@ const SuccessAndClose = () => {
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${TAB.hw}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${TAB.hw}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();

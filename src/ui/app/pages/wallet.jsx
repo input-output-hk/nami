@@ -22,10 +22,10 @@ import {
   BsClockHistory,
 } from 'react-icons/bs';
 import {
-  Button, 
-  Box, 
-  Spacer, 
-  Stack, 
+  Button,
+  Box,
+  Spacer,
+  Stack,
   Text,
   Icon,
   Image,
@@ -628,7 +628,7 @@ const Wallet = () => {
             width="20"
             height="8"
           >
-            <Popover matchWidth={true}>
+            <Popover>
               <PopoverTrigger>
                 <Button
                   rightIcon={<Icon as={BsArrowDownRight} />}
@@ -914,7 +914,7 @@ const DelegationPopover = ({ account, delegation, children }) => {
   const withdrawRef = React.useRef();
   return (
     <>
-      <Popover matchWidth={true} offset={[80, 8]}>
+      <Popover offset={[80, 8]}>
         <PopoverTrigger>
           <Button
             style={{

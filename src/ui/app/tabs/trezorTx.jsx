@@ -2,7 +2,7 @@ import React from 'react';
 import { TAB } from '../../../config/config';
 import Main from '../../index';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Box, useColorModeValue, Image, useToast } from '@chakra-ui/react';
 
 // assets
@@ -87,13 +87,13 @@ const App = () => {
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${TAB.trezorTx}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${TAB.trezorTx}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();

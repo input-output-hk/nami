@@ -4,7 +4,7 @@
 
 import { Box, Spinner } from '@chakra-ui/react';
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 import { getAccounts } from '../api/extension';
@@ -66,13 +66,13 @@ const App = () => {
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${POPUP.internal}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${POPUP.internal}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();

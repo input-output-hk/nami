@@ -26,13 +26,13 @@ import {
   SmallCloseIcon,
 } from '@chakra-ui/icons';
 import {
-  Box, 
-  Stack, 
-  Text, 
-  Button, 
+  Box,
+  Stack,
+  Text,
+  Button,
   Avatar,
-  IconButton, 
-  Input, 
+  IconButton,
+  Input,
   InputGroup,
   Popover,
   PopoverArrow,
@@ -1227,12 +1227,7 @@ const AssetsSelector = ({ assets, addAssets, value, isM1 }) => {
   }, [isM1]);
 
   return (
-    <Popover
-      isOpen={isOpen}
-      onOpen={onOpen}
-      onClose={onClose}
-      matchWidth={true}
-    >
+    <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
       <PopoverTrigger>
         <Button
           isDisabled={isM1 || !assets || assets.length < 1}

@@ -107,7 +107,7 @@ const CollectiblesViewer = ({ assets, onUpdateAvatar }) => {
           </>
         )}
       </Box>
-      <Box position="absolute" left="6" top="240px">
+      <Box position="absolute" left="6" top="0">
         <Search setSearch={setSearch} assets={assets} />
       </Box>
       <CollectibleModal ref={ref} onUpdateAvatar={onUpdateAvatar} />
@@ -293,7 +293,6 @@ const Search = ({ setSearch, assets }) => {
   return (
     <Popover
       returnFocusOnClose={false}
-      matchWidth={true}
       placement="bottom-start"
       onOpen={() => setTimeout(() => ref.current.focus())}
     >

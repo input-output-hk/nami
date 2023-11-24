@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 import { POPUP } from '../config/config';
@@ -78,13 +78,13 @@ const App = () => {
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${POPUP.main}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${POPUP.main}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();
