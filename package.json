@@ -37,7 +37,6 @@
     "javascript-time-ago": "^2.3.7",
     "jest-chrome": "^0.8.0",
     "match-sorter": "^6.1.0",
-    "node-fetch": "^2.6.1",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "qr-code-styling": "^1.6.0-rc.0",
     "react": "^18.2.0",
