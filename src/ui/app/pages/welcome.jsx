@@ -1,7 +1,6 @@
 import React from 'react';
 import { Backpack } from 'react-kawaii';
 import { Checkbox, Image, useColorModeValue } from '@chakra-ui/react';
-import { useHistory } from 'react-router-dom';
 import {
   Box, 
   Button, 
@@ -101,7 +100,6 @@ const Welcome = () => {
 const WalletModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [accept, setAccept] = React.useState(false);
-  const history = useHistory();
 
   const termsRef = React.useRef();
 
@@ -160,7 +158,6 @@ const WalletModal = React.forwardRef((props, ref) => {
 
 const ImportModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const history = useHistory();
   const [accept, setAccept] = React.useState(false);
   const [select, setSelect] = React.useState(null);
 

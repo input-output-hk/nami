@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   createAccount,
   createTab,
@@ -109,7 +109,7 @@ const useIsMounted = () => {
 
 const Wallet = () => {
   const isMounted = useIsMounted();
-  const history = useHistory();
+  const navigate = useNavigate();
   const settings = useStoreState((state) => state.settings.settings);
   const avatarBg = useColorModeValue('white', 'gray.700');
   const panelBg = useColorModeValue('#349EA3', 'gray.800');
@@ -474,7 +474,7 @@ const Wallet = () => {
                 </MenuItem>
                 <MenuDivider />
                 <MenuItem
-                  onClick={() => history.push('/settings')}
+                  onClick={() => navigate('/settings')}
                   icon={<SettingsIcon />}
                 >
                   Settings
@@ -680,7 +680,7 @@ const Wallet = () => {
             height="8"
           >
             <Button
-              onClick={() => history.push('/send')}
+              onClick={() => navigate('/send')}
               size="sm"
               rounded="xl"
               rightIcon={<Icon as={BsArrowUpRight} />}

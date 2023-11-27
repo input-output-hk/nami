@@ -11,8 +11,9 @@ import {
 import {
   BrowserRouter as Router,
   Route,
-  Switch,
-  useHistory,
+  Routes,
+  useNavigate,
+  useLocation,
 } from 'react-router-dom';
 import {
   Box,
@@ -50,18 +51,15 @@ const App = () => {
   const Logo = useColorModeValue(LogoOriginal, LogoWhite);
   const backgroundColor = useColorModeValue('gray.200', 'inherit');
   const cardColor = useColorModeValue('white', 'gray.900');
-  const history = useHistory();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const type = params.get('type');
     const length = params.get('length');
     if (type === 'import')
-      history.push({
-        pathname: '/import',
-        seedLength: parseInt(length),
-      });
-    else history.push('/generate');
+      navigate('/import', { state: { seedLength: parseInt(length) } });
+    else navigate('/generate');
   }, []);
 
   return (
@@ -93,19 +91,19 @@ const App = () => {
         background={cardColor}
         fontSize="sm"
       >
-        <Switch>
-          <Route exact path="/generate" component={GenerateSeed} />
-          <Route exact path="/verify" component={VerifySeed} />
-          <Route exact path="/account" component={MakeAccount} />
-          <Route exact path="/import" component={ImportSeed} />
-        </Switch>
+        <Routes>
+          <Route path="/generate" element={<GenerateSeed />} />
+          <Route path="/verify" element={<VerifySeed />} />
+          <Route path="/account" element={<MakeAccount />} />
+          <Route path="/import" element={<ImportSeed />} />
+        </Routes>
       </Box>
     </Box>
   );
 };
 
 const GenerateSeed = (props) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [mnemonic, setMnemonic] = React.useState({});
   const generate = () => {
     const mnemonic = generateMnemonic(256);
@@ -233,7 +231,7 @@ const GenerateSeed = (props) => {
         <Button
           isDisabled={!checked}
           rightIcon={<ChevronRightIcon />}
-          onClick={() => history.push({ pathname: '/verify', mnemonic })}
+          onClick={() => navigate('/verify', { state: { mnemonic } })}
         >
           Next
         </Button>
@@ -243,8 +241,8 @@ const GenerateSeed = (props) => {
 };
 
 const VerifySeed = () => {
-  const history = useHistory();
-  const mnemonic = history.location.mnemonic;
+  const navigate = useNavigate();
+  const { state: { mnemonic } = {} } = useLocation();
   const [input, setInput] = React.useState({});
   const [allValid, setAllValid] = React.useState(false);
   const refs = React.useRef([]);
@@ -356,7 +354,7 @@ const VerifySeed = () => {
           fontWeight="medium"
           color="gray.400"
           variant="ghost"
-          onClick={() => history.push({ pathname: '/account', mnemonic })}
+          onClick={() => navigate('/account', { state: { mnemonic } })}
         >
           Skip
         </Button>
@@ -364,7 +362,7 @@ const VerifySeed = () => {
           ml="3"
           isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
-          onClick={() => history.push({ pathname: '/account', mnemonic })}
+          onClick={() => navigate('/account', { state: { mnemonic } })}
         >
           Next
         </Button>
@@ -374,8 +372,8 @@ const VerifySeed = () => {
 };
 
 const ImportSeed = () => {
-  const history = useHistory();
-  const seedLength = history.location.seedLength;
+  const navigate = useNavigate();
+  const { state: { seedLength } = {} } = useLocation();
   const [input, setInput] = React.useState({});
   const [allValid, setAllValid] = React.useState(false);
   const refs = React.useRef([]);
@@ -391,6 +389,7 @@ const ImportSeed = () => {
   };
 
   React.useEffect(() => {
+    console.log(input);
     verifyAll();
   }, [input]);
 
@@ -485,7 +484,9 @@ const ImportSeed = () => {
             <Spacer height="2" />
             <SeedDrop
               onLoad={(seedphrase) =>
-                history.push({ pathname: '/account', mnemonic: seedphrase })
+                navigate('/account', {
+                  state: { pathname: '/account', mnemonic: seedphrase },
+                })
               }
             />
           </>
@@ -495,9 +496,7 @@ const ImportSeed = () => {
         <Button
           isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
-          onClick={() =>
-            history.push({ pathname: '/account', mnemonic: input })
-          }
+          onClick={() => navigate('/account', { state: { mnemonic: input } })}
         >
           Next
         </Button>
@@ -594,8 +593,7 @@ const SeedDrop = ({ onLoad, ...props }) => {
 const MakeAccount = (props) => {
   const [state, setState] = React.useState({});
   const [loading, setLoading] = React.useState(false);
-  const history = useHistory();
-  const mnemonic = history.location.mnemonic;
+  const { state: { mnemonic } = {} } = useLocation();
   const [isDone, setIsDone] = React.useState(false);
   const setRoute = useStoreActions(
     (actions) => actions.globalModel.routeStore.setRoute

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   createTab,
   displayUnit,
@@ -172,7 +172,7 @@ const Send = () => {
   const resetState = useStoreActions(
     (actions) => actions.globalModel.sendStore.reset
   );
-  const history = useHistory();
+  const navigate = useNavigate();
   const toast = useToast();
   const ref = React.useRef();
   const [isLoading, setIsLoading] = React.useState(true);
@@ -465,7 +465,7 @@ const Send = () => {
               <IconButton
                 rounded="md"
                 onClick={() => {
-                  history.goBack();
+                  navigate(-1);
                 }}
                 variant="ghost"
                 icon={<ChevronLeftIcon boxSize="6" />}
@@ -833,7 +833,7 @@ const Send = () => {
             });
           ref.current.closeModal();
           setTimeout(() => {
-            history.goBack();
+            navigate(-1);
           }, 200);
         }}
       />
