@@ -50,7 +50,7 @@
     "react-kawaii": "^0.17.0",
     "react-lazy-load-image-component": "^1.5.1",
     "react-middle-ellipsis": "^1.2.1",
-    "react-number-format": "^4.8.0",
+    "react-number-format": "^5.3.1",
     "react-router-dom": "^6.18.0",
     "react-syntax-highlighter": "^15.4.3",
     "react-time-ago": "^7.0.0",

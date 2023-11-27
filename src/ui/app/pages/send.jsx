@@ -70,7 +70,7 @@ import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
 import { action, useStoreActions, useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
-import NumberFormat from 'react-number-format';
+import { NumericFormat } from 'react-number-format';
 import Copy from '../components/copy';
 import AssetsModal from '../components/assetsModal';
 import { MdModeEdit } from 'react-icons/md';
@@ -543,7 +543,7 @@ const Send = () => {
                       </Box>
                     }
                   />
-                  <NumberFormat
+                  <NumericFormat
                     pl="10"
                     allowNegative={false}
                     thousandsGroupStyle="thousand"
