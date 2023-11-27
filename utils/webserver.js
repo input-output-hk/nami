@@ -34,15 +34,18 @@ var compiler = webpack(config);
 var server = new WebpackDevServer(compiler, {
   https: false,
   hot: true,
-  injectClient: false,
-  writeToDisk: true,
+  client: false,
+  devMiddleware: {
+    writeToDisk: true,
+  },
   port: env.PORT,
-  contentBase: path.join(__dirname, '../build'),
-  publicPath: `http://localhost:${env.PORT}`,
+  static: {
+    directory: path.join(__dirname, '../build'),
+  },
   headers: {
     'Access-Control-Allow-Origin': '*',
   },
-  disableHostCheck: true,
+  allowedHosts: "all",
 });
 
 if (process.env.NODE_ENV === 'development' && module.hot) {
