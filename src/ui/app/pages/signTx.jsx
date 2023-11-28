@@ -21,9 +21,9 @@ import { valueToAssets } from '../../../api/util';
 import { TxSignError } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
 import {
-  Box, 
-  Stack, 
-  Text, 
+  Box,
+  Stack,
+  Text,
   Button,
   Image,
   Modal,
@@ -33,7 +33,6 @@ import {
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
-import JSONPretty from 'react-json-pretty';
 import AssetsModal from '../components/assetsModal';
 
 const abs = (big) => {
@@ -1004,10 +1003,11 @@ const DetailsModal = React.forwardRef(
                         background={innerBackground}
                       >
                         <Scrollbars autoHide>
-                          <JSONPretty
-                            id="json-pretty"
-                            data={property.metadata}
-                          ></JSONPretty>
+                          <pre>
+                            <code>
+                              {JSON.stringify(property.metadata, null, 2)}
+                            </code>
+                          </pre>
                         </Scrollbars>
                       </Box>
                       <Box h={10} />

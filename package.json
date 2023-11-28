@@ -43,7 +43,6 @@
     "react-dom": "^18.2.0",
     "react-dropzone": "^11.4.2",
     "react-icons": "4.2.0",
-    "react-json-pretty": "^2.2.0",
     "react-kawaii": "^0.18.0",
     "react-lazy-load-image-component": "^1.5.1",
     "react-middle-ellipsis": "^1.2.1",
