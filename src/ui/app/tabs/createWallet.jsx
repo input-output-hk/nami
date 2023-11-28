@@ -25,7 +25,6 @@ import {
   Input,
   InputGroup,
   InputRightElement,
-  Icon,
   Image,
   useColorModeValue,
 } from '@chakra-ui/react';
@@ -40,12 +39,10 @@ import { createRoot } from 'react-dom/client';
 import Main from '../../index';
 import { TAB } from '../../../config/config';
 import { Planet } from 'react-kawaii';
-import { useDropzone } from 'react-dropzone';
 
 import LogoOriginal from '../../../assets/img/logo.svg';
 import LogoWhite from '../../../assets/img/logoWhite.svg';
 import { useStoreActions } from 'easy-peasy';
-import { BsFileEarmark } from 'react-icons/bs';
 
 const App = () => {
   const Logo = useColorModeValue(LogoOriginal, LogoWhite);
@@ -111,14 +108,6 @@ const GenerateSeed = (props) => {
     setMnemonic(mnemonicMap);
   };
   const [checked, setChecked] = React.useState(false);
-
-  const download = (content, fileName, contentType) => {
-    const a = document.createElement('a');
-    const file = new Blob([content], { type: contentType });
-    a.href = URL.createObjectURL(file);
-    a.download = fileName;
-    a.click();
-  };
 
   React.useEffect(() => {
     generate();
@@ -199,26 +188,6 @@ const GenerateSeed = (props) => {
           </Box>
         ))}
       </Stack>
-      {/* <Box h="3" />
-      <Box display="flex" justifyContent="center">
-        {' '}
-        <Button
-          onClick={() =>
-            download(
-              JSON.stringify({ wallet: 'Nami', seedphrase: mnemonic }),
-              'nami-seedphrase.json',
-              'text/plain'
-            )
-          }
-          fontWeight="normal"
-          size="xs"
-          variant="ghost"
-          rightIcon={<DownloadIcon />}
-        >
-          Download
-        </Button>
-      </Box> */}
-
       <Box height={3} />
       <Stack alignItems="center" direction="column">
         <Stack direction="row" width="64" spacing="6">
@@ -475,22 +444,6 @@ const ImportSeed = () => {
         ))}
       </Stack>
       <Spacer height="1" />
-      {seedLength == 24 &&
-        false && ( // TODO: give user more information because of security reasons
-          <>
-            <Box textAlign="center" fontSize="xs">
-              or
-            </Box>
-            <Spacer height="2" />
-            <SeedDrop
-              onLoad={(seedphrase) =>
-                navigate('/account', {
-                  state: { pathname: '/account', mnemonic: seedphrase },
-                })
-              }
-            />
-          </>
-        )}
       <Spacer height="5" />
       <Stack alignItems="center" direction="column">
         <Button
@@ -501,91 +454,6 @@ const ImportSeed = () => {
           Next
         </Button>
       </Stack>
-    </Box>
-  );
-};
-
-const SeedDrop = ({ onLoad, ...props }) => {
-  const [isValid, setIsValid] = React.useState(true);
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive,
-    isDragAccept,
-    isDragReject,
-  } = useDropzone({
-    accept: 'application/json',
-    maxFiles: 1,
-    onDrop: (acceptedFiles) => {
-      acceptedFiles.forEach((file) => {
-        const fileUrl = URL.createObjectURL(file);
-        fileToJson(fileUrl);
-      });
-    },
-  });
-
-  const fileToJson = async (fileUrl) => {
-    const json = await fetch(fileUrl).then((r) => r.json());
-    try {
-      const mnemonic = mnemonicFromObject(json.seedphrase);
-      if (!validateMnemonic(mnemonic)) throw new Error('Invalid mnemonic');
-      onLoad(json.seedphrase);
-    } catch (e) {
-      setIsValid(false);
-      setTimeout(() => setIsValid(true), 1000);
-    }
-  };
-
-  return (
-    <Box {...props} display="flex" alignItems="center" justifyContent="center">
-      <Box
-        transition="0.3s"
-        border="1px dashed"
-        background={
-          !isValid
-            ? 'red.300'
-            : isDragAccept
-            ? 'teal'
-            : isDragReject
-            ? 'red.300'
-            : 'transparent'
-        }
-        borderColor={isDragAccept ? 'teal' : isDragReject ? 'red.300' : 'gray'}
-        rounded="xl"
-      >
-        <div {...getRootProps({ className: 'dropzone' })}>
-          <input {...getInputProps()} />
-          <Box
-            width="200px"
-            height="30px"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            textAlign="center"
-          >
-            <Box
-              color={
-                !isValid
-                  ? 'white'
-                  : isDragAccept
-                  ? 'white'
-                  : isDragReject
-                  ? 'white'
-                  : 'GrayText'
-              }
-            >
-              {' '}
-              {isDragReject || !isValid ? (
-                'Invalid file'
-              ) : (
-                <span>
-                  From Nami file <Icon ml="2" as={BsFileEarmark} />
-                </span>
-              )}
-            </Box>
-          </Box>
-        </div>
-      </Box>
     </Box>
   );
 };
