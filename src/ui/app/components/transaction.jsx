@@ -20,8 +20,6 @@ import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import ReactTimeAgo from 'react-time-ago';
 import { Button } from '@chakra-ui/react';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import ReactDOMServer from 'react-dom/server';
 import AssetsPopover from './assetPopoverDiff';
 import AssetFingerprint from '@emurgo/cip14-js';
@@ -117,7 +115,7 @@ const Transaction = ({
   React.useEffect(() => {
     getTxDetail();
   });
-  
+
   return (
     <AccordionItem borderTop="none" _last={{ borderBottom: 'none' }}>
       <VStack spacing={2}>
@@ -462,10 +460,10 @@ const getTxType = (currentAddr, addresses, uTxOList) => {
     return outputsAddr.every((addr) => addr === currentAddr)
       ? 'self'
       : outputsAddr.some(
-          (addr) => addresses.includes(addr) && addr !== currentAddr
-        )
-      ? 'internalOut'
-      : 'externalOut';
+            (addr) => addresses.includes(addr) && addr !== currentAddr
+          )
+        ? 'internalOut'
+        : 'externalOut';
   } else if (inputsAddr.every((addr) => addr !== currentAddr)) {
     // receiver
     return inputsAddr.some((addr) => addresses.includes(addr))
@@ -555,17 +553,22 @@ const viewMetadata = (metadata) => {
         <title>Metadata</title>
       </head>
       <body style={{ backgroundColor: '#2b2b2b' }}>
-        <SyntaxHighlighter
-          language="json"
-          style={a11yDark}
-          customStyle={{ fontSize: '14px', lineHeight: '20px' }}
+        <pre
+          style={{
+            padding: '8px',
+            color: '#f8f8f2',
+            fontSize: '14px',
+            lineHeight: '20px',
+          }}
         >
-          {JSON.stringify(
-            metadata.map((m) => ({ [m.label]: m.json_metadata })),
-            null,
-            2
-          )}
-        </SyntaxHighlighter>
+          <code>
+            {JSON.stringify(
+              metadata.map((m) => ({ [m.label]: m.json_metadata })),
+              null,
+              2
+            )}
+          </code>
+        </pre>
       </body>
     </html>
   );
