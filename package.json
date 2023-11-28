@@ -32,7 +32,6 @@
     "crc": "^4.1.1",
     "crypto-random-string": "^5.0.0",
     "easy-peasy": "^6.0.4",
-    "focus-visible": "^5.2.0",
     "framer-motion": "^4.1.16",
     "javascript-time-ago": "^2.3.7",
     "jest-chrome": "^0.8.0",
