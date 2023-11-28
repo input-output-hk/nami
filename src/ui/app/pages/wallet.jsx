@@ -203,7 +203,6 @@ const Wallet = () => {
     } catch (e) {}
     const network = await getNetwork();
     const delegation = await getDelegation();
-    // const warning = await setBalanceWarning();
     if (!isMounted.current) return;
     setState((s) => ({
       ...s,
@@ -511,12 +510,6 @@ const Wallet = () => {
             alignItems="center"
             justifyContent="center"
           >
-            {/* {state.warning && state.warning.active && (
-              <BalanceWarning
-                fullBalance={state.warning.fullBalance}
-                symbol={settings.adaSymbol}
-              />
-            )} */}
             <UnitDisplay
               color="white"
               fontSize="2xl"

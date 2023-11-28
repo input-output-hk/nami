@@ -175,26 +175,6 @@ export const getFullBalance = async () => {
   ).toString();
 };
 
-export const setBalanceWarning = async () => {
-  const currentAccount = await getCurrentAccount();
-  const network = await getNetwork();
-  let warning = { active: false, fullBalance: '0' };
-
-  const result = await blockfrostRequest(
-    `/accounts/${currentAccount.rewardAddr}/addresses?count=2`
-  );
-
-  if (result.length > 1) {
-    const fullBalance = await getFullBalance();
-    if (fullBalance !== currentAccount[network.id].lovelace) {
-      warning.active = true;
-      warning.fullBalance = fullBalance;
-    }
-  }
-
-  return warning;
-};
-
 export const getTransactions = async (paginate = 1, count = 10) => {
   const currentAccount = await getCurrentAccount();
   const result = await blockfrostRequest(
