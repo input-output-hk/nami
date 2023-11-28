@@ -52,7 +52,7 @@
     "react-window": "^1.8.10",
     "styled-components": "^6.1.1",
     "use-constant": "^1.1.0",
-    "web3-utils": "^1.6.1"
+    "web3-validator": "^2.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.13.15",

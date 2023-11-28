@@ -38,7 +38,7 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import Ada, { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '@trezor/connect-web';
 import AssetFingerprint from '@emurgo/cip14-js';
-import Web3Utils from 'web3-utils';
+import { isAddress } from 'web3-validator';
 import { milkomedaNetworks } from '@dcspark/milkomeda-constants';
 
 export const getStorage = (key) =>
@@ -684,7 +684,7 @@ const isValidAddressBytes = async (address) => {
 };
 
 export const isValidEthAddress = function (address) {
-  return Web3Utils.isAddress(address);
+  return isAddress(address);
 };
 
 export const extractKeyHash = async (address) => {
