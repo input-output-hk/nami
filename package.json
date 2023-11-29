@@ -25,7 +25,7 @@
     "@emotion/styled": "^11.3.0",
     "@emurgo/cip14-js": "^3.0.1",
     "@fontsource/ubuntu": "^5.0.8",
-    "@ledgerhq/hw-transport-webusb": "6.11.2",
+    "@ledgerhq/hw-transport-webusb": "^6.28.0",
     "@trezor/connect-web": "^9.0.11",
     "bip39": "^3.0.4",
     "crc": "^4.1.1",
