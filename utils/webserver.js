@@ -34,10 +34,14 @@ var compiler = webpack(config);
 var server = new WebpackDevServer(compiler, {
   https: false,
   hot: true,
-  client: false,
+  client: {
+    overlay: false,
+  },
   devMiddleware: {
+    publicPath: `http://localhost:${env.PORT}/`,
     writeToDisk: true,
   },
+  liveReload: false,
   port: env.PORT,
   static: {
     directory: path.join(__dirname, '../build'),
@@ -45,7 +49,7 @@ var server = new WebpackDevServer(compiler, {
   headers: {
     'Access-Control-Allow-Origin': '*',
   },
-  allowedHosts: "all",
+  allowedHosts: 'all',
 });
 
 if (process.env.NODE_ENV === 'development' && module.hot) {
