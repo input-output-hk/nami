@@ -27,7 +27,6 @@
     "@fontsource/ubuntu": "^5.0.8",
     "@ledgerhq/hw-transport-webusb": "6.11.2",
     "@trezor/connect-web": "^9.0.11",
-    "awesome-debounce-promise": "^2.1.0",
     "bip39": "^3.0.4",
     "crc": "^4.1.1",
     "crypto-random-string": "^5.0.0",

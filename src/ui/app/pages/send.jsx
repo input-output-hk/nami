@@ -74,8 +74,21 @@ import { NumericFormat } from 'react-number-format';
 import Copy from '../components/copy';
 import AssetsModal from '../components/assetsModal';
 import { MdModeEdit } from 'react-icons/md';
-import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import useConstant from 'use-constant';
+
+const debouncePromise = (f, interval) => {
+  let timer = null;
+
+  return (...args) => {
+    clearTimeout(timer);
+    return new Promise((resolve) => {
+      timer = setTimeout(async () => {
+        const result = await f(...args);
+        resolve(result);
+      }, interval);
+    });
+  };
+};
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -965,7 +978,7 @@ const AddressPopup = ({
   };
 
   const handleInputDebounced = useConstant(() =>
-    AwesomeDebouncePromise(handleInput, 300)
+    debouncePromise(handleInput, 300)
   );
 
   React.useEffect(() => {
