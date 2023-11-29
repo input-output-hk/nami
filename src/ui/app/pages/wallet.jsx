@@ -75,7 +75,7 @@ import {
   ChevronDownIcon,
   InfoOutlineIcon,
 } from '@chakra-ui/icons';
-import Scrollbars from 'react-custom-scrollbars';
+import { Scrollbars } from '../components/scrollbar';
 import QrCode from '../components/qrCode';
 import provider from '../../../config/provider';
 import UnitDisplay from '../components/unitDisplay';

@@ -9,7 +9,7 @@ import {
   signTxHW,
 } from '../../../api/extension';
 import Account from '../components/account';
-import Scrollbars from 'react-custom-scrollbars';
+import { Scrollbars } from '../components/scrollbar';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import UnitDisplay from '../components/unitDisplay';

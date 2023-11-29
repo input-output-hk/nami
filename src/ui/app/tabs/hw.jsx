@@ -17,7 +17,7 @@ import {
   Checkbox,
   Icon,
 } from '@chakra-ui/react';
-import { Scrollbars } from 'react-custom-scrollbars';
+import { Scrollbars } from '../components/scrollbar';
 import { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '@trezor/connect-web';
 

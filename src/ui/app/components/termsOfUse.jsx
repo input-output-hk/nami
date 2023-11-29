@@ -10,7 +10,7 @@ import {
   ModalOverlay,
   useDisclosure
 } from '@chakra-ui/react';
-import Scrollbars from 'react-custom-scrollbars';
+import { Scrollbars } from './scrollbar';
 
 const TermsOfUse = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();

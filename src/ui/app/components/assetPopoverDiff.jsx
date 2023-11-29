@@ -1,5 +1,5 @@
 import React from 'react';
-import Scrollbars from 'react-custom-scrollbars';
+import { Scrollbars } from '../components/scrollbar';
 import {
   Popover,
   PopoverArrow,
@@ -9,7 +9,7 @@ import {
   PopoverHeader,
   PopoverTrigger,
 } from '@chakra-ui/react';
-import { Avatar,Box, Stack, Button, Portal } from '@chakra-ui/react';
+import { Avatar, Box, Stack, Button, Portal } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { FixedSizeList as List } from 'react-window';
 import Copy from './copy';

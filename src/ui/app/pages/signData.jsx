@@ -6,7 +6,7 @@ import {
   signDataCIP30,
 } from '../../../api/extension';
 import Account from '../components/account';
-import Scrollbars from 'react-custom-scrollbars';
+import { Scrollbars } from '../components/scrollbar';
 import { Box, Text, Button, Image, Spinner, useColorModeValue } from '@chakra-ui/react';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
