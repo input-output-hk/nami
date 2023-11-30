@@ -9,15 +9,13 @@ import {
   ModalOverlay,
 } from '@chakra-ui/modal';
 import { Link, Text } from '@chakra-ui/layout';
-import { Box } from '@chakra-ui/react';
 import React from 'react';
-import Scrollbars from 'react-custom-scrollbars';
 
 export const AnalyticsConsentModal = ({
   askForConsent,
-  setAnalyticsConsent,
+  setConsent,
 }) => (
-  <Modal size="xs" isOpen={askForConsent} isCentered>
+  <Modal size="xs" isOpen={askForConsent} isCentered onClose={() => setConsent(false)}>
     <ModalOverlay />
     <ModalContent>
       <ModalHeader fontSize="md">Legal & analytics</ModalHeader>
@@ -50,11 +48,11 @@ export const AnalyticsConsentModal = ({
         <Button
           mr={3}
           variant="ghost"
-          onClick={() => setAnalyticsConsent(false)}
+          onClick={() => setConsent(false)}
         >
           decline
         </Button>
-        <Button colorScheme="teal" onClick={() => setAnalyticsConsent(true)}>
+        <Button colorScheme="teal" onClick={() => setConsent(true)}>
           Accept
         </Button>
       </ModalFooter>

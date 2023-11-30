@@ -81,10 +81,10 @@ const App = () => {
         <Route path="/settings/*" element={<Settings />} />
         <Route path="/send" element={<Send />} />
       </Routes>
-        <AnalyticsConsentModal
-            askForConsent={analyticsConsent === undefined}
-            setConsent={setAnalyticsConsent}
-        />
+      <AnalyticsConsentModal
+        askForConsent={analyticsConsent === undefined}
+        setConsent={setAnalyticsConsent}
+      />
     </div>
   );
 };

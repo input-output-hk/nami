@@ -20,15 +20,17 @@ export const useAnalyticsConsent = () => {
   // Store the consent in React state to trigger component updates
   const [consent, setConsentState] = useState();
   // Fetch the stored user consent and assign to React state
-  useEffect(async () => {
-    setConsentState(await getAnalyticsConsent());
+  useEffect(() => {
+    (async function() {
+      setConsentState(await getAnalyticsConsent());
+    })();
   }, []);
   return [
     consent,
     async (consent) => {
       // Allow to set the consent state and store it too
-      setConsentState(consent);
       await setAnalyticsConsent(consent);
+      setConsentState(consent);
     },
   ];
 };
