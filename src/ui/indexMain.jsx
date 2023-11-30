@@ -12,6 +12,8 @@ import {
 } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { POPUP } from '../config/config';
+import { useAnalyticsConsent } from '../features/analytics';
+import { AnalyticsConsentModal } from '../features/analytics/ui/AnalyticsConsentModal';
 import Main from './index';
 import { Box, Spinner } from '@chakra-ui/react';
 import Welcome from './app/pages/welcome';
@@ -29,6 +31,7 @@ const App = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = React.useState(true);
+  const [analyticsConsent, setAnalyticsConsent] = useAnalyticsConsent();
   const init = async () => {
     const hasWallet = await getAccounts();
     if (hasWallet) {
@@ -78,6 +81,10 @@ const App = () => {
         <Route path="/settings/*" element={<Settings />} />
         <Route path="/send" element={<Send />} />
       </Routes>
+        <AnalyticsConsentModal
+            askForConsent={analyticsConsent === undefined}
+            setConsent={setAnalyticsConsent}
+        />
     </div>
   );
 };
