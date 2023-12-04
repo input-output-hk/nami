@@ -1,5 +1,5 @@
-import { Box } from '@chakra-ui/layout';
 import {
+  Box,
   Avatar,
   Image,
   Skeleton,
@@ -11,7 +11,7 @@ import { useStoreActions, useStoreState } from 'easy-peasy';
 import React from 'react';
 import Copy from './copy';
 import UnitDisplay from './unitDisplay';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { BsArrowUpRight } from 'react-icons/bs';
 import { getAsset } from '../../../api/extension';
 
@@ -33,7 +33,7 @@ const Asset = ({ asset, enableSend, ...props }) => {
     useStoreState((state) => state.globalModel.sendStore.value),
     useStoreActions((actions) => actions.globalModel.sendStore.setValue),
   ];
-  const history = useHistory();
+  const navigate = useNavigate();
   const settings = useStoreState((state) => state.settings.settings);
 
   const fetchMetadata = async () => {
@@ -166,7 +166,7 @@ const Asset = ({ asset, enableSend, ...props }) => {
                 rightIcon={<BsArrowUpRight />}
                 onClick={(e) => {
                   setValue({ ...value, assets: [asset] });
-                  history.push('/send');
+                  navigate('/send');
                 }}
               >
                 Send

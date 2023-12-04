@@ -2,12 +2,11 @@
  * indexInternal is the entry point for the popup windows (e.g. data signing, tx signing)
  */
 
-import { Box } from '@chakra-ui/layout';
-import { Spinner } from '@chakra-ui/spinner';
+import { Box, Spinner } from '@chakra-ui/react';
 import React from 'react';
-import { render } from 'react-dom';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { useHistory } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getAccounts } from '../api/extension';
 import { Messaging } from '../api/messaging';
 
@@ -20,17 +19,17 @@ import Main from './index';
 
 const App = () => {
   const controller = Messaging.createInternalController();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [request, setRequest] = React.useState(null);
 
   const init = async () => {
     const request = await controller.requestData();
     const hasWallet = await getAccounts();
     setRequest(request);
-    if (!hasWallet) history.push('/noWallet');
-    else if (request.method === METHOD.enable) history.push('/enable');
-    else if (request.method === METHOD.signData) history.push('/signData');
-    else if (request.method === METHOD.signTx) history.push('/signTx');
+    if (!hasWallet) navigate('/noWallet');
+    else if (request.method === METHOD.enable) navigate('/enable');
+    else if (request.method === METHOD.signData) navigate('/signData');
+    else if (request.method === METHOD.signTx) navigate('/signTx');
   };
 
   React.useEffect(() => {
@@ -49,31 +48,32 @@ const App = () => {
     </Box>
   ) : (
     <div style={{ overflowX: 'hidden' }}>
-      <Switch>
-        <Route exact path="/signData">
-          <SignData request={request} controller={controller} />
-        </Route>
-        <Route exact path="/signTx">
-          <SignTx request={request} controller={controller} />
-        </Route>
-        <Route exact path="/enable">
-          <Enable request={request} controller={controller} />
-        </Route>
-        <Route exact path="/noWallet">
-          <NoWallet />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route
+          path="/signData"
+          element={<SignData request={request} controller={controller} />}
+        />
+        <Route
+          path="/signTx"
+          element={<SignTx request={request} controller={controller} />}
+        />
+        <Route
+          path="/enable"
+          element={<Enable request={request} controller={controller} />}
+        />
+        <Route path="/noWallet" element={<NoWallet />} />
+      </Routes>
     </div>
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${POPUP.internal}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${POPUP.internal}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();

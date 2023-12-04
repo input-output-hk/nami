@@ -1,4 +1,3 @@
-import { Box, Link, Text } from '@chakra-ui/layout';
 import React from 'react';
 import {
   delegationTx,
@@ -12,6 +11,9 @@ import {
 import ConfirmModal from './confirmModal';
 import UnitDisplay from './unitDisplay';
 import {
+  Box, 
+  Link, 
+  Text,
   Image,
   Modal,
   ModalOverlay,

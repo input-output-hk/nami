@@ -1,13 +1,23 @@
-import {Button} from '@chakra-ui/button';
-import {Input, InputGroup, InputRightElement} from '@chakra-ui/input';
-import {Box, Text} from '@chakra-ui/layout';
-import {Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay,} from '@chakra-ui/modal';
+import {
+	Button, 
+	Box, 
+	Text,
+	Input, 
+	InputGroup, 
+	InputRightElement,
+	Modal, 
+	ModalBody, 
+	ModalContent, 
+	ModalFooter, 
+	ModalHeader, 
+	ModalOverlay,
+	useToast,
+	useDisclosure
+} from '@chakra-ui/react';
 import React from 'react';
-import {useToast} from "@chakra-ui/react";
 import {STORAGE} from "../../../config/config";
 import {decryptWithPassword, encryptWithPassword, getStorage, setStorage} from "../../../api/extension";
 import Loader from "../../../api/loader";
-import {useDisclosure} from "@chakra-ui/hooks";
 
 export const ChangePasswordModal = React.forwardRef((props, ref) => {
 

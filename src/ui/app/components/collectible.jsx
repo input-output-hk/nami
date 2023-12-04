@@ -1,8 +1,12 @@
-import { Box } from '@chakra-ui/layout';
-import { Avatar, Image, Skeleton, useColorModeValue } from '@chakra-ui/react';
+import {
+  Box,
+  Avatar,
+  Image,
+  Skeleton,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import React from 'react';
 import './styles.css';
-import { Transition } from 'react-transition-group';
 import { getAsset } from '../../../api/extension';
 
 const useIsMounted = () => {
@@ -32,6 +36,7 @@ const Collectible = React.forwardRef(({ asset }, ref) => {
   React.useEffect(() => {
     fetchMetadata();
   }, [asset]);
+
   return (
     <>
       <Box
@@ -48,9 +53,7 @@ const Collectible = React.forwardRef(({ asset }, ref) => {
         background={background}
         border="solid 1px"
         borderColor={background}
-        onMouseEnter={() => {
-          setShowInfo(true);
-        }}
+        onMouseEnter={() => setShowInfo(true)}
         onMouseLeave={() => setShowInfo(false)}
         cursor="pointer"
         userSelect="none"
@@ -80,57 +83,48 @@ const Collectible = React.forwardRef(({ asset }, ref) => {
           )}
         </Box>
         {token && (
-          <Box width="full" position="absolute" bottom={0} left={0}>
-            <Transition in={showInfo} timeout={200}>
-              {(state) => {
-                const defaultStyle = {
-                  transition: '0.2s',
-                  bottom: '0',
-                };
-
-                const transitionStyles = {
-                  entering: { bottom: 0 },
-                  entered: { bottom: 0 },
-                  exiting: { bottom: '-130px' },
-                  exited: { bottom: '-130px' },
-                };
-                return (
-                  <Box
-                    position="absolute"
-                    width="full"
-                    height="130px"
-                    background="white"
-                    style={{ ...defaultStyle, ...transitionStyles[state] }}
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    flexDirection="column"
-                    color="black"
-                  >
-                    <Box
-                      overflow="hidden"
-                      className="lineClamp3"
-                      fontSize={13}
-                      fontWeight="bold"
-                      color="GrayText"
-                      textAlign="center"
-                      width="80%"
-                    >
-                      {token.displayName}
-                    </Box>
-                    <Box
-                      color="gray.600"
-                      fontWeight="semibold"
-                      position="absolute"
-                      left="15px"
-                      bottom="10px"
-                    >
-                      x {token.quantity}
-                    </Box>
-                  </Box>
-                );
-              }}
-            </Transition>
+          <Box
+            width="full"
+            position="absolute"
+            bottom={0}
+            left={0}
+            style={{
+              transition: '0.2s',
+              bottom: showInfo ? '130px' : '0',
+            }}
+          >
+            <Box
+              position="absolute"
+              width="full"
+              height="130px"
+              background="white"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              flexDirection="column"
+              color="black"
+            >
+              <Box
+                overflow="hidden"
+                className="lineClamp3"
+                fontSize={13}
+                fontWeight="bold"
+                color="GrayText"
+                textAlign="center"
+                width="80%"
+              >
+                {token.displayName}
+              </Box>
+              <Box
+                color="gray.600"
+                fontWeight="semibold"
+                position="absolute"
+                left="15px"
+                bottom="10px"
+              >
+                x {token.quantity}
+              </Box>
+            </Box>
           </Box>
         )}
       </Box>
