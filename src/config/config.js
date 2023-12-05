@@ -57,7 +57,8 @@ export const STORAGE = {
   network: 'network',
   currency: 'currency',
   migration: 'migration',
-  analyticsConsent: 'analytics'
+  analyticsConsent: 'analytics',
+  userId: 'userId',
 };
 
 export const LOCAL_STORAGE = {

@@ -12,7 +12,7 @@ import {
 } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { POPUP } from '../config/config';
-import { useAnalyticsConsent } from '../features/analytics';
+import { useAnalyticsConsent } from '../features/analytics/hooks';
 import { AnalyticsConsentModal } from '../features/analytics/ui/AnalyticsConsentModal';
 import Main from './index';
 import { Box, Spinner } from '@chakra-ui/react';
@@ -22,6 +22,9 @@ import { getAccounts } from '../api/extension';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
 import { useStoreActions, useStoreState } from 'easy-peasy';
+import { AnalyticsProvider } from '../features/analytics/provider';
+import { EventTracker } from '../features/analytics/event-tracker';
+import { ExtensionViews } from '../features/analytics/types';
 
 const App = () => {
   const route = useStoreState((state) => state.globalModel.routeStore.route);
@@ -91,11 +94,14 @@ const App = () => {
 
 const root = createRoot(window.document.querySelector(`#${POPUP.main}`));
 root.render(
-  <Main>
-    <Router>
-      <App />
-    </Router>
-  </Main>
+  <AnalyticsProvider view={ExtensionViews.Popup}>
+    <EventTracker />
+    <Main>
+      <Router>
+        <App />
+      </Router>
+    </Main>
+  </AnalyticsProvider>
 );
 
 if (module.hot) module.hot.accept();

@@ -36,6 +36,9 @@ import {
 } from 'bip39';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { createRoot } from 'react-dom/client';
+import { AnalyticsProvider } from '../../../features/analytics/provider';
+import { EventTracker } from '../../../features/analytics/event-tracker';
+import { ExtensionViews } from '../../../features/analytics/types';
 import Main from '../../index';
 import { TAB } from '../../../config/config';
 import { Planet } from 'react-kawaii';
@@ -611,11 +614,14 @@ const SuccessAndClose = () => {
 
 const root = createRoot(window.document.querySelector(`#${TAB.createWallet}`));
 root.render(
-  <Main>
-    <Router>
-      <App />
-    </Router>
-  </Main>
+  <AnalyticsProvider view={ExtensionViews.Extended}>
+    <EventTracker />
+    <Main>
+      <Router>
+        <App />
+      </Router>
+    </Main>
+  </AnalyticsProvider>
 );
 
 if (module.hot) module.hot.accept();

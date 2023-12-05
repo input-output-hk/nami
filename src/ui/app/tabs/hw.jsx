@@ -20,6 +20,9 @@ import {
 import { Scrollbars } from '../components/scrollbar';
 import { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '@trezor/connect-web';
+import { AnalyticsProvider } from '../../../features/analytics/provider';
+import { EventTracker } from '../../../features/analytics/event-tracker';
+import { ExtensionViews } from '../../../features/analytics/types';
 
 // assets
 import LogoOriginal from '../../../assets/img/logo.svg';
@@ -396,11 +399,14 @@ const SuccessAndClose = () => {
 
 const root = createRoot(window.document.querySelector(`#${TAB.hw}`));
 root.render(
-  <Main>
-    <Router>
-      <App />
-    </Router>
-  </Main>
+  <AnalyticsProvider view={ExtensionViews.Extended}>
+    <EventTracker />
+    <Main>
+      <Router>
+        <App />
+      </Router>
+    </Main>
+  </AnalyticsProvider>
 );
 
 if (module.hot) module.hot.accept();

@@ -9,6 +9,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { getAccounts } from '../api/extension';
 import { Messaging } from '../api/messaging';
+import { AnalyticsProvider } from '../features/analytics/provider';
+import { EventTracker } from '../features/analytics/event-tracker';
+import { ExtensionViews } from '../features/analytics/types';
 
 import { METHOD, POPUP } from '../config/config';
 import Enable from './app/pages/enable';
@@ -69,11 +72,14 @@ const App = () => {
 
 const root = createRoot(window.document.querySelector(`#${POPUP.internal}`));
 root.render(
-  <Main>
-    <Router>
-      <App />
-    </Router>
-  </Main>
+  <AnalyticsProvider view={ExtensionViews.Popup}>
+    <EventTracker />
+    <Main>
+      <Router>
+        <App />
+      </Router>
+    </Main>
+  </AnalyticsProvider>
 );
 
 if (module.hot) module.hot.accept();
