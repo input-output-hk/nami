@@ -16,6 +16,12 @@ export enum Events {
   // receive
   ReceiveClick = 'receive | receive | click',
   ReceiveCopyAddressIconClick = 'receive | receive | copy address icon | click',
+
+  // send
+  SendClick = 'send | send | click',
+  SendTransactionDataReviewTransactionClick = 'send | transaction data | review transaction | click',
+  SendTransactionConfirmationConfirmClick = 'send | transaction confirmation | confirm | click',
+  SendTransactionConfirmed = 'send | transaction confirmed',
 }
 
 export type Property =

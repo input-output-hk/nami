@@ -685,7 +685,10 @@ const Wallet = () => {
             height="8"
           >
             <Button
-              onClick={() => navigate('/send')}
+              onClick={() => {
+                capture(Events.SendClick);
+                navigate('/send');
+              }}
               size="sm"
               rounded="xl"
               rightIcon={<Icon as={BsArrowUpRight} />}
