@@ -24,8 +24,11 @@ import PrivacyPolicy from '../components/privacyPolicy';
 import { ViewIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import { createTab } from '../../../api/extension';
 import { TAB } from '../../../config/config';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const Welcome = () => {
+  const capture = useCaptureEvent();
   const Banner = useColorModeValue(BannerBlack, BannerWhite);
   const refWallet = React.useRef();
   const refImport = React.useRef();
@@ -74,6 +77,7 @@ const Welcome = () => {
         <Button
           display="inline-flex"
           onClick={() => {
+            capture(Events.OnboardingCreateClick);
             refWallet.current.openModal();
           }}
           colorScheme="teal"
@@ -84,6 +88,7 @@ const Welcome = () => {
         <Box height="4" />
         <Button
           onClick={() => {
+            capture(Events.OnboardingRestoreClick);
             refImport.current.openModal();
           }}
           colorScheme="orange"
