@@ -84,6 +84,7 @@ const Settings = () => {
 };
 
 const Overview = () => {
+  const capture = useCaptureEvent();
   const navigate = useNavigate();
   const { colorMode, toggleColorMode } = useColorMode();
   return (
@@ -111,6 +112,7 @@ const Overview = () => {
         rightIcon={<ChevronRightIcon />}
         variant="ghost"
         onClick={() => {
+          capture(Events.SettingsAuthorizedDappsClick);
           navigate('whitelisted');
         }}
       >
@@ -329,6 +331,7 @@ const GeneralSettings = ({ accountRef }) => {
 };
 
 const Whitelisted = () => {
+  const capture = useCaptureEvent();
   const [whitelisted, setWhitelisted] = React.useState(null);
   const getData = () =>
     getWhitelisted().then((whitelisted) => {
@@ -370,6 +373,7 @@ const Whitelisted = () => {
               <SmallCloseIcon
                 cursor="pointer"
                 onClick={async () => {
+                  capture(Events.SettingsAuthorizedDappsTrashBinIconClick);
                   await removeWhitelisted(origin);
                   getData();
                 }}

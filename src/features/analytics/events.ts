@@ -53,6 +53,18 @@ export enum Events {
   SettingsNewAccountClick = 'settings | new account | click',
   SettingsNewAccountConfirmClick = 'settings | new account | confirm | click',
   SettingsNewAccountXClick = 'settings | new account | x | click',
+
+  SettingsAuthorizedDappsClick = 'settings | authorized dapps | click',
+  SettingsAuthorizedDappsTrashBinIconClick = 'settings | authorized dapps | trash bin icon | click',
+
+  DappConnectorAuthorizeDappAuthorizeClick = 'dapp connector | authorize dapp | authorize | click',
+  DappConnectorAuthorizeDappCancelClick = 'dapp connector | authorize dapp | cancel | click',
+  DappConnectorDappTxSignClick = 'dapp connector | tx | sign | click',
+  DappConnectorDappTxConfirmClick = 'dapp connector | tx | confirm | click',
+  DappConnectorDappTxCancelClick = 'dapp connector | tx | cancel | click',
+  DappConnectorDappDataSignClick = 'dapp connector | data | sign | click',
+  DappConnectorDappDataConfirmClick = 'dapp connector | data | confirm | click',
+  DappConnectorDappDataCancelClick = 'dapp connector | data | cancel | click',
 }
 
 export type Property =
