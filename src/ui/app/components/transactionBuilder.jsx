@@ -11,8 +11,8 @@ import {
 import ConfirmModal from './confirmModal';
 import UnitDisplay from './unitDisplay';
 import {
-  Box, 
-  Link, 
+  Box,
+  Link,
   Text,
   Image,
   Modal,
@@ -42,8 +42,11 @@ import {
   toUnit,
 } from '../../../api/extension';
 import { FaRegFileCode } from 'react-icons/fa';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
+  const capture = useCaptureEvent();
   const settings = useStoreState((state) => state.settings.settings);
   const toast = useToast();
   const {
@@ -563,8 +566,12 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             password
           );
         }}
+        onCloseBtn={() => {
+          capture(Events.SettingsCollateralConfirmClick);
+        }}
         onConfirm={async (status, signedTx) => {
           if (status === true) {
+            capture(Events.SettingsCollateralConfirmClick);
             await setCollateral({
               txHash: signedTx,
               txId: 0,
@@ -672,6 +679,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                 onClick={async () => {
                   setIsLoading(true);
                   await removeCollateral();
+                  capture(Events.SettingsCollateralReclaimCollateralClick);
                   toast({
                     title: 'Collateral removed',
                     status: 'success',

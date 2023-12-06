@@ -439,7 +439,10 @@ const Wallet = () => {
 
                 <MenuItem
                   icon={<AddIcon />}
-                  onClick={() => newAccountRef.current.openModal()}
+                  onClick={() => {
+                    capture(Events.SettingsNewAccountClick);
+                    newAccountRef.current.openModal();
+                  }}
                 >
                   New Account
                 </MenuItem>
@@ -467,9 +470,10 @@ const Wallet = () => {
                 <MenuDivider />
                 <MenuItem
                   icon={<Icon as={FaRegFileCode} w={3} h={3} />}
-                  onClick={() =>
-                    builderRef.current.initCollateral(state.account)
-                  }
+                  onClick={() => {
+                    capture(Events.SettingsCollateralClick);
+                    builderRef.current.initCollateral(state.account);
+                  }}
                 >
                   {' '}
                   Collateral
@@ -762,6 +766,7 @@ const Wallet = () => {
 };
 
 const NewAccountModal = React.forwardRef((props, ref) => {
+  const capture = useCaptureEvent();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isLoading, setIsLoading] = React.useState(false);
   const [state, setState] = React.useState({
@@ -775,6 +780,7 @@ const NewAccountModal = React.forwardRef((props, ref) => {
     try {
       const index = await createAccount(state.name, state.password);
       await switchAccount(index);
+      capture(Events.SettingsNewAccountConfirmClick);
       onClose();
     } catch (e) {
       setState((s) => ({ ...s, wrongPassword: true }));
@@ -797,7 +803,15 @@ const NewAccountModal = React.forwardRef((props, ref) => {
   }, [isOpen]);
 
   return (
-    <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
+    <Modal
+      size="xs"
+      isOpen={isOpen}
+      onClose={() => {
+        capture(Events.SettingsNewAccountXClick);
+        onClose();
+      }}
+      isCentered
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader fontSize="md">
@@ -844,7 +858,14 @@ const NewAccountModal = React.forwardRef((props, ref) => {
         </ModalBody>
 
         <ModalFooter>
-          <Button mr={3} variant="ghost" onClick={onClose}>
+          <Button
+            mr={3}
+            variant="ghost"
+            onClick={() => {
+              capture(Events.SettingsNewAccountXClick);
+              onClose();
+            }}
+          >
             Close
           </Button>
           <Button

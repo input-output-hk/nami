@@ -1,18 +1,18 @@
-import { 
+import {
   Icon,
-  Box, 
-  Text, 
-  Button, 
+  Box,
+  Text,
+  Button,
   useDisclosure,
-  Input, 
-  InputGroup, 
+  Input,
+  InputGroup,
   InputRightElement,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  ModalOverlay
+  ModalOverlay,
 } from '@chakra-ui/react';
 import React from 'react';
 import { MdUsb } from 'react-icons/md';
@@ -155,7 +155,12 @@ const ConfirmModalNormal = ({ props, isOpen, onClose }) => {
           <Button
             mr={3}
             variant="ghost"
-            onClick={props.onCloseBtn ? props.onCloseBtn : onClose}
+            onClick={() => {
+              if (props.onCloseBtn) {
+                props.onCloseBtn();
+              }
+              onClose();
+            }}
           >
             Close
           </Button>
@@ -243,7 +248,12 @@ const ConfirmModalHw = ({ props, isOpen, onClose, hw }) => {
             <Button
               mr={3}
               variant="ghost"
-              onClick={props.onCloseBtn ? props.onCloseBtn : onClose}
+              onClick={() => {
+                if (props.onCloseBtn) {
+                  props.onCloseBtn();
+                }
+                onClose();
+              }}
             >
               Close
             </Button>
