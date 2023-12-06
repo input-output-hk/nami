@@ -97,6 +97,8 @@ import AssetFingerprint from '@emurgo/cip14-js';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -108,6 +110,7 @@ const useIsMounted = () => {
 };
 
 const Wallet = () => {
+  const capture = useCaptureEvent();
   const isMounted = useIsMounted();
   const navigate = useNavigate();
   const settings = useStoreState((state) => state.settings.settings);
@@ -629,6 +632,9 @@ const Wallet = () => {
                   size="sm"
                   rounded="xl"
                   shadow="md"
+                  onClick={() => {
+                    capture(Events.ReceiveClick);
+                  }}
                 >
                   Receive
                 </Button>
@@ -648,7 +654,13 @@ const Wallet = () => {
                       <QrCode value={info.paymentAddr} />
                     </Box>
                     <Box height="4" />
-                    <Copy label="Copied address" copy={info.paymentAddr}>
+                    <Copy
+                      label="Copied address"
+                      copy={info.paymentAddr}
+                      onClick={() => {
+                        capture(Events.ReceiveCopyAddressIconClick);
+                      }}
+                    >
                       <Text
                         maxWidth="200px"
                         fontSize="xs"

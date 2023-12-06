@@ -12,6 +12,10 @@ export enum Events {
   OnboardingRestoreClick = 'onboarding | restore wallet | click',
   OnboardingRestoreEnterPassphraseNextClick = 'onboarding | restore wallet | enter passphrase | next | click',
   OnboardingRestoreWalletNamePasswordNextClick = 'onboarding | restore wallet | wallet name & password | next | click',
+
+  // receive
+  ReceiveClick = 'receive | receive | click',
+  ReceiveCopyAddressIconClick = 'receive | receive | copy address icon | click',
 }
 
 export type Property =
