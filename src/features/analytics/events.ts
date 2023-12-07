@@ -57,6 +57,7 @@ export enum Events {
   SettingsAuthorizedDappsClick = 'settings | authorized dapps | click',
   SettingsAuthorizedDappsTrashBinIconClick = 'settings | authorized dapps | trash bin icon | click',
 
+  // dapp
   DappConnectorAuthorizeDappAuthorizeClick = 'dapp connector | authorize dapp | authorize | click',
   DappConnectorAuthorizeDappCancelClick = 'dapp connector | authorize dapp | cancel | click',
   DappConnectorDappTxSignClick = 'dapp connector | tx | sign | click',
@@ -65,6 +66,13 @@ export enum Events {
   DappConnectorDappDataSignClick = 'dapp connector | data | sign | click',
   DappConnectorDappDataConfirmClick = 'dapp connector | data | confirm | click',
   DappConnectorDappDataCancelClick = 'dapp connector | data | cancel | click',
+
+  // hw
+  HWConnectClick = 'hardware wallet | connect | click',
+  HWConnectNextClick = 'hardware wallet | connect hw | next | click',
+  HWSelectAccountNextClick = 'hardware wallet | select hw account | next | click',
+  HWNameNextClick = 'onboarding | hardware wallet | name hw wallet | next | click',
+  HWDoneGoToWallet = 'onboarding | hardware wallet | all done | go to my wallet | click',
 }
 
 export type Property =

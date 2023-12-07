@@ -463,7 +463,10 @@ const Wallet = () => {
                   )}
                 <MenuItem
                   icon={<Icon as={GiUsbKey} w={3} h={3} />}
-                  onClick={() => createTab(TAB.hw)}
+                  onClick={() => {
+                    capture(Events.HWConnectClick);
+                    createTab(TAB.hw);
+                  }}
                 >
                   Connect Hardware Wallet
                 </MenuItem>
