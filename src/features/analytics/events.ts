@@ -76,6 +76,11 @@ export enum Events {
   // nfts
   NFTsClick = 'nft | nfts | click',
   NFTsImageClick = 'nft | nfts | nft image | click',
+
+  // activity
+  ActivityActivityClick = 'activity | activity | click',
+  ActivityActivityActivityRowClick = 'activity | activity | activity row | click',
+  ActivityActivityDetailTransactionHashClick = 'activity | activity detail | transaction hash | click',
 }
 
 export type Property =

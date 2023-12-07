@@ -730,7 +730,13 @@ const Wallet = () => {
               <Icon as={FaGamepad} boxSize={5} />
             </Tab>
             <Tab>
-              <Icon as={BsClockHistory} boxSize={5} />
+              <Icon
+                as={BsClockHistory}
+                boxSize={5}
+                onClick={() => {
+                  capture(Events.ActivityActivityClick);
+                }}
+              />
             </Tab>
           </TabList>
           <TabPanels>
