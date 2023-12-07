@@ -721,7 +721,12 @@ const Wallet = () => {
             <Tab mr={2}>
               <Icon as={GiTwoCoins} boxSize={5} />
             </Tab>
-            <Tab mr={2}>
+            <Tab
+              mr={2}
+              onClick={() => {
+                capture(Events.NFTsClick);
+              }}
+            >
               <Icon as={FaGamepad} boxSize={5} />
             </Tab>
             <Tab>

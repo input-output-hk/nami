@@ -71,8 +71,11 @@ export enum Events {
   HWConnectClick = 'hardware wallet | connect | click',
   HWConnectNextClick = 'hardware wallet | connect hw | next | click',
   HWSelectAccountNextClick = 'hardware wallet | select hw account | next | click',
-  HWNameNextClick = 'onboarding | hardware wallet | name hw wallet | next | click',
   HWDoneGoToWallet = 'onboarding | hardware wallet | all done | go to my wallet | click',
+
+  // nfts
+  NFTsClick = 'nft | nfts | click',
+  NFTsImageClick = 'nft | nfts | nft image | click',
 }
 
 export type Property =
