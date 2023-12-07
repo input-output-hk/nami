@@ -242,13 +242,14 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           );
         }}
         onConfirm={(status, signedTx) => {
-          if (status === true)
+          if (status === true) {
+            capture(Events.StakingConfirmClick);
             toast({
               title: 'Delegation submitted',
               status: 'success',
               duration: 4000,
             });
-          else if (signedTx === ERROR.fullMempool) {
+          } else if (signedTx === ERROR.fullMempool) {
             toast({
               title: 'Transaction failed',
               description: 'Mempool full. Try again.',
@@ -459,13 +460,14 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           );
         }}
         onConfirm={(status, signedTx) => {
-          if (status === true)
+          if (status === true) {
+            capture(Events.StakingUnstakeConfirmClick);
             toast({
               title: 'Deregistration submitted',
               status: 'success',
               duration: 4000,
             });
-          else if (signedTx === ERROR.fullMempool) {
+          } else if (signedTx === ERROR.fullMempool) {
             toast({
               title: 'Transaction failed',
               description: 'Mempool full. Try again.',

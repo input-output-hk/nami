@@ -274,12 +274,13 @@ const Wallet = () => {
                 ) : (
                   state.network.id === NETWORK_ID.mainnet && (
                     <Button
-                      onClick={() =>
+                      onClick={() => {
+                        capture(Events.StakingClick);
                         builderRef.current.initDelegation(
                           state.account,
                           state.delegation
-                        )
-                      }
+                        );
+                      }}
                       variant="solid"
                       size="xs"
                       colorScheme="whiteAlpha"
@@ -953,6 +954,7 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
 });
 
 const DelegationPopover = ({ account, delegation, children }) => {
+  const capture = useCaptureEvent();
   const settings = useStoreState((state) => state.settings.settings);
   const withdrawRef = React.useRef();
   return (
@@ -971,6 +973,9 @@ const DelegationPopover = ({ account, delegation, children }) => {
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 'bold',
+            }}
+            onClick={() => {
+              capture(Events.StakingClick);
             }}
             rightIcon={<ChevronDownIcon />}
           >
@@ -1031,9 +1036,10 @@ const DelegationPopover = ({ account, delegation, children }) => {
               </span>
             </Tooltip>
             <Button
-              onClick={() =>
-                withdrawRef.current.initUndelegate(account, delegation)
-              }
+              onClick={() => {
+                capture(Events.StakingUnstakeClick);
+                withdrawRef.current.initUndelegate(account, delegation);
+              }}
               mt="10px"
               colorScheme="red"
               size="xm"

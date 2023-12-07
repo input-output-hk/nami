@@ -81,6 +81,12 @@ export enum Events {
   ActivityActivityClick = 'activity | activity | click',
   ActivityActivityActivityRowClick = 'activity | activity | activity row | click',
   ActivityActivityDetailTransactionHashClick = 'activity | activity detail | transaction hash | click',
+
+  // staking
+  StakingClick = 'staking | staking | click',
+  StakingConfirmClick = 'staking | staking | confirm | click',
+  StakingUnstakeClick = 'staking | staking | unstake | click',
+  StakingUnstakeConfirmClick = 'staking | staking | unstake | confirm | click',
 }
 
 export type Property =

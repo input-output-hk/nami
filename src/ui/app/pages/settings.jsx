@@ -471,6 +471,8 @@ const Network = () => {
                 break;
             }
 
+            const id = e.target.value;
+
             setSettings({
               ...settings,
               network: {
