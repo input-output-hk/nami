@@ -6,7 +6,7 @@ import React from 'react';
 import { HW, STORAGE, TAB } from '../../../config/config';
 import Main from '../../index';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import {
   Button,
   Box,
@@ -17,7 +17,7 @@ import {
   Checkbox,
   Icon,
 } from '@chakra-ui/react';
-import { Scrollbars } from 'react-custom-scrollbars';
+import { Scrollbars } from '../components/scrollbar';
 import { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '@trezor/connect-web';
 
@@ -26,7 +26,7 @@ import LogoOriginal from '../../../assets/img/logo.svg';
 import LogoWhite from '../../../assets/img/logoWhite.svg';
 import LedgerLogo from '../../../assets/img/ledgerLogo.svg';
 import TrezorLogo from '../../../assets/img/trezorLogo.svg';
-import { CheckCircleIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { ChevronRightIcon } from '@chakra-ui/icons';
 import TrezorWidget from '../components/trezorWidget';
 import {
   createHWAccounts,
@@ -394,13 +394,13 @@ const SuccessAndClose = () => {
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${TAB.hw}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${TAB.hw}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();

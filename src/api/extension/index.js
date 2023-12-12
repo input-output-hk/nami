@@ -38,7 +38,7 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import Ada, { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '@trezor/connect-web';
 import AssetFingerprint from '@emurgo/cip14-js';
-import Web3Utils from 'web3-utils';
+import { isAddress } from 'web3-validator';
 import { milkomedaNetworks } from '@dcspark/milkomeda-constants';
 
 export const getStorage = (key) =>
@@ -173,26 +173,6 @@ export const getFullBalance = async () => {
   return (
     BigInt(result.controlled_amount) - BigInt(result.withdrawable_amount)
   ).toString();
-};
-
-export const setBalanceWarning = async () => {
-  const currentAccount = await getCurrentAccount();
-  const network = await getNetwork();
-  let warning = { active: false, fullBalance: '0' };
-
-  const result = await blockfrostRequest(
-    `/accounts/${currentAccount.rewardAddr}/addresses?count=2`
-  );
-
-  if (result.length > 1) {
-    const fullBalance = await getFullBalance();
-    if (fullBalance !== currentAccount[network.id].lovelace) {
-      warning.active = true;
-      warning.fullBalance = fullBalance;
-    }
-  }
-
-  return warning;
 };
 
 export const getTransactions = async (paginate = 1, count = 10) => {
@@ -743,7 +723,7 @@ const isValidAddressBytes = async (address) => {
 };
 
 export const isValidEthAddress = function (address) {
-  return Web3Utils.isAddress(address);
+  return isAddress(address);
 };
 
 export const extractKeyHash = async (address) => {

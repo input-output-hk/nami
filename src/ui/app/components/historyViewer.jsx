@@ -1,6 +1,4 @@
-import { Box, Text } from '@chakra-ui/layout';
-import { Spinner } from '@chakra-ui/spinner';
-import { Accordion, Button } from '@chakra-ui/react';
+import { Box, Text, Spinner, Accordion, Button } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import React from 'react';
 import { File } from 'react-kawaii';

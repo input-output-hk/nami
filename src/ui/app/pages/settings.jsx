@@ -1,6 +1,6 @@
-import { Button } from '@chakra-ui/button';
 import {
   Box,
+  Button,
   IconButton,
   Text,
   useColorMode,
@@ -37,7 +37,7 @@ import {
   setStorage,
 } from '../../../api/extension';
 import Account from '../components/account';
-import { Route, Switch, useHistory } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import { NETWORK_ID, NODE, STORAGE } from '../../../config/config';
 import ConfirmModal from '../components/confirmModal';
 import { useStoreState, useStoreActions } from 'easy-peasy';
@@ -46,7 +46,7 @@ import AvatarLoader from '../components/avatarLoader';
 import { ChangePasswordModal } from '../components/changePasswordModal';
 
 const Settings = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const accountRef = React.useRef();
   return (
     <>
@@ -61,29 +61,28 @@ const Settings = () => {
         <Box position="absolute" top="24" left="6">
           <IconButton
             rounded="md"
-            onClick={() => history.goBack()}
+            onClick={() => navigate(-1)}
             variant="ghost"
             icon={<ChevronLeftIcon boxSize="7" />}
           />
         </Box>
 
-        <Switch>
-          <Route exact path="/settings" component={Overview} />
+        <Routes>
+          <Route path="*" element={<Overview />} />
           <Route
-            exact
-            path="/settings/general"
-            component={() => GeneralSettings({ accountRef })}
+            path="general"
+            element={<GeneralSettings accountRef={accountRef} />}
           />
-          <Route exact path="/settings/whitelisted" component={Whitelisted} />
-          <Route exact path="/settings/network" component={Network} />
-        </Switch>
+          <Route path="whitelisted" element={<Whitelisted />} />
+          <Route path="network" element={<Network />} />
+        </Routes>
       </Box>
     </>
   );
 };
 
 const Overview = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { colorMode, toggleColorMode } = useColorMode();
   return (
     <>
@@ -98,7 +97,7 @@ const Overview = () => {
         rightIcon={<ChevronRightIcon />}
         variant="ghost"
         onClick={() => {
-          history.push('/settings/general');
+          navigate('general');
         }}
       >
         General settings
@@ -110,7 +109,7 @@ const Overview = () => {
         rightIcon={<ChevronRightIcon />}
         variant="ghost"
         onClick={() => {
-          history.push('/settings/whitelisted');
+          navigate('whitelisted');
         }}
       >
         Whitelisted sites
@@ -122,7 +121,7 @@ const Overview = () => {
         rightIcon={<ChevronRightIcon />}
         variant="ghost"
         onClick={() => {
-          history.push('/settings/network');
+          navigate('network');
         }}
       >
         Network
@@ -132,7 +131,7 @@ const Overview = () => {
 };
 
 const GeneralSettings = ({ accountRef }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const settings = useStoreState((state) => state.settings.settings);
   const setSettings = useStoreActions(
     (actions) => actions.settings.setSettings
@@ -173,7 +172,7 @@ const GeneralSettings = ({ accountRef }) => {
       },
     });
 
-    history.push('/wallet');
+    navigate('/wallet');
   };
 
   React.useEffect(() => {

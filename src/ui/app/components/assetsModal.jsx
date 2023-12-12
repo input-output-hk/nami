@@ -8,7 +8,7 @@ import {
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
-import Scrollbars from 'react-custom-scrollbars';
+import { Scrollbars } from './scrollbar';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import Asset from './asset';
 

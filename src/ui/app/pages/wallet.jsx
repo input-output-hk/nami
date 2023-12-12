@@ -1,6 +1,5 @@
 import React from 'react';
-import { Button } from '@chakra-ui/button';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   createAccount,
   createTab,
@@ -17,14 +16,17 @@ import {
   switchAccount,
   updateAccount,
 } from '../../../api/extension';
-import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
-
 import {
   BsArrowDownRight,
   BsArrowUpRight,
   BsClockHistory,
 } from 'react-icons/bs';
 import {
+  Button,
+  Box,
+  Spacer,
+  Stack,
+  Text,
   Icon,
   Image,
   Input,
@@ -73,7 +75,7 @@ import {
   ChevronDownIcon,
   InfoOutlineIcon,
 } from '@chakra-ui/icons';
-import Scrollbars from 'react-custom-scrollbars';
+import { Scrollbars } from '../components/scrollbar';
 import QrCode from '../components/qrCode';
 import provider from '../../../config/provider';
 import UnitDisplay from '../components/unitDisplay';
@@ -107,7 +109,7 @@ const useIsMounted = () => {
 
 const Wallet = () => {
   const isMounted = useIsMounted();
-  const history = useHistory();
+  const navigate = useNavigate();
   const settings = useStoreState((state) => state.settings.settings);
   const avatarBg = useColorModeValue('white', 'gray.700');
   const panelBg = useColorModeValue('#349EA3', 'gray.800');
@@ -201,7 +203,6 @@ const Wallet = () => {
     } catch (e) {}
     const network = await getNetwork();
     const delegation = await getDelegation();
-    // const warning = await setBalanceWarning();
     if (!isMounted.current) return;
     setState((s) => ({
       ...s,
@@ -472,7 +473,7 @@ const Wallet = () => {
                 </MenuItem>
                 <MenuDivider />
                 <MenuItem
-                  onClick={() => history.push('/settings')}
+                  onClick={() => navigate('/settings')}
                   icon={<SettingsIcon />}
                 >
                   Settings
@@ -509,12 +510,6 @@ const Wallet = () => {
             alignItems="center"
             justifyContent="center"
           >
-            {/* {state.warning && state.warning.active && (
-              <BalanceWarning
-                fullBalance={state.warning.fullBalance}
-                symbol={settings.adaSymbol}
-              />
-            )} */}
             <UnitDisplay
               color="white"
               fontSize="2xl"
@@ -626,7 +621,7 @@ const Wallet = () => {
             width="20"
             height="8"
           >
-            <Popover matchWidth={true}>
+            <Popover>
               <PopoverTrigger>
                 <Button
                   rightIcon={<Icon as={BsArrowDownRight} />}
@@ -678,7 +673,7 @@ const Wallet = () => {
             height="8"
           >
             <Button
-              onClick={() => history.push('/send')}
+              onClick={() => navigate('/send')}
               size="sm"
               rounded="xl"
               rightIcon={<Icon as={BsArrowUpRight} />}
@@ -912,7 +907,7 @@ const DelegationPopover = ({ account, delegation, children }) => {
   const withdrawRef = React.useRef();
   return (
     <>
-      <Popover matchWidth={true} offset={[80, 8]}>
+      <Popover offset={[80, 8]}>
         <PopoverTrigger>
           <Button
             style={{

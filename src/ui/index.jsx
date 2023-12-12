@@ -1,6 +1,6 @@
 import React from 'react';
 import { POPUP, POPUP_WINDOW, TAB } from '../config/config';
-import { Scrollbars } from 'react-custom-scrollbars';
+import { Scrollbars } from './app/components/scrollbar';
 import './app/components/styles.css';
 import Theme from './theme';
 import StoreProvider from './store';

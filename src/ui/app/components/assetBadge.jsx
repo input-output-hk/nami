@@ -1,7 +1,7 @@
 import { SmallCloseIcon } from '@chakra-ui/icons';
-import { Box } from '@chakra-ui/layout';
 import {
   Avatar,
+  Box,
   Button,
   Image,
   Input,
@@ -14,7 +14,7 @@ import React from 'react';
 import { getAsset, toUnit } from '../../../api/extension';
 
 import AssetPopover from './assetPopover';
-import NumberFormat from 'react-number-format';
+import { NumericFormat } from 'react-number-format';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -112,7 +112,7 @@ const AssetBadge = ({ asset, onRemove, onInput, onLoad }) => {
           }
         />
         {token && (
-          <NumberFormat
+          <NumericFormat
             allowNegative={false}
             px="8"
             thousandsGroupStyle="thousand"

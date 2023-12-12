@@ -7,5 +7,13 @@
     "es2020": true,
     "browser": true,
     "node": true
+  },
+  "parserOptions": {
+    "babelOptions": {
+      "presets": [
+        ["babel-preset-react-app", false],
+        "babel-preset-react-app/prod"
+      ]
+    }
   }
 }

@@ -4,7 +4,6 @@
 
 Nami is a browser based wallet extension to interact with the Cardano blockchain. It's an open-source project and built by [**Berry Pool**](https://pipool.online).
 
-
 ### Testnet
 
 [Download testnet version](./build.zip)
@@ -213,21 +212,30 @@ The `project_id` for API requests can be created under [blockfrost.io](https://b
 
 **Recommended:** Follow this [approach](https://github.com/lxieyang/chrome-extension-boilerplate-react#secrets) in order to keep the keys seperate from the repository.
 
-The quick solution is to go under `./src/config/provider.js` and replace `secrets.PROJECT_ID_MAINNET` and `secrets.PROJECT_ID_TESTNET` with the project ids from blockfrost.
+```
+# Update secrets file with your own keys
+cp secrets.testing.js secrets.development.js
+```
+
+The quick solution is to go under `./src/config/provider.js` and replace `secrets.PROJECT_ID_MAINNET`, `secrets.PROJECT_ID_TESTNET`, `secrets.PROJECT_ID_PREVIEW` and `secrets.PROJECT_ID_PREPROD` with the project ids from blockfrost.
 
 ##### Requirements
 
-- Node.js 14
+- Node.js 20
 
 ##### Start development server
 
 ```
+# Update secrets file with your own keys
+cp secrets.testing.js secrets.development.js
 npm start
 ```
 
 ##### Create production build
 
 ```
+# Update secrets file with your own keys
+cp secrets.testing.js secrets.production.js
 npm run build
 ```
 

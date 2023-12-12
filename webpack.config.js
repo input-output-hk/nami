@@ -10,9 +10,7 @@ var webpack = require('webpack'),
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
-var alias = {
-  'react-dom': '@hot-loader/react-dom',
-};
+var alias = {};
 
 // load the secrets
 var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
@@ -114,7 +112,6 @@ var options = {
         loader: 'html-loader',
         exclude: /node_modules/,
       },
-      { test: /\.(ts|tsx)$/, loader: 'ts-loader', exclude: /node_modules/ },
       {
         test: /\.(js|jsx)$/,
         use: [
@@ -123,6 +120,12 @@ var options = {
           },
           {
             loader: 'babel-loader',
+            options: {
+              plugins: [
+                process.env.NODE_ENV === 'development' &&
+                  require.resolve('react-refresh/babel'),
+              ].filter(Boolean),
+            },
           },
         ],
         exclude: [/node_modules/, /temporary_modules/],
@@ -133,7 +136,7 @@ var options = {
     alias: alias,
     extensions: fileExtensions
       .map((extension) => '.' + extension)
-      .concat(['.js', '.jsx', '.ts', '.tsx', '.css']),
+      .concat(['.js', '.jsx', '.css']),
   },
   plugins: [
     new webpack.BannerPlugin({

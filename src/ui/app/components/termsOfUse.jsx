@@ -1,16 +1,16 @@
-import { Box } from '@chakra-ui/layout';
 import React from 'react';
 import {
+  Box,
+  Text,
   Modal,
   ModalBody,
   ModalContent,
-  ModalFooter,
   ModalCloseButton,
   ModalHeader,
   ModalOverlay,
-} from '@chakra-ui/modal';
-import { Text, useDisclosure } from '@chakra-ui/react';
-import Scrollbars from 'react-custom-scrollbars';
+  useDisclosure
+} from '@chakra-ui/react';
+import { Scrollbars } from './scrollbar';
 
 const TermsOfUse = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();

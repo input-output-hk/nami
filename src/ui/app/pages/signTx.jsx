@@ -8,10 +8,8 @@ import {
   signTx,
   signTxHW,
 } from '../../../api/extension';
-import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
-import Scrollbars from 'react-custom-scrollbars';
-import { Button } from '@chakra-ui/button';
+import { Scrollbars } from '../components/scrollbar';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import UnitDisplay from '../components/unitDisplay';
@@ -23,6 +21,10 @@ import { valueToAssets } from '../../../api/util';
 import { TxSignError } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
 import {
+  Box,
+  Stack,
+  Text,
+  Button,
   Image,
   Modal,
   ModalBody,
@@ -31,7 +33,6 @@ import {
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
-import JSONPretty from 'react-json-pretty';
 import AssetsModal from '../components/assetsModal';
 
 const abs = (big) => {
@@ -1002,10 +1003,11 @@ const DetailsModal = React.forwardRef(
                         background={innerBackground}
                       >
                         <Scrollbars autoHide>
-                          <JSONPretty
-                            id="json-pretty"
-                            data={property.metadata}
-                          ></JSONPretty>
+                          <pre>
+                            <code>
+                              {JSON.stringify(property.metadata, null, 2)}
+                            </code>
+                          </pre>
                         </Scrollbars>
                       </Box>
                       <Box h={10} />

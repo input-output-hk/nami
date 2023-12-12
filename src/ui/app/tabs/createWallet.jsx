@@ -8,58 +8,55 @@ import {
   mnemonicFromObject,
   mnemonicToObject,
 } from '../../../api/extension';
-import { Button } from '@chakra-ui/button';
 import {
   BrowserRouter as Router,
   Route,
-  Switch,
-  useHistory,
+  Routes,
+  useNavigate,
+  useLocation,
 } from 'react-router-dom';
-import { Icon, Image, useColorModeValue } from '@chakra-ui/react';
 import {
+  Box,
+  Spacer,
+  Stack,
+  Text,
+  Button,
+  Checkbox,
   Input,
   InputGroup,
-  InputLeftAddon,
-  InputRightAddon,
   InputRightElement,
-} from '@chakra-ui/input';
-import { Box, Spacer, Stack, Text } from '@chakra-ui/layout';
+  Image,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import {
   generateMnemonic,
   getDefaultWordlist,
   validateMnemonic,
   wordlists,
 } from 'bip39';
-import { CloseButton } from '@chakra-ui/close-button';
-import { Checkbox } from '@chakra-ui/checkbox';
-import { ChevronRightIcon, DownloadIcon } from '@chakra-ui/icons';
-import { render } from 'react-dom';
+import { ChevronRightIcon } from '@chakra-ui/icons';
+import { createRoot } from 'react-dom/client';
 import Main from '../../index';
 import { TAB } from '../../../config/config';
 import { Planet } from 'react-kawaii';
-import { useDropzone } from 'react-dropzone';
 
 import LogoOriginal from '../../../assets/img/logo.svg';
 import LogoWhite from '../../../assets/img/logoWhite.svg';
 import { useStoreActions } from 'easy-peasy';
-import { BsFileEarmark } from 'react-icons/bs';
 
 const App = () => {
   const Logo = useColorModeValue(LogoOriginal, LogoWhite);
   const backgroundColor = useColorModeValue('gray.200', 'inherit');
   const cardColor = useColorModeValue('white', 'gray.900');
-  const history = useHistory();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const type = params.get('type');
     const length = params.get('length');
     if (type === 'import')
-      history.push({
-        pathname: '/import',
-        seedLength: parseInt(length),
-      });
-    else history.push('/generate');
+      navigate('/import', { state: { seedLength: parseInt(length) } });
+    else navigate('/generate');
   }, []);
 
   return (
@@ -91,19 +88,19 @@ const App = () => {
         background={cardColor}
         fontSize="sm"
       >
-        <Switch>
-          <Route exact path="/generate" component={GenerateSeed} />
-          <Route exact path="/verify" component={VerifySeed} />
-          <Route exact path="/account" component={MakeAccount} />
-          <Route exact path="/import" component={ImportSeed} />
-        </Switch>
+        <Routes>
+          <Route path="/generate" element={<GenerateSeed />} />
+          <Route path="/verify" element={<VerifySeed />} />
+          <Route path="/account" element={<MakeAccount />} />
+          <Route path="/import" element={<ImportSeed />} />
+        </Routes>
       </Box>
     </Box>
   );
 };
 
 const GenerateSeed = (props) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [mnemonic, setMnemonic] = React.useState({});
   const generate = () => {
     const mnemonic = generateMnemonic(256);
@@ -111,14 +108,6 @@ const GenerateSeed = (props) => {
     setMnemonic(mnemonicMap);
   };
   const [checked, setChecked] = React.useState(false);
-
-  const download = (content, fileName, contentType) => {
-    const a = document.createElement('a');
-    const file = new Blob([content], { type: contentType });
-    a.href = URL.createObjectURL(file);
-    a.download = fileName;
-    a.click();
-  };
 
   React.useEffect(() => {
     generate();
@@ -199,26 +188,6 @@ const GenerateSeed = (props) => {
           </Box>
         ))}
       </Stack>
-      {/* <Box h="3" />
-      <Box display="flex" justifyContent="center">
-        {' '}
-        <Button
-          onClick={() =>
-            download(
-              JSON.stringify({ wallet: 'Nami', seedphrase: mnemonic }),
-              'nami-seedphrase.json',
-              'text/plain'
-            )
-          }
-          fontWeight="normal"
-          size="xs"
-          variant="ghost"
-          rightIcon={<DownloadIcon />}
-        >
-          Download
-        </Button>
-      </Box> */}
-
       <Box height={3} />
       <Stack alignItems="center" direction="column">
         <Stack direction="row" width="64" spacing="6">
@@ -231,7 +200,7 @@ const GenerateSeed = (props) => {
         <Button
           isDisabled={!checked}
           rightIcon={<ChevronRightIcon />}
-          onClick={() => history.push({ pathname: '/verify', mnemonic })}
+          onClick={() => navigate('/verify', { state: { mnemonic } })}
         >
           Next
         </Button>
@@ -241,8 +210,8 @@ const GenerateSeed = (props) => {
 };
 
 const VerifySeed = () => {
-  const history = useHistory();
-  const mnemonic = history.location.mnemonic;
+  const navigate = useNavigate();
+  const { state: { mnemonic } = {} } = useLocation();
   const [input, setInput] = React.useState({});
   const [allValid, setAllValid] = React.useState(false);
   const refs = React.useRef([]);
@@ -354,7 +323,7 @@ const VerifySeed = () => {
           fontWeight="medium"
           color="gray.400"
           variant="ghost"
-          onClick={() => history.push({ pathname: '/account', mnemonic })}
+          onClick={() => navigate('/account', { state: { mnemonic } })}
         >
           Skip
         </Button>
@@ -362,7 +331,7 @@ const VerifySeed = () => {
           ml="3"
           isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
-          onClick={() => history.push({ pathname: '/account', mnemonic })}
+          onClick={() => navigate('/account', { state: { mnemonic } })}
         >
           Next
         </Button>
@@ -372,8 +341,8 @@ const VerifySeed = () => {
 };
 
 const ImportSeed = () => {
-  const history = useHistory();
-  const seedLength = history.location.seedLength;
+  const navigate = useNavigate();
+  const { state: { seedLength } = {} } = useLocation();
   const [input, setInput] = React.useState({});
   const [allValid, setAllValid] = React.useState(false);
   const refs = React.useRef([]);
@@ -389,6 +358,7 @@ const ImportSeed = () => {
   };
 
   React.useEffect(() => {
+    console.log(input);
     verifyAll();
   }, [input]);
 
@@ -474,28 +444,12 @@ const ImportSeed = () => {
         ))}
       </Stack>
       <Spacer height="1" />
-      {seedLength == 24 &&
-        false && ( // TODO: give user more information because of security reasons
-          <>
-            <Box textAlign="center" fontSize="xs">
-              or
-            </Box>
-            <Spacer height="2" />
-            <SeedDrop
-              onLoad={(seedphrase) =>
-                history.push({ pathname: '/account', mnemonic: seedphrase })
-              }
-            />
-          </>
-        )}
       <Spacer height="5" />
       <Stack alignItems="center" direction="column">
         <Button
           isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
-          onClick={() =>
-            history.push({ pathname: '/account', mnemonic: input })
-          }
+          onClick={() => navigate('/account', { state: { mnemonic: input } })}
         >
           Next
         </Button>
@@ -504,96 +458,10 @@ const ImportSeed = () => {
   );
 };
 
-const SeedDrop = ({ onLoad, ...props }) => {
-  const [isValid, setIsValid] = React.useState(true);
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive,
-    isDragAccept,
-    isDragReject,
-  } = useDropzone({
-    accept: 'application/json',
-    maxFiles: 1,
-    onDrop: (acceptedFiles) => {
-      acceptedFiles.forEach((file) => {
-        const fileUrl = URL.createObjectURL(file);
-        fileToJson(fileUrl);
-      });
-    },
-  });
-
-  const fileToJson = async (fileUrl) => {
-    const json = await fetch(fileUrl).then((r) => r.json());
-    try {
-      const mnemonic = mnemonicFromObject(json.seedphrase);
-      if (!validateMnemonic(mnemonic)) throw new Error('Invalid mnemonic');
-      onLoad(json.seedphrase);
-    } catch (e) {
-      setIsValid(false);
-      setTimeout(() => setIsValid(true), 1000);
-    }
-  };
-
-  return (
-    <Box {...props} display="flex" alignItems="center" justifyContent="center">
-      <Box
-        transition="0.3s"
-        border="1px dashed"
-        background={
-          !isValid
-            ? 'red.300'
-            : isDragAccept
-            ? 'teal'
-            : isDragReject
-            ? 'red.300'
-            : 'transparent'
-        }
-        borderColor={isDragAccept ? 'teal' : isDragReject ? 'red.300' : 'gray'}
-        rounded="xl"
-      >
-        <div {...getRootProps({ className: 'dropzone' })}>
-          <input {...getInputProps()} />
-          <Box
-            width="200px"
-            height="30px"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            textAlign="center"
-          >
-            <Box
-              color={
-                !isValid
-                  ? 'white'
-                  : isDragAccept
-                  ? 'white'
-                  : isDragReject
-                  ? 'white'
-                  : 'GrayText'
-              }
-            >
-              {' '}
-              {isDragReject || !isValid ? (
-                'Invalid file'
-              ) : (
-                <span>
-                  From Nami file <Icon ml="2" as={BsFileEarmark} />
-                </span>
-              )}
-            </Box>
-          </Box>
-        </div>
-      </Box>
-    </Box>
-  );
-};
-
 const MakeAccount = (props) => {
   const [state, setState] = React.useState({});
   const [loading, setLoading] = React.useState(false);
-  const history = useHistory();
-  const mnemonic = history.location.mnemonic;
+  const { state: { mnemonic } = {} } = useLocation();
   const [isDone, setIsDone] = React.useState(false);
   const setRoute = useStoreActions(
     (actions) => actions.globalModel.routeStore.setRoute
@@ -742,13 +610,13 @@ const SuccessAndClose = () => {
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${TAB.createWallet}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${TAB.createWallet}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();

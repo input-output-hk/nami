@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   createTab,
   displayUnit,
@@ -15,10 +15,8 @@ import {
   toUnit,
   updateRecentSentToAddress,
 } from '../../../api/extension';
-import { Box, Stack, Text } from '@chakra-ui/layout';
 import Account from '../components/account';
-import Scrollbars from 'react-custom-scrollbars';
-import { Button, IconButton } from '@chakra-ui/button';
+import { Scrollbars } from '../components/scrollbar';
 import ConfirmModal from '../components/confirmModal';
 import {
   CheckIcon,
@@ -27,17 +25,31 @@ import {
   InfoOutlineIcon,
   SmallCloseIcon,
 } from '@chakra-ui/icons';
-import { Input, InputGroup, InputLeftAddon } from '@chakra-ui/input';
 import {
+  Box,
+  Stack,
+  Text,
+  Button,
+  Avatar,
+  IconButton,
+  Input,
+  InputGroup,
   Popover,
   PopoverArrow,
   PopoverBody,
   PopoverContent,
   PopoverHeader,
   PopoverTrigger,
-} from '@chakra-ui/popover';
+  useDisclosure,
+  InputRightElement,
+  InputLeftElement,
+  Spinner,
+  Tooltip,
+  useColorModeValue,
+  useToast,
+  Icon,
+} from '@chakra-ui/react';
 import MiddleEllipsis from 'react-middle-ellipsis';
-import { Avatar } from '@chakra-ui/avatar';
 import UnitDisplay from '../components/unitDisplay';
 import {
   buildTx,
@@ -52,28 +64,31 @@ import {
   minAdaRequired,
 } from '../../../api/util';
 import { FixedSizeList as List } from 'react-window';
-import { useDisclosure } from '@chakra-ui/hooks';
 import AssetBadge from '../components/assetBadge';
 import { ERROR, HW, TAB } from '../../../config/config';
-import {
-  InputRightElement,
-  InputLeftElement,
-  Spinner,
-  Tooltip,
-  useColorModeValue,
-  useToast,
-  Icon,
-} from '@chakra-ui/react';
 import { Planet } from 'react-kawaii';
 import Loader from '../../../api/loader';
 import { action, useStoreActions, useStoreState } from 'easy-peasy';
 import AvatarLoader from '../components/avatarLoader';
-import NumberFormat from 'react-number-format';
+import { NumericFormat } from 'react-number-format';
 import Copy from '../components/copy';
 import AssetsModal from '../components/assetsModal';
 import { MdModeEdit } from 'react-icons/md';
-import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import useConstant from 'use-constant';
+
+const debouncePromise = (f, interval) => {
+  let timer = null;
+
+  return (...args) => {
+    clearTimeout(timer);
+    return new Promise((resolve) => {
+      timer = setTimeout(async () => {
+        const result = await f(...args);
+        resolve(result);
+      }, interval);
+    });
+  };
+};
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -170,7 +185,7 @@ const Send = () => {
   const resetState = useStoreActions(
     (actions) => actions.globalModel.sendStore.reset
   );
-  const history = useHistory();
+  const navigate = useNavigate();
   const toast = useToast();
   const ref = React.useRef();
   const [isLoading, setIsLoading] = React.useState(true);
@@ -463,7 +478,7 @@ const Send = () => {
               <IconButton
                 rounded="md"
                 onClick={() => {
-                  history.goBack();
+                  navigate(-1);
                 }}
                 variant="ghost"
                 icon={<ChevronLeftIcon boxSize="6" />}
@@ -541,7 +556,7 @@ const Send = () => {
                       </Box>
                     }
                   />
-                  <NumberFormat
+                  <NumericFormat
                     pl="10"
                     allowNegative={false}
                     thousandsGroupStyle="thousand"
@@ -831,7 +846,7 @@ const Send = () => {
             });
           ref.current.closeModal();
           setTimeout(() => {
-            history.goBack();
+            navigate(-1);
           }, 200);
         }}
       />
@@ -963,7 +978,7 @@ const AddressPopup = ({
   };
 
   const handleInputDebounced = useConstant(() =>
-    AwesomeDebouncePromise(handleInput, 300)
+    debouncePromise(handleInput, 300)
   );
 
   React.useEffect(() => {
@@ -1225,12 +1240,7 @@ const AssetsSelector = ({ assets, addAssets, value, isM1 }) => {
   }, [isM1]);
 
   return (
-    <Popover
-      isOpen={isOpen}
-      onOpen={onOpen}
-      onClose={onClose}
-      matchWidth={true}
-    >
+    <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
       <PopoverTrigger>
         <Button
           isDisabled={isM1 || !assets || assets.length < 1}

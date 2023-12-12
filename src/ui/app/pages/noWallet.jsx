@@ -1,6 +1,4 @@
-import { Button } from '@chakra-ui/button';
-import { Box, Text } from '@chakra-ui/layout';
-import { Image, useColorModeValue } from '@chakra-ui/react';
+import { Box, Text, Image, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import { Backpack } from 'react-kawaii';
 
@@ -27,7 +25,7 @@ const NoWallet = () => {
       <Text fontWeight="bold" color="GrayText">
         No Wallet
       </Text>
-      <Box position="absolute" width="full" bottom="16" width="300px">
+      <Box position="absolute" bottom="16" width="300px">
         <Text textAlign="center" fontSize="sm">
           Open the panel at the top right in order to create a wallet.
         </Text>

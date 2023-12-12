@@ -3,16 +3,20 @@
  */
 
 import React from 'react';
-import { render } from 'react-dom';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { useHistory } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { POPUP } from '../config/config';
 import Main from './index';
-import { Spinner } from '@chakra-ui/spinner';
+import { Box, Spinner } from '@chakra-ui/react';
 import Welcome from './app/pages/welcome';
 import Wallet from './app/pages/wallet';
 import { getAccounts } from '../api/extension';
-import { Box } from '@chakra-ui/layout';
 import Settings from './app/pages/settings';
 import Send from './app/pages/send';
 import { useStoreActions, useStoreState } from 'easy-peasy';
@@ -22,12 +26,13 @@ const App = () => {
   const setRoute = useStoreActions(
     (actions) => actions.globalModel.routeStore.setRoute
   );
-  const history = useHistory();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = React.useState(true);
   const init = async () => {
     const hasWallet = await getAccounts();
     if (hasWallet) {
-      history.push('/wallet');
+      navigate('/wallet');
       // Set route from localStorage if available
       if (route && route !== '/wallet') {
         route
@@ -35,19 +40,25 @@ const App = () => {
           .split('/')
           .reduce((acc, r) => {
             const fullRoute = acc + `/${r}`;
-            history.push(fullRoute);
+            navigate(fullRoute);
             return fullRoute;
           }, '');
       }
-    } else history.push('/welcome');
+    } else {
+      navigate('/welcome');
+    }
     setIsLoading(false);
   };
+
   React.useEffect(() => {
     init();
-    history.listen(() => {
-      setRoute(history.location.pathname);
-    });
   }, []);
+
+  React.useEffect(() => {
+    if (!isLoading) {
+      setRoute(location.pathname);
+    }
+  }, [location, isLoading, setRoute]);
 
   return isLoading ? (
     <Box
@@ -61,31 +72,23 @@ const App = () => {
     </Box>
   ) : (
     <div style={{ overflowX: 'hidden' }}>
-      <Switch>
-        <Route exact path="/wallet">
-          <Wallet />
-        </Route>
-        <Route exact path="/welcome">
-          <Welcome />
-        </Route>
-        <Route path="/settings">
-          <Settings />
-        </Route>
-        <Route exact path="/send">
-          <Send />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route path="*" element={<Wallet />} />
+        <Route path="/welcome" element={<Welcome />} />
+        <Route path="/settings/*" element={<Settings />} />
+        <Route path="/send" element={<Send />} />
+      </Routes>
     </div>
   );
 };
 
-render(
+const root = createRoot(window.document.querySelector(`#${POPUP.main}`));
+root.render(
   <Main>
     <Router>
       <App />
     </Router>
-  </Main>,
-  window.document.querySelector(`#${POPUP.main}`)
+  </Main>
 );
 
 if (module.hot) module.hot.accept();

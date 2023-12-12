@@ -1,5 +1,6 @@
-import { Box, SimpleGrid } from '@chakra-ui/layout';
 import {
+  Box,
+  SimpleGrid,
   IconButton,
   Input,
   InputGroup,
@@ -28,7 +29,7 @@ import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import './styles.css';
 import Copy from './copy';
 import { useStoreActions, useStoreState } from 'easy-peasy';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { BsArrowUpRight } from 'react-icons/bs';
 import { setAccountAvatar } from '../../../api/extension';
 
@@ -106,7 +107,7 @@ const CollectiblesViewer = ({ assets, onUpdateAvatar }) => {
           </>
         )}
       </Box>
-      <Box position="absolute" left="6" top="240px">
+      <Box position="absolute" left="6" top="0">
         <Search setSearch={setSearch} assets={assets} />
       </Box>
       <CollectibleModal ref={ref} onUpdateAvatar={onUpdateAvatar} />
@@ -124,7 +125,7 @@ export const CollectibleModal = React.forwardRef(({ onUpdateAvatar }, ref) => {
     useStoreState((state) => state.globalModel.sendStore.value),
     useStoreActions((actions) => actions.globalModel.sendStore.setValue),
   ];
-  const history = useHistory();
+  const navigate = useNavigate();
   const timer = React.useRef();
 
   React.useImperativeHandle(ref, () => ({
@@ -219,7 +220,7 @@ export const CollectibleModal = React.forwardRef(({ onUpdateAvatar }, ref) => {
                 rightIcon={<BsArrowUpRight />}
                 onClick={(e) => {
                   setValue({ ...value, assets: [asset] });
-                  history.push('/send');
+                  navigate('/send');
                 }}
               >
                 Send
@@ -292,7 +293,6 @@ const Search = ({ setSearch, assets }) => {
   return (
     <Popover
       returnFocusOnClose={false}
-      matchWidth={true}
       placement="bottom-start"
       onOpen={() => setTimeout(() => ref.current.focus())}
     >
