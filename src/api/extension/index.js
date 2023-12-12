@@ -265,7 +265,7 @@ export const updateTxInfo = async (txHash, pending) => {
       const metadata = getTxMetadata(txHash);
 
       detail.info = await info;
-      if (info) detail.block = await getBlock(detail.info.block_height);
+      if (detail.info) detail.block = await getBlock(detail.info.block_height);
       detail.utxos = await uTxOs;
       detail.metadata = await metadata;
     } else {
