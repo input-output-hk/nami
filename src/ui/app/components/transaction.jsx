@@ -114,7 +114,9 @@ const Transaction = ({
     }
   };
 
-  React.useEffect(() => getTxDetail());
+  React.useEffect(() => {
+    getTxDetail();
+  });
 
   return (
     <AccordionItem borderTop="none" _last={{ borderBottom: 'none' }}>
