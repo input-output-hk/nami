@@ -323,7 +323,7 @@ export const getSpecificUtxo = async (txHash, txId) => {
  * @param {number} paginate.limit
  * @returns
  */
-export const getUtxos = async (amount = undefined, paginate = undefined) => {
+export const getUtxos = async (amount = undefined, paginate = undefined, mempool = true) => {
   const currentAccount = await getCurrentAccount();
   let result = [];
   let page = paginate && paginate.page ? paginate.page + 1 : 1;
@@ -342,6 +342,36 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
     result = result.concat(pageResult);
     if (pageResult.length <= 0 || paginate) break;
     page++;
+  }
+  if (mempool) {
+    let mempoolTxs = await getMempoolTransactions();
+    for (const tx of mempoolTxs) {
+      const txInfo = await getMempoolTxInfo(tx.txHash);
+      // Manually remove utxos that have been spent in mempool
+      const inputMapped = txInfo.inputs.map((input) => ({
+        txHash: input.tx_hash,
+        txId: input.output_index,
+      }));
+      result = result.filter(
+        (utxo) =>
+          !inputMapped.includes({txHash: utxo.tx_hash, txId: utxo.output_index})
+      );
+      // Add utxos from mempool
+      for(const output of txInfo.outputs) {
+        if (output.address === currentAccount.paymentKeyHashBech32 && !output.collateral){
+          result.push({
+            tx_hash: tx.txHash,
+            output_index: output.output_index,
+            amount: output.amount,
+            address: output.address,
+            data_hash: output.data_hash,
+            inline_datum: output.inline_datum,
+            reference_script_hash: output.reference_script_hash,
+            block: "mempool",
+          })
+        }
+      }
+    }
   }
 
   // exclude collateral input from overall utxo set
