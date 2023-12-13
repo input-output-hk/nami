@@ -16,8 +16,9 @@ import {
 
 import LogoWhite from '../../../assets/img/logoWhite.svg';
 import LogoBlack from '../../../assets/img/logo.svg';
-import Berry from '../../../assets/img/berry.svg';
+import IOHK from '../../../assets/img/iohk.svg';
 import TermsOfUse from './termsOfUse';
+import PrivacyPolicy from './privacyPolicy';
 
 const { version } = require('../../../../package.json');
 
@@ -26,6 +27,7 @@ const About = React.forwardRef((props, ref) => {
   const Logo = useColorModeValue(LogoBlack, LogoWhite);
 
   const termsRef = React.useRef();
+  const privacyPolRef = React.useRef();
 
   React.useImperativeHandle(ref, () => ({
     openModal() {
@@ -64,20 +66,20 @@ const About = React.forwardRef((props, ref) => {
               flexDirection="column"
             >
               <Text fontSize="xs">
-                Created by{' '}
+                Maintained by{' '}
                 <span
                   onClick={() => window.open('https://pipool.online')}
                   style={{ textDecoration: 'underline', cursor: 'pointer' }}
                 >
-                  Berry Pool
+                  IOG
                 </span>
               </Text>
               <Box height="4" />
               <Image
                 cursor="pointer"
                 onClick={() => window.open('https://pipool.online')}
-                src={Berry}
-                width="30px"
+                src={IOHK}
+                width="53px"
               />
             </Box>
             <Box height="4" />
@@ -89,12 +91,20 @@ const About = React.forwardRef((props, ref) => {
               >
                 Terms of use
               </Link>
+              <span>{' '}|{' '}</span>
+              <Link
+                onClick={() => privacyPolRef.current.openModal()}
+                color="GrayText"
+              >
+                Privacy Policy
+              </Link>
             </Box>
-            <Box height="1" />
+            <Box height="2" />
           </ModalBody>
         </ModalContent>
       </Modal>
       <TermsOfUse ref={termsRef} />
+      <PrivacyPolicy ref={privacyPolRef} />
     </>
   );
 });

@@ -30,7 +30,7 @@ import {
 } from '@chakra-ui/react';
 import { GoStop } from 'react-icons/go';
 // Assets
-import Berry from '../../../assets/img/berry.svg';
+import IOHK from '../../../assets/img/iohk.svg';
 import { ERROR, HW, TAB } from '../../../config/config';
 import { useStoreState } from 'easy-peasy';
 import Loader from '../../../api/loader';
@@ -268,7 +268,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             justifyContent="center"
             flexDirection="column"
           >
-            <Image src={Berry} width="40px" />
+            <Image src={IOHK} width="40px" />
             <Box h="4" />
             <Text fontSize="sm">
               Support the development of Nami Wallet by delegating to{' '}
