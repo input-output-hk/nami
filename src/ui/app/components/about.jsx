@@ -16,7 +16,8 @@ import {
 
 import LogoWhite from '../../../assets/img/logoWhite.svg';
 import LogoBlack from '../../../assets/img/logo.svg';
-import IOHK from '../../../assets/img/iohk.svg';
+import IOHKWhite from '../../../assets/img/iohkWhite.svg';
+import IOHKBlack from '../../../assets/img/iohk.svg';
 import TermsOfUse from './termsOfUse';
 import PrivacyPolicy from './privacyPolicy';
 
@@ -25,6 +26,7 @@ const { version } = require('../../../../package.json');
 const About = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const Logo = useColorModeValue(LogoBlack, LogoWhite);
+  const IOHK = useColorModeValue(IOHKWhite, IOHKBlack);
 
   const termsRef = React.useRef();
   const privacyPolRef = React.useRef();
@@ -68,7 +70,7 @@ const About = React.forwardRef((props, ref) => {
               <Text fontSize="xs">
                 Maintained by{' '}
                 <span
-                  onClick={() => window.open('https://pipool.online')}
+                  onClick={() => window.open('https://iohk.io/')}
                   style={{ textDecoration: 'underline', cursor: 'pointer' }}
                 >
                   IOG
@@ -77,9 +79,9 @@ const About = React.forwardRef((props, ref) => {
               <Box height="4" />
               <Image
                 cursor="pointer"
-                onClick={() => window.open('https://pipool.online')}
+                onClick={() => window.open('https://iohk.io/')}
                 src={IOHK}
-                width="53px"
+                width="66px"
               />
             </Box>
             <Box height="4" />
