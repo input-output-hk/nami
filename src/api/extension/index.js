@@ -136,6 +136,21 @@ export const getDelegation = async () => {
   };
 };
 
+export const getPoolMetadata = async (poolId) => {
+  const delegation = await blockfrostRequest(`/pools/${poolId}/metadata`);
+
+  if (delegation.error) {
+    throw new Error(delegation.message);
+  }
+
+  return {
+    ticker: delegation.ticker,
+    name: delegation.name,
+    id: poolId,
+    hex: delegation.hex,
+  };
+};
+
 export const getBalance = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
@@ -1241,8 +1256,8 @@ export const createAccount = async (name, password, accountIndex = null) => {
   const index = accountIndex
     ? accountIndex
     : existingAccounts
-    ? Object.keys(getNativeAccounts(existingAccounts)).length
-    : 0;
+      ? Object.keys(getNativeAccounts(existingAccounts)).length
+      : 0;
 
   let { accountKey, paymentKey, stakeKey } = await requestAccountKey(
     password,
@@ -1529,12 +1544,14 @@ export const initHW = async ({ device, id }) => {
 export const getAdaHandle = async (assetName) => {
   try {
     const network = await getNetwork();
-    if( !network || network.id != 'mainnet' ) return null;
-    const response = await fetch(`https://api.handle.me/handles/${assetName}`)
-    const data = response && response.ok ? await response.json() : null
-    return data && data.resolved_addresses && data.resolved_addresses.ada ? data.resolved_addresses.ada : null
+    if (!network || network.id != 'mainnet') return null;
+    const response = await fetch(`https://api.handle.me/handles/${assetName}`);
+    const data = response && response.ok ? await response.json() : null;
+    return data && data.resolved_addresses && data.resolved_addresses.ada
+      ? data.resolved_addresses.ada
+      : null;
   } catch (e) {
-    return null
+    return null;
   }
 };
 

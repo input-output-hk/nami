@@ -11,8 +11,8 @@ import {
 import ConfirmModal from './confirmModal';
 import UnitDisplay from './unitDisplay';
 import {
-  Box, 
-  Link, 
+  Box,
+  Link,
   Text,
   Image,
   Modal,
@@ -27,7 +27,12 @@ import {
   Icon,
   UnorderedList,
   ListItem,
+  InputGroup,
+  InputRightElement,
+  Input,
+  Tooltip,
 } from '@chakra-ui/react';
+import { CheckIcon, WarningIcon } from '@chakra-ui/icons';
 import { GoStop } from 'react-icons/go';
 // Assets
 import IOHK from '../../../assets/img/iohk.svg';
@@ -40,8 +45,45 @@ import {
   removeCollateral,
   setCollateral,
   toUnit,
+  getPoolMetadata,
 } from '../../../api/extension';
 import { FaRegFileCode } from 'react-icons/fa';
+
+const PoolStates = {
+  LOADING: 'LOADING',
+  ERROR: 'ERROR',
+  EDITING: 'EDITING',
+  DONE: 'DONE',
+};
+
+const poolDefaultValue = {
+  ticker: '',
+  name: '',
+  id: '',
+  error: '',
+  state: PoolStates.EDITING,
+};
+
+const poolRightElementStyle = (pool) => {
+  if (pool.state === PoolStates.DONE || pool.state === PoolStates.ERROR) {
+    return {
+      width: 'auto',
+      h: 'fit-content',
+      top: '8px',
+      right: '8px',
+    };
+  }
+
+  return {
+    width: '4.5rem',
+    h: 'fit-content',
+    top: '4px',
+  };
+};
+
+const poolHasTicker = (pool) => {
+  return pool.state === PoolStates.DONE && Boolean(pool.ticker);
+};
 
 const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
   const settings = useStoreState((state) => state.settings.settings);
@@ -59,6 +101,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
     stakeRegistration: '',
     rewards: '',
     ready: false,
+    pool: { ...poolDefaultValue },
   });
   const COLLATERAL = '5';
   const delegationRef = React.useRef();
@@ -66,54 +109,76 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
   const undelegateRef = React.useRef();
   const collateralRef = React.useRef();
   const accountIndex = React.useRef();
+
+  const prepareDelegationTx = async () => {
+    if (data.pool.id === '') return;
+
+    setData((d) => ({
+      ...d,
+      pool: {
+        ...d.pool,
+        state: PoolStates.LOADING,
+      },
+    }));
+
+    try {
+      const metadata = await getPoolMetadata(data.pool.id);
+
+      const tx = await delegationTx(
+        data.account,
+        data.delegation,
+        data.protocolParameters,
+        metadata.hex
+      );
+
+      setData((d) => ({
+        ...d,
+        fee: tx.body().fee().to_str(),
+        tx,
+        pool: {
+          ticker: metadata.ticker,
+          name: metadata.name,
+          id: metadata.id,
+          state: PoolStates.DONE,
+        },
+      }));
+    } catch (e) {
+      setData((d) => ({
+        ...d,
+        pool: {
+          ...d.pool,
+          error: e.message,
+          state: PoolStates.ERROR,
+        },
+      }));
+    }
+  };
+
   React.useImperativeHandle(ref, () => ({
     async initDelegation(account, delegation) {
-      if (
-        delegation.poolId ===
-        'pool19f6guwy97mmnxg9dz65rxyj8hq07qxud886hamyu4fgfz7dj9gl' // BERRY
-      ) {
-        return;
-      }
       setData({
         fee: '',
         stakeRegistration: '',
         rewards: '',
         ready: false,
         error: '',
+        pool: { ...poolDefaultValue },
       });
       delegationRef.current.openModal(account.index);
       const protocolParameters = await initTx();
-      const checkTx = async (count) => {
-        if (count >= 5) {
-          setData((d) => ({
-            ...d,
-            error: 'Transaction not possible (maybe insufficient balance)',
-          }));
-          throw ERROR.txNotPossible;
-        }
-        try {
-          const tx = await delegationTx(
-            account,
-            delegation,
-            protocolParameters
-          );
-          setData({
-            fee: tx.body().fee().to_str(),
-            tx,
-            account,
-            stakeRegistration:
-              !delegation.active && protocolParameters.keyDeposit,
-            ready: true,
-          });
-        } catch (e) {
-          console.log(e);
-          checkTx(count + 1);
-        }
-      };
-      checkTx(0);
+
+      setData((s) => ({
+        ...s,
+        account,
+        delegation,
+        protocolParameters,
+        stakeRegistration: !delegation.active && protocolParameters.keyDeposit,
+        ready: true,
+      }));
     },
     async initWithdrawal(account, delegation) {
       setData({
+        pool: { ...poolDefaultValue },
         fee: '',
         stakeRegistration: '',
         rewards: '',
@@ -125,6 +190,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       try {
         const tx = await withdrawalTx(account, delegation, protocolParameters);
         setData({
+          pool: { ...poolDefaultValue },
           tx,
           account,
           rewards: delegation.rewards,
@@ -140,6 +206,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
     },
     async initUndelegate(account, delegation) {
       setData({
+        pool: { ...poolDefaultValue },
         fee: '',
         stakeRegistration: '',
         rewards: '',
@@ -151,6 +218,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       try {
         const tx = await undelegateTx(account, delegation, protocolParameters);
         setData({
+          pool: { ...poolDefaultValue },
           tx,
           account,
           fee: tx.body().fee().to_str(),
@@ -165,6 +233,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
     },
     async initCollateral(account) {
       setData({
+        pool: { ...poolDefaultValue },
         fee: '',
         stakeRegistration: '',
         rewards: '',
@@ -191,6 +260,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       try {
         const tx = await buildTx(account, utxos, outputs, protocolParameters);
         setData({
+          pool: { ...poolDefaultValue },
           tx,
           account,
           fee: tx.body().fee().to_str(),
@@ -204,11 +274,14 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       }
     },
   }));
+
+  const error = data.error || data.pool.error;
+
   return (
     <>
       <ConfirmModal
         ready={data.ready}
-        title="Delegate to Berry"
+        title="Delegate your funds"
         sign={async (password, hw) => {
           if (hw) {
             if (hw.device === HW.trezor) {
@@ -268,24 +341,76 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             justifyContent="center"
             flexDirection="column"
           >
-            <Image src={IOHK} width="40px" />
-            <Box h="4" />
             <Text fontSize="sm">
-              Support the development of Nami Wallet by delegating to{' '}
+              Enter the Stake Pool ticker or ID to delegate your funds and start
+              receiving rewards. Alternatively, head to{' '}
               <Link
                 fontWeight="semibold"
-                onClick={() => window.open('https://pipool.online')}
+                onClick={() => window.open('https://pool.pm')}
               >
-                Berry Pool
-              </Link>{' '}
-              and earn approximately <b>3.7%</b> staking rewards per year.
-              Alternatively, head to https://pool.pm/, connect your Nami wallet
-              and delegate to a stake pool of your choice.
+                https://pool.pm
+              </Link>
+              , connect your Nami wallet and delegate to a stake pool of your
+              choice
             </Text>
             <Box h="6" />
-            {data.error ? (
+            <Tooltip
+              label={`${data.pool.ticker} ${data.pool.name}`}
+              placement="top"
+              isOpen={data.pool.state === PoolStates.DONE ? undefined : false}
+            >
+              <InputGroup size="md">
+                <Input
+                  variant="filled"
+                  h={8}
+                  pr={poolHasTicker(data.pool) ? '2rem' : '4.5rem'}
+                  pl={'0.5rem'}
+                  type="text"
+                  fontSize="14px"
+                  color={
+                    data.pool.state === PoolStates.DONE ? '#A3AEBE' : undefined
+                  }
+                  value={data.pool.id}
+                  onChange={(e) => {
+                    setData((s) => ({
+                      ...s,
+                      pool: {
+                        ...s.pool,
+                        id: e.target.value,
+                        state: PoolStates.EDITING,
+                      },
+                    }));
+                  }}
+                  placeholder="Enter Pool ID"
+                  onKeyDown={(e) => {
+                    if (e.key == 'Enter') prepareDelegationTx();
+                  }}
+                />
+                <InputRightElement {...poolRightElementStyle(data.pool)}>
+                  {data.pool.state === PoolStates.EDITING && (
+                    <Button
+                      h={6}
+                      size="sm"
+                      colorScheme="teal"
+                      disabled={data.pool.id === '' || data.pool.isLoading}
+                      isLoading={data.pool.isLoading}
+                      onClick={() => prepareDelegationTx()}
+                    >
+                      Verify
+                    </Button>
+                  )}
+                  {data.pool.state === PoolStates.DONE && (
+                    <CheckIcon color="teal.500" />
+                  )}
+                  {data.pool.state === PoolStates.ERROR && (
+                    <WarningIcon color="red.300" />
+                  )}
+                </InputRightElement>
+              </InputGroup>
+            </Tooltip>
+            {error ? (
               <Box textAlign="center" mb="4" color="red.300">
-                {data.error}
+                {error}
               </Box>
             ) : (
               <Box fontSize="sm">
