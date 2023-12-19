@@ -202,7 +202,6 @@ const Wallet = () => {
       }
     } catch (e) {}
     const network = await getNetwork();
-    console.log('getDelegation');
     const delegation = await getDelegation();
     if (!isMounted.current) return;
     setState((s) => ({
