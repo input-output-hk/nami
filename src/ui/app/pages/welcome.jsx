@@ -2,12 +2,12 @@ import React from 'react';
 import { Backpack } from 'react-kawaii';
 import { Checkbox, Image, useColorModeValue } from '@chakra-ui/react';
 import {
-  Box, 
-  Button, 
-  Spacer, 
-  Text, 
-  Link, 
-  Select, 
+  Box,
+  Button,
+  Spacer,
+  Text,
+  Link,
+  Select,
   useDisclosure,
   Modal,
   ModalBody,
@@ -20,6 +20,7 @@ import {
 import BannerWhite from '../../../assets/img/bannerWhite.svg';
 import BannerBlack from '../../../assets/img/bannerBlack.svg';
 import TermsOfUse from '../components/termsOfUse';
+import PrivacyPolicy from '../components/privacyPolicy';
 import { ViewIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import { createTab } from '../../../api/extension';
 import { TAB } from '../../../config/config';
@@ -102,6 +103,7 @@ const WalletModal = React.forwardRef((props, ref) => {
   const [accept, setAccept] = React.useState(false);
 
   const termsRef = React.useRef();
+  const privacyPolicyRef = React.useRef();
 
   React.useImperativeHandle(ref, () => ({
     openModal() {
@@ -124,13 +126,20 @@ const WalletModal = React.forwardRef((props, ref) => {
             <Box display="flex" alignItems="center" justifyContent="center">
               <Checkbox onChange={(e) => setAccept(e.target.checked)} />
               <Box w="2" />
-              <Text>
-                I accept{' '}
+              <Text fontWeight={600}>
+                I read and accepted the{' '}
                 <Link
                   onClick={() => termsRef.current.openModal()}
                   textDecoration="underline"
                 >
                   Terms of use
+                </Link>
+                <span> and </span>
+                <Link
+                  onClick={() => privacyPolicyRef.current.openModal()}
+                  textDecoration="underline"
+                >
+                  Privacy Policy
                 </Link>
               </Text>
               <Box h="2" />
@@ -152,6 +161,7 @@ const WalletModal = React.forwardRef((props, ref) => {
         </ModalContent>
       </Modal>
       <TermsOfUse ref={termsRef} />
+      <PrivacyPolicy ref={privacyPolicyRef} />
     </>
   );
 });
@@ -162,6 +172,7 @@ const ImportModal = React.forwardRef((props, ref) => {
   const [select, setSelect] = React.useState(null);
 
   const termsRef = React.useRef();
+  const privacyPolicyRef = React.useRef();
 
   React.useImperativeHandle(ref, () => ({
     openModal() {
@@ -214,13 +225,20 @@ const ImportModal = React.forwardRef((props, ref) => {
             <Box display="flex" alignItems="center" justifyContent="center">
               <Checkbox onChange={(e) => setAccept(e.target.checked)} />
               <Box w="2" />
-              <Text>
-                I accept{' '}
+              <Text fontWeight={600}>
+                I read and accepted the{' '}
                 <Link
                   onClick={() => termsRef.current.openModal()}
                   textDecoration="underline"
                 >
                   Terms of use
+                </Link>
+                <span> and </span>
+                <Link
+                  onClick={() => privacyPolicyRef.current.openModal()}
+                  textDecoration="underline"
+                >
+                  Privacy Policy
                 </Link>
               </Text>
               <Box h="2" />
@@ -247,6 +265,7 @@ const ImportModal = React.forwardRef((props, ref) => {
         </ModalContent>
       </Modal>
       <TermsOfUse ref={termsRef} />
+      <PrivacyPolicy ref={privacyPolicyRef} />
     </>
   );
 });

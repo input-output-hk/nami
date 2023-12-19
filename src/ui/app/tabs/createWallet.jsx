@@ -357,8 +357,7 @@ const ImportSeed = () => {
     else setAllValid(false);
   };
 
-  React.useEffect(() => {
-    console.log(input);
+  React.useEffect(() => { 
     verifyAll();
   }, [input]);
 
