@@ -1,0 +1,9 @@
+validates:
+  - key: check1
+    bodies:
+      - "www"
+      - ".com"
+      - "dot com"
+      - "http"
+      - "https"
+      - "support"

@@ -1,0 +1,26 @@
+name: Issue Comments Validate
+on:
+  issue_comment:
+    types:
+      - created
+      - edited
+
+jobs:
+  issue_comment:
+    name: Issue Comment
+    if: ${{ !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: validate
+        uses: fukuiretu/actions-issue-comment-validates@main
+        with:
+          debug: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - id: report
+        env:
+          HTML_URL: ${{ github.event.comment.html_url }}
+          ID: ${{ github.event.comment.id }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "Issue $NUMBER has had a comment (ID: $ID) with restricted words: ${{ steps.validate.outputs.check1 }}. Moderate at $HTML_URL if true"
