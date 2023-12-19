@@ -62,6 +62,7 @@ const poolDefaultValue = {
   id: '',
   error: '',
   state: PoolStates.EDITING,
+  showTooltip: false,
 };
 
 const poolRightElementStyle = (pool) => {
@@ -357,7 +358,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             <Tooltip
               label={`${data.pool.ticker} ${data.pool.name}`}
               placement="top"
-              isOpen={data.pool.state === PoolStates.DONE ? undefined : false}
+              isOpen={data.pool.showTooltip}
             >
               <InputGroup size="md">
                 <Input
@@ -384,6 +385,24 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                   placeholder="Enter Pool ID"
                   onKeyDown={(e) => {
                     if (e.key == 'Enter') prepareDelegationTx();
+                  }}
+                  onMouseEnter={() => {
+                    setData((s) => ({
+                      ...s,
+                      pool: {
+                        ...s.pool,
+                        showTooltip: s.pool.state === PoolStates.DONE,
+                      },
+                    }));
+                  }}
+                  onMouseLeave={() => {
+                    setData((s) => ({
+                      ...s,
+                      pool: {
+                        ...s.pool,
+                        showTooltip: false,
+                      },
+                    }));
                   }}
                 />
                 <InputRightElement {...poolRightElementStyle(data.pool)}>
