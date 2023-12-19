@@ -11,6 +11,7 @@ import React, {
 import { getAnalyticsConsent, getUserId } from './services';
 import { getOptions } from './posthog';
 import { ExtensionViews } from './types';
+import { POSTHOG_API_KEY } from './config';
 
 interface Props {
   children: ReactNode;
@@ -68,7 +69,7 @@ export const AnalyticsProvider = ({ children, view }: Props) => {
   }
 
   return (
-    <PostHogProvider options={options}>
+    <PostHogProvider apiKey={POSTHOG_API_KEY} options={options}>
       <ExtensionViewsContext.Provider value={view}>
         {children}
       </ExtensionViewsContext.Provider>
