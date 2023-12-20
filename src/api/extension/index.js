@@ -137,6 +137,10 @@ export const getDelegation = async () => {
 };
 
 export const getPoolMetadata = async (poolId) => {
+  if (!poolId) {
+    throw new Error('poolId argument not provided');
+  }
+
   const delegation = await blockfrostRequest(`/pools/${poolId}/metadata`);
 
   if (delegation.error) {
