@@ -11,13 +11,17 @@ jobs:
     if: ${{ !github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - id: validate
+      - name: Git Checkout
+        id: git-checkout
+        uses: actions/checkout@v2
+      - name: Validate
+        id: validate
         uses: fukuiretu/actions-issue-comment-validates@main
         with:
           debug: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - id: report
+      - name: Report
+        id: report
         env:
           HTML_URL: ${{ github.event.comment.html_url }}
           ID: ${{ github.event.comment.id }}
