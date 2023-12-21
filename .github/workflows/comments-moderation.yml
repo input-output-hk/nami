@@ -32,7 +32,7 @@ jobs:
           echo "Issue $NUMBER has had a comment (ID: $ID) with restricted words: ${{ steps.validate.outputs.check1 }}. Moderate at $HTML_URL if true"
       - name: Post Warning Comment
         id: post-warning-comment
-        if: ${{ steps.report.outputs.SHOULD_WARN }}
+        if: ${{ steps.report.outputs.SHOULD_WARN == true }}
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ steps.report.outputs.ISSUE_NUMBER }}
