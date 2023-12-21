@@ -27,12 +27,11 @@ jobs:
           ID: ${{ github.event.comment.id }}
           NUMBER: ${{ github.event.issue.number }}
         run: |
-          echo "SHOULD_WARN=${{ steps.validate.outputs.check1 }}" >> "$GITHUB_OUTPUT"
           echo "ISSUE_NUMBER=$NUMBER" >> "$GITHUB_OUTPUT"
           echo "Issue $NUMBER has had a comment (ID: $ID) with restricted words: ${{ steps.validate.outputs.check1 }}. Moderate at $HTML_URL if true"
       - name: Post Warning Comment
         id: post-warning-comment
-        if: ${{ steps.report.outputs.SHOULD_WARN == true }}
+        if: ${{ steps.validate.outputs.check1 == 'true' }}
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ steps.report.outputs.ISSUE_NUMBER }}
