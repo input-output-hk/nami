@@ -27,4 +27,20 @@ jobs:
           ID: ${{ github.event.comment.id }}
           NUMBER: ${{ github.event.issue.number }}
         run: |
+          echo "SHOULD_WARN=${{ steps.validate.outputs.check1 }}" >> "$GITHUB_OUTPUT"
+          echo "ISSUE_NUMBER=$NUMBER" >> "$GITHUB_OUTPUT"
           echo "Issue $NUMBER has had a comment (ID: $ID) with restricted words: ${{ steps.validate.outputs.check1 }}. Moderate at $HTML_URL if true"
+      - name: Post Warning Comment
+        id: post-warning-comment
+        if: ${{ steps.report.outputs.SHOULD_WARN }}
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ steps.report.outputs.ISSUE_NUMBER }}
+          body: |
+            ## The previous comment MAY be from a malicious actor :warning:
+            
+            - Do not click **links** :x:
+            - Do not reveal your **recovery phrase** (ever) :x:
+            
+            _This is an automated response aimed at protecting users from potential scams_
+          reactions: 'eyes'
