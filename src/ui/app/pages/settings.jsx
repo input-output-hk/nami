@@ -319,7 +319,7 @@ const GeneralSettings = ({ accountRef }) => {
         }}
         sign={(password) => {
           capture(Events.SettingsHoldUpRemoveWalletClick);
-          resetStorage(password);
+          return resetStorage(password);
         }}
         onConfirm={async (status, signedTx) => {
           if (status === true) window.close();
