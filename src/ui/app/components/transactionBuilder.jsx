@@ -159,7 +159,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         ...d,
         pool: {
           ...d.pool,
-          error: e.message,
+          error: 'Stake pool not found',
           state: PoolStates.ERROR,
         },
       }));
@@ -177,16 +177,25 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         pool: { ...poolDefaultValue },
       });
       delegationRef.current.openModal(account.index);
-      const protocolParameters = await initTx();
 
-      setData((s) => ({
-        ...s,
-        account,
-        delegation,
-        protocolParameters,
-        stakeRegistration: !delegation.active && protocolParameters.keyDeposit,
-        ready: true,
-      }));
+      try {
+        const protocolParameters = await initTx();
+
+        setData((s) => ({
+          ...s,
+          account,
+          delegation,
+          protocolParameters,
+          stakeRegistration:
+            !delegation.active && protocolParameters.keyDeposit,
+          ready: true,
+        }));
+      } catch {
+        setData((d) => ({
+          ...d,
+          error: 'Transaction not possible (maybe insufficient balance)',
+        }));
+      }
     },
     async initWithdrawal(account, delegation) {
       setData({
@@ -439,7 +448,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               </InputGroup>
             </Tooltip>
             {error ? (
-              <Box textAlign="center" mb="4" color="red.300">
+              <Box textAlign="center" mb="4" color="red.300" mt="4">
                 {error}
               </Box>
             ) : (
