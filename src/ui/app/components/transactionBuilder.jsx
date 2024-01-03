@@ -86,6 +86,17 @@ const poolHasTicker = (pool) => {
   return pool.state === PoolStates.DONE && Boolean(pool.ticker);
 };
 
+const poolTooltipMessage = (pool) => {
+  if (pool.state !== PoolStates.DONE) {
+    return undefined;
+  }
+
+  const ticker = pool.ticker ? pool.ticker : '-';
+  const name = pool.name ? pool.name : '-';
+
+  return `${ticker} / ${name}`;
+};
+
 const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
   const settings = useStoreState((state) => state.settings.settings);
   const toast = useToast();
@@ -356,7 +367,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             </Text>
             <Box h="6" />
             <Tooltip
-              label={`${data.pool.ticker} ${data.pool.name}`}
+              label={poolTooltipMessage(data.pool)}
               placement="top"
               isOpen={data.pool.showTooltip}
             >
