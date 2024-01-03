@@ -343,8 +343,8 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             flexDirection="column"
           >
             <Text fontSize="sm">
-              Enter the Stake Pool ticker or ID to delegate your funds and start
-              receiving rewards. Alternatively, head to{' '}
+              Enter the Stake Pool ID to delegate your funds and start receiving
+              rewards. Alternatively, head to{' '}
               <Link
                 fontWeight="semibold"
                 onClick={() => window.open('https://pool.pm')}
