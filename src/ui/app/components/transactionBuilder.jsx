@@ -134,14 +134,20 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
     }));
 
     try {
-      const metadata = await getPoolMetadata(data.pool.id);
+      const metadata = await getPoolMetadata(data.pool.id).catch(() => {
+        throw new Error('Stake pool not found');
+      });
 
       const tx = await delegationTx(
         data.account,
         data.delegation,
         data.protocolParameters,
         metadata.hex
-      );
+      ).catch(() => {
+        throw new Error(
+          'Transaction not possible (maybe insufficient balance)'
+        );
+      });
 
       setData((d) => ({
         ...d,
@@ -155,11 +161,12 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         },
       }));
     } catch (e) {
+      console.log(e);
       setData((d) => ({
         ...d,
         pool: {
           ...d.pool,
-          error: 'Stake pool not found',
+          error: e.message,
           state: PoolStates.ERROR,
         },
       }));
