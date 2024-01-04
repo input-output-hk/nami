@@ -266,7 +266,8 @@ const Wallet = () => {
                     account={state.account}
                     delegation={state.delegation}
                   >
-                    {state.delegation.ticker}
+                    {state.delegation.ticker ||
+                      state.delegation.poolId.slice(-9)}
                   </DelegationPopover>
                 ) : (
                   <Button
