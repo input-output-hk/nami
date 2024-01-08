@@ -456,7 +456,10 @@ const Wallet = () => {
                     <MenuItem
                       color="red.300"
                       icon={<DeleteIcon />}
-                      onClick={() => deletAccountRef.current.openModal()}
+                      onClick={() => {
+                        capture(Events.AccountDeleteClick);
+                        deletAccountRef.current.openModal();
+                      }}
                     >
                       Delete Account
                     </MenuItem>
@@ -900,6 +903,7 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isLoading, setIsLoading] = React.useState(false);
   const cancelRef = React.useRef();
+  const capture = useCaptureEvent();
 
   React.useImperativeHandle(ref, () => ({
     openModal() {
@@ -939,6 +943,7 @@ const DeleteAccountModal = React.forwardRef((props, ref) => {
                 setIsLoading(true);
                 await deleteAccount();
                 await switchAccount(0);
+                capture(Events.AccountDeleteConfirmClick);
                 onClose();
                 setIsLoading(false);
               }}

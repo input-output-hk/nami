@@ -56,6 +56,10 @@ export enum Events {
   SettingsAuthorizedDappsClick = 'settings | authorized dapps | click',
   SettingsAuthorizedDappsTrashBinIconClick = 'settings | authorized dapps | trash bin icon | click',
 
+  // account
+  AccountDeleteClick = 'account | delete | click',
+  AccountDeleteConfirmClick = 'account | delete | confirm | click',
+
   // dapp
   DappConnectorAuthorizeDappAuthorizeClick = 'dapp connector | authorize dapp | authorize | click',
   DappConnectorAuthorizeDappCancelClick = 'dapp connector | authorize dapp | cancel | click',
