@@ -147,7 +147,12 @@ export const signAndSubmitHW = async (
   }
 };
 
-export const delegationTx = async (account, delegation, protocolParameters) => {
+export const delegationTx = async (
+  account,
+  delegation,
+  protocolParameters,
+  poolKeyHash
+) => {
   await Loader.load();
 
   const txBuilderConfig = Loader.Cardano.TransactionBuilderConfigBuilder.new()
@@ -185,8 +190,7 @@ export const delegationTx = async (account, delegation, protocolParameters) => {
         )
       )
     );
-  const poolKeyHash =
-    '2a748e3885f6f73320ad16a8331247b81fe01b8d39f57eec9caa5091'; //BERRY
+
   txBuilder.add_certificate(
     Loader.Cardano.Certificate.new_stake_delegation(
       Loader.Cardano.StakeDelegation.new(
