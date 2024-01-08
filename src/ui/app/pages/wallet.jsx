@@ -266,25 +266,24 @@ const Wallet = () => {
                     account={state.account}
                     delegation={state.delegation}
                   >
-                    {state.delegation.ticker}
+                    {state.delegation.ticker ||
+                      state.delegation.poolId.slice(-9)}
                   </DelegationPopover>
                 ) : (
-                  state.network.id === NETWORK_ID.mainnet && (
-                    <Button
-                      onClick={() =>
-                        builderRef.current.initDelegation(
-                          state.account,
-                          state.delegation
-                        )
-                      }
-                      variant="solid"
-                      size="xs"
-                      colorScheme="whiteAlpha"
-                      rounded="lg"
-                    >
-                      Delegate
-                    </Button>
-                  )
+                  <Button
+                    onClick={() =>
+                      builderRef.current.initDelegation(
+                        state.account,
+                        state.delegation
+                      )
+                    }
+                    variant="solid"
+                    size="xs"
+                    colorScheme="whiteAlpha"
+                    rounded="lg"
+                  >
+                    Delegate
+                  </Button>
                 )}
               </>
             )}
