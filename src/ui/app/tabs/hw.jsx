@@ -356,7 +356,9 @@ const SelectAccounts = ({ data, onConfirm }) => {
                 trezorRef.current.closeModal();
               }
               await createHWAccounts(accounts);
-              capture(Events.HWSelectAccountNextClick);
+              capture(Events.HWSelectAccountNextClick, {
+                numAccounts: accountIndexes.length,
+              });
               return onConfirm();
             } catch (e) {
               console.log(e);
