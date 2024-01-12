@@ -5,8 +5,11 @@ import { setWhitelisted } from '../../../api/extension';
 import { APIError } from '../../../config/config';
 
 import Account from '../components/account';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const Enable = ({ request, controller }) => {
+  const capture = useCaptureEvent();
   const background = useColorModeValue('gray.100', 'gray.700');
   return (
     <Box
@@ -78,6 +81,7 @@ const Enable = ({ request, controller }) => {
           height={'50px'}
           width={'180px'}
           onClick={async () => {
+            capture(Events.DappConnectorAuthorizeDappCancelClick);
             await controller.returnData({ error: APIError.Refused });
             window.close();
           }}
@@ -90,6 +94,7 @@ const Enable = ({ request, controller }) => {
           width={'180px'}
           colorScheme="teal"
           onClick={async () => {
+            capture(Events.DappConnectorAuthorizeDappAuthorizeClick);
             await setWhitelisted(request.origin);
             await controller.returnData({ data: true });
             window.close();

@@ -36,6 +36,9 @@ import {
 } from 'bip39';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { createRoot } from 'react-dom/client';
+import { AnalyticsProvider } from '../../../features/analytics/provider';
+import { EventTracker } from '../../../features/analytics/event-tracker';
+import { ExtensionViews } from '../../../features/analytics/types';
 import Main from '../../index';
 import { TAB } from '../../../config/config';
 import { Planet } from 'react-kawaii';
@@ -43,6 +46,8 @@ import { Planet } from 'react-kawaii';
 import LogoOriginal from '../../../assets/img/logo.svg';
 import LogoWhite from '../../../assets/img/logoWhite.svg';
 import { useStoreActions } from 'easy-peasy';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const App = () => {
   const Logo = useColorModeValue(LogoOriginal, LogoWhite);
@@ -100,6 +105,7 @@ const App = () => {
 };
 
 const GenerateSeed = (props) => {
+  const capture = useCaptureEvent();
   const navigate = useNavigate();
   const [mnemonic, setMnemonic] = React.useState({});
   const generate = () => {
@@ -200,7 +206,10 @@ const GenerateSeed = (props) => {
         <Button
           isDisabled={!checked}
           rightIcon={<ChevronRightIcon />}
-          onClick={() => navigate('/verify', { state: { mnemonic } })}
+          onClick={() => {
+            capture(Events.OnboardingCreateWritePassphraseNextClick);
+            navigate('/verify', { state: { mnemonic } });
+          }}
         >
           Next
         </Button>
@@ -210,6 +219,7 @@ const GenerateSeed = (props) => {
 };
 
 const VerifySeed = () => {
+  const capture = useCaptureEvent();
   const navigate = useNavigate();
   const { state: { mnemonic } = {} } = useLocation();
   const [input, setInput] = React.useState({});
@@ -323,7 +333,12 @@ const VerifySeed = () => {
           fontWeight="medium"
           color="gray.400"
           variant="ghost"
-          onClick={() => navigate('/account', { state: { mnemonic } })}
+          onClick={() => {
+            capture(Events.OnboardingCreateEnterPassphraseSkipClick);
+            navigate('/account', {
+              state: { mnemonic, flow: 'create-wallet' },
+            });
+          }}
         >
           Skip
         </Button>
@@ -331,7 +346,12 @@ const VerifySeed = () => {
           ml="3"
           isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
-          onClick={() => navigate('/account', { state: { mnemonic } })}
+          onClick={() => {
+            capture(Events.OnboardingCreateEnterPassphraseNextClick);
+            navigate('/account', {
+              state: { mnemonic, flow: 'create-wallet' },
+            });
+          }}
         >
           Next
         </Button>
@@ -341,6 +361,7 @@ const VerifySeed = () => {
 };
 
 const ImportSeed = () => {
+  const capture = useCaptureEvent();
   const navigate = useNavigate();
   const { state: { seedLength } = {} } = useLocation();
   const [input, setInput] = React.useState({});
@@ -448,7 +469,12 @@ const ImportSeed = () => {
         <Button
           isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
-          onClick={() => navigate('/account', { state: { mnemonic: input } })}
+          onClick={() => {
+            capture(Events.OnboardingRestoreEnterPassphraseNextClick);
+            navigate('/account', {
+              state: { mnemonic: input, flow: 'restore-wallet' },
+            });
+          }}
         >
           Next
         </Button>
@@ -458,9 +484,10 @@ const ImportSeed = () => {
 };
 
 const MakeAccount = (props) => {
+  const capture = useCaptureEvent();
   const [state, setState] = React.useState({});
   const [loading, setLoading] = React.useState(false);
-  const { state: { mnemonic } = {} } = useLocation();
+  const { state: { mnemonic, flow } = {} } = useLocation();
   const [isDone, setIsDone] = React.useState(false);
   const setRoute = useStoreActions(
     (actions) => actions.globalModel.routeStore.setRoute
@@ -566,6 +593,11 @@ const MakeAccount = (props) => {
           loadingText="Creating"
           rightIcon={<ChevronRightIcon />}
           onClick={async () => {
+            capture(
+              flow === 'create-wallet'
+                ? Events.OnboardingCreateWalletNamePasswordNextClick
+                : Events.OnboardingRestoreWalletNamePasswordNextClick
+            );
             setLoading(true);
             await createWallet(
               state.name,
@@ -611,11 +643,14 @@ const SuccessAndClose = () => {
 
 const root = createRoot(window.document.querySelector(`#${TAB.createWallet}`));
 root.render(
-  <Main>
-    <Router>
-      <App />
-    </Router>
-  </Main>
+  <AnalyticsProvider view={ExtensionViews.Extended}>
+    <EventTracker />
+    <Main>
+      <Router>
+        <App />
+      </Router>
+    </Main>
+  </AnalyticsProvider>
 );
 
 if (module.hot) module.hot.accept();

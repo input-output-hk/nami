@@ -7,12 +7,22 @@ import {
 } from '../../../api/extension';
 import Account from '../components/account';
 import { Scrollbars } from '../components/scrollbar';
-import { Box, Text, Button, Image, Spinner, useColorModeValue } from '@chakra-ui/react';
+import {
+  Box,
+  Text,
+  Button,
+  Image,
+  Spinner,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import ConfirmModal from '../components/confirmModal';
 import Loader from '../../../api/loader';
 import { DataSignError } from '../../../config/config';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const SignData = ({ request, controller }) => {
+  const capture = useCaptureEvent();
   const ref = React.useRef();
   const [account, setAccount] = React.useState(null);
   const [payload, setPayload] = React.useState('');
@@ -165,8 +175,8 @@ const SignData = ({ request, controller }) => {
                       address == 'payment'
                         ? 'teal.400'
                         : address == 'stake'
-                        ? 'orange'
-                        : 'inherit'
+                          ? 'orange'
+                          : 'inherit'
                     }
                   >
                     {address}
@@ -186,6 +196,7 @@ const SignData = ({ request, controller }) => {
                 height={'50px'}
                 width={'180px'}
                 onClick={async () => {
+                  capture(Events.DappConnectorDappDataCancelClick);
                   await controller.returnData({
                     error: DataSignError.UserDeclined,
                   });
@@ -200,7 +211,10 @@ const SignData = ({ request, controller }) => {
                 width={'180px'}
                 isDisabled={error}
                 colorScheme="teal"
-                onClick={() => ref.current.openModal(account.index)}
+                onClick={() => {
+                  capture(Events.DappConnectorDappDataSignClick);
+                  ref.current.openModal(account.index);
+                }}
               >
                 Sign
               </Button>
@@ -226,10 +240,16 @@ const SignData = ({ request, controller }) => {
                 account.index
               )
         }
+        onCloseBtn={() => {
+          capture(Events.DappConnectorDappDataCancelClick);
+        }}
         onConfirm={async (status, signedMessage) => {
-          if (status === true)
+          if (status === true) {
+            capture(Events.DappConnectorDappDataConfirmClick);
             await controller.returnData({ data: signedMessage });
-          else await controller.returnData({ error: signedMessage });
+          } else {
+            await controller.returnData({ error: signedMessage });
+          }
           window.close();
         }}
       />

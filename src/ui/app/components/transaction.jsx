@@ -41,6 +41,8 @@ import {
   TiArrowLoop,
   GiAnvilImpact,
 } from 'react-icons/all';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -305,6 +307,7 @@ const TxIcon = ({ txType, extra }) => {
 };
 
 const TxDetail = ({ displayInfo, network }) => {
+  const capture = useCaptureEvent();
   const colorMode = {
     extraDetail: useColorModeValue('black', 'white'),
   };
@@ -340,6 +343,9 @@ const TxDetail = ({ displayInfo, network }) => {
                 })() + displayInfo.txHash
               }
               isExternal
+              onClick={() => {
+                capture(Events.ActivityActivityDetailTransactionHashClick);
+              }}
             >
               {displayInfo.txHash} <ExternalLinkIcon mx="2px" />
             </Link>

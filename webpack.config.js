@@ -6,7 +6,8 @@ var webpack = require('webpack'),
   CopyWebpackPlugin = require('copy-webpack-plugin'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
   TerserPlugin = require('terser-webpack-plugin'),
-  NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
+  NodePolyfillPlugin = require('node-polyfill-webpack-plugin'),
+  ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -31,6 +32,8 @@ var fileExtensions = [
 if (fileSystem.existsSync(secretsPath)) {
   alias['secrets'] = secretsPath;
 }
+
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 var options = {
   experiments: {
@@ -76,6 +79,29 @@ var options = {
         type: 'asset/source',
       },
       {
+        test: /\.(js|jsx|ts|tsx)$/,
+        loader: 'swc-loader',
+        options: {
+          jsc: {
+            parser: {
+              syntax: 'typescript',
+              tsx: true,
+            },
+            target: 'es2019',
+            loose: false,
+            transform: {
+              react: {
+                development: isDevelopment,
+                refresh: isDevelopment,
+              },
+            },
+          },
+        },
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+      {
         // look for .css or .scss files
         test: /\.(css|scss)$/,
         // in the `src` directory
@@ -112,33 +138,16 @@ var options = {
         loader: 'html-loader',
         exclude: /node_modules/,
       },
-      {
-        test: /\.(js|jsx)$/,
-        use: [
-          {
-            loader: 'source-map-loader',
-          },
-          {
-            loader: 'babel-loader',
-            options: {
-              plugins: [
-                process.env.NODE_ENV === 'development' &&
-                  require.resolve('react-refresh/babel'),
-              ].filter(Boolean),
-            },
-          },
-        ],
-        exclude: [/node_modules/, /temporary_modules/],
-      },
     ],
   },
   resolve: {
     alias: alias,
     extensions: fileExtensions
       .map((extension) => '.' + extension)
-      .concat(['.js', '.jsx', '.css']),
+      .concat(['.js', '.jsx', '.css', '.ts', '.tsx']),
   },
   plugins: [
+    ...(isDevelopment ? [new ReactRefreshWebpackPlugin()] : []),
     new webpack.BannerPlugin({
       banner: () => {
         return 'globalThis.document={getElementsByTagName:()=>[],createElement:()=>({ setAttribute:()=>{}}),head:{appendChild:()=>{}}};';

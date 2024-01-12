@@ -8,6 +8,8 @@ import {
   setTxDetail,
 } from '../../../api/extension';
 import Transaction from './transaction';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const BATCH = 5;
 
@@ -16,6 +18,7 @@ let slice = [];
 let txObject = {};
 
 const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
+  const capture = useCaptureEvent();
   const [historySlice, setHistorySlice] = React.useState(null);
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
@@ -91,7 +94,13 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
         </Box>
       ) : (
         <>
-          <Accordion allowToggle borderBottom="none">
+          <Accordion
+            allowToggle
+            borderBottom="none"
+            onClick={() => {
+              capture(Events.ActivityActivityActivityRowClick);
+            }}
+          >
             {historySlice.map((txHash, index) => {
               if (!history.details[txHash]) history.details[txHash] = {};
 

@@ -20,6 +20,9 @@ import {
 import { Scrollbars } from '../components/scrollbar';
 import { HARDENED } from '@cardano-foundation/ledgerjs-hw-app-cardano';
 import TrezorConnect from '@trezor/connect-web';
+import { AnalyticsProvider } from '../../../features/analytics/provider';
+import { EventTracker } from '../../../features/analytics/event-tracker';
+import { ExtensionViews } from '../../../features/analytics/types';
 
 // assets
 import LogoOriginal from '../../../assets/img/logo.svg';
@@ -37,6 +40,8 @@ import {
 } from '../../../api/extension';
 import { MdUsb } from 'react-icons/md';
 import { Planet } from 'react-kawaii';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const MANUFACTURER = {
   ledger: 'Ledger',
@@ -44,6 +49,7 @@ const MANUFACTURER = {
 };
 
 const App = () => {
+  const capture = useCaptureEvent();
   const Logo = useColorModeValue(LogoOriginal, LogoWhite);
   const cardColor = useColorModeValue('white', 'gray.900');
   const backgroundColor = useColorModeValue('gray.200', 'inherit');
@@ -97,6 +103,7 @@ const App = () => {
 };
 
 const ConnectHW = ({ onConfirm }) => {
+  const capture = useCaptureEvent();
   const { colorMode } = useColorMode();
   const [selected, setSelected] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
@@ -199,6 +206,7 @@ const ConnectHW = ({ onConfirm }) => {
               }
             }
 
+            capture(Events.HWConnectNextClick);
             return onConfirm({ device: selected, id: device.productId });
           } catch (e) {
             setError('Device not found');
@@ -220,6 +228,7 @@ const ConnectHW = ({ onConfirm }) => {
 };
 
 const SelectAccounts = ({ data, onConfirm }) => {
+  const capture = useCaptureEvent();
   const [selected, setSelected] = React.useState({ 0: true });
   const [error, setError] = React.useState('');
   const trezorRef = React.useRef();
@@ -347,6 +356,9 @@ const SelectAccounts = ({ data, onConfirm }) => {
                 trezorRef.current.closeModal();
               }
               await createHWAccounts(accounts);
+              capture(Events.HWSelectAccountNextClick, {
+                numAccounts: accountIndexes.length,
+              });
               return onConfirm();
             } catch (e) {
               console.log(e);
@@ -370,6 +382,7 @@ const SelectAccounts = ({ data, onConfirm }) => {
 };
 
 const SuccessAndClose = () => {
+  const capture = useCaptureEvent();
   return (
     <>
       <Text
@@ -387,7 +400,13 @@ const SuccessAndClose = () => {
       <Text width="300px">
         You can now close this tab and continue with the extension.
       </Text>
-      <Button mt="auto" onClick={async () => window.close()}>
+      <Button
+        mt="auto"
+        onClick={async () => {
+          capture(Events.HWDoneGoToWallet);
+          window.close();
+        }}
+      >
         Close
       </Button>
     </>
@@ -396,11 +415,14 @@ const SuccessAndClose = () => {
 
 const root = createRoot(window.document.querySelector(`#${TAB.hw}`));
 root.render(
-  <Main>
-    <Router>
-      <App />
-    </Router>
-  </Main>
+  <AnalyticsProvider view={ExtensionViews.Extended}>
+    <EventTracker />
+    <Main>
+      <Router>
+        <App />
+      </Router>
+    </Main>
+  </AnalyticsProvider>
 );
 
 if (module.hot) module.hot.accept();

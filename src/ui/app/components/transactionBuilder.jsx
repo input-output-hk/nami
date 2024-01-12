@@ -48,6 +48,8 @@ import {
   getPoolMetadata,
 } from '../../../api/extension';
 import { FaRegFileCode } from 'react-icons/fa';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const PoolStates = {
   LOADING: 'LOADING',
@@ -98,6 +100,7 @@ const poolTooltipMessage = (pool) => {
 };
 
 const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
+  const capture = useCaptureEvent();
   const settings = useStoreState((state) => state.settings.settings);
   const toast = useToast();
   const {
@@ -340,13 +343,14 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           );
         }}
         onConfirm={(status, signedTx) => {
-          if (status === true)
+          if (status === true) {
+            capture(Events.StakingConfirmClick);
             toast({
               title: 'Delegation submitted',
               status: 'success',
               duration: 4000,
             });
-          else if (signedTx === ERROR.fullMempool) {
+          } else if (signedTx === ERROR.fullMempool) {
             toast({
               title: 'Transaction failed',
               description: 'Mempool full. Try again.',
@@ -627,13 +631,14 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           );
         }}
         onConfirm={(status, signedTx) => {
-          if (status === true)
+          if (status === true) {
+            capture(Events.StakingUnstakeConfirmClick);
             toast({
               title: 'Deregistration submitted',
               status: 'success',
               duration: 4000,
             });
-          else if (signedTx === ERROR.fullMempool) {
+          } else if (signedTx === ERROR.fullMempool) {
             toast({
               title: 'Transaction failed',
               description: 'Mempool full. Try again.',
@@ -734,8 +739,12 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             password
           );
         }}
+        onCloseBtn={() => {
+          capture(Events.SettingsCollateralConfirmClick);
+        }}
         onConfirm={async (status, signedTx) => {
           if (status === true) {
+            capture(Events.SettingsCollateralConfirmClick);
             await setCollateral({
               txHash: signedTx,
               txId: 0,
@@ -843,6 +852,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
                 onClick={async () => {
                   setIsLoading(true);
                   await removeCollateral();
+                  capture(Events.SettingsCollateralReclaimCollateralClick);
                   toast({
                     title: 'Collateral removed',
                     status: 'success',

@@ -44,6 +44,8 @@ import { useStoreState, useStoreActions } from 'easy-peasy';
 import { MdModeEdit } from 'react-icons/md';
 import AvatarLoader from '../components/avatarLoader';
 import { ChangePasswordModal } from '../components/changePasswordModal';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -82,6 +84,7 @@ const Settings = () => {
 };
 
 const Overview = () => {
+  const capture = useCaptureEvent();
   const navigate = useNavigate();
   const { colorMode, toggleColorMode } = useColorMode();
   return (
@@ -109,6 +112,7 @@ const Overview = () => {
         rightIcon={<ChevronRightIcon />}
         variant="ghost"
         onClick={() => {
+          capture(Events.SettingsAuthorizedDappsClick);
           navigate('whitelisted');
         }}
       >
@@ -131,6 +135,7 @@ const Overview = () => {
 };
 
 const GeneralSettings = ({ accountRef }) => {
+  const capture = useCaptureEvent();
   const navigate = useNavigate();
   const settings = useStoreState((state) => state.settings.settings);
   const setSettings = useStoreActions(
@@ -155,6 +160,7 @@ const GeneralSettings = ({ accountRef }) => {
     await setAccountAvatar(account.avatar);
     setAccount({ ...account });
     accountRef.current.updateAccount();
+    capture(Events.SettingsChangeAvatarClick);
   };
 
   const refreshHandler = async () => {
@@ -242,6 +248,11 @@ const GeneralSettings = ({ accountRef }) => {
         size="sm"
         rounded="md"
         onClick={() => {
+          if (colorMode === 'dark') {
+            capture(Events.SettingsThemeLightModeClick);
+          } else {
+            capture(Events.SettingsThemeDarkModeClick);
+          }
           toggleColorMode();
         }}
         rightIcon={<SunIcon ml="2" />}
@@ -274,7 +285,10 @@ const GeneralSettings = ({ accountRef }) => {
       <Button
         colorScheme="orange"
         size="sm"
-        onClick={() => changePasswordRef.current.openModal()}
+        onClick={() => {
+          capture(Events.SettingsChangePasswordClick);
+          changePasswordRef.current.openModal();
+        }}
       >
         Change Password
       </Button>
@@ -283,7 +297,10 @@ const GeneralSettings = ({ accountRef }) => {
         size="xs"
         colorScheme="red"
         variant="link"
-        onClick={() => ref.current.openModal()}
+        onClick={() => {
+          capture(Events.SettingsRemoveWalletClick);
+          ref.current.openModal();
+        }}
       >
         Reset Wallet
       </Button>
@@ -297,7 +314,13 @@ const GeneralSettings = ({ accountRef }) => {
           </Box>
         }
         ref={ref}
-        sign={(password) => resetStorage(password)}
+        onCloseBtn={() => {
+          capture(Events.SettingsHoldUpBackClick);
+        }}
+        sign={(password) => {
+          capture(Events.SettingsHoldUpRemoveWalletClick);
+          return resetStorage(password);
+        }}
         onConfirm={async (status, signedTx) => {
           if (status === true) window.close();
         }}
@@ -308,6 +331,7 @@ const GeneralSettings = ({ accountRef }) => {
 };
 
 const Whitelisted = () => {
+  const capture = useCaptureEvent();
   const [whitelisted, setWhitelisted] = React.useState(null);
   const getData = () =>
     getWhitelisted().then((whitelisted) => {
@@ -349,6 +373,7 @@ const Whitelisted = () => {
               <SmallCloseIcon
                 cursor="pointer"
                 onClick={async () => {
+                  capture(Events.SettingsAuthorizedDappsTrashBinIconClick);
                   await removeWhitelisted(origin);
                   getData();
                 }}
@@ -385,12 +410,14 @@ const Whitelisted = () => {
 };
 
 const Network = () => {
+  const capture = useCaptureEvent();
   const settings = useStoreState((state) => state.settings.settings);
   const setSettings = useStoreActions(
     (actions) => actions.settings.setSettings
   );
 
   const endpointHandler = (e) => {
+    capture(Events.SettingsNetworkCustomNodeClick);
     setSettings({
       ...settings,
       network: {
@@ -427,7 +454,22 @@ const Network = () => {
         <Select
           defaultValue={settings.network.id}
           onChange={(e) => {
+            switch (e.target.value) {
+              case NETWORK_ID.mainnet:
+                capture(Events.SettingsNetworkMainnetClick);
+                break;
+              case NETWORK_ID.preprod:
+                capture(Events.SettingsNetworkPreprodClick);
+                break;
+              case NETWORK_ID.preview:
+                capture(Events.SettingsNetworkPreviewClick);
+                break;
+              default:
+                break;
+            }
+
             const id = e.target.value;
+
             setSettings({
               ...settings,
               network: {
@@ -441,7 +483,6 @@ const Network = () => {
           <option value={NETWORK_ID.mainnet}>Mainnet</option>
           <option value={NETWORK_ID.preprod}>Preprod</option>
           <option value={NETWORK_ID.preview}>Preview</option>
-          <option value={NETWORK_ID.testnet}>Testnet</option>
         </Select>
       </Box>
       <Box height="8" />
