@@ -9,7 +9,8 @@ module.exports = {
     secrets: '../../secrets.testing.js',
   },
   transform: {
-    '\\.[jt]sx?$': 'babel-jest',
+    '^.+\\.(ts|tsx)?$': 'ts-jest',
+    '^.+\\.(js|jsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [`/node_modules/(?!crypto-random-string)`],
   setupFilesAfterEnv: ['./jest.setup.js'],
