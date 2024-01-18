@@ -2,7 +2,7 @@
 
 # Nami
 
-Nami is a browser based wallet extension to interact with the Cardano blockchain. It's an open-source project and built by [**Berry Pool**](https://pipool.online).
+Nami is a browser based wallet extension to interact with the Cardano blockchain. It's an open-source project maintained by [**IOG**](https://iohk.io/en/blog/posts/2023/11/01/nami-has-a-new-home/).
 
 ### Testnet
 
@@ -252,4 +252,3 @@ npm test
 ### Website
 
 Visit [namiwallet.io](https://namiwallet.io)<br/>
-Visit [Berry Pool](https://pipool.online)

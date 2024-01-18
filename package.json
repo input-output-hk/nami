@@ -2,10 +2,10 @@
   "name": "nami-wallet",
   "version": "3.6.1",
   "description": "A wallet to experience Cardano to the fullest",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Berry-Pool/nami-wallet"
+    "url": "https://github.com/input-output-hk/nami"
   },
   "scripts": {
     "build": "node utils/build.js",
