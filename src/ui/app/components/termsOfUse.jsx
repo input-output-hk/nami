@@ -9,6 +9,9 @@ import {
   ModalHeader,
   ModalOverlay,
   useDisclosure,
+  OrderedList,
+  ListItem,
+  Link,
 } from '@chakra-ui/react';
 import { Scrollbars } from './scrollbar';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
@@ -43,421 +46,607 @@ const TermsOfUse = React.forwardRef((props, ref) => {
         <ModalBody pr="0.5">
           <Scrollbars style={{ width: '100%', height: '400px' }}>
             <Box width="92%">
-              <Text
-                mb="1"
-                fontSize="md"
-                fontWeight="bold"
-                id="terms-of-service-agreement"
-              >
-                Terms of Service Agreement
+              <Text mb="3">Last Updated: March 30, 2022</Text>
+              <Text mb="3">
+                These Terms of Use (
+                <Text display="inline" fontWeight="bold">
+                  "Terms"
+                </Text>
+                ) set forth the binding legal agreement between you and Input
+                Output Global, Inc. (together with our subsidiaries and
+                affiliates, referred to as{' '}
+                <Text display="inline" fontWeight="bold">
+                  "IOG,"
+                </Text>{' '}
+                <Text display="inline" fontWeight="bold">
+                  "we,"
+                </Text>{' '}
+                or{' '}
+                <Text display="inline" fontWeight="bold">
+                  "us"
+                </Text>{' '}
+                in this Agreement). These Terms govern your use of this website
+                and all of the related websites, mobile apps, products, and
+                services offered by IOG and its affiliated entities including
+                our plug-ins and browser extensions (collectively, the{' '}
+                <Text display="inline" fontWeight="bold">
+                  "Products"
+                </Text>
+                ).
               </Text>
-              <p>
-                THIS TERMS OF SERVICE AGREEMENT ("Agreement") is made between
-                Berry ("Cardano stake pool") and any person or entity ("User")
-                who completes the process to download, utilize, or operate the
-                software known as the Nami Wallet application, and data
-                processing service, application, communication service or other
-                content or offered or provided with the software by Berry. Berry
-                and User are collectively referred to as the "Parties." BY
-                CLICKING THE ACCEPTANCE BUTTON OR ACCESSING, USING OR INSTALLING
-                ANY PART OF THE SOFTWARE, USER EXPRESSLY AGREES TO AND CONSENTS
-                TO BE LEGALLY BOUND BY ALL OF THE TERMS OF THIS AGREEMENT. IF
-                USER DOES NOT AGREE TO ALL OF THE TERMS OF THIS AGREEMENT, THE
-                USER SHALL NOT BE AUTHORIZED TO ACCESS, USE OR INSTALL ANY PART
-                OF THE SOFTWARE.
-              </p>
-              <Text
-                fontWeight="bold"
-                mt="3"
-                mb="1"
-                id="1-rights-and-obligations"
-              >
-                1. Rights and Obligations
+              <Text mb="4">
+                We encourage you to review these Terms carefully. By accessing
+                or using the Products in any way, including browsing any
+                IOG-owned website, you are agreeing to these Terms in their
+                entirety. If you do not agree to any of the Terms, you may not
+                use the Products.
               </Text>
-              <p>
-                <span style={{ fontSize: 15 }}>a. Description.</span>&nbsp;The
-                Software functions as a free, open source, digital
-                cryptocurrency wallet. The Software does not constitute an
-                account by which Berry or any other third parties serve as
-                financial intermediaries or custodians of User's ADA or any
-                other cryptocurrency. While the Software has undergone beta
-                testing and continues to be improved by feedback from the
-                developers community, open-source contributors and beta-testers,
-                Berry cannot guarantee that there will be no bugs in the
-                Software. User acknowledges that User's use of the Software is
-                at User's risk, discretion and in compliance with all applicable
-                laws. User is responsible for safekeeping User's passwords,
-                PINs, private keys, redemption keys, shielded vending keys,
-                backup recovery mnemonic passphrases, ADA passcodes and any
-                other codes User uses to access the Software or any information,
-                ADA, voucher, or other cryptocurrency unit. IF USER LOSES ACCESS
-                TO USER'S CRYPTOCURRENCY WALLET OR PRIVATE KEYS AND HAS NOT
-                SEPARATELY STORED A BACKUP OF USER'S CRYPTOCURRENCY WALLET OR
-                BACKUP RECOVERY MNEMONIC PHRASE(S) AND CORRESPONDING
-                PASSWORD(S), USER ACKNOWLEDGES AND AGREES THAT ANY ADA OR ANY
-                OTHER CRYPTOCURRENCIES USER HAS ASSOCIATED WITH THAT
-                CRYPTOCURRENCY WALLET WILL BECOME INACCESSIBLE. All transaction
-                requests are irreversible. Berry and its shareholders,
-                directors, officers, employees, affiliates and agents cannot
-                guarantee transaction confirmation or retrieve User's private
-                keys or passwords if User loses or forgets them.
-              </p>
-              <p>
-                <span style={{ fontSize: 15 }}>b. Accessibility.</span>
-                &nbsp;User agrees that from time to time the Software may be
-                inaccessible or inoperable for any reason, including, without
-                limitation: (i) equipment malfunctions; (ii) periodic
-                maintenance procedures or repairs which Berry may undertake from
-                time to time; or (iii) causes beyond the control of the Berry or
-                which are not reasonably foreseeable by Berry.
-              </p>
-              <p>
-                <span style={{ fontSize: 15 }}>c. Equipment.</span>&nbsp;User
-                shall be solely responsible for providing, maintaining and
-                ensuring compatibility with the Software, all hardware,
-                software, electrical and other physical requirements for User's
-                use of the Software, including, without limitation,
-                telecommunications and internet access connections and links,
-                web browsers or other equipment, programs and services required
-                to access and use the Software.
-              </p>
-              <p>
-                <span style={{ fontSize: 15 }}>d. Security.</span>&nbsp;User
-                shall be solely responsible for the security, confidentiality
-                and integrity of all information and content that User receives,
-                transmits through or stores on the Software. User shall be
-                solely responsible for any authorized or unauthorized access to
-                any account of User by any person. User agrees to bear all
-                responsibility for the confidentiality of User's security
-                devices, information, keys, and passwords.
-              </p>
-              <p>
-                <span style={{ fontSize: 15 }}>e. Privacy.</span>&nbsp;When
-                reasonably practicable, Berry will attempt to respect User's
-                privacy. Berry will not monitor, edit, or disclose any personal
-                information about User or User's account, including its contents
-                or User's use of the Software, without User's prior consent
-                unless Berry believes in good faith that such action is
-                necessary to: (i) comply with legal process or other legal
-                requirements of any governmental authority; (ii) protect and
-                defend the rights or property Berry; (iii) enforce this
-                Agreement; (iv) protect the interests of users of the Software
-                other than User or any other person; or (v) operate or conduct
-                maintenance and repair of Berry's services or equipment,
-                including the Software as authorized by law. User has no
-                expectation of privacy with respect to the Internet generally.
-                User's IP address is transmitted and recorded with each message
-                or other information User sends from the Software.
-              </p>
-              <Text fontWeight="bold" mt="3" mb="1" id="2-taxes-and-fees">
-                2. Taxes and Fees
+              <Text fontWeight="bold">1. Using the Products.</Text>
+              <OrderedList mb="3" pl="2" listStyleType="lower-alpha">
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Who can use the Products.
+                  </Text>{' '}
+                  You must be at least the age of majority in the jurisdiction
+                  where you live to use the Products.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Product Changes.
+                  </Text>{' '}
+                  We reserve the right to make changes or updates to Products,
+                  including content and formatting, at any time without notice.
+                  We reserve the right to terminate or restrict access to the
+                  Products (including any accounts you may have created through
+                  your use of the Products) for any reason whatsoever at our
+                  sole discretion.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Privacy Policy.
+                  </Text>{' '}
+                  Our privacy practices are set forth in our{' '}
+                  <Link
+                    color="teal"
+                    isExternal
+                    textDecoration="underline"
+                    onClick={() =>
+                      window.open(
+                        'https://static.iohk.io/terms/iog-privacy-policy.pdf'
+                      )
+                    }
+                  >
+                    Privacy Policy
+                  </Link>
+                  . By using the Products in any way, you understand and
+                  acknowledge that the terms of the Privacy Policy apply to you.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Additional Terms.
+                  </Text>{' '}
+                  Specific terms and conditions may apply to specific content,
+                  products, materials, services, or information contained on or
+                  available through various Products or transactions concluded
+                  through the Products. Such specific terms may be in addition
+                  to these Terms or, where inconsistent with these Terms, only
+                  to the extent the content or intent of such specific terms is
+                  inconsistent with these Terms, such specific terms will
+                  supersede these Terms.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Feedback.
+                  </Text>{' '}
+                  We welcome your feedback and suggestions about how to improve
+                  the Products. Feel free to submit feedback at{' '}
+                  <Link
+                    isExternal
+                    onClick={() => window.open('https://iohk.io/en/contact/')}
+                  >
+                    https://iohk.io/en/contact/
+                  </Link>
+                  . By submitting feedback in this or any other manner to us,
+                  you grant us the right, at our discretion, to use, disclose,
+                  and otherwise exploit the feedback, in whole or part, without
+                  any restriction or compensation to you, as further described
+                  in Section 2(b) below.
+                </ListItem>
+              </OrderedList>
+              <Text fontWeight="bold">2. Your Content</Text>
+              <OrderedList mb="3" pl="2" listStyleType="lower-alpha">
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Definition of Your Content.
+                  </Text>{' '}
+                  The Products may enable you to post materials, including
+                  without limitation photos, profile pictures, messages,
+                  comments, and testimonials. You may also post reviews of
+                  third-party service providers, third-party products, or
+                  third-party services. All materials that you post on the
+                  Products will be referred to collectively as{' '}
+                  <Text fontWeight="bold" display="inline">
+                    "Your Content."
+                  </Text>
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    License and Permission to Use Your Content.
+                  </Text>{' '}
+                  You hereby grant to us and our affiliates, licensees and
+                  sublicensees, without compensation to you or others, a
+                  nonexclusive, perpetual, irrevocable, royalty-free, fully
+                  paid-up, worldwide license (including the right to sublicense
+                  through multiple tiers) to use, reproduce, process, adapt,
+                  publicly perform, publicly display, modify, prepare derivative
+                  works, publish, transmit and distribute Your Content, or any
+                  portion thereof, throughout the world in any format, media or
+                  distribution method (whether now known or hereafter created)
+                  for the duration of any copyright or other rights in Your
+                  Content. Such permission will be perpetual and may not be
+                  revoked for any reason, to the maximum extent permitted by
+                  law. Further, to the extent permitted under applicable law,
+                  you waive and release and covenant not to assert any moral
+                  rights that you may have in Your Content. If you identify
+                  yourself by name or provide a picture or audio or video
+                  recording of yourself, you further authorize us and our
+                  affiliates, licensees and sublicensees, without compensation
+                  to you or others, to reproduce, print, publish and disseminate
+                  in any format or media (whether now known or hereafter
+                  created) your name, voice and likeness throughout the world,
+                  and such permission will be perpetual and cannot be revoked
+                  for any reason, except as required by applicable law. You
+                  further agree that we may use Your Content in any manner that
+                  we deem appropriate or necessary, including but not limited to
+                  IOG Business Purposes.{' '}
+                  <Text fontWeight="bold" display="inline">
+                    "IOG Business Purposes"
+                  </Text>{' '}
+                  means any use in connection with a Product or IOG co-branded
+                  website, application, publication or service, or any use which
+                  advertises, markets or promotes Products, the services or the
+                  information within the Products, IOG, or its affiliates. IOG
+                  Business Purpose specifically includes the use of Your Content
+                  within the Products in connection with features and functions
+                  offered by IOG to our users that enable them to view and
+                  interact with Your Content (such as DApp reviews).
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Ownership.
+                  </Text>{' '}
+                  We acknowledge and agree that you, or your licensors, as
+                  applicable, retain ownership of any and all copyrights in Your
+                  Content, subject to the non-exclusive rights granted to us in
+                  the paragraph above, and that no ownership of such copyrights
+                  is transferred to us under these Terms, except as may
+                  otherwise be provided in these Terms or another agreement
+                  between you and IOG.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Your Responsibilities for Your Content.
+                  </Text>{' '}
+                  By posting, uploading, or submitting Your Content to any
+                  Products, you represent and warrant to us that you have the
+                  ownership rights, or you have obtained all necessary licenses
+                  or permissions from any relevant parties, to use Your Content
+                  in this manner. This includes obtaining the right to grant us
+                  the rights to use Your Content in accordance with these Terms.
+                  You are in the best position to judge whether Your Content is
+                  in violation of intellectual property or personal rights of
+                  any third-party.{' '}
+                  <Text fontWeight="bold" display="inline">
+                    You accept full responsibility for avoiding infringement of
+                    the intellectual property or personal rights of others in
+                    connection with Your Content.
+                  </Text>{' '}
+                  You are responsible for ensuring that Your Content does not
+                  violate any applicable law or regulation, including but not
+                  limited to the intellectual property rights of any third
+                  party. You agree to pay all royalties, fees, and any other
+                  monies owed to any person by reason of Your Content.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Limits.
+                  </Text>{' '}
+                  We reserve the right to remove Your Content, in whole or part,
+                  for any reason without notice. We do not guarantee that we
+                  will publish any or all of Your Content.
+                </ListItem>
+              </OrderedList>
+              <Text fontWeight="bold">3. Our Content and Materials</Text>
+              <OrderedList mb="3" pl="2" listStyleType="lower-alpha">
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Definition of Our Content and Materials.
+                  </Text>{' '}
+                  All intellectual property in or related to the Products
+                  (specifically including, but not limited to, our software, the
+                  IOG marks, the IOG logos) (
+                  <Text fontWeight="bold" display="inline">
+                    "Our Content and Materials"
+                  </Text>
+                  ) is the property of IOG.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Our License to You.
+                  </Text>{' '}
+                  Subject to these Terms of Use, including the restrictions
+                  below, we grant you a limited non-exclusive license to use and
+                  access Our Content and Materials in connection with your use
+                  of the Products. Except as expressly agreed to otherwise by us
+                  (such as your entering into another other agreement with us),
+                  your use of the Products must be limited to personal,
+                  non-commercial use. We may terminate this license at any time
+                  for any reason. Except for the rights and license granted in
+                  these Terms, we reserve all other rights and grant no other
+                  rights or licenses, implied or otherwise. Notwithstanding the
+                  foregoing, some content may be subject to open-source
+                  licenses, in which case the specific license(s) mentioned in
+                  connection with such content shall apply.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Restrictions.
+                  </Text>{' '}
+                  Except as expressly provided in these Terms, you agree not to
+                  use, modify, reproduce, distribute, sell, license, reverse
+                  engineer, decompile, or otherwise exploit Our Content and
+                  Materials without our express written permission. Your
+                  permitted use of the Products expressly excludes commercial
+                  use by you of any product descriptions for the benefit of
+                  another merchant. You are expressly prohibited from any use of
+                  data mining, robots, or similar data gathering and extraction
+                  tools in your use of the Products. You may view and print a
+                  reasonable number of copies of web pages located on the
+                  Products for your own personal use, provided that you retain
+                  all proprietary notices contained in the original materials,
+                  including attribution to IOG. We have no obligation to delete
+                  content that you personally may find objectionable or
+                  offensive.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Ownership.
+                  </Text>{' '}
+                  You acknowledge and agree that the Products and IOG marks will
+                  remain the property of IOG. The content, information and
+                  services made available on the Products are protected by U.S.
+                  and international copyright, trademark, and other laws, and
+                  you acknowledge that these rights are valid and enforceable.
+                  You acknowledge that you do not acquire any ownership rights
+                  by using or interacting with the Products.
+                </ListItem>
+              </OrderedList>
+              <Text fontWeight="bold">4. Other Offerings on the Products</Text>
+              <OrderedList mb="3" pl="2" listStyleType="lower-alpha">
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Third-Party Services.
+                  </Text>{' '}
+                  Please note that the Products may enable access to third-party
+                  content, products, and services, and may offer interactions
+                  with third parties that we do not control (collectively{' '}
+                  <Text fontWeight="bold" display="inline">
+                    "Third-Party Services"
+                  </Text>
+                  ). The availability of any Third-Party Services on the
+                  Products does not imply our endorsement or verification of the
+                  Third-Party Services. We assume no responsibility for, nor do
+                  we endorse or verify the content, offerings, or conduct of
+                  third parties (including but not limited to the products or
+                  services offered by third parties or the descriptions of the
+                  products or services offered by third parties). We make no
+                  warranties or representations with respect to the accuracy,
+                  completeness, or timeliness of any content posted on or in the
+                  Products by anyone.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Third-Party Sites.
+                  </Text>{' '}
+                  The Products may contain links to other websites (the{' '}
+                  <Text fontWeight="bold" display="inline">
+                    "Third-Party Sites"
+                  </Text>
+                  ) for your convenience. We do not control the linked websites
+                  or the content provided through such Third-Party Sites. Your
+                  use of Third-Party Sites is subject to the privacy practices
+                  and terms of use established by the specific linked
+                  Third-Party Site, and we disclaim all liability for such use.
+                  The availability of such links does not indicate any approval
+                  or endorsement by us.
+                </ListItem>
+              </OrderedList>
+              <Text fontWeight="bold">
+                5. Reporting Violations of Your Intellectual Property Rights.
               </Text>
-              <p>
-                All currency conversion charges, third party fees, sales, use,
-                value-added, personal property or other tax, duty or levy of any
-                kind, including interest and penalties thereon, whether imposed
-                now or hereinafter by any governmental entity, and fees incurred
-                by User by reason of User's access, use or installation of the
-                Software shall be the sole responsibility of User.
-              </p>
-              <Text fontWeight="bold" mt="3" mb="1" id="3-user-representations">
-                3. User Representations
+              <Text mb="3">
+                For information about how to submit a request for takedown if
+                you believe content on the Products infringes your intellectual
+                property rights, please read our{' '}
+                <Link
+                  color="teal"
+                  isExternal
+                  textDecoration="underline"
+                  onClick={() =>
+                    window.open(
+                      'https://static.iohk.io/terms/iog-dmca-policy.pdf'
+                    )
+                  }
+                >
+                  Digital Millennium Copyright Act (DMCA) Policy
+                </Link>
+                . We endeavor to respond promptly to requests for content
+                removal, consistent with our policies described above and
+                applicable law.
               </Text>
-              <p>
-                User represents and warrants to Berry that: (a) if User is a
-                natural person, User is over the age of eighteen (18); (b) User
-                has the power and authority to enter into and perform User's
-                obligations under this Agreement; (c) all information provided
-                by User to Berry is truthful, accurate and complete; (d) User
-                will comply with all laws and regulations of any applicable
-                jurisdiction with regard to User's access, use or installation
-                of the Software; (e) User shall comply with all terms and
-                conditions of this Agreement, including, without limitation, the
-                provisions set forth at Section 4; and (f) User has provided and
-                will provide accurate and complete information as required for
-                access, use or installation of the Software.
-              </p>
-              <Text fontWeight="bold" mt="3" mb="1" id="4-prohibited-uses">
-                4. Prohibited Uses
+              <Text fontWeight="bold">
+                6. Disclaimers and Limitations of Liability.
               </Text>
-              <p>
-                User is solely responsible for any and all acts and omissions
-                that occur under User's account, security information, keys or
-                password, and User agrees not to engage in unacceptable use of
-                the Software, which includes, without limitation, use of the
-                Software to: (a) disseminate, store or transmit unsolicited
-                messages, chain letters or unsolicited commercial email; (b)
-                disseminate or transmit material that, to a reasonable person
-                may be abusive, obscene, pornographic, defamatory, harassing,
-                grossly offensive, vulgar, threatening or malicious; (c)
-                disseminate, store or transmit files, graphics, software or
-                other material that actually or potentially infringes the
-                copyright, trademark, patent, trade secret or other intellectual
-                property right of any person; (d) create a false identity or to
-                otherwise attempt to mislead any person as to the identity or
-                origin of any communication; (e) export, re-export or permit
-                downloading of any message or content in violation of any export
-                or import law, regulation or restriction of any applicable
-                jurisdiction, or without all required approvals, licenses or
-                exemptions; (f) interfere, disrupt or attempt to gain
-                unauthorized access to other accounts on the Software or any
-                other computer network; or (g) disseminate, store or transmit
-                viruses, Trojan horses or any other malicious code or program.
-              </p>
-              <Text fontWeight="bold" mt="3" mb="1" id="5-termination">
-                5. Termination
+              <Text mb="3" fontWeight="bold">
+                PLEASE READ THIS SECTION CAREFULLY SINCE IT LIMITS THE LIABILITY
+                OF IOG ENTITIES TO YOU.
               </Text>
-              <p>
-                This Agreement is effective upon User's acceptance as set forth
-                herein and shall continue in full force so long as User engages
-                in any access, use or installation of the Software. The Company
-                reserves the right, in its sole discretion and without notice,
-                at any time and for any reason, to: (a) remove or disable access
-                to all or any portion of the Software; (b) suspend User's access
-                to or use of all or any portion of the Software; and (c)
-                terminate this Agreement.
-              </p>
-              <Text
-                fontWeight="bold"
-                mt="3"
-                mb="1"
-                id="6-disclaimer-of-warranties"
-              >
-                6. Disclaimer of Warranties
+              <Text mb="2">
+                THE "IOG ENTITIES" MEANS IO GLOBAL, INC., IOG SINGAPORE PTE.
+                LTD. AND ANY SUBSIDIARIES, AFFILIATES, RELATED COMPANIES,
+                SUPPLIERS, LICENSORS AND PARTNERS, AND THE OFFICERS, DIRECTORS,
+                EMPLOYEES, AGENTS AND REPRESENTATIVES OF EACH OF THEM. EACH
+                PROVISION BELOW APPLIES TO THE MAXIMUM EXTENT PERMITTED UNDER
+                APPLICABLE LAW:
               </Text>
-              <p>
-                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-                EXPRESS OR IMPLIED. USE OF THE SOFTWARE IS AT USER'S SOLE RISK.
-                BERRY DOES NOT WARRANT THAT THE SOFTWARE WILL BE UNINTERRUPTED
-                OR ERROR FREE, NOR DOES BERRY MAKE ANY WARRANTY AS TO ANY
-                RESULTS THAT MAY BE OBTAINED BY USE OF THE SOFTWARE. BERRY MAKES
-                NO OTHER WARRANTIES, EXPRESS OR IMPLIED. BERRY EXPRESSLY
-                DISCLAIMS ANY WARRANTY OF MERCHANTABILITY, WARRANTY OF
-                SUITABILITY FOR A PARTICULAR PURPOSE, WARRANTY OF TITLE OR
-                INTEREST, OR WARRANTY OF NONINFRINGEMENT.
-              </p>
-              <Text
-                fontWeight="bold"
-                mt="3"
-                mb="1"
-                id="7-limitation-of-liability"
-              >
-                7. Limitation of Liability
+              <OrderedList mb="3" pl="2" listStyleType="lower-alpha">
+                <ListItem>
+                  WE ARE PROVIDING YOU THE PRODUCTS, SERVICES, INFORMATION, OUR
+                  CONTENT AND MATERIALS, PRODUCT DESCRIPTIONS, AND THIRD-PARTY
+                  CONTENT ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT
+                  WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. WITHOUT LIMITING THE
+                  FOREGOING, THE IOG ENTITIES EXPRESSLY DISCLAIM ANY AND ALL
+                  WARRANTIES AND CONDITIONS OF MERCHANTABILITY, TITLE, ACCURACY
+                  AND COMPLETENESS, UNINTERRUPTED OR ERROR-FREE SERVICE, FITNESS
+                  FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT, AND
+                  NON-INFRINGEMENT, AND ANY WARRANTIES ARISING OUT OF COURSE OF
+                  DEALING OR TRADE USAGE. NOTHING CONTAINED IN THE PRODUCTS IS
+                  INTENDED TO BE LEGAL, FINANCIAL, OR TAX ADVICE.
+                </ListItem>
+                <ListItem>
+                  THE IOG ENTITIES MAKE NO PROMISES WITH RESPECT TO, AND
+                  EXPRESSLY DISCLAIM ALL LIABILITY, TO THE MAXIMUM EXTENT
+                  PERMITTED BY LAW, FOR: (i) CONTENT POSTED BY ANY THIRD-PARTY
+                  ON THE PRODUCTS, (ii) THE PRODUCT DESCRIPTIONS OR PRODUCTS,
+                  (iii) THIRD-PARTY SITES AND ANY THIRD-PARTY PRODUCT OR SERVICE
+                  LISTED ON OR ACCESSIBLE TO YOU THROUGH THE IOG PRODUCTS, AND
+                  (iv) THE QUALITY OR CONDUCT OF ANY THIRD PARTY YOU ENCOUNTER
+                  IN CONNECTION WITH YOUR USE OF THIS WEBSITE OR ANY IOG
+                  PRODUCT.
+                </ListItem>
+                <ListItem>
+                  THE IOG ENTITIES DO NOT WARRANT OR MAKE ANY REPRESENTATIONS AS
+                  TO THE SECURITY OF ANY OF ITS WEBSITES. YOU ACKNOWLEDGE ANY
+                  INFORMATION SENT THROUGH A WEBSITE MAY BE INTERCEPTED. THE IOG
+                  ENTITIES DO NOT WARRANT THAT ITS WEBSITES OR THE SERVERS WHICH
+                  MAKE THIS WEBSITE AVAILABLE OR ELECTRONIC COMMUNICATIONS SENT
+                  BY IOG ENTITIES ARE FREE FROM VIRUSES OR ANY OTHER HARMFUL
+                  ELEMENTS. THE IOG ENTITIES DO NOT WARRANT THAT ANY E-MAIL OR
+                  OTHER ELECTRONIC CORRESPONDENCE BEING SENT TO IOG WILL BE
+                  TIMELY RECEIVED OR PROCESSED. THE IOG ENTITIES SHALL IN NO
+                  EVENT BE LIABLE FOR ANY CONSEQUENCES OF NOT TIMELY RECEIVING
+                  OR PROCESSING ANY E-MAIL OR OTHER ELECTRONIC CORRESPONDENCE.
+                </ListItem>
+                <ListItem>
+                  YOU AGREE THAT TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE IOG
+                  ENTITIES WILL NOT BE LIABLE TO YOU UNDER ANY THEORY OF
+                  LIABILITY. WITHOUT LIMITING THE FOREGOING, YOU AGREE THAT THE
+                  IOG ENTITIES SPECIFICALLY WILL NOT BE LIABLE FOR (i) ANY
+                  INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, INCIDENTAL OR
+                  EXEMPLARY DAMAGES, LOSS OF PROFITS, LOSS OF BUSINESS, BUSINESS
+                  INTERRUPTION, REPUTATIONAL HARM, OR LOSS OF DATA (EVEN IF THE
+                  IOG ENTITIES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH
+                  DAMAGES OR SUCH DAMAGES ARE FORESEEABLE) ARISING OUT OF AND IN
+                  ANY WAY CONNECTED WITH YOUR USE OF, OR INABILITY TO USE, THIS
+                  WEBSITE OR ANY IOG PRODUCTS OR (ii) ANY AMOUNT, IN THE
+                  AGGREGATE, IN EXCESS OF ONE-HUNDRED DOLLARS (USD$100). YOUR
+                  USE OF THE PRODUCTS, INFORMATION, OR SERVICES IS AT YOUR SOLE
+                  RISK.
+                </ListItem>
+              </OrderedList>
+              <Text fontWeight="bold">7. Indemnification.</Text>
+              <Text mb="3">
+                You agree to fully indemnify, defend, and hold the IOG Entities
+                and their directors, officers, employees, consultants, and other
+                representatives, harmless from and against any and all claims,
+                damages, losses, costs (including reasonable attorneys' fees),
+                and other expenses that arise directly or indirectly out of or
+                from: (a) your breach of any part of these Terms, including but
+                not limited to any policies referenced herein; (b) any
+                allegation that any materials you submit to us or transmit to
+                the Products infringe or otherwise violate the copyright,
+                patent, trademark, trade secret, or other intellectual property
+                or other rights of any third party; (c) your activities in
+                connection with the Products or other websites to which the
+                Products are linked; and/or (d) your negligent or willful
+                misconduct.
               </Text>
-              <p>
-                IN NO EVENT SHALL BERRY OR ITS SHAREHOLDERS, DIRECTORS,
-                OFFICERS, EMPLOYEES, AFFILIATES OR AGENTS, OR ANY OF ITS OR
-                THEIR RESPECTIVE SERVICE PROVIDERS, BE LIABLE TO USER OR ANY
-                THIRD PARTY FOR ANY USE, INTERRUPTION, DELAY OR INABILITY TO USE
-                THE SOFTWARE, LOST REVENUES OR PROFITS, DELAYS, INTERRUPTION OR
-                LOSS OF SERVICES, BUSINESS OR GOODWILL, LOSS OR CORRUPTION OF
-                DATA, LOSS RESULTING FROM SYSTEM OR SYSTEM SERVICE FAILURE,
-                MALFUNCTION OR SHUTDOWN, FAILURE TO ACCURATELY TRANSFER, READ OR
-                TRANSMIT INFORMATION, FAILURE TO UPDATE OR PROVIDE CORRECT
-                INFORMATION, SYSTEM INCOMPATIBILITY OR PROVISION OF INCORRECT
-                COMPATIBILITY INFORMATION OR BREACHES IN SYSTEM SECURITY, OR FOR
-                ANY CONSEQUENTIAL, INCIDENTAL, INDIRECT, EXEMPLARY, SPECIAL OR
-                PUNITIVE DAMAGES, WHETHER ARISING OUT OF OR IN CONNECTION WITH
-                THIS AGREEMENT, BREACH OF CONTRACT, TORT (INCLUDING NEGLIGENCE)
-                OR OTHERWISE, REGARDLESS OF WHETHER SUCH DAMAGES WERE
-                FORESEEABLE AND WHETHER OR NOT WE WERE ADVISED OF THE
-                POSSIBILITY OF SUCH DAMAGES. IN NO EVENT SHALL BERRY OR ITS
-                SHAREHOLDERS, DIRECTORS, OFFICERS, EMPLOYEES, AFFILIATES OR
-                AGENTS, OR ANY OF ITS OR THEIR RESPECTIVE SERVICE PROVIDERS, BE
-                LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-                ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM OR IN ANY
-                WAY RELATED TO USER'S ACCESS, USE OR INSTALLATION OF THE
-                SOFTWARE. SOME JURISDICTIONS PROHIBIT THE EXCLUSION OR
-                LIMITATION OF INCIDENTAL OR CONSEQUENTIAL DAMAGES, THUS THIS
-                LIMITATION OF LIABILITY MAY NOT APPLY TO USER. IF USER IS
-                DISSATISFIED WITH THE SOFTWARE, USER'S SOLE AND EXCLUSIVE REMEDY
-                SHALL BE FOR USER TO DISCONTINUE USE OF THE SOFTWARE.
-              </p>
-              <Text fontWeight="bold" mt="3" mb="1" id="8-indemnification">
-                8. Indemnification
+              <Text fontWeight="bold">8 .Dispute Resolution.</Text>
+              <Text mb="3">
+                If you have a dispute with IOG, you agree to contact us using
+                the form at{' '}
+                <Link
+                  isExternal
+                  onClick={() => window.open('https://iohk.io/en/contact/')}
+                >
+                  https://iohk.io/en/contact/
+                </Link>{' '}
+                to attempt to resolve the issue informally first.
               </Text>
-              <p>
-                User agrees to indemnify, hold harmless and defend Berry, its
-                shareholders, directors, officers, employees, affiliates and
-                agents ("Indemnified Parties") from and against any action,
-                cause, claim, damage, debt, demand or liability, including
-                reasonable costs and attorney's fees, asserted by any person,
-                arising out of or relating to: (a) this Agreement; (b) User's
-                access, use or installation of the Software, including any data
-                or work transmitted or received by User; and (c) any
-                unacceptable use of the Software by any person, including,
-                without limitation, any statement, data or content made,
-                transmitted or republished by User or any person which is
-                prohibited as unacceptable under Section 4. THIS INDEMNIFICATION
-                INCLUDES THE EXPRESS INDEMNIFICATION OF BERRY AND ALL
-                INDEMNIFIED PARTIES FOR ANY ALLEGED NEGLIGENCE (INCLUDING ANY
-                ALLEGED GROSS NEGLIGENCE). OR OTHER ALLEGED MISCONDUCT OF BERRY
-                OR ANY INDEMNIFIED PARTIES.
-              </p>
-              <Text
-                fontWeight="bold"
-                mt="3"
-                mb="1"
-                id="9-intellectual-property"
-              >
-                9. Intellectual Property
+              <Text fontWeight="bold">9. Communications.</Text>
+              <Text fontWeight="bold" display="inline">
+                You are not required to agree to receive promotional text
+                messages, calls or prerecorded messages as a condition of using
+                the Products.
+              </Text>{' '}
+              <Text>
+                By electing to submit your phone number to us and agreeing to
+                these Terms, you agree to receive communications from the IOG
+                Entities, including via text messages, calls, pre-recorded
+                messages, and push notifications, any of which may be generated
+                by automatic telephone dialing systems. These communications
+                include, for example, operational communications concerning your
+                account or use of the Products, updates concerning new and
+                existing features on the Products, communications concerning
+                promotions run by us or third parties, and news relating to the
+                Products and industry developments. Standard text message
+                charges applied by your telephone carrier may apply to text
+                messages we send. If you submit someone else's phone number or
+                email address to us to receive communications from the IOG
+                Entities, you represent and warrant that each person for whom
+                you provide a phone number or email address has consented to
+                receive communications from IOG.
+                <Text fontWeight="bold" mb="3">
+                  If you wish to stop receiving promotional emails or
+                  promotional text messages, we provide the following methods
+                  for you to opt-out or unsubscribe: (a) follow the instructions
+                  we provide in the email or initial text message for that
+                  category of promotional emails or text messages or (b) if you
+                  have an account on the Products, you may opt-out or
+                  unsubscribe using your settings.
+                </Text>
               </Text>
-              <p>
-                Berry retains all right, title, and interest in and to all of
-                Berry's brands, logos, and trademarks, including, but not
-                limited to Berry, Berry Pool, Nami, Nami Wallet, Nami App, and
-                variations of the wording of the aforementioned brands, logos,
-                and trademarks.
-              </p>
-              <Text fontWeight="bold" mt="3" mb="1" id="10-warnings">
-                10. Warnings
-              </Text>
-              <p>
-                User acknowledges that Berry shall not be responsible for
-                transferring, safeguarding, or maintaining private keys and/or
-                User's ADA or any other cryptocurrency. If User and/or any
-                co-signing authorities lose, mishandle, or have stolen
-                associated private keys, or if User's cosigners refuse to
-                provide requisite authority, User acknowledges that User may not
-                be able to recover User's ADA or any other cryptocurrency, and
-                that Berry shall not be responsible for such loss.
-              </p>
-              <p>
-                User acknowledges and agrees that ADA or any other
-                cryptocurrency transactions facilitated by the Software and/or
-                Berry may be delayed, and that Berry shall not be responsible
-                for any associated loss. User acknowledges and agrees that Berry
-                shall not be responsible for any aspect of the information,
-                content, or services contained in any third-party materials or
-                on any third party sites accessible or linked to the Software
-                and/or Berry.
-              </p>
-              <p>
-                By using the Software, User acknowledges and agrees: (i) that
-                Berry is not responsible for the operation of the underlying
-                protocols and that Berry makes no guarantee of their
-                functionality, security, or availability; and (ii) that the
-                underlying protocols are subject to sudden main-chain changes in
-                operating rules ("forks"), and that such forks may materially
-                affect the value, and/or function of the ADA or any other
-                cryptocurrency that User stores on the Software. In the event of
-                a fork, User agrees that Berry may temporarily suspend the
-                Software operations (with or without notice to User) and that
-                Berry may, in its sole discretion, (a) configure or reconfigure
-                its systems or (b) decide not to support (or cease supporting)
-                the forked protocol entirely, provided, however, that User will
-                have an opportunity to withdraw funds from the Software. User
-                acknowledges and agrees that Berry assumes absolutely no
-                responsibility whatsoever in respect of an unsupported branch of
-                a forked protocol.
-              </p>
-              <Text fontWeight="bold" mt="3" mb="1" id="11-miscellaneous">
-                11. Miscellaneous
-              </Text>
-              <p>
-                <span style={{ fontSize: 15 }}>a. Amendment.</span>&nbsp;Berry
-                shall have the right, at any time and without notice, to add to
-                or modify the terms of this Agreement, simply by delivering such
-                amended terms to User by electronic message through any medium
-                to any address provided to Berry by User. User's access to or
-                use of the Software after the date such amended terms are
-                delivered to User shall be deemed to constitute acceptance of
-                such amended terms.
-              </p>
-              <p>
-                <span style={{ fontSize: 15 }}>b. Severance.</span>&nbsp;If any
-                provision or part-provision of this Agreement is, or becomes
-                invalid, illegal or unenforceable, it shall be deemed modified
-                to the minimum extent necessary to make it valid, legal and
-                enforceable. If such modification is not possible, the relevant
-                provision or part-provision shall be deemed deleted. Any
-                modification to or deletion of a provision or part-provision
-                under this Article shall not affect the validity and
-                enforceability of the rest of this Agreement.
-              </p>
-              <p>
-                <span style={{ fontSize: 15 }}>
-                  c. Entire Agreement &ndash; Disclaimer of Reliance
-                </span>
-                . This Agreement constitutes the entire agreement between the
-                Parties with respect to the subject matter hereof and supersedes
-                all prior agreements or understandings between the Parties. User
-                expressly represents and warrants that it is not relying upon
-                any statements, understandings, representations, expectations or
-                agreements other than those expressly set forth in this
-                Agreement.
-              </p>
-              <p>
-                <span style={{ fontSize: 15 }}>
-                  d. THIS AGREEMENT IS SUBJECT TO BINDING ARBITRATION.
-                </span>
-                &nbsp;User agrees that any and all disputes or claims against
-                any person arising out of or in any way related to this
-                Agreement or the access, use or installation of the Software by
-                User or any other person shall be subject to binding arbitration
-                under the Rules of Arbitration of the International Chamber of
-                Commerce by one or more arbitrators appointed in accordance with
-                the said Rules. The location of the arbitration shall be Japan.
-                The language of the arbitration shall be English.
-              </p>
-              <p>
-                <span style={{ fontSize: 15 }}>e. LANGUAGE.</span>&nbsp;Any
-                translation of this Agreement is made for purposes of local
-                reference only and in the event of any inconsistency between the
-                English and any non-English versions, the English version of
-                this Agreement shall prevail and govern in all respects.
-              </p>
-              <Text
-                fontWeight="bold"
-                mt="3"
-                mb="1"
-                id="12-delegation-and-staking"
-              >
-                12. Delegation and Staking
-              </Text>
-              <p>
-                12.1&nbsp;<span style={{ fontSize: 15 }}>Rewards.</span>
-                &nbsp;The amount of Rewards a User may earn from delegation
-                depends on various factors including, but not limited to, user
-                participation, stakepool profit margins and the volume of ada
-                being delegated. It is possible that delegation generates no
-                Reward for a User due to the above-mentioned factors. Rewards
-                are earned as of the start of the 3rd epoch on the Cardano
-                blockchain.
-              </p>
-              <p>
-                12.2&nbsp;<span style={{ fontSize: 15 }}>Delegation.</span>
-                &nbsp;Users may delegate their stake to one of the various stake
-                pools of Berry or to a third party stake pool. User will have
-                the sole right to determine the volume to be delegated to a
-                stake pool and may increase or decrease its level of
-                participation at any time. Any information Berry shares
-                regarding stakepools, including Rewards, will be for indicative
-                purposes only and may not be accurate. Users may only delegate
-                their stake to a stake pool if their ada is in an updated Nami
-                Wallet at the time of the setup process. User does not acquire
-                any automatic right to Rewards as a result of delegating its
-                stake.
-              </p>
-              <p>
-                12.3&nbsp;<span style={{ fontSize: 15 }}>Berry Pool</span>
-                &nbsp;Berry operates the Berry stake pool which will be visible
-                in Nami. The cost and network and server requirements to
-                reliably operate such stake pools shall be determined by Berry
-                in its sole discretion. Berry will communicate the percentage
-                amount of Reward to be shared with Users through the
-                User&rsquo;s Nami wallet. Rewards will accrue at the end of each
-                epoch and will automatically appear in the User&rsquo;s Nami
-                wallet.
-              </p>
-              <p>
-                12.4&nbsp;
-                <span style={{ fontSize: 15 }}>Redeeming Rewards.</span>
-                &nbsp;User shall be responsible for payment of all applicable
-                taxes, if any, to which the Rewards might be subject and any and
-                all other taxes which may apply to User once Rewards are
-                redeemed.
-              </p>
+              <Text fontWeight="bold">10. Miscellaneous.</Text>
+              <OrderedList mb="3" pl="2" listStyleType="lower-alpha">
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Application Provider Terms.
+                  </Text>{' '}
+                  If you access the Products through an IOG application, you
+                  acknowledge that these Terms are between you and IOG only, and
+                  not with an application service or application platform
+                  provider (such as Apple, Inc., or Google Inc.), which may
+                  provide you the application subject to its own terms of use.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Controlling Law and Jurisdiction.
+                  </Text>{' '}
+                  These Terms will be interpreted in accordance with the laws of
+                  the State of New York and the United States of America,
+                  without regard to their conflict-of-law provisions. You and
+                  IOG agree to submit to the personal jurisdiction of a federal
+                  or state court located in New York, New York for any actions
+                  for which the dispute resolution provision, as set forth in
+                  Section 8, does not resolve.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Changes.
+                  </Text>{' '}
+                  We reserve the right to change the terms of these Terms,
+                  consistent with applicable law. You agree that your continued
+                  use of the Products after such changes become effective
+                  constitutes your acceptance of the changes. If you do not
+                  agree with any updates to these Terms, you may not continue to
+                  use the Products. Be sure to return to this page periodically
+                  to ensure your familiarity with the most current version of
+                  the Terms of Use. Any changes to the Terms will be effective
+                  on a going forward basis.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Languages.
+                  </Text>{' '}
+                  The English version of these Terms will be the binding version
+                  and all communications, notices, and other actions and
+                  proceedings relating to these Terms will be made and conducted
+                  in English, even if we choose to provide translations of these
+                  Terms into the native languages in certain countries. To the
+                  extent allowed by law, any inconsistencies among the different
+                  translations will be resolved in favor of the English version.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Assignment.
+                  </Text>{' '}
+                  No terms of these Terms, nor any right, obligation, or remedy
+                  hereunder is assignable, transferable, delegable, or
+                  sublicensable by you except with IOG's prior written consent,
+                  and any attempted assignment, transfer, delegation, or
+                  sublicense shall be null and void. IOG may assign, transfer,
+                  or delegate these Terms or any right or obligation or remedy
+                  hereunder in its sole discretion.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Waiver.
+                  </Text>{' '}
+                  Our failure to assert a right or provision under these Terms
+                  will not constitute a waiver of such right or provision.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Headings.
+                  </Text>{' '}
+                  Any heading, caption, or section title contained is inserted
+                  only as a matter of convenience and in no way defines or
+                  explains any section or provision hereof.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Further Assurances.
+                  </Text>{' '}
+                  You agree to execute a hard copy of these Terms and any other
+                  documents, and take any actions at our expense that we may
+                  request to confirm and effect the intent of these Terms and
+                  any of your rights or obligations under these Terms.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Entire Agreement and Severability.
+                  </Text>{' '}
+                  This Agreement supersedes all prior terms, agreements,
+                  discussions and writings regarding the Products and
+                  constitutes the entire agreement between you and us regarding
+                  the Products. If any part of these Terms is found to be
+                  unenforceable, then that part will not affect the
+                  enforceability of the remaining parts of the Agreement, which
+                  will remain in full force and effect.
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Survival.
+                  </Text>{' '}
+                  The following provisions will survive expiration or
+                  termination of these Terms: Section 2 (Your Content), Section
+                  3(c)(Restrictions) and 3(d)(Ownership), Section 6 (Disclaimers
+                  and Limitations of Liability), Section 7 (Indemnification),
+                  Section 8 (Dispute Resolution) and Section 10 (Miscellaneous).
+                </ListItem>
+                <ListItem>
+                  <Text fontWeight="bold" display="inline">
+                    Contact
+                  </Text>{' '}
+                  <Text mb="3">
+                    Feel free to{' '}
+                    <Link
+                      color="teal"
+                      isExternal
+                      textDecoration="underline"
+                      onClick={() => window.open('https://iohk.io/en/contact/')}
+                    >
+                      contact us
+                    </Link>{' '}
+                    with any questions about these Terms. You can also write to
+                    us at:
+                  </Text>
+                  <Text>Input Output Global, Inc.</Text>
+                  <Text>2015 Ionosphere Street, Ste 201</Text>
+                  <Text>Longmont, CO 80504</Text>
+                  <Text>Attn: Legal</Text>
+                </ListItem>
+              </OrderedList>
               <Box h="2" />
             </Box>
           </Scrollbars>
