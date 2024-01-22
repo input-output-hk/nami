@@ -56,6 +56,14 @@ export const setStorage = (item) =>
     })
   );
 
+export const removeStorage = (item) =>
+  new Promise((res, rej) =>
+    chrome.storage.local.remove(item, () => {
+      if (chrome.runtime.lastError) rej(chrome.runtime.lastError);
+      res(true);
+    })
+  );
+
 export const encryptWithPassword = async (password, rootKeyBytes) => {
   await Loader.load();
   const rootKeyHex = Buffer.from(rootKeyBytes, 'hex').toString('hex');

@@ -26,6 +26,7 @@ import { createTab } from '../../../api/extension';
 import { TAB } from '../../../config/config';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
+import { useAcceptDocs } from '../../../features/terms-and-privacy/hooks';
 
 const Welcome = () => {
   const capture = useCaptureEvent();
@@ -105,7 +106,7 @@ const Welcome = () => {
 
 const WalletModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [accept, setAccept] = React.useState(false);
+  const { accept, setAccept } = useAcceptDocs();
 
   const termsRef = React.useRef();
   const privacyPolicyRef = React.useRef();
@@ -173,7 +174,7 @@ const WalletModal = React.forwardRef((props, ref) => {
 
 const ImportModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [accept, setAccept] = React.useState(false);
+  const { accept, setAccept } = useAcceptDocs();
   const [select, setSelect] = React.useState(null);
 
   const termsRef = React.useRef();
