@@ -9,19 +9,23 @@ import {
 } from '@chakra-ui/modal';
 import { Checkbox } from '@chakra-ui/checkbox';
 import { Link, Text, Box } from '@chakra-ui/layout';
-import React from 'react';
+import React, { useRef } from 'react';
 import PrivacyPolicy from '../../../ui/app/components/privacyPolicy';
 import TermsOfUse from '../../../ui/app/components/termsOfUse';
 import { useAcceptDocs } from '../hooks';
 
-export const TermsAndPrivacyModal = ({ onContinue }) => {
-  const termsRef = React.useRef();
-  const privacyPolicyRef = React.useRef();
+interface Props {
+  onContinue: () => void;
+}
+
+export const TermsAndPrivacyModal = ({ onContinue }: Props) => {
+  const termsRef = useRef<{ openModal: () => void }>();
+  const privacyPolicyRef = useRef<{ openModal: () => void }>();
   const { accepted, setAccepted } = useAcceptDocs();
 
   return (
     <>
-      <Modal size="xs" isOpen isCentered>
+      <Modal size="xs" isOpen isCentered onClose={() => void 0}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="md">
@@ -38,14 +42,14 @@ export const TermsAndPrivacyModal = ({ onContinue }) => {
                   <Text fontWeight={600}>
                     I read and accepted the{' '}
                     <Link
-                      onClick={() => termsRef.current.openModal()}
+                      onClick={() => termsRef.current?.openModal()}
                       textDecoration="underline"
                     >
                       Terms of use
                     </Link>
                     <Text display="inline"> and </Text>
                     <Link
-                      onClick={() => privacyPolicyRef.current.openModal()}
+                      onClick={() => privacyPolicyRef.current?.openModal()}
                       textDecoration="underline"
                     >
                       Privacy Policy
