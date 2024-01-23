@@ -6,19 +6,13 @@ export const getAcceptedLegalDocsVersion = async (): Promise<
 > => {
   const version = await getStorage(STORAGE.acceptedLegalDocsVersion);
 
-  if (version) {
-    return Number(version);
-  }
-
-  return undefined;
+  return version ? Number(version) : undefined;
 };
 
 export const setAcceptedLegalDocsVersion = (
   version: number | undefined
 ): Promise<boolean> => {
-  if (version) {
-    return setStorage({ [STORAGE.acceptedLegalDocsVersion]: version });
-  }
-
-  return removeStorage(STORAGE.acceptedLegalDocsVersion);
+  return version
+    ? setStorage({ [STORAGE.acceptedLegalDocsVersion]: version })
+    : removeStorage(STORAGE.acceptedLegalDocsVersion);
 };
