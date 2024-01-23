@@ -51,7 +51,7 @@ export const AnalyticsConsentModal = ({ askForConsent, setConsent }) => {
           </ModalBody>
           <ModalFooter>
             <Button mr={3} variant="ghost" onClick={() => setConsent(false)}>
-              decline
+              Decline
             </Button>
             <Button colorScheme="teal" onClick={() => setConsent(true)}>
               Accept
