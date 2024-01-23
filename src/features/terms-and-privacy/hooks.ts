@@ -6,16 +6,16 @@ import {
 import { CURRENT_VERSION } from './config';
 
 export const useAcceptDocs = () => {
-  const [accept, setAccept] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
   return {
-    accept,
-    setAccept: useCallback(
+    accepted,
+    setAccepted: useCallback(
       (accepted: boolean) => {
-        setAccept(accepted);
+        setAccepted(accepted);
         setAcceptedLegalDocsVersion(accepted ? CURRENT_VERSION : undefined);
       },
-      [setAccept]
+      [setAccepted]
     ),
   };
 };

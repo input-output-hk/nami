@@ -106,7 +106,7 @@ const Welcome = () => {
 
 const WalletModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { accept, setAccept } = useAcceptDocs();
+  const { accepted, setAccepted } = useAcceptDocs();
 
   const termsRef = React.useRef();
   const privacyPolicyRef = React.useRef();
@@ -130,7 +130,7 @@ const WalletModal = React.forwardRef((props, ref) => {
             </Text>
             <Box h="4" />
             <Box display="flex" alignItems="center" justifyContent="center">
-              <Checkbox onChange={(e) => setAccept(e.target.checked)} />
+              <Checkbox onChange={(e) => setAccepted(e.target.checked)} />
               <Box w="2" />
               <Text fontWeight={600}>
                 I read and accepted the{' '}
@@ -157,7 +157,7 @@ const WalletModal = React.forwardRef((props, ref) => {
               Close
             </Button>
             <Button
-              isDisabled={!accept}
+              isDisabled={!accepted}
               colorScheme="teal"
               onClick={() => createTab(TAB.createWallet, `?type=generate`)}
             >
@@ -174,8 +174,8 @@ const WalletModal = React.forwardRef((props, ref) => {
 
 const ImportModal = React.forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { accept, setAccept } = useAcceptDocs();
-  const [select, setSelect] = React.useState(null);
+  const { accepted, setAccepted } = useAcceptDocs();
+  const [selected, setSelected] = React.useState(null);
 
   const termsRef = React.useRef();
   const privacyPolicyRef = React.useRef();
@@ -221,7 +221,7 @@ const ImportModal = React.forwardRef((props, ref) => {
             <Select
               size="sm"
               rounded="md"
-              onChange={(e) => setSelect(e.target.value)}
+              onChange={(e) => setSelected(e.target.value)}
               placeholder="Choose seed phrase length"
             >
               <option value="15">15-word seed phrase</option>
@@ -229,7 +229,7 @@ const ImportModal = React.forwardRef((props, ref) => {
             </Select>
             <Box h="5" />
             <Box display="flex" alignItems="center" justifyContent="center">
-              <Checkbox onChange={(e) => setAccept(e.target.checked)} />
+              <Checkbox onChange={(e) => setAccepted(e.target.checked)} />
               <Box w="2" />
               <Text fontWeight={600}>
                 I read and accepted the{' '}
@@ -256,12 +256,12 @@ const ImportModal = React.forwardRef((props, ref) => {
               Close
             </Button>
             <Button
-              isDisabled={!select || !accept}
+              isDisabled={!selected || !accepted}
               colorScheme="teal"
               onClick={() =>
                 createTab(
                   TAB.createWallet,
-                  `?type=import&length=${parseInt(select)}`
+                  `?type=import&length=${parseInt(selected)}`
                 )
               }
             >

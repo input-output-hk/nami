@@ -17,7 +17,7 @@ import { useAcceptDocs } from '../hooks';
 export const TermsAndPrivacyModal = ({ onContinue }) => {
   const termsRef = React.useRef();
   const privacyPolicyRef = React.useRef();
-  const { accept, setAccept } = useAcceptDocs();
+  const { accepted, setAccepted } = useAcceptDocs();
 
   return (
     <>
@@ -33,7 +33,7 @@ export const TermsAndPrivacyModal = ({ onContinue }) => {
                 The terms of use and privacy policy have been updated.
               </Text>
               <Box display="flex" mb="2">
-                <Checkbox onChange={(e) => setAccept(e.target.checked)} />
+                <Checkbox onChange={(e) => setAccepted(e.target.checked)} />
                 <Box display="inline" ml="2">
                   <Text fontWeight={600}>
                     I read and accepted the{' '}
@@ -57,7 +57,7 @@ export const TermsAndPrivacyModal = ({ onContinue }) => {
           </ModalBody>
           <ModalFooter>
             <Button
-              isDisabled={!accept}
+              isDisabled={!accepted}
               colorScheme="teal"
               onClick={onContinue}
             >
