@@ -7,13 +7,13 @@ interface Props {
 }
 
 export const TermsAndPrivacyProvider = ({ children }: Props) => {
-  const { showUpdatePrompt, hideUpdatePrompt } = useShowUpdatePrompt();
+  const { shouldShowUpdatePrompt, hideUpdatePrompt } = useShowUpdatePrompt();
 
-  if (showUpdatePrompt === undefined) {
+  if (shouldShowUpdatePrompt === undefined) {
     return;
   }
 
-  return showUpdatePrompt ? (
+  return shouldShowUpdatePrompt ? (
     <TermsAndPrivacyModal onContinue={hideUpdatePrompt} />
   ) : (
     children

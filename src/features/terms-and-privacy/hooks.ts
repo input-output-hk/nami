@@ -21,7 +21,7 @@ export const useAcceptDocs = () => {
 };
 
 export const useShowUpdatePrompt = () => {
-  const [showUpdatePrompt, setShowUpdatePrompt] = useState<boolean | undefined>(
+  const [shouldShowUpdatePrompt, setShouldShowUpdatePrompt] = useState<boolean | undefined>(
     undefined
   );
 
@@ -30,9 +30,9 @@ export const useShowUpdatePrompt = () => {
       const acceptedVersion = await getAcceptedLegalDocsVersion();
 
       if (acceptedVersion) {
-        setShowUpdatePrompt(acceptedVersion < CURRENT_VERSION);
+        setShouldShowUpdatePrompt(acceptedVersion < CURRENT_VERSION);
       } else {
-        setShowUpdatePrompt(true);
+        setShouldShowUpdatePrompt(true);
       }
     };
 
@@ -40,9 +40,9 @@ export const useShowUpdatePrompt = () => {
   }, []);
 
   return {
-    showUpdatePrompt,
+    shouldShowUpdatePrompt,
     hideUpdatePrompt: useCallback(() => {
-      setShowUpdatePrompt(false);
-    }, [setShowUpdatePrompt]),
+      setShouldShowUpdatePrompt(false);
+    }, [setShouldShowUpdatePrompt]),
   };
 };
