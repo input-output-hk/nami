@@ -66,7 +66,7 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                   "us"
                 </Text>{' '}
                 in this Agreement). These Terms govern your use of this website
-                and all of the related websites, mobile apps, products, and
+                and all of the related websites, mobile apps, products and
                 services offered by IOG and its affiliated entities including
                 our plug-ins and browser extensions (collectively, the{' '}
                 <Text display="inline" fontWeight="bold">
@@ -126,7 +126,7 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                     Additional Terms.
                   </Text>{' '}
                   Specific terms and conditions may apply to specific content,
-                  products, materials, services, or information contained on or
+                  products, materials, services or information contained on or
                   available through various Products or transactions concluded
                   through the Products. Such specific terms may be in addition
                   to these Terms or, where inconsistent with these Terms, only
@@ -146,8 +146,8 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                   >
                     https://iohk.io/en/contact/
                   </Link>
-                  . By submitting feedback in this or any other manner to us,
-                  you grant us the right, at our discretion, to use, disclose,
+                  . By submitting feedback in this or in any other manner to us,
+                  you grant us the right, at our discretion, to use, disclose
                   and otherwise exploit the feedback, in whole or part, without
                   any restriction or compensation to you, as further described
                   in Section 2(b) below.
@@ -202,7 +202,7 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                   <Text fontWeight="bold" display="inline">
                     "IOG Business Purposes"
                   </Text>{' '}
-                  means any use in connection with a Product or IOG co-branded
+                  means any use in connection with a Product or IOG cobranded
                   website, application, publication or service, or any use which
                   advertises, markets or promotes Products, the services or the
                   information within the Products, IOG, or its affiliates. IOG
@@ -256,7 +256,7 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                   will publish any or all of Your Content.
                 </ListItem>
               </OrderedList>
-              <Text fontWeight="bold">3. Our Content and Materials</Text>
+              <Text fontWeight="bold">3. Our Content and Materials.</Text>
               <OrderedList mb="3" pl="2" listStyleType="lower-alpha">
                 <ListItem>
                   <Text fontWeight="bold" display="inline">
@@ -321,7 +321,7 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                   by using or interacting with the Products.
                 </ListItem>
               </OrderedList>
-              <Text fontWeight="bold">4. Other Offerings on the Products</Text>
+              <Text fontWeight="bold">4. Other Offerings on the Products.</Text>
               <OrderedList mb="3" pl="2" listStyleType="lower-alpha">
                 <ListItem>
                   <Text fontWeight="bold" display="inline">
@@ -336,12 +336,12 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                   ). The availability of any Third-Party Services on the
                   Products does not imply our endorsement or verification of the
                   Third-Party Services. We assume no responsibility for, nor do
-                  we endorse or verify the content, offerings, or conduct of
+                  we endorse or verify the content, offerings or conduct of
                   third parties (including but not limited to the products or
                   services offered by third parties or the descriptions of the
                   products or services offered by third parties). We make no
                   warranties or representations with respect to the accuracy,
-                  completeness, or timeliness of any content posted on or in the
+                  completeness or timeliness of any content posted on or in the
                   Products by anyone.
                 </ListItem>
                 <ListItem>
@@ -471,7 +471,7 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                 Products are linked; and/or (d) your negligent or willful
                 misconduct.
               </Text>
-              <Text fontWeight="bold">8 .Dispute Resolution.</Text>
+              <Text fontWeight="bold">8. Dispute Resolution.</Text>
               <Text mb="3">
                 If you have a dispute with IOG, you agree to contact us using
                 the form at{' '}
@@ -625,10 +625,10 @@ const TermsOfUse = React.forwardRef((props, ref) => {
                   Section 8 (Dispute Resolution) and Section 10 (Miscellaneous).
                 </ListItem>
                 <ListItem>
-                  <Text fontWeight="bold" display="inline">
-                    Contact
-                  </Text>{' '}
                   <Text mb="3">
+                    <Text fontWeight="bold" display="inline">
+                      Contact.
+                    </Text>{' '}
                     Feel free to{' '}
                     <Link
                       color="teal"
