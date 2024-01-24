@@ -196,8 +196,8 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
               <UnorderedList mb="3">
                 <ListItem>
                   IOG exercising its rights and performing its obligations in
-                  connection with any contract make with you (Article 6 (1) (b)
-                  General Data Protection Regulation),
+                  connection with any contract we make with you (Article 6 (1)
+                  (b) General Data Protection Regulation),
                 </ListItem>
                 <ListItem>
                   Compliance with IOG's legal obligations (Article 6 (1) (c)
@@ -296,7 +296,7 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
               </Text>
               <Text mb="3">
                 Insofar as we employ the services of service providers to
-                implement or fulfill any tasks on our behalf, the contractual
+                implement or fulfill any tasks on our behalf the contractual
                 relations will be regulated in writing according to the
                 provisions of the European General Data Protection Regulation
                 (EU-GDPR) and the Federal Data Protection Act (new BDSG).
@@ -311,8 +311,8 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
                 the processing of your enquiry. These offices are legally
                 obligated to abide by the EU-GDPR. Furthermore, between the
                 legally autonomous companies in the network of affiliated
-                companies, written agreements exist for the processing of data
-                on commission, based on standardized contract stipulations.
+                companies written agreements exist for the processing of data on
+                commission, based on standardized contract stipulations.
               </Text>
               <Text mb="4" fontWeight="bold">
                 7. Security Of Data
@@ -397,9 +397,9 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
                     The right to object.
                   </Text>{' '}
                   You have the right to object to your personal information
-                  being used for a particular purpose, and you can exercise
-                  these rights, for example, via an unsubscribe link at the
-                  bottom of any email.
+                  being used for a particular purpose and you can exercise these
+                  rights, for example, via an unsubscribe link at the bottom of
+                  any email.
                 </ListItem>
                 <ListItem>
                   <Text display="inline" fontWeight="bold">
@@ -413,7 +413,7 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
                     The right to data portability.
                   </Text>{' '}
                   You have the right to be provided with a copy of the
-                  information IOG has on you in a structured, machine-readable,
+                  information IOG has on you in a structured, machine readable
                   and commonly used format.
                 </ListItem>
                 <ListItem>
@@ -473,12 +473,12 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
               </Text>
 
               <Text mb="4" fontWeight="bold">
-                10. Service Providers, Plugins, and Tools
+                10. Service Providers, Plugins and Tools
               </Text>
               <Text mb="3">
-                IOG may employ third-party companies and individuals to
+                IOG may employ third party companies and individuals to
                 facilitate Products, to provide the Products on our behalf, to
-                perform website-related services, or to assist us in analyzing
+                perform website-related services or to assist us in analyzing
                 how the Products are used (
                 <Text display="inline" fontWeight="bold">
                   "Service Providers"
@@ -509,7 +509,7 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
                 profile. You can prevent this by logging out of your YouTube
                 account. YouTube is used to help make our website appealing. For
                 information about the scope and purpose of data collection, the
-                further processing and use of the data by YouTube, and your
+                further processing and use of the data by YouTube and your
                 rights and the settings you can configure to protect your
                 privacy, please refer to the YouTube Privacy Guidelines.
               </Text>
@@ -577,7 +577,7 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
               </Text>
               <Text mb="4">
                 IOG has no control over and assumes no responsibility for the
-                content, privacy policies, or practices of any third-party
+                content, privacy policies or practices of any third-party
                 product or service.
               </Text>
 
@@ -588,8 +588,8 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
                 IOG may update this Privacy Policy from time to time. Such
                 changes will be posted on this page. The effective date of such
                 changes will be notified via email and/or a prominent notice on
-                the Product, with an update to the "effective date" at the top
-                of this Privacy Policy.
+                the Product, with an update the "effective date" at the top of
+                this Privacy Policy.
               </Text>
               <Text mb="3">
                 You are advised to review this Privacy Policy periodically for
@@ -627,7 +627,7 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
                 concerns information about communication channels (such as
                 e-mail address or telephone number), you also agree that we may,
                 where appropriate, contact you via this communication channel to
-                answer your request. You may, of course, revoke this consent for
+                answer your request. You may of course revoke this consent for
                 the future at any time.
               </Text>
               <Text mb="3">
