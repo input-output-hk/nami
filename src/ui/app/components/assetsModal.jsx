@@ -34,7 +34,12 @@ const AssetsModal = React.forwardRef((props, ref) => {
   }));
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="full">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="full"
+      blockScrollOnMount={false}
+    >
       <ModalContent
         m={0}
         rounded="none"
@@ -42,7 +47,7 @@ const AssetsModal = React.forwardRef((props, ref) => {
         background={background}
       >
         <ModalBody p={0}>
-          <Scrollbars style={{ width: '100%', height: '88vh' }}>
+          <Scrollbars style={{ width: '100%', height: '88vh' }} autoHide>
             <Box
               width={'full'}
               display={'flex'}
