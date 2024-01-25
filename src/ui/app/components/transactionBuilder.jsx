@@ -311,7 +311,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
   return (
     <>
       <ConfirmModal
-        ready={data.ready}
+        ready={data.ready && data.pool.state === PoolStates.DONE}
         title="Delegate your funds"
         sign={async (password, hw) => {
           if (hw) {
