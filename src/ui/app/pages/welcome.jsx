@@ -118,7 +118,13 @@ const WalletModal = React.forwardRef((props, ref) => {
   }));
   return (
     <>
-      <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
+      <Modal
+        size="xs"
+        isOpen={isOpen}
+        onClose={onClose}
+        isCentered
+        blockScrollOnMount={false}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="md">Create a wallet</ModalHeader>
