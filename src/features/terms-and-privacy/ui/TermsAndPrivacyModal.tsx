@@ -25,7 +25,13 @@ export const TermsAndPrivacyModal = ({ onContinue }: Props) => {
 
   return (
     <>
-      <Modal size="xs" isOpen isCentered onClose={() => void 0}>
+      <Modal
+        size="xs"
+        isOpen
+        isCentered
+        onClose={() => void 0}
+        blockScrollOnMount={false}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="md">
