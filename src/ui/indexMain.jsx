@@ -25,6 +25,7 @@ import { useStoreActions, useStoreState } from 'easy-peasy';
 import { AnalyticsProvider } from '../features/analytics/provider';
 import { EventTracker } from '../features/analytics/event-tracker';
 import { ExtensionViews } from '../features/analytics/types';
+import { TermsAndPrivacyProvider } from '../features/terms-and-privacy';
 
 const App = () => {
   const route = useStoreState((state) => state.globalModel.routeStore.route);
@@ -79,7 +80,14 @@ const App = () => {
   ) : (
     <div style={{ overflowX: 'hidden' }}>
       <Routes>
-        <Route path="*" element={<Wallet />} />
+        <Route
+          path="*"
+          element={
+            <TermsAndPrivacyProvider>
+              <Wallet />
+            </TermsAndPrivacyProvider>
+          }
+        />
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/settings/*" element={<Settings />} />
         <Route path="/send" element={<Send />} />

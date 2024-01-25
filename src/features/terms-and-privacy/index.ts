@@ -1,0 +1,1 @@
+export { TermsAndPrivacyProvider } from './provider';

@@ -59,6 +59,7 @@ export const STORAGE = {
   migration: 'migration',
   analyticsConsent: 'analytics',
   userId: 'userId',
+  acceptedLegalDocsVersion: 'acceptedLegalDocsVersion',
 };
 
 export const LOCAL_STORAGE = {
