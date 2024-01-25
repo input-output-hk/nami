@@ -588,7 +588,7 @@ const PrivacyPolicy = React.forwardRef((props, ref) => {
                 IOG may update this Privacy Policy from time to time. Such
                 changes will be posted on this page. The effective date of such
                 changes will be notified via email and/or a prominent notice on
-                the Product, with an update the "effective date" at the top of
+                the Product, with an update to the "effective date" at the top of
                 this Privacy Policy.
               </Text>
               <Text mb="3">
