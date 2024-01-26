@@ -17,7 +17,7 @@ import UnitDisplay from './unitDisplay';
 
 const AssetPopover = ({ asset, gutter, ...props }) => {
   return (
-    <Popover matchWidth={true} placement="top-start" gutter={gutter}>
+    <Popover placement="top-start" gutter={gutter}>
       <PopoverTrigger>
         <Box>{props.children}</Box>
       </PopoverTrigger>
