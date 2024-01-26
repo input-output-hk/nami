@@ -28,9 +28,11 @@ const Collectible = React.forwardRef(({ asset }, ref) => {
   const [showInfo, setShowInfo] = React.useState(false);
 
   const fetchMetadata = async () => {
+    const detailedConstructedAsset = await getAsset(asset.unit);
     const detailedAsset = {
-      ...(await getAsset(asset.unit)),
+      ...detailedConstructedAsset,
       quantity: asset.quantity,
+      fingerprint: asset.fingerprint ?? detailedConstructedAsset.fingerprint,
     };
     if (!isMounted.current) return;
     setToken(detailedAsset);
