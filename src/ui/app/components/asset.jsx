@@ -37,6 +37,12 @@ const Asset = ({ asset, enableSend, ...props }) => {
   const settings = useStoreState((state) => state.settings.settings);
 
   const fetchMetadata = async () => {
+    let detailedConstructedAsset;
+
+    if (asset.unit !== 'lovelace') {
+      detailedConstructedAsset = await getAsset(asset.unit);
+    }
+
     const detailedAsset =
       asset.unit === 'lovelace'
         ? {
@@ -45,9 +51,11 @@ const Asset = ({ asset, enableSend, ...props }) => {
             decimals: 6,
           }
         : {
-            ...(await getAsset(asset.unit)),
+            ...detailedConstructedAsset,
             quantity: asset.quantity,
             input: asset.input,
+            fingerprint:
+              asset.fingerprint ?? detailedConstructedAsset.fingerprint,
           };
     if (!isMounted.current) return;
     setToken(detailedAsset);

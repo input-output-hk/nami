@@ -184,7 +184,7 @@ const Wallet = () => {
     currentAccount.assets.forEach((asset) => {
       asset.policy = asset.unit.slice(0, 56);
       asset.name = Buffer.from(asset.unit.slice(56), 'hex');
-      asset.fingerprint = new AssetFingerprint(
+      asset.fingerprint = AssetFingerprint.fromParts(
         Buffer.from(asset.policy, 'hex'),
         asset.name
       ).fingerprint();
