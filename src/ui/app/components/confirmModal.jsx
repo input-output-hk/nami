@@ -112,6 +112,7 @@ const ConfirmModalNormal = ({ props, isOpen, onClose }) => {
       onClose={onClose}
       isCentered
       initialFocusRef={inputRef}
+      blockScrollOnMount={false}
     >
       <ModalOverlay />
       <ModalContent m={0}>
@@ -202,7 +203,13 @@ const ConfirmModalHw = ({ props, isOpen, onClose, hw }) => {
 
   return (
     <>
-      <Modal size="xs" isOpen={isOpen} onClose={onClose} isCentered>
+      <Modal
+        size="xs"
+        isOpen={isOpen}
+        onClose={onClose}
+        isCentered
+        blockScrollOnMount={false}
+      >
         <ModalOverlay />
         <ModalContent m={0}>
           <ModalHeader fontSize="md">
