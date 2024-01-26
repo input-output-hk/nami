@@ -283,7 +283,7 @@ const Wallet = () => {
                     }}
                     variant="solid"
                     size="xs"
-                    colorScheme="whiteAlpha"
+                    color="whiteAlpha"
                     rounded="lg"
                   >
                     Delegate
