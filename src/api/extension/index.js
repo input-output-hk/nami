@@ -1727,7 +1727,7 @@ export const getAsset = async (unit) => {
     const bufferName = Buffer.from(name, 'hex');
     asset.unit = unit;
     asset.policy = policyId;
-    asset.fingerprint = new AssetFingerprint(
+    asset.fingerprint = AssetFingerprint.fromParts(
       Buffer.from(policyId, 'hex'),
       bufferName
     ).fingerprint();
