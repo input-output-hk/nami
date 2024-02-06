@@ -14,11 +14,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: Install dependencies
         run: npm ci
       - name: Test
         run: npm test
+      - name: Generates Secrets File
+        run: |
+          echo "export default { PROJECT_ID_MAINNET: '${{ secrets.PROJECT_ID_MAINNET  }}', PROJECT_ID_PREVIEW: '${{ secrets.PROJECT_ID_PREVIEW  }}', PROJECT_ID_PREPROD: '${{ secrets.PROJECT_ID_PREPROD  }}'};" > secrets.production.js
+      - name: Build
+        run: npm run build
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build
