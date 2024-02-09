@@ -46,6 +46,7 @@ import AvatarLoader from '../components/avatarLoader';
 import { ChangePasswordModal } from '../components/changePasswordModal';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
+import { LegalSettings } from '../../../features/settings/legal/LegalSettings';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ const Settings = () => {
           />
           <Route path="whitelisted" element={<Whitelisted />} />
           <Route path="network" element={<Network />} />
+          <Route path="legal" element={<LegalSettings />} />
         </Routes>
       </Box>
     </>
@@ -129,6 +131,18 @@ const Overview = () => {
         }}
       >
         Network
+      </Button>
+      <Box height="1" />
+      <Button
+        justifyContent="space-between"
+        width="65%"
+        rightIcon={<ChevronRightIcon />}
+        variant="ghost"
+        onClick={() => {
+          navigate('legal');
+        }}
+      >
+        Legal
       </Button>
     </>
   );
