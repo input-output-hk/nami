@@ -8,13 +8,13 @@ import {
   Tooltip,
 } from '@chakra-ui/react';
 import React, { useRef } from 'react';
-import { useAnalyticsConsent } from '../../analytics/hooks';
 import { ChevronRightIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import PrivacyPolicy from '../../../ui/app/components/privacyPolicy';
 import TermsOfUse from '../../../ui/app/components/termsOfUse';
+import { useAnalyticsContext } from '../../analytics/provider';
 
 export const LegalSettings = () => {
-  const [analyticsConsent, setAnalyticsConsent] = useAnalyticsConsent();
+  const [analytics, setAnalyticsConsent] = useAnalyticsContext();
   const termsRef = useRef<{ openModal: () => void }>();
   const privacyPolicyRef = useRef<{ openModal: () => void }>();
   return (
@@ -50,8 +50,8 @@ export const LegalSettings = () => {
         </Text>
         <Spacer />
         <Switch
-          isChecked={analyticsConsent}
-          onChange={() => setAnalyticsConsent(!analyticsConsent)}
+          isChecked={analytics.consent}
+          onChange={() => setAnalyticsConsent(!analytics.consent)}
         />
       </Flex>
       <Box height="3" />

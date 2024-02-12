@@ -2,77 +2,126 @@ import { PostHogProvider } from 'posthog-js/react';
 import { PostHogConfig } from 'posthog-js';
 import React, {
   ReactNode,
-  useEffect,
   useMemo,
-  useState,
   createContext,
   useContext,
+  useState,
+  useEffect,
 } from 'react';
-import { getAnalyticsConsent, getUserId } from './services';
 import { getOptions } from './posthog';
 import { ExtensionViews } from './types';
 import { POSTHOG_API_KEY } from './config';
+import {
+  getAnalyticsConsent,
+  getUserId,
+  setAnalyticsConsent,
+} from './services';
 
-interface Props {
-  children: ReactNode;
+/**
+ * Represents the user's consent to tracking analytics events
+ * as well as the current extension view for tracked events
+ */
+interface AnalyticsState {
+  consent?: boolean;
+  userId?: string;
   view: ExtensionViews;
 }
 
-interface State {
-  consent?: boolean;
-  userId: string;
-}
+/**
+ * Provides access to the AnalyticsState and handling
+ * the storage of userId and consent in chrome.storage.local
+ */
+const useAnalyticsState = (
+  view: ExtensionViews
+): [AnalyticsState, (consent: boolean) => Promise<void>] => {
+  // Store the consent in React state to trigger component updates
+  const [consentState, setConsentState] = useState<AnalyticsState>({
+    view,
+  });
 
-const ExtensionViewsContext = createContext<ExtensionViews | null>(null);
-
-export const useAnalyticsContext = () => {
-  const analyticsContext = useContext(ExtensionViewsContext);
-  if (analyticsContext === null) throw new Error('context not defined');
-  return analyticsContext;
-};
-
-export const AnalyticsProvider = ({ children, view }: Props) => {
-  const [state, setState] = useState<State>();
-
+  // Fetch the stored user consent and assign to React state
   useEffect(() => {
-    const init = async () => {
+    (async function () {
       const [consent, userId] = await Promise.all([
         getAnalyticsConsent(),
         getUserId(),
       ]);
-
-      setState({
+      setConsentState({
         consent,
         userId,
+        view,
       });
-    };
-
-    init();
+    })();
   }, []);
 
+  return [
+    consentState,
+    async (consent) => {
+      // Allow to set the consent state and store it too
+      await setAnalyticsConsent(consent);
+      setConsentState({
+        consent,
+        userId: consentState.userId,
+        view,
+      });
+    },
+  ];
+};
+
+/**
+ * The analytics React context which is exposed by the hook below
+ */
+const AnalyticsContext = createContext<ReturnType<
+  typeof useAnalyticsState
+> | null>(null);
+
+/**
+ * The public hook that should be used by components to interact with the
+ * analytics state.
+ */
+export const useAnalyticsContext = () => {
+  const analyticsContext = useContext(AnalyticsContext);
+  if (analyticsContext === null) throw new Error('context not defined');
+  return analyticsContext;
+};
+
+/**
+ * The analytics provider that wraps the current extension
+ * view to set up the PostHog provider and the API to interact
+ * with the analytics state.
+ */
+export const AnalyticsProvider = ({
+  children,
+  view,
+}: {
+  children: ReactNode;
+  view: ExtensionViews;
+}) => {
+  const [analyticsState, setAnalyticsConsent] = useAnalyticsState(view);
+
   const options = useMemo<Partial<PostHogConfig> | undefined>(() => {
-    const id = state?.userId;
+    const id = analyticsState?.userId;
 
     if (id === undefined) {
       return undefined;
     }
 
     return getOptions(id);
-  }, [state?.userId]);
+  }, [analyticsState?.userId]);
 
-  if (state?.consent === false || options === undefined) {
+  if (analyticsState?.consent === false || options === undefined) {
     return (
-      <ExtensionViewsContext.Provider value={view}>
+      <AnalyticsContext.Provider value={[analyticsState, setAnalyticsConsent]}>
         {children}
-      </ExtensionViewsContext.Provider>
+      </AnalyticsContext.Provider>
     );
   }
 
   return (
     <PostHogProvider apiKey={POSTHOG_API_KEY} options={options}>
-      <ExtensionViewsContext.Provider value={view}>
+      <AnalyticsContext.Provider value={[analyticsState, setAnalyticsConsent]}>
         {children}
-      </ExtensionViewsContext.Provider>
+      </AnalyticsContext.Provider>
     </PostHogProvider>
   );
 };
