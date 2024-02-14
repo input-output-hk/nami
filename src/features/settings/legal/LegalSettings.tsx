@@ -2,6 +2,12 @@ import {
   Box,
   Button,
   Flex,
+  Link,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
   Spacer,
   Switch,
   Text,
@@ -27,26 +33,36 @@ export const LegalSettings = () => {
       <Flex minWidth="65%" padding="0 16px" alignItems="center" gap="2">
         <Text fontSize="16" fontWeight="bold">
           Analytics
-          <Tooltip
-            label={
-              <Box padding="1">
-                We'll collect anonymous analytics info from your browser
-                extension to help us improve the quality and performance of Nami
-              </Box>
-            }
-            fontSize="sm"
-            hasArrow
-            placement="auto"
-          >
-            <InfoOutlineIcon
-              cursor="help"
-              color="#4A5568"
-              ml="10px"
-              width="14px"
-              height="14px"
-              display="inline-block"
-            />
-          </Tooltip>
+          <Popover autoFocus={false}>
+            <PopoverTrigger>
+              <InfoOutlineIcon
+                cursor="pointer"
+                color="#4A5568"
+                ml="10px"
+                width="14px"
+                height="14px"
+                display="inline-block"
+              />
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverArrow />
+              <PopoverBody>
+                <Text
+                  color="grey"
+                  fontWeight="500"
+                  fontSize="14"
+                  lineHeight="24px"
+                >
+                  We'll collect anonymous analytics info from your browser
+                  extension to help us improve the quality and performance
+                  of&nbsp;
+                  <Link onClick={() => window.open('https://namiwallet.io')}>
+                    Nami
+                  </Link>
+                </Text>
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
         </Text>
         <Spacer />
         <Switch
