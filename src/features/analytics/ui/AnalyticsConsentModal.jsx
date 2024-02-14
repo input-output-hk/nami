@@ -27,7 +27,6 @@ export const AnalyticsConsentModal = ({ askForConsent, setConsent }) => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="md">Legal & analytics</ModalHeader>
-          <ModalCloseButton />
           <ModalBody>
             <Text
               mb="1"
