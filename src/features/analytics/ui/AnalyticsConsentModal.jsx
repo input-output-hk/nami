@@ -26,7 +26,7 @@ export const AnalyticsConsentModal = ({ askForConsent, setConsent }) => {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader fontSize="md">Legal & analytics</ModalHeader>
+          <ModalHeader fontSize="md">Legal & Analytics</ModalHeader>
           <ModalBody>
             <Text
               mb="1"
@@ -34,12 +34,22 @@ export const AnalyticsConsentModal = ({ askForConsent, setConsent }) => {
               fontWeight="bold"
               id="terms-of-service-agreement"
             >
-              Give us a hand to improve your experience
+              Give us a hand to improve your Nami experience
             </Text>
             <Text fontSize="sm">
-              By sharing analytics data from your browser, you can help us
-              improve the quality and performance of Nami. For more information
-              on our privacy practices, please see our&nbsp;
+              We would like to collect anonymous information from your browser
+              extension to help us improve the quality and performance of Nami.
+              This may include data about how you use our service, your
+              preferences and information about your system. You can always
+              opt-out (see the&nbsp;
+              <Link
+                onClick={() => window.open('https://www.namiwallet.io/')}
+                textDecoration="underline"
+              >
+                FAQ
+              </Link>
+              &nbsp;for more details). For more information on our privacy
+              practices, see our&nbsp;
               <Link
                 onClick={() => privacyPolRef.current.openModal()}
                 textDecoration="underline"
@@ -51,10 +61,10 @@ export const AnalyticsConsentModal = ({ askForConsent, setConsent }) => {
           </ModalBody>
           <ModalFooter>
             <Button mr={3} variant="ghost" onClick={() => setConsent(false)}>
-              Decline
+              No thanks
             </Button>
             <Button colorScheme="teal" onClick={() => setConsent(true)}>
-              Accept
+              I agree
             </Button>
           </ModalFooter>
         </ModalContent>

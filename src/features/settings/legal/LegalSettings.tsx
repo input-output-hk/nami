@@ -53,12 +53,17 @@ export const LegalSettings = () => {
                   fontSize="14"
                   lineHeight="24px"
                 >
-                  We'll collect anonymous analytics info from your browser
-                  extension to help us improve the quality and performance
-                  of&nbsp;
-                  <Link onClick={() => window.open('https://namiwallet.io')}>
-                    Nami
+                  We collect anonymous information from your browser extension
+                  to help us improve the quality and performance of Nami. This
+                  may include data about how you use our service, your
+                  preferences and information about your system. Read more&nbsp;
+                  <Link
+                    onClick={() => window.open('https://namiwallet.io')}
+                    textDecoration="underline"
+                  >
+                    here
                   </Link>
+                  .
                 </Text>
               </PopoverBody>
             </PopoverContent>
