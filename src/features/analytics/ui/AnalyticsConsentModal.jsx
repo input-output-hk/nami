@@ -23,6 +23,7 @@ export const AnalyticsConsentModal = ({ askForConsent, setConsent }) => {
         isCentered
         onClose={() => setConsent(false)}
         blockScrollOnMount={false}
+        closeOnOverlayClick={false}
       >
         <ModalOverlay />
         <ModalContent>
