@@ -77,20 +77,8 @@ import { MdModeEdit } from 'react-icons/md';
 import useConstant from 'use-constant';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
-
-const debouncePromise = (f, interval) => {
-  let timer = null;
-
-  return (...args) => {
-    clearTimeout(timer);
-    return new Promise((resolve) => {
-      timer = setTimeout(async () => {
-        const result = await f(...args);
-        resolve(result);
-      }, interval);
-    });
-  };
-};
+import debouncePromise from 'debounce-promise';
+import latest from 'promise-latest';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -895,20 +883,20 @@ const AddressPopup = ({
   }, [txInfo]);
 
   const handleInput = async (e) => {
-    const val = e.target.value;
+    const value = e.target.value;
     let addr;
     let isHandle = false;
     let isM1 = false;
     if (!e.target.value) {
       addr = { result: '', display: '' };
-    } else if (val.startsWith('$')) {
+    } else if (value.startsWith('$')) {
       isHandle = true;
-      addr = { display: val };
-    } else if (val.startsWith('0x')) {
-      if (isValidEthAddress(val)) {
+      addr = { display: value };
+    } else if (value.startsWith('0x')) {
+      if (isValidEthAddress(value)) {
         isM1 = true;
         addr = {
-          display: val,
+          display: value,
           isM1: true,
           ada: {
             minLovelace: '2000000',
@@ -917,8 +905,8 @@ const AddressPopup = ({
         };
       } else {
         addr = {
-          result: val,
-          display: val,
+          result: value,
+          display: value,
           isM1: true,
           ada: {
             minLovelace: '2000000',
@@ -928,41 +916,42 @@ const AddressPopup = ({
         };
       }
     } else if (
-      (await isValidAddress(val)) &&
-      val !== milkomedaAddress.current
+      (await isValidAddress(value)) &&
+      value !== milkomedaAddress.current
     ) {
-      addr = { result: val, display: val };
+      addr = { result: value, display: value };
     } else {
       addr = {
-        result: val,
-        display: val,
+        result: value,
+        display: value,
         error: 'Address is invalid',
       };
     }
 
     if (isHandle) {
-      const handle = e.target.value;
+      const handle = value;
+
       const resolvedAddress = await getAdaHandle(handle.slice(1));
       if (handle.length > 1 && (await isValidAddress(resolvedAddress))) {
         addr = {
           result: resolvedAddress,
-          display: e.target.value,
+          display: handle,
         };
       } else {
         addr = {
           result: '',
-          display: e.target.value,
+          display: handle,
           error: '$handle not found',
         };
       }
     } else if (isM1) {
       const { isAllowed, ada, current_address, protocolMagic, assets, ttl } =
-        await getMilkomedaData(e.target.value);
+        await getMilkomedaData(value);
 
-      if (!isAllowed || !isValidEthAddress(e.target.value)) {
+      if (!isAllowed || !isValidEthAddress(value)) {
         addr = {
           result: '',
-          display: e.target.value,
+          display: value,
           isM1: true,
           ada,
           ttl,
@@ -973,7 +962,7 @@ const AddressPopup = ({
       } else {
         addr = {
           result: current_address,
-          display: e.target.value,
+          display: value,
           isM1: true,
           ada,
           ttl,
@@ -982,11 +971,12 @@ const AddressPopup = ({
         };
       }
     }
+
     return addr;
   };
 
   const handleInputDebounced = useConstant(() =>
-    debouncePromise(handleInput, 300)
+    debouncePromise(latest(handleInput), 300)
   );
 
   React.useEffect(() => {
@@ -1036,6 +1026,7 @@ const AddressPopup = ({
             onInput={async (e) => {
               setAddress({ display: e.target.value });
               const addr = await handleInputDebounced(e);
+
               if (addr.isM1) removeAllAssets();
               triggerTxUpdate(() => setAddress(addr));
               onClose();
