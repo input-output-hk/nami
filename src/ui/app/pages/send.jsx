@@ -879,6 +879,7 @@ const AddressPopup = ({
     accounts: {},
     recentAddress: null,
   });
+  const latestAddressSearchId = React.useRef(0);
   const init = async () => {
     const currentAccount = await getCurrentAccount();
     const accounts = await getAccounts();
@@ -939,9 +940,20 @@ const AddressPopup = ({
         error: 'Address is invalid',
       };
     }
+    const value = e.target.value;
 
     if (isHandle) {
       const handle = e.target.value;
+
+      console.log('start:', handle);
+
+      if (handle === '$nft') {
+        console.log('delaying:', handle);
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        console.log('continue:', handle);
+      }
+
+      console.log('handle:', handle);
       const resolvedAddress = await getAdaHandle(handle.slice(1));
       if (handle.length > 1 && (await isValidAddress(resolvedAddress))) {
         addr = {
@@ -952,7 +964,7 @@ const AddressPopup = ({
         addr = {
           result: '',
           display: e.target.value,
-          error: '$handle not found',
+          error: '$handle not foudfasdfadsfasnd',
         };
       }
     } else if (isM1) {
@@ -982,11 +994,12 @@ const AddressPopup = ({
         };
       }
     }
+    console.log('handle', value, 'addr', addr);
     return addr;
   };
 
   const handleInputDebounced = useConstant(() =>
-    debouncePromise(handleInput, 300)
+    debouncePromise(handleInput, 0)
   );
 
   React.useEffect(() => {
@@ -1034,8 +1047,25 @@ const AddressPopup = ({
             fontSize="xs"
             placeholder="Address, $handle or Milkomeda"
             onInput={async (e) => {
+              const currentAddressSearchId = latestAddressSearchId.current + 1;
+              latestAddressSearchId.current = currentAddressSearchId;
+
+              console.log('searching', currentAddressSearchId, e.target.value);
+
               setAddress({ display: e.target.value });
               const addr = await handleInputDebounced(e);
+
+              if (currentAddressSearchId < latestAddressSearchId.current) {
+                console.log('skipping', currentAddressSearchId, addr);
+                return;
+              } else {
+                console.log(
+                  'setting',
+                  currentAddressSearchId,
+                  latestAddressSearchId.current
+                );
+              }
+
               if (addr.isM1) removeAllAssets();
               triggerTxUpdate(() => setAddress(addr));
               onClose();
