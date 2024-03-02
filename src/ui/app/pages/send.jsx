@@ -867,6 +867,7 @@ const AddressPopup = ({
     accounts: {},
     recentAddress: null,
   });
+  const latestHandleInputToken = React.useRef(0);
   const init = async () => {
     const currentAccount = await getCurrentAccount();
     const accounts = await getAccounts();
@@ -1024,8 +1025,14 @@ const AddressPopup = ({
             fontSize="xs"
             placeholder="Address, $handle or Milkomeda"
             onInput={async (e) => {
+              const handleInputToken = latestHandleInputToken.current + 1;
+              latestHandleInputToken.current = handleInputToken;
               setAddress({ display: e.target.value });
               const addr = await handleInputDebounced(e);
+
+              if (handleInputToken !== latestHandleInputToken.current) {
+                return;
+              }
 
               if (addr.isM1) removeAllAssets();
               triggerTxUpdate(() => setAddress(addr));
