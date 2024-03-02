@@ -219,10 +219,6 @@ const Send = () => {
       setTx(null);
       return;
     }
-    if (count >= 5) {
-      setFee({ error: 'Transaction not possible' });
-      throw ERROR.txNotPossible;
-    }
 
     setFee({ fee: '' });
     setTx(null);
@@ -358,9 +354,14 @@ const Send = () => {
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
-      prepareTx(count + 1, data);
+      setFee({ error: 'Transaction not possible' });
+      throw ERROR.txNotPossible;
     }
   };
+
+  const prepareTxDebounced = useConstant(() =>
+    debouncePromise(latest(prepareTx), 300)
+  );
 
   const init = async () => {
     if (!isMounted.current) return;
@@ -430,10 +431,9 @@ const Send = () => {
 
   React.useEffect(() => {
     if (txInfo.protocolParameters) {
-      clearTimeout(timer);
       setTx(null);
       setFee({ fee: '' });
-      timer = setTimeout(() => prepareTx(0, { value, address, message }), 500);
+      prepareTxDebounced(0, { value, address, message });
     }
   }, [txUpdate]);
 
