@@ -941,46 +941,17 @@ const AddressPopup = ({
     }
 
     if (isHandle) {
-      const handle = e.target.value;
-      const resolvedAddress = await getAdaHandle(handle.slice(1));
-      if (handle.length > 1 && (await isValidAddress(resolvedAddress))) {
-        addr = {
-          result: resolvedAddress,
-          display: e.target.value,
-        };
-      } else {
-        addr = {
-          result: '',
-          display: e.target.value,
-          error: '$handle not found',
-        };
-      }
+      return {
+        result: '',
+        display: e.target.value,
+        error: 'Ada Handle is temporarily disabled',
+      };
     } else if (isM1) {
-      const { isAllowed, ada, current_address, protocolMagic, assets, ttl } =
-        await getMilkomedaData(e.target.value);
-
-      if (!isAllowed || !isValidEthAddress(e.target.value)) {
-        addr = {
-          result: '',
-          display: e.target.value,
-          isM1: true,
-          ada,
-          ttl,
-          protocolMagic,
-          assets,
-          error: 'Address is invalid (Milkomeda)',
-        };
-      } else {
-        addr = {
-          result: current_address,
-          display: e.target.value,
-          isM1: true,
-          ada,
-          ttl,
-          protocolMagic,
-          assets,
-        };
-      }
+      return {
+        result: '',
+        display: e.target.value,
+        error: 'Milkomeda is temporarily disabled',
+      };
     }
     return addr;
   };
