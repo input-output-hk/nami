@@ -77,20 +77,8 @@ import { MdModeEdit } from 'react-icons/md';
 import useConstant from 'use-constant';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
-
-const debouncePromise = (f, interval) => {
-  let timer = null;
-
-  return (...args) => {
-    clearTimeout(timer);
-    return new Promise((resolve) => {
-      timer = setTimeout(async () => {
-        const result = await f(...args);
-        resolve(result);
-      }, interval);
-    });
-  };
-};
+import debouncePromise from 'debounce-promise';
+import latest from 'promise-latest';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -213,6 +201,7 @@ const Send = () => {
     const _value = data.value;
     const _address = data.address;
     const _message = data.message;
+    const protocolParameters = data.protocolParameters;
     if (!_value.ada && _value.assets.length <= 0) {
       setFee({ fee: '0' });
       setTx(null);
@@ -230,10 +219,6 @@ const Send = () => {
       setFee({ fee: '0' });
       setTx(null);
       return;
-    }
-    if (count >= 5) {
-      setFee({ error: 'Transaction not possible' });
-      throw ERROR.txNotPossible;
     }
 
     setFee({ fee: '' });
@@ -272,11 +257,10 @@ const Send = () => {
             ),
         await assetsToValue(output.amount)
       );
+
       const minAda = await minAdaRequired(
         checkOutput,
-        Loader.Cardano.BigNum.from_str(
-          txInfo.protocolParameters.coinsPerUtxoWord
-        )
+        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
       );
 
       if (BigInt(minAda) <= BigInt(toUnit(_value.personalAda || '0'))) {
@@ -364,15 +348,19 @@ const Send = () => {
         account.current,
         utxos.current,
         outputs,
-        txInfo.protocolParameters,
+        protocolParameters,
         auxiliaryData.metadata() ? auxiliaryData : null
       );
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
-      prepareTx(count + 1, data);
+      setFee({ error: 'Transaction not possible' });
     }
   };
+
+  const prepareTxDebounced = useConstant(() =>
+    debouncePromise(latest(prepareTx), 300)
+  );
 
   const init = async () => {
     if (!isMounted.current) return;
@@ -442,10 +430,14 @@ const Send = () => {
 
   React.useEffect(() => {
     if (txInfo.protocolParameters) {
-      clearTimeout(timer);
       setTx(null);
       setFee({ fee: '' });
-      timer = setTimeout(() => prepareTx(0, { value, address, message }), 500);
+      prepareTxDebounced(0, {
+        value,
+        address,
+        message,
+        protocolParameters: txInfo.protocolParameters,
+      });
     }
   }, [txUpdate]);
 
@@ -879,6 +871,7 @@ const AddressPopup = ({
     accounts: {},
     recentAddress: null,
   });
+  const latestHandleInputToken = React.useRef(0);
   const init = async () => {
     const currentAccount = await getCurrentAccount();
     const accounts = await getAccounts();
@@ -895,20 +888,20 @@ const AddressPopup = ({
   }, [txInfo]);
 
   const handleInput = async (e) => {
-    const val = e.target.value;
+    const value = e.target.value;
     let addr;
     let isHandle = false;
     let isM1 = false;
     if (!e.target.value) {
       addr = { result: '', display: '' };
-    } else if (val.startsWith('$')) {
+    } else if (value.startsWith('$')) {
       isHandle = true;
-      addr = { display: val };
-    } else if (val.startsWith('0x')) {
-      if (isValidEthAddress(val)) {
+      addr = { display: value };
+    } else if (value.startsWith('0x')) {
+      if (isValidEthAddress(value)) {
         isM1 = true;
         addr = {
-          display: val,
+          display: value,
           isM1: true,
           ada: {
             minLovelace: '2000000',
@@ -917,8 +910,8 @@ const AddressPopup = ({
         };
       } else {
         addr = {
-          result: val,
-          display: val,
+          result: value,
+          display: value,
           isM1: true,
           ada: {
             minLovelace: '2000000',
@@ -928,36 +921,67 @@ const AddressPopup = ({
         };
       }
     } else if (
-      (await isValidAddress(val)) &&
-      val !== milkomedaAddress.current
+      (await isValidAddress(value)) &&
+      value !== milkomedaAddress.current
     ) {
-      addr = { result: val, display: val };
+      addr = { result: value, display: value };
     } else {
       addr = {
-        result: val,
-        display: val,
+        result: value,
+        display: value,
         error: 'Address is invalid',
       };
     }
 
     if (isHandle) {
-      return {
-        result: '',
-        display: e.target.value,
-        error: 'Ada Handle is temporarily disabled',
-      };
+      const handle = value;
+
+      const resolvedAddress = await getAdaHandle(handle.slice(1));
+      if (handle.length > 1 && (await isValidAddress(resolvedAddress))) {
+        addr = {
+          result: resolvedAddress,
+          display: handle,
+        };
+      } else {
+        addr = {
+          result: '',
+          display: handle,
+          error: '$handle not found',
+        };
+      }
     } else if (isM1) {
-      return {
-        result: '',
-        display: e.target.value,
-        error: 'Milkomeda is temporarily disabled',
-      };
+      const { isAllowed, ada, current_address, protocolMagic, assets, ttl } =
+        await getMilkomedaData(value);
+
+      if (!isAllowed || !isValidEthAddress(value)) {
+        addr = {
+          result: '',
+          display: value,
+          isM1: true,
+          ada,
+          ttl,
+          protocolMagic,
+          assets,
+          error: 'Address is invalid (Milkomeda)',
+        };
+      } else {
+        addr = {
+          result: current_address,
+          display: value,
+          isM1: true,
+          ada,
+          ttl,
+          protocolMagic,
+          assets,
+        };
+      }
     }
+
     return addr;
   };
 
   const handleInputDebounced = useConstant(() =>
-    debouncePromise(handleInput, 300)
+    debouncePromise(latest(handleInput), 700)
   );
 
   React.useEffect(() => {
@@ -1005,8 +1029,15 @@ const AddressPopup = ({
             fontSize="xs"
             placeholder="Address, $handle or Milkomeda"
             onInput={async (e) => {
+              const handleInputToken = latestHandleInputToken.current + 1;
+              latestHandleInputToken.current = handleInputToken;
               setAddress({ display: e.target.value });
               const addr = await handleInputDebounced(e);
+
+              if (handleInputToken !== latestHandleInputToken.current) {
+                return;
+              }
+
               if (addr.isM1) removeAllAssets();
               triggerTxUpdate(() => setAddress(addr));
               onClose();

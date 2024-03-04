@@ -1556,8 +1556,19 @@ export const initHW = async ({ device, id }) => {
 export const getAdaHandle = async (assetName) => {
   try {
     const network = await getNetwork();
-    if (!network || network.id != 'mainnet') return null;
-    const response = await fetch(`https://api.handle.me/handles/${assetName}`);
+    if (!network) return null;
+    let handleUrl;
+    switch (network.id){
+      case 'mainnet':
+        handleUrl = 'https://api.handle.me'
+        break;
+      case 'preprod':
+        handleUrl = 'https://preprod.api.handle.me'
+        break;
+      default:
+        return null;
+    }
+    const response = await fetch(`${handleUrl}/handles/${assetName}`);
     const data = response && response.ok ? await response.json() : null;
     return data && data.resolved_addresses && data.resolved_addresses.ada
       ? data.resolved_addresses.ada
