@@ -201,6 +201,7 @@ const Send = () => {
     const _value = data.value;
     const _address = data.address;
     const _message = data.message;
+    const protocolParameters = data.protocolParameters;
     if (!_value.ada && _value.assets.length <= 0) {
       setFee({ fee: '0' });
       setTx(null);
@@ -256,11 +257,10 @@ const Send = () => {
             ),
         await assetsToValue(output.amount)
       );
+
       const minAda = await minAdaRequired(
         checkOutput,
-        Loader.Cardano.BigNum.from_str(
-          txInfo.protocolParameters.coinsPerUtxoWord
-        )
+        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
       );
 
       if (BigInt(minAda) <= BigInt(toUnit(_value.personalAda || '0'))) {
@@ -348,14 +348,13 @@ const Send = () => {
         account.current,
         utxos.current,
         outputs,
-        txInfo.protocolParameters,
+        protocolParameters,
         auxiliaryData.metadata() ? auxiliaryData : null
       );
       setFee({ fee: tx.body().fee().to_str() });
       setTx(Buffer.from(tx.to_bytes()).toString('hex'));
     } catch (e) {
       setFee({ error: 'Transaction not possible' });
-      throw ERROR.txNotPossible;
     }
   };
 
@@ -433,7 +432,12 @@ const Send = () => {
     if (txInfo.protocolParameters) {
       setTx(null);
       setFee({ fee: '' });
-      prepareTxDebounced(0, { value, address, message });
+      prepareTxDebounced(0, {
+        value,
+        address,
+        message,
+        protocolParameters: txInfo.protocolParameters,
+      });
     }
   }, [txUpdate]);
 
