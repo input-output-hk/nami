@@ -977,7 +977,7 @@ const AddressPopup = ({
   };
 
   const handleInputDebounced = useConstant(() =>
-    debouncePromise(latest(handleInput), 300)
+    debouncePromise(latest(handleInput), 700)
   );
 
   React.useEffect(() => {
