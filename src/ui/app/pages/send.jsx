@@ -211,10 +211,10 @@ const Send = () => {
       _address.error ||
       !_address.result ||
       (!_value.ada && _value.assets.length <= 0) ||
-      (address.isM1 &&
+      (_address.isM1 &&
         BigInt(toUnit(_value.ada)) <
-          BigInt(address.ada.minLovelace) +
-            BigInt(address.ada.fromADAFeeLovelace))
+          BigInt(_address.ada.minLovelace) +
+            BigInt(_address.ada.fromADAFeeLovelace))
     ) {
       setFee({ fee: '0' });
       setTx(null);
