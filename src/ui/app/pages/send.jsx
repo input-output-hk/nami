@@ -211,10 +211,10 @@ const Send = () => {
       _address.error ||
       !_address.result ||
       (!_value.ada && _value.assets.length <= 0) ||
-      (address.isM1 &&
+      (_address.isM1 &&
         BigInt(toUnit(_value.ada)) <
-          BigInt(address.ada.minLovelace) +
-            BigInt(address.ada.fromADAFeeLovelace))
+          BigInt(_address.ada.minLovelace) +
+            BigInt(_address.ada.fromADAFeeLovelace))
     ) {
       setFee({ fee: '0' });
       setTx(null);
@@ -268,14 +268,14 @@ const Send = () => {
           _value.personalAda.replace(/[,\s]/g, '')
         ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
         output.amount[0].quantity = toUnit(_value.personalAda || '0');
-        !focus.current && setValue({ ...value, ada: displayAda });
+        !focus.current && setValue({ ..._value, ada: displayAda });
       } else if (_value.assets.length > 0) {
         output.amount[0].quantity = minAda;
         const minAdaDisplay = parseFloat(
           displayUnit(minAda).toString().replace(/[,\s]/g, '')
         ).toLocaleString('en-EN', { minimumFractionDigits: 6 });
         setValue({
-          ...value,
+          ..._value,
           ada: minAdaDisplay,
         });
       }
