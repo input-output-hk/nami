@@ -94,6 +94,7 @@ import { BiWallet } from 'react-icons/bi';
 import { GiTwoCoins, GiUsbKey } from 'react-icons/gi';
 import CollectiblesViewer from '../components/collectiblesViewer';
 import AssetFingerprint from '@emurgo/cip14-js';
+import { trigger } from '@xsy/nami-migration-tool';
 
 // Assets
 import Logo from '../../../assets/img/logoWhite.svg';
@@ -291,6 +292,25 @@ const Wallet = () => {
                 )}
               </>
             )}
+          </Box>
+          <Box
+            zIndex="1"
+            position="absolute"
+            width="full"
+            bottom="5"
+            left="100"
+          >
+            <Button
+              onClick={() => {
+                trigger();
+              }}
+              variant="solid"
+              size="xs"
+              color="whiteAlpha"
+              rounded="lg"
+            >
+              Migrate to Lace
+            </Button>
           </Box>
           <Box zIndex="2" position="absolute" top="6" right="6">
             <Menu

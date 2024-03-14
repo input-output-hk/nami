@@ -87,6 +87,7 @@ export const decryptWithPassword = async (password, encryptedKeyHex) => {
       passwordHex,
       encryptedKeyHex
     );
+    console.log('decryptedHex', decryptedHex);
   } catch (err) {
     throw new Error(ERROR.wrongPassword);
   }
@@ -1558,12 +1559,12 @@ export const getAdaHandle = async (assetName) => {
     const network = await getNetwork();
     if (!network) return null;
     let handleUrl;
-    switch (network.id){
+    switch (network.id) {
       case 'mainnet':
-        handleUrl = 'https://api.handle.me'
+        handleUrl = 'https://api.handle.me';
         break;
       case 'preprod':
-        handleUrl = 'https://preprod.api.handle.me'
+        handleUrl = 'https://preprod.api.handle.me';
         break;
       default:
         return null;
@@ -1769,7 +1770,9 @@ export const getAsset = async (unit) => {
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = metadata.image ? linkToSrc(convertMetadataPropToString(metadata.image)) : '';
+        asset.image = metadata.image
+          ? linkToSrc(convertMetadataPropToString(metadata.image))
+          : '';
         asset.decimals = 0;
       } catch (_e) {
         asset.displayName = asset.name;
@@ -1796,7 +1799,8 @@ export const getAsset = async (unit) => {
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = linkToSrc(convertMetadataPropToString(metadata.logo)) || '';
+        asset.image =
+          linkToSrc(convertMetadataPropToString(metadata.logo)) || '';
         asset.decimals = metadata.decimals || 0;
       } catch (_e) {
         asset.displayName = asset.name;
