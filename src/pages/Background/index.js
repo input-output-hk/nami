@@ -21,6 +21,9 @@ import {
   SENDER,
   TARGET,
 } from '../../config/config';
+import { listenToLaceRequests } from '@xsy/nami-migration-tool/dist/cross-extension-messaging/nami-migration-listeners.extension';
+
+listenToLaceRequests();
 
 const app = Messaging.createBackgroundController();
 
