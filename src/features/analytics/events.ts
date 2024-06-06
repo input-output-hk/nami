@@ -90,10 +90,25 @@ export enum Events {
   StakingConfirmClick = 'staking | staking | confirm | click',
   StakingUnstakeClick = 'staking | staking | unstake | click',
   StakingUnstakeConfirmClick = 'staking | staking | unstake | confirm | click',
+
+  // Migration events
+  NamiOpenedMigrationNotStarted = 'nami tool | nami | opened | status: not started',
+  NamiOpenedMigrationWaitingForLace = 'nami tool | nami | opened | status: waiting Lace installation',
+  NamiOpenedMigrationInProgress = 'nami tool | nami | opened | status: waiting finalization in Lace',
+  NamiOpenedMigrationCompleted = 'nami tool | nami | opened | status: process done',
+  MigrationSlideSwitched = 'nami tool | nami | carousel slide switched | click',
+  MigrationSlideViewed = 'nami tool | nami | carousel slide viewed | pageview',
+  MigrationDownloadLaceScreenViewed = 'nami tool | nami | download lace | pageview',
+  MigrationOpenLaceScreenViewed = 'nami tool | nami | open lace view | pageview',
+  MigrationAllDoneScreenViewed = 'nami tool | nami | all done view | pageview',
+  MigrationUpgradeYourWalletClicked = 'nami tool | nami | upgrade your wallet | click',
+  MigrationDownloadLaceClicked = 'nami tool | nami | download lace | click',
+  MigrationOpenLaceClicked = 'nami tool | nami | open lace | click',
 }
 
 export type Property =
   | string
+  | number
   | boolean
   | Record<string, any>
   | Array<Record<string, any>>;
