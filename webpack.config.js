@@ -131,12 +131,37 @@ var options = {
         options: {
           name: '[name].[ext]',
         },
-        exclude: /node_modules/,
+        exclude: [
+          /node_modules/,
+          path.resolve(__dirname, 'src', 'ui', 'lace-migration'),
+        ],
       },
       {
         test: /\.html$/,
         loader: 'html-loader',
         exclude: /node_modules/,
+      },
+      {
+        test: /\.svg$/i,
+        issuer: /\.jsx?$/,
+        include: path.resolve(__dirname, 'src', 'ui', 'lace-migration'),
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              icon: true,
+              exportType: 'named',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.png$/i,
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]',
+        },
+        include: path.resolve(__dirname, 'src', 'ui', 'lace-migration'),
       },
     ],
   },

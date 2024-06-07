@@ -28,7 +28,8 @@ import {
 import { EventTracker } from '../features/analytics/event-tracker';
 import { ExtensionViews } from '../features/analytics/types';
 import { TermsAndPrivacyProvider } from '../features/terms-and-privacy';
-import { Migration } from '@xsy/nami-migration-tool/dist/ui/migration.component';
+import { Migration } from './lace-migration/components/migration.component';
+import Theme from './theme';
 
 const App = () => {
   const route = useStoreState((state) => state.globalModel.routeStore.route);
@@ -106,8 +107,10 @@ const App = () => {
 const root = createRoot(window.document.querySelector(`#${POPUP.main}`));
 root.render(
   <AnalyticsProvider view={ExtensionViews.Popup}>
-    <EventTracker />
-    <Migration />
+    <Theme>
+      <EventTracker />
+      <Migration />
+    </Theme>
   </AnalyticsProvider>
 );
 
