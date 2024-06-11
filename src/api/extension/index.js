@@ -1796,7 +1796,7 @@ export const getAsset = async (unit) => {
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = linkToSrc(convertMetadataPropToString(metadata.logo)) || '';
+        asset.image = metadata.logo ? linkToSrc(convertMetadataPropToString(metadata.logo)) : '';
         asset.decimals = metadata.decimals || 0;
       } catch (_e) {
         asset.displayName = asset.name;
@@ -1825,7 +1825,8 @@ export const getAsset = async (unit) => {
           result.metadata.logo &&
           linkToSrc(result.metadata.logo, true)) ||
         '';
-      asset.decimals = (result.metadata && result.metadata.decimals) || 0;
+      asset.decimals = (onchainMetadata &&
+          onchainMetadata.decimals) || (result.metadata && result.metadata.decimals) || 0;
       if (!asset.name) {
         if (asset.displayName) asset.name = asset.displayName[0];
         else asset.name = '-';
