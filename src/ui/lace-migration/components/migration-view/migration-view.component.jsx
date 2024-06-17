@@ -9,6 +9,7 @@ import { AllDone } from '../all-done/all-done.component';
 
 export const MigrationView = ({
   migrationState,
+  isLaceInstalled,
   onUpgradeWalletClicked,
   onDownloadLaceClicked,
   onOpenLaceClicked,
@@ -24,8 +25,13 @@ export const MigrationView = ({
           </Carousel>
         </div>
       );
-    case MigrationState.WaitingForLace:
-      return (
+
+    case MigrationState.InProgress:
+      return isLaceInstalled ? (
+        <div style={{ padding: '30px 40px' }}>
+          <AlmostThere isLaceInstalled onAction={onOpenLaceClicked} />
+        </div>
+      ) : (
         <div style={{ padding: '30px 40px' }}>
           <AlmostThere
             isLaceInstalled={false}
@@ -34,16 +40,15 @@ export const MigrationView = ({
         </div>
       );
 
-    case MigrationState.InProgress:
-      return (
-        <div style={{ padding: '30px 40px' }}>
-          <AlmostThere isLaceInstalled onAction={onOpenLaceClicked} />
-        </div>
-      );
     case MigrationState.Completed:
       return (
         <div style={{ padding: '30px 40px' }}>
-          <AllDone onAction={onOpenLaceClicked} />
+          <AllDone
+            isLaceInstalled={isLaceInstalled}
+            onAction={
+              isLaceInstalled ? onOpenLaceClicked : onDownloadLaceClicked
+            }
+          />
         </div>
       );
   }

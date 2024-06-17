@@ -6,6 +6,7 @@ import {
 } from '@xsy/nami-migration-tool/dist/migrator/migration-state.data';
 import { MigrationView } from './migration-view/migration-view.component';
 import {
+  checkLaceInstallation,
   enableMigration,
   openLace,
 } from '@xsy/nami-migration-tool/dist/cross-extension-messaging/nami-migration-client.extension';
@@ -16,12 +17,17 @@ export const Migration = () => {
     ui: 'loading',
   });
 
+  const [isLaceInstalled, setIsLaceInstalled] = useState(false);
+
   useEffect(() => {
     storage.local.get().then((result) => {
       setState({
         ui: 'ready',
         migrationState: result[MIGRATION_KEY] ?? MigrationState.None,
       });
+    });
+    checkLaceInstallation().then((result) => {
+      setIsLaceInstalled(result);
     });
   }, []);
 
@@ -37,13 +43,10 @@ export const Migration = () => {
     return () => storage.onChanged.removeListener(observeMigrationState);
   }, []);
 
-  if (state.migrationState === MigrationState.WaitingForLace) {
-    enableMigration();
-  }
-
   return state.ui === 'loading' ? null : (
     <MigrationView
       migrationState={state.migrationState}
+      isLaceInstalled={isLaceInstalled}
       onUpgradeWalletClicked={enableMigration}
       onDownloadLaceClicked={() => window.open('https://www.lace.io/')}
       onOpenLaceClicked={openLace}

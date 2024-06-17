@@ -5,7 +5,7 @@ import doneDark from '../../assets/done-dark.png';
 import { Slide } from '../slide.component';
 import { ReactComponent as Arrow } from '../../assets/arrow.svg';
 
-export const AllDone = ({ onAction }) => {
+export const AllDone = ({ isLaceInstalled, onAction }) => {
   const { colorMode } = useColorMode();
   const imageSrc = colorMode === 'light' ? done : doneDark;
   return (
@@ -17,7 +17,7 @@ export const AllDone = ({ onAction }) => {
         'the Lace extension to access',
         'your upgraded wallet',
       ]}
-      buttonText="Open Lace"
+      buttonText={isLaceInstalled ? 'Open Lace' : 'Download Lace'}
       buttonIcon={Arrow}
       onButtonClick={onAction}
     />
