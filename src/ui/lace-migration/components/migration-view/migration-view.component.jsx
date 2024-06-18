@@ -6,6 +6,7 @@ import { SeamlessUpgrade } from '../seamless-upgrade/seamless-upgrade.component'
 import { NewFeatures } from '../new-features/new-features.component';
 import { AlmostThere } from '../almost-there/almost-there.component';
 import { AllDone } from '../all-done/all-done.component';
+import { useColorModeValue } from '@chakra-ui/react';
 
 export const MigrationView = ({
   migrationState,
@@ -14,10 +15,11 @@ export const MigrationView = ({
   onDownloadLaceClicked,
   onOpenLaceClicked,
 }) => {
+  const bgColor = useColorModeValue('#FFF', '#2E2E2E');
   switch (migrationState) {
     case MigrationState.None:
       return (
-        <div style={{ padding: '30px 0' }}>
+        <div style={{ padding: '30px 0', backgroundColor: bgColor }}>
           <Carousel>
             <ItsTimetToUpgrade key="1" onAction={onUpgradeWalletClicked} />
             <SeamlessUpgrade key="2" onAction={onUpgradeWalletClicked} />
@@ -28,11 +30,11 @@ export const MigrationView = ({
 
     case MigrationState.InProgress:
       return isLaceInstalled ? (
-        <div style={{ padding: '30px 40px' }}>
+        <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
           <AlmostThere isLaceInstalled onAction={onOpenLaceClicked} />
         </div>
       ) : (
-        <div style={{ padding: '30px 40px' }}>
+        <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
           <AlmostThere
             isLaceInstalled={false}
             onAction={onDownloadLaceClicked}
@@ -42,7 +44,7 @@ export const MigrationView = ({
 
     case MigrationState.Completed:
       return (
-        <div style={{ padding: '30px 40px' }}>
+        <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
           <AllDone
             isLaceInstalled={isLaceInstalled}
             onAction={

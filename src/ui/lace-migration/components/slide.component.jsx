@@ -1,15 +1,6 @@
 import React from 'react';
-import {
-  Flex,
-  Box,
-  Button,
-  Link,
-  useColorModeValue,
-  useColorMode,
-  Image,
-} from '@chakra-ui/react';
+import { Flex, Box, Button, Link, useColorModeValue } from '@chakra-ui/react';
 import { Text } from './text.component';
-import { getColor } from './get-color';
 
 export const Slide = ({
   title,
@@ -21,9 +12,9 @@ export const Slide = ({
   onButtonClick,
 }) => {
   const borderColor = useColorModeValue('#C0C0C0', '#383838');
-  const backgroundColor = useColorModeValue('#FFFFFF', '#383838');
+  const slideBoxBgColor = useColorModeValue('#FFFFFF', '#383838');
   const termsTextColor = useColorModeValue('#6F7786', '#A9A9A9');
-  const secondaryColor = getColor('secondary', useColorMode().colorMode);
+  const buttonColor = useColorModeValue('#FFFFFF', '#FFFFFF');
   return (
     <Box>
       <Box
@@ -33,9 +24,8 @@ export const Slide = ({
         borderWidth="1px"
         borderRadius="17.37px"
         paddingTop="38px"
-        color="primary"
         borderColor={borderColor}
-        backgroundColor={backgroundColor}
+        backgroundColor={slideBoxBgColor}
       >
         <Flex textAlign="center" alignItems="center" flexDirection="column">
           <Text mb="52px" fontSize="16px" fontWeight="700">
@@ -80,9 +70,9 @@ export const Slide = ({
           backgroundColor="#549CA1"
           onClick={onButtonClick}
         >
-          <Flex color={secondaryColor} alignItems="center">
-            {Icon && <Icon color="" />}
-            <Text color="current" ml="6px" fontWeight="700">
+          <Flex alignItems="center">
+            {Icon && <Icon color={buttonColor} />}
+            <Text color={buttonColor} ml="6px" fontWeight="700">
               {buttonText}
             </Text>
           </Flex>
