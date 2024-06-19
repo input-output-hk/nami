@@ -19,19 +19,23 @@ const CarouselButton = ({ children, ...rest }) => (
   </Button>
 );
 
-export const Carousel = ({ children }) => {
+export const Carousel = ({ children, onSlideSwitched }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? children.length - 1 : prevIndex - 1
-    );
+    setCurrentIndex((prevIndex) => {
+      const nextIndex = prevIndex === 0 ? children.length - 1 : prevIndex - 1;
+      onSlideSwitched?.(nextIndex);
+      return nextIndex;
+    });
   };
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === children.length - 1 ? 0 : prevIndex + 1
-    );
+    setCurrentIndex((prevIndex) => {
+      const nextIndex = prevIndex === children.length - 1 ? 0 : prevIndex + 1;
+      onSlideSwitched?.(nextIndex);
+      return nextIndex;
+    });
   };
 
   return (

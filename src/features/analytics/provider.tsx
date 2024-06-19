@@ -109,7 +109,13 @@ export const AnalyticsProvider = ({
     return getOptions(id);
   }, [analyticsState?.userId]);
 
-  if (analyticsState?.consent === false || options === undefined) {
+  if (options === undefined) {
+    // avoid rendering everything twice when waiting for Posthog options being fetched
+    return null;
+  }
+
+  if (analyticsState.consent === false) {
+    // render the children without being hooked to the actual posthog provider
     return (
       <AnalyticsContext.Provider value={[analyticsState, setAnalyticsConsent]}>
         {children}

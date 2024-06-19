@@ -10,24 +10,39 @@ import {
   enableMigration,
   openLace,
 } from '@xsy/nami-migration-tool/dist/cross-extension-messaging/nami-migration-client.extension';
+import { useCaptureEvent } from '../../../features/analytics/hooks';
+import { Events } from '../../../features/analytics/events';
 
 export const Migration = () => {
+  const captureEvent = useCaptureEvent();
   const [state, setState] = useState({
     migrationState: MigrationState.None,
+    isLaceInstalled: false,
     ui: 'loading',
   });
 
-  const [isLaceInstalled, setIsLaceInstalled] = useState(false);
-
   useEffect(() => {
-    storage.local.get().then((result) => {
-      setState({
-        ui: 'ready',
-        migrationState: result[MIGRATION_KEY] ?? MigrationState.None,
+    storage.local.get().then((store) => {
+      checkLaceInstallation().then((laceInstalled) => {
+        // wait for Lace installation check before declaring UI to be ready
+        setState({
+          ui: 'ready',
+          isLaceInstalled: laceInstalled,
+          migrationState: store[MIGRATION_KEY] ?? MigrationState.None,
+        });
+        // Capture events for initial migration state when Nami is opened
+        switch (store[MIGRATION_KEY]) {
+          case undefined:
+          case MigrationState.None:
+            return captureEvent(Events.NamiOpenedMigrationNotStarted);
+          case MigrationState.InProgress:
+            return laceInstalled
+              ? captureEvent(Events.NamiOpenedMigrationInProgress)
+              : captureEvent(Events.NamiOpenedMigrationWaitingForLace);
+          case MigrationState.Completed:
+            return captureEvent(Events.NamiOpenedMigrationCompleted);
+        }
       });
-    });
-    checkLaceInstallation().then((result) => {
-      setIsLaceInstalled(result);
     });
   }, []);
 
@@ -46,10 +61,34 @@ export const Migration = () => {
   return state.ui === 'loading' ? null : (
     <MigrationView
       migrationState={state.migrationState}
-      isLaceInstalled={isLaceInstalled}
-      onUpgradeWalletClicked={enableMigration}
-      onDownloadLaceClicked={() => window.open('https://www.lace.io/')}
-      onOpenLaceClicked={openLace}
+      isLaceInstalled={state.isLaceInstalled}
+      onSlideSwitched={async (nextSlideIndex) => {
+        await captureEvent(Events.MigrationSlideSwitched);
+        await captureEvent(Events.MigrationSlideViewed, {
+          slideIndex: nextSlideIndex,
+        });
+      }}
+      onUpgradeWalletClicked={() => {
+        enableMigration();
+        captureEvent(Events.MigrationUpgradeYourWalletClicked);
+      }}
+      onWaitingForLaceScreenViewed={() => {
+        captureEvent(Events.MigrationDownloadLaceScreenViewed);
+      }}
+      onOpenLaceScreenViewed={() => {
+        captureEvent(Events.MigrationOpenLaceScreenViewed);
+      }}
+      onDownloadLaceClicked={() => {
+        captureEvent(Events.MigrationDownloadLaceClicked);
+        window.open('https://www.lace.io/');
+      }}
+      onOpenLaceClicked={() => {
+        captureEvent(Events.MigrationOpenLaceClicked);
+        openLace();
+      }}
+      onAllDoneScreenViewed={() => {
+        captureEvent(Events.MigrationAllDoneScreenViewed);
+      }}
     />
   );
 };

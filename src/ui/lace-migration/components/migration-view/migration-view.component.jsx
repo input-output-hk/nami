@@ -11,6 +11,10 @@ import { useColorModeValue } from '@chakra-ui/react';
 export const MigrationView = ({
   migrationState,
   isLaceInstalled,
+  onSlideSwitched,
+  onWaitingForLaceScreenViewed,
+  onOpenLaceScreenViewed,
+  onAllDoneScreenViewed,
   onUpgradeWalletClicked,
   onDownloadLaceClicked,
   onOpenLaceClicked,
@@ -20,7 +24,7 @@ export const MigrationView = ({
     case MigrationState.None:
       return (
         <div style={{ padding: '30px 0', backgroundColor: bgColor }}>
-          <Carousel>
+          <Carousel onSlideSwitched={onSlideSwitched}>
             <ItsTimetToUpgrade key="1" onAction={onUpgradeWalletClicked} />
             <SeamlessUpgrade key="2" onAction={onUpgradeWalletClicked} />
             <NewFeatures key="3" onAction={onUpgradeWalletClicked} />
@@ -29,20 +33,23 @@ export const MigrationView = ({
       );
 
     case MigrationState.InProgress:
-      return isLaceInstalled ? (
-        <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
-          <AlmostThere isLaceInstalled onAction={onOpenLaceClicked} />
-        </div>
-      ) : (
-        <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
+      if(!isLaceInstalled) {
+        onWaitingForLaceScreenViewed?.();
+        return <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
           <AlmostThere
             isLaceInstalled={false}
             onAction={onDownloadLaceClicked}
           />
-        </div>
-      );
+        </div>;
+      } else {
+        onOpenLaceScreenViewed?.();
+        return <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
+          <AlmostThere isLaceInstalled onAction={onOpenLaceClicked} />
+        </div>;
+      }
 
     case MigrationState.Completed:
+      onAllDoneScreenViewed?.();
       return (
         <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
           <AllDone
