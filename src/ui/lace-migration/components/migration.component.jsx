@@ -12,6 +12,8 @@ import {
 } from '@xsy/nami-migration-tool/dist/cross-extension-messaging/nami-migration-client.extension';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
+import { STORAGE } from '../../../config/config';
+import { setStorage } from '../../../api/extension';
 
 export const Migration = () => {
   const captureEvent = useCaptureEvent();
@@ -20,6 +22,7 @@ export const Migration = () => {
     isLaceInstalled: false,
     ui: 'loading',
   });
+  const themeColor = localStorage['chakra-ui-color-mode'];
 
   useEffect(() => {
     storage.local.get().then((store) => {
@@ -57,6 +60,10 @@ export const Migration = () => {
     storage.local.onChanged.addListener(observeMigrationState);
     return () => storage.onChanged.removeListener(observeMigrationState);
   }, []);
+
+  useEffect(() => {
+    setStorage({ [STORAGE.themeColor]: themeColor })
+  }, [themeColor]);
 
   return state.ui === 'loading' ? null : (
     <MigrationView
