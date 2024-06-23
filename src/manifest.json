@@ -36,6 +36,5 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; frame-src https://connect.trezor.io/;"
   },
-  "permissions": ["storage", "unlimitedStorage", "favicon"],
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoy3Y6s5Q72zsN6+sBJL8EBCyGL/USyXXjTJGIIV/3xfcrkoZ53I+o9B0Euo8yz2GXnBjm3+ZIC1YwN5ZPC/uQpPHyq8GLksu3VvDdupKMNIWXvMByLjF0pyD4YNdNueU4r3fWPPBsbvG98cmNbeZ1NmwV2Byad4PQtUMx76jSk6KHcp3qNTMEo8utY49EIPaC9wr/Fg9gaqI83SFKNoe2FeKrb1HXaTT366myKLupHXm7hoD7U87a2itNfR7kohBoO6RBlrTNmYuq65wYO1eY5h/4tCkZrztjTKjfMWbuVc0kjL8VFv2IR1ETV8dMDgaBKxWGpccaDzF2GJfYNjK2QIDAQAB"
+  "permissions": ["storage", "unlimitedStorage", "favicon"]
 }
