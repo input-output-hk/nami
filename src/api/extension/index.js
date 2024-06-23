@@ -1584,16 +1584,22 @@ export const getAdaHandle = async (assetName) => {
  */
 export const getMilkomedaData = async (ethAddress) => {
   const network = await getNetwork();
+  const isAddressAllowedController = new AbortController();
+  const stargateController = new AbortController();
+  setTimeout(() => isAddressAllowedController.abort(), 500);
   if (network.id === NETWORK_ID.mainnet) {
     const { isAllowed } = await fetch(
       'https://' +
         milkomedaNetworks['c1-mainnet'].backendEndpoint +
-        `/v1/isAddressAllowed?address=${ethAddress}`
+        `/v1/isAddressAllowed?address=${ethAddress}`,
+        { signal: isAddressAllowedController.signal }
     ).then((res) => res.json());
+    setTimeout(() => stargateController.abort(), 500);
     const { ada, ttl_expiry, assets, current_address } = await fetch(
       'https://' +
         milkomedaNetworks['c1-mainnet'].backendEndpoint +
-        '/v1/stargate'
+        '/v1/stargate',
+        { signal: stargateController.signal }
     ).then((res) => res.json());
     const protocolMagic = milkomedaNetworks['c1-mainnet'].protocolMagic;
     return {
@@ -1608,12 +1614,15 @@ export const getMilkomedaData = async (ethAddress) => {
     const { isAllowed } = await fetch(
       'https://' +
         milkomedaNetworks['c1-devnet'].backendEndpoint +
-        `/v1/isAddressAllowed?address=${ethAddress}`
+        `/v1/isAddressAllowed?address=${ethAddress}`,
+        { signal: isAddressAllowedController.signal }
     ).then((res) => res.json());
+    setTimeout(() => stargateController.abort(), 500);
     const { ada, ttl_expiry, assets, current_address } = await fetch(
       'https://' +
         milkomedaNetworks['c1-devnet'].backendEndpoint +
-        '/v1/stargate'
+        '/v1/stargate',
+        { signal: stargateController.signal }
     ).then((res) => res.json());
     const protocolMagic = milkomedaNetworks['c1-devnet'].protocolMagic;
     return {
