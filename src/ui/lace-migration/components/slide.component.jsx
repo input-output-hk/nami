@@ -12,9 +12,10 @@ export const Slide = ({
   onButtonClick,
 }) => {
   const borderColor = useColorModeValue('#C0C0C0', '#383838');
-  const slideBoxBgColor = useColorModeValue('#FFFFFF', '#383838');
-  const termsTextColor = useColorModeValue('#6F7786', '#A9A9A9');
-  const buttonColor = useColorModeValue('#FFFFFF', '#FFFFFF');
+  const slideBoxBgColor = useColorModeValue('#FFFFFF', '#2D3848');
+  const termsTextColor = useColorModeValue('#6F7786', '#FFFFFF');
+  const buttonTextColor = useColorModeValue('#FFFFFF', '#000000');
+  const buttonBgColor = useColorModeValue('#549CA1', '#4FD1C5');
   return (
     <Box>
       <Box
@@ -67,12 +68,12 @@ export const Slide = ({
           borderRadius="16px"
           py="12px"
           w="100%"
-          backgroundColor="#549CA1"
+          backgroundColor={buttonBgColor}
           onClick={onButtonClick}
         >
           <Flex alignItems="center">
-            {Icon && <Icon color={buttonColor} />}
-            <Text color={buttonColor} ml="6px" fontWeight="700">
+            {Icon && <Icon color={buttonTextColor} />}
+            <Text color={buttonTextColor} ml="6px" fontWeight="700">
               {buttonText}
             </Text>
           </Flex>

@@ -1,17 +1,20 @@
 import React from 'react';
-import { Image, useColorMode } from '@chakra-ui/react';
-import done from '../../assets/done.png';
-import doneDark from '../../assets/done-dark.png';
+import { useColorMode, Box } from '@chakra-ui/react';
 import { Slide } from '../slide.component';
 import { ReactComponent as Arrow } from '../../assets/arrow.svg';
+import { ReactComponent as DoneDark } from '../../assets/done-dark.svg';
+import { ReactComponent as DoneWhite } from '../../assets/done-white.svg';
 
 export const AllDone = ({ isLaceInstalled, onAction }) => {
   const { colorMode } = useColorMode();
-  const imageSrc = colorMode === 'light' ? done : doneDark;
   return (
     <Slide
       title="All done!"
-      image={<Image mb="50px" w="98px" h="98px" src={imageSrc} />}
+      image={
+        <Box mb={'50px'} >
+          {colorMode === 'light' ? <DoneWhite width='98px' height='98px' /> : <DoneDark width='98px' height='98px' />}
+        </Box>
+      }
       description={[
         'From this moment, please use',
         'the Lace extension to access',
