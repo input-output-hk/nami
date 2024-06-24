@@ -11,7 +11,7 @@ export const ItsTimetToUpgrade = ({ onAction }) => {
       title="It's time to upgrade your wallet!"
       image={
         <Box mb={"38px"}>
-          {<BackpackImg width="91px" height="126px" />}
+          <BackpackImg width="91px" height="126px" />
         </Box>
       }
       description={['Your Nami wallet is now', 'part of the Lace family']}

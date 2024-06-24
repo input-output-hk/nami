@@ -16,7 +16,7 @@ export const NewFeatures = ({ onAction }) => {
       ]}
       image={
         <Box>
-          {<FeaturesImg width="296px" height="172px" />}
+          <FeaturesImg width="296px" height="172px" />
         </Box>
       }
       buttonText="Upgrade your wallet"
