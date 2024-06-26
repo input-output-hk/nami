@@ -13,7 +13,7 @@ import {
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
 import { STORAGE } from '../../../config/config';
-import { setStorage } from '../../../api/extension';
+import { setStorage, getAccounts } from '../../../api/extension';
 
 export const Migration = () => {
   const captureEvent = useCaptureEvent();
@@ -21,6 +21,7 @@ export const Migration = () => {
     migrationState: MigrationState.None,
     isLaceInstalled: false,
     ui: 'loading',
+    hasWallet: false,
   });
   const themeColor = localStorage['chakra-ui-color-mode'];
 
@@ -28,11 +29,12 @@ export const Migration = () => {
     storage.local.get().then((store) => {
       checkLaceInstallation().then((laceInstalled) => {
         // wait for Lace installation check before declaring UI to be ready
-        setState({
+        setState((s) => ({
+          ...s,
           ui: 'ready',
           isLaceInstalled: laceInstalled,
           migrationState: store[MIGRATION_KEY] ?? MigrationState.None,
-        });
+        }));
         // Capture events for initial migration state when Nami is opened
         switch (store[MIGRATION_KEY]) {
           case undefined:
@@ -47,6 +49,18 @@ export const Migration = () => {
         }
       });
     });
+  }, []);
+
+  useEffect(() => {
+    const checkAccounts = async (changes) => {
+      const accounts = await getAccounts();
+      setState((s) => ({
+        ...s,
+        hasWallet: typeof(accounts) !== 'undefined',
+      }));
+    };
+
+    checkAccounts();
   }, []);
 
   useEffect(() => {
@@ -69,6 +83,7 @@ export const Migration = () => {
     <MigrationView
       migrationState={state.migrationState}
       isLaceInstalled={state.isLaceInstalled}
+      hasWallet={state.hasWallet}
       onSlideSwitched={async (nextSlideIndex) => {
         await captureEvent(Events.MigrationSlideSwitched);
         await captureEvent(Events.MigrationSlideViewed, {
@@ -95,6 +110,15 @@ export const Migration = () => {
       }}
       onAllDoneScreenViewed={() => {
         captureEvent(Events.MigrationAllDoneScreenViewed);
+      }}
+      onNoWalletActionClick={() => {
+        if (state.isLaceInstalled) {
+          captureEvent(Events.MigrationOpenLaceClicked);
+          openLace();
+        } else {
+          captureEvent(Events.MigrationDownloadLaceClicked);
+          window.open('https://www.lace.io/');
+        }
       }}
     />
   );

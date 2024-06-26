@@ -13,23 +13,34 @@ export default {
 export const None = {
   args: {
     migrationState: MigrationState.None,
+    hasWallet: true,
   },
 };
 
 export const WaitingForLace = {
   args: {
     migrationState: MigrationState.WaitingForLace,
+    hasWallet: true,
   },
 };
 
 export const InProgress = {
   args: {
     migrationState: MigrationState.InProgress,
+    hasWallet: true,
   },
 };
 
 export const Completed = {
   args: {
     migrationState: MigrationState.Completed,
+    hasWallet: true,
+  },
+};
+
+export const NoWallet = {
+  args: {
+    migrationState: MigrationState.None,
+    hasWallet: false,
   },
 };
