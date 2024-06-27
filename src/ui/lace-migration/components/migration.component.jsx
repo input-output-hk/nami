@@ -28,39 +28,30 @@ export const Migration = () => {
   useEffect(() => {
     storage.local.get().then((store) => {
       checkLaceInstallation().then((laceInstalled) => {
-        // wait for Lace installation check before declaring UI to be ready
-        setState((s) => ({
-          ...s,
-          ui: 'ready',
-          isLaceInstalled: laceInstalled,
-          migrationState: store[MIGRATION_KEY] ?? MigrationState.None,
-        }));
-        // Capture events for initial migration state when Nami is opened
-        switch (store[MIGRATION_KEY]) {
-          case undefined:
-          case MigrationState.None:
-            return captureEvent(Events.NamiOpenedMigrationNotStarted);
-          case MigrationState.InProgress:
-            return laceInstalled
-              ? captureEvent(Events.NamiOpenedMigrationInProgress)
-              : captureEvent(Events.NamiOpenedMigrationWaitingForLace);
-          case MigrationState.Completed:
-            return captureEvent(Events.NamiOpenedMigrationCompleted);
-        }
+        getAccounts().then((accounts) =>{
+          // wait for Lace installation check before declaring UI to be ready
+          setState((s) => ({
+            ...s,
+            ui: 'ready',
+            isLaceInstalled: laceInstalled,
+            migrationState: store[MIGRATION_KEY] ?? MigrationState.None,
+            hasWallet: typeof(accounts) !== 'undefined',
+          }));
+          // Capture events for initial migration state when Nami is opened
+          switch (store[MIGRATION_KEY]) {
+            case undefined:
+            case MigrationState.None:
+              return captureEvent(Events.NamiOpenedMigrationNotStarted);
+            case MigrationState.InProgress:
+              return laceInstalled
+                ? captureEvent(Events.NamiOpenedMigrationInProgress)
+                : captureEvent(Events.NamiOpenedMigrationWaitingForLace);
+            case MigrationState.Completed:
+              return captureEvent(Events.NamiOpenedMigrationCompleted);
+          }
+        })
       });
     });
-  }, []);
-
-  useEffect(() => {
-    const checkAccounts = async (changes) => {
-      const accounts = await getAccounts();
-      setState((s) => ({
-        ...s,
-        hasWallet: typeof(accounts) !== 'undefined',
-      }));
-    };
-
-    checkAccounts();
   }, []);
 
   useEffect(() => {
