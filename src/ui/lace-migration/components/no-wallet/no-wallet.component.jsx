@@ -4,7 +4,7 @@ import { Slide } from '../slide.component';
 import { ReactComponent as LaceIcon } from '../../assets/lace-icon.svg';
 import { Image } from '@chakra-ui/react';
 
-export const NoWallet = ({ isLaceInstalled, onAction }) => {
+export const NoWallet = ({ onAction }) => {
   return (
     <Slide
       showTerms
