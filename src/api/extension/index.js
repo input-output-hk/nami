@@ -1832,7 +1832,7 @@ export const getAsset = async (unit) => {
           linkToSrc(convertMetadataPropToString(onchainMetadata.image))) ||
         (result.metadata &&
           result.metadata.logo &&
-          linkToSrc(result.metadata.logo, true)) ||
+          linkToSrc(convertMetadataPropToString(result.metadata.logo), true)) ||
         '';
       asset.decimals = (result.metadata && result.metadata.decimals) || 0;
       if (!asset.name) {
