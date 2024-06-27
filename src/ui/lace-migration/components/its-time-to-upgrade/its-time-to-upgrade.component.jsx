@@ -1,15 +1,19 @@
 import React from 'react';
-import backpack from '../../assets/backpack.png';
+import { Box } from '@chakra-ui/react';
 import { Slide } from '../slide.component';
 import { ReactComponent as Arrow } from '../../assets/arrow.svg';
-import { Image } from '@chakra-ui/react';
+import { ReactComponent as BackpackImg } from '../../assets/backpack.svg';
 
 export const ItsTimetToUpgrade = ({ onAction }) => {
   return (
     <Slide
       showTerms
       title="It's time to upgrade your wallet!"
-      image={<Image mb="38px" w="91px" h="126px" src={backpack} />}
+      image={
+        <Box mb={"38px"}>
+          <BackpackImg width="91px" height="126px" />
+        </Box>
+      }
       description={['Your Nami wallet is now', 'part of the Lace family']}
       buttonText="Upgrade your wallet"
       buttonIcon={Arrow}

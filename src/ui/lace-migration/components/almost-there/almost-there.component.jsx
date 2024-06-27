@@ -1,19 +1,22 @@
 import React from 'react';
-import { Image, useColorMode } from '@chakra-ui/react';
+import { useColorMode, Box } from '@chakra-ui/react';
 import { Slide } from '../slide.component';
-import pending from '../../assets/pending.png';
-import pendingDark from '../../assets/pending-dark.png';
 import { ReactComponent as Download } from '../../assets/download.svg';
 import { ReactComponent as Arrow } from '../../assets/arrow.svg';
+import { ReactComponent as PendingDark } from '../../assets/pending-dark-mode.svg';
+import { ReactComponent as PendingWhite } from '../../assets/pending-white-mode.svg';
 
 export const AlmostThere = ({ isLaceInstalled, onAction }) => {
   const { colorMode } = useColorMode();
-  const imageSrc = colorMode === 'light' ? pending : pendingDark;
   return (
     <Slide
       showTerms
       title="Almost there..."
-      image={<Image mb="60px" w="98px" h="98px" src={imageSrc} />}
+      image={
+        <Box mb={"60px"}>
+          {colorMode === 'light' ? <PendingWhite width="98px" height="98px" /> : <PendingDark width="98px" height="98px" />}
+        </Box>
+      }
       description={
         isLaceInstalled
           ? ['Please open Lace', 'extension to proceed']

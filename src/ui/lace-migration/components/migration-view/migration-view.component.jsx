@@ -19,7 +19,7 @@ export const MigrationView = ({
   onDownloadLaceClicked,
   onOpenLaceClicked,
 }) => {
-  const bgColor = useColorModeValue('#FFF', '#2E2E2E');
+  const bgColor = useColorModeValue('#FFF', '#1A202C');
   switch (migrationState) {
     case MigrationState.None:
       return (
