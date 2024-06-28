@@ -27,9 +27,9 @@ export const Migration = () => {
 
   useEffect(() => {
     storage.local.get().then((store) => {
-      // wait for Lace installation check before declaring UI to be ready
+      // Wait for Lace installation check before declaring UI to be ready
       checkLaceInstallation().then((laceInstalled) => {
-        // Check if the wallet exist or not
+        // Check if the wallet exists
         getAccounts().then((accounts) =>{
           setState((s) => ({
             ...s,
