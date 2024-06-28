@@ -1,15 +1,19 @@
 import React from 'react';
-import backpack from '../../assets/backpack.png';
 import { Slide } from '../slide.component';
 import { ReactComponent as LaceIcon } from '../../assets/lace-icon.svg';
-import { Image } from '@chakra-ui/react';
+import { ReactComponent as BackpackImg } from '../../assets/backpack.svg';
+import { Box } from '@chakra-ui/react';
 
 export const NoWallet = ({ onAction }) => {
   return (
     <Slide
       showTerms
       title="Your Nami wallet evolved"
-      image={<Image mb="38px" w="91px" h="126px" src={backpack} />}
+      image={
+        <Box mb={"38px"}>
+          <BackpackImg width="91px" height="126px" />
+        </Box>
+      }
       description={['To create or import a new', 'wallet, please proceed at Lace']}
       buttonText="Get started with Lace"
       buttonIcon={LaceIcon}

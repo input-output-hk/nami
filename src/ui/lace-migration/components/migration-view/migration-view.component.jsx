@@ -22,7 +22,7 @@ export const MigrationView = ({
   onNoWalletActionClick,
   hasWallet
 }) => {
-  const bgColor = useColorModeValue('#FFF', '#2E2E2E');
+  const bgColor = useColorModeValue('#FFF', '#1A202C');
 
   if (!hasWallet) {
     return <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
