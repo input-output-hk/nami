@@ -85,7 +85,7 @@ export const Slide = ({
           </Text>
           <Text color="current">
             wallet in the &quot;Nami mode&quot; interface{' '}
-            <Link color="#3489F7" textDecoration="underline">
+            <Link href="https://www.lace.io/faq" color="#3489F7" textDecoration="underline" isExternal>
                Know more
             </Link>
           </Text>
