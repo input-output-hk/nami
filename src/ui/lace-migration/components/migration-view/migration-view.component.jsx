@@ -6,6 +6,7 @@ import { SeamlessUpgrade } from '../seamless-upgrade/seamless-upgrade.component'
 import { NewFeatures } from '../new-features/new-features.component';
 import { AlmostThere } from '../almost-there/almost-there.component';
 import { AllDone } from '../all-done/all-done.component';
+import { NoWallet } from '../no-wallet/no-wallet.component';
 import { useColorModeValue } from '@chakra-ui/react';
 
 export const MigrationView = ({
@@ -18,8 +19,20 @@ export const MigrationView = ({
   onUpgradeWalletClicked,
   onDownloadLaceClicked,
   onOpenLaceClicked,
+  onNoWalletActionClick,
+  hasWallet
 }) => {
   const bgColor = useColorModeValue('#FFF', '#1A202C');
+
+  if (!hasWallet) {
+    return <div style={{ padding: '30px 40px', backgroundColor: bgColor }}>
+      <NoWallet
+        isLaceInstalled={isLaceInstalled}
+        onAction={onNoWalletActionClick}
+      />
+    </div>;
+  }
+
   switch (migrationState) {
     case MigrationState.None:
       return (

@@ -13,7 +13,7 @@ import {
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
 import { STORAGE } from '../../../config/config';
-import { setStorage } from '../../../api/extension';
+import { setStorage, getAccounts } from '../../../api/extension';
 
 export const Migration = () => {
   const captureEvent = useCaptureEvent();
@@ -21,30 +21,36 @@ export const Migration = () => {
     migrationState: MigrationState.None,
     isLaceInstalled: false,
     ui: 'loading',
+    hasWallet: false,
   });
   const themeColor = localStorage['chakra-ui-color-mode'];
 
   useEffect(() => {
     storage.local.get().then((store) => {
+      // Wait for Lace installation check before declaring UI to be ready
       checkLaceInstallation().then((laceInstalled) => {
-        // wait for Lace installation check before declaring UI to be ready
-        setState({
-          ui: 'ready',
-          isLaceInstalled: laceInstalled,
-          migrationState: store[MIGRATION_KEY] ?? MigrationState.None,
-        });
-        // Capture events for initial migration state when Nami is opened
-        switch (store[MIGRATION_KEY]) {
-          case undefined:
-          case MigrationState.None:
-            return captureEvent(Events.NamiOpenedMigrationNotStarted);
-          case MigrationState.InProgress:
-            return laceInstalled
-              ? captureEvent(Events.NamiOpenedMigrationInProgress)
-              : captureEvent(Events.NamiOpenedMigrationWaitingForLace);
-          case MigrationState.Completed:
-            return captureEvent(Events.NamiOpenedMigrationCompleted);
-        }
+        // Check if the wallet exists
+        getAccounts().then((accounts) =>{
+          setState((s) => ({
+            ...s,
+            ui: 'ready',
+            isLaceInstalled: laceInstalled,
+            migrationState: store[MIGRATION_KEY] ?? MigrationState.None,
+            hasWallet: typeof(accounts) !== 'undefined',
+          }));
+          // Capture events for initial migration state when Nami is opened
+          switch (store[MIGRATION_KEY]) {
+            case undefined:
+            case MigrationState.None:
+              return captureEvent(Events.NamiOpenedMigrationNotStarted);
+            case MigrationState.InProgress:
+              return laceInstalled
+                ? captureEvent(Events.NamiOpenedMigrationInProgress)
+                : captureEvent(Events.NamiOpenedMigrationWaitingForLace);
+            case MigrationState.Completed:
+              return captureEvent(Events.NamiOpenedMigrationCompleted);
+          }
+        })
       });
     });
   }, []);
@@ -69,6 +75,7 @@ export const Migration = () => {
     <MigrationView
       migrationState={state.migrationState}
       isLaceInstalled={state.isLaceInstalled}
+      hasWallet={state.hasWallet}
       onSlideSwitched={async (nextSlideIndex) => {
         await captureEvent(Events.MigrationSlideSwitched);
         await captureEvent(Events.MigrationSlideViewed, {
@@ -95,6 +102,15 @@ export const Migration = () => {
       }}
       onAllDoneScreenViewed={() => {
         captureEvent(Events.MigrationAllDoneScreenViewed);
+      }}
+      onNoWalletActionClick={() => {
+        if (state.isLaceInstalled) {
+          captureEvent(Events.MigrationOpenLaceClicked);
+          openLace();
+        } else {
+          captureEvent(Events.MigrationDownloadLaceClicked);
+          window.open('https://www.lace.io/');
+        }
       }}
     />
   );
