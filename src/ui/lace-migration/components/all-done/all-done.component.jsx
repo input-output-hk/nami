@@ -11,14 +11,18 @@ export const AllDone = ({ isLaceInstalled, onAction }) => {
     <Slide
       title="All done!"
       image={
-        <Box mb={'50px'} >
-          {colorMode === 'light' ? <DoneWhite width='98px' height='98px' /> : <DoneDark width='98px' height='98px' />}
+        <Box mb={'50px'}>
+          {colorMode === 'light' ? (
+            <DoneWhite width="98px" height="98px" />
+          ) : (
+            <DoneDark width="98px" height="98px" />
+          )}
         </Box>
       }
       description={[
-        'From this moment, please use',
-        'the Lace extension to access',
-        'your upgraded wallet',
+        'All good. Just use the Lace',
+        'extension to access your migrated',
+        'Nami Wallet from now on',
       ]}
       buttonText={isLaceInstalled ? 'Open Lace' : 'Download Lace'}
       buttonIcon={Arrow}

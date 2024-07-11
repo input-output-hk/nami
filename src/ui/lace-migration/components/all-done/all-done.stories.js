@@ -1,7 +1,7 @@
 import { AllDone } from './all-done.component';
 
 const meta = {
-  title: 'AllDone',
+  title: 'Nami Migration/Screens/AllDone',
   component: AllDone,
   parameters: {
     layout: 'centered',

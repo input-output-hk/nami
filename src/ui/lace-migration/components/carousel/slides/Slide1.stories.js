@@ -1,8 +1,8 @@
-import { NewFeatures } from './new-features.component';
+import { Slide1 } from './Slide1.component';
 
 const meta = {
-  title: 'NewFeatures',
-  component: NewFeatures,
+  title: 'Nami Migration/Screens/Carousel/Slide 1',
+  component: Slide1,
   parameters: {
     layout: 'centered',
   },

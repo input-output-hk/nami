@@ -1,8 +1,8 @@
 import { MigrationView } from './migration-view.component';
-import { MigrationState } from "@xsy/nami-migration-tool/dist/migrator/migration-state.data";
+import { MigrationState } from '@xsy/nami-migration-tool/dist/migrator/migration-state.data';
 
 export default {
-  title: 'Migration',
+  title: 'Nami Migration/State Flow',
   component: MigrationView,
   parameters: {
     layout: 'centered',
@@ -19,7 +19,8 @@ export const None = {
 
 export const WaitingForLace = {
   args: {
-    migrationState: MigrationState.WaitingForLace,
+    migrationState: MigrationState.InProgress,
+    isLaceInstalled: false,
     hasWallet: true,
   },
 };
@@ -27,6 +28,7 @@ export const WaitingForLace = {
 export const InProgress = {
   args: {
     migrationState: MigrationState.InProgress,
+    isLaceInstalled: true,
     hasWallet: true,
   },
 };
@@ -34,6 +36,7 @@ export const InProgress = {
 export const Completed = {
   args: {
     migrationState: MigrationState.Completed,
+    isLaceInstalled: true,
     hasWallet: true,
   },
 };
