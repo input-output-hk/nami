@@ -81,22 +81,9 @@ export const Slide = ({
   const getTermsContent = ({ noWallet }) => {
     if (noWallet) {
       return (
-        <>
-          <Text color="current">
-            Once created or imported, you can keep using your
-          </Text>
-          <Text color="current">
-            wallet in the &quot;Nami mode&quot; interface{' '}
-            <Link
-              href="https://www.lace.io/faq"
-              color="#3489F7"
-              textDecoration="underline"
-              isExternal
-            >
-              Know more
-            </Link>
-          </Text>
-        </>
+        <Text color="current">
+          To keep using Nami, enable &quot;Nami mode&quot; on Lace settings
+        </Text>
       );
     }
     return (
