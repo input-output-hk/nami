@@ -113,7 +113,7 @@ export const Slide = ({
         mb="30px"
         borderWidth="1px"
         borderRadius="17.37px"
-        paddingTop="38px"
+        padding="38px 20px 0px"
         borderColor={borderColor}
         backgroundColor={slideBoxBgColor}
       >
