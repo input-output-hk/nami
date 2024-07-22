@@ -8,13 +8,17 @@ export const NoWallet = ({ onAction }) => {
   return (
     <Slide
       showTerms
-      title="Your Nami wallet evolved"
+      title="Your Nami wallet has evolved!"
       image={
-        <Box mb={"38px"}>
+        <Box mb={'38px'}>
           <BackpackImg width="91px" height="126px" />
         </Box>
       }
-      description={['To create or import a new', 'wallet, please proceed at Lace']}
+      description={[
+        'To create or import a wallet,',
+        'please proceed using',
+        'the Lace extension',
+      ]}
       buttonText="Get started with Lace"
       buttonIcon={LaceIcon}
       onButtonClick={onAction}

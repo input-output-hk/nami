@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Image, useColorModeValue } from '@chakra-ui/react';
+import { Box, Button, useColorModeValue } from '@chakra-ui/react';
 import { ReactComponent as Left } from '../../assets/chevron-left.svg';
 import { ReactComponent as Right } from '../../assets/chevron-right.svg';
 

@@ -11,16 +11,20 @@ export const AlmostThere = ({ isLaceInstalled, onAction }) => {
   return (
     <Slide
       showTerms
-      title="Almost there..."
+      title={isLaceInstalled ? 'Almost there...' : 'Let’s begin...'}
       image={
-        <Box mb={"60px"}>
-          {colorMode === 'light' ? <PendingWhite width="98px" height="98px" /> : <PendingDark width="98px" height="98px" />}
+        <Box mb={'60px'}>
+          {colorMode === 'light' ? (
+            <PendingWhite width="98px" height="98px" />
+          ) : (
+            <PendingDark width="98px" height="98px" />
+          )}
         </Box>
       }
       description={
         isLaceInstalled
-          ? ['Please open Lace', 'extension to proceed']
-          : ['Please download Lace', 'extension to proceed']
+          ? ['Open the Lace extension', 'to finish the process']
+          : ['Download the Lace', 'extension to begin']
       }
       buttonText={isLaceInstalled ? 'Open Lace' : 'Download Lace'}
       buttonIcon={isLaceInstalled ? Arrow : Download}

@@ -1,8 +1,8 @@
-import { SeamlessUpgrade } from './seamless-upgrade.component';
+import { Slide2 } from './Slide2.component';
 
 const meta = {
-  title: 'SeamlessUpgrade',
-  component: SeamlessUpgrade,
+  title: 'Nami Migration/Screens/Carousel/Slide 2',
+  component: Slide2,
   parameters: {
     layout: 'centered',
   },

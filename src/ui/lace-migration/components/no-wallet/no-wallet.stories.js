@@ -1,8 +1,8 @@
-import { AlmostThere } from './almost-there.component';
+import { NoWallet } from './no-wallet.component';
 
 const meta = {
-  title: 'Nami Migration/Screens/AlmostThere',
-  component: AlmostThere,
+  title: 'Nami Migration/Screens/NoWallet',
+  component: NoWallet,
   parameters: {
     layout: 'centered',
   },
