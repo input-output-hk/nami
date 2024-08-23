@@ -1239,13 +1239,16 @@ pub fn hash_script_data(
 ) -> ScriptDataHash {
     let mut buf = Vec::new();
     if redeemers.len() == 0 && datums.is_some() {
-        /*
+        /* (Deprecated)
         ; Finally, note that in the case that a transaction includes datums but does not
         ; include any redeemers, the script data format becomes (in hex):
         ; [ 80 | datums | A0 ]
         ; corresponding to a CBOR empty list and an empty map (our apologies).
         */
-        buf.push(0x80);
+        /* Post Babbage:
+        ; [ A0 | datums | A0 ]
+        */
+        buf.push(0xA0);
         if let Some(d) = &datums {
             buf.extend(d.to_bytes());
         }

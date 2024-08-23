@@ -252,10 +252,33 @@ fn min_fee(tx_builder: &mut TransactionBuilder) -> Result<Coin, JsError> {
     // }
     let build = tx_builder.build()?;
     let full_tx = fake_full_tx(tx_builder, build)?;
+
+    let mut ref_script_outputs = TransactionOutputs::new();
+
+    let mut ref_script_outputs_1: Vec<TransactionOutput> = tx_builder
+        .inputs
+        .iter()
+        .map(|input| input.utxo.output.clone())
+        .collect();
+
+    let mut ref_script_outputs_2: Vec<TransactionOutput> = tx_builder
+        .reference_inputs
+        .clone()
+        .unwrap_or(TransactionUnspentOutputs::new())
+        .0
+        .iter()
+        .map(|input| input.output.clone())
+        .collect();
+
+    ref_script_outputs.0.append(&mut ref_script_outputs_1);
+    ref_script_outputs.0.append(&mut ref_script_outputs_2);
+
     fees::min_fee(
         &full_tx,
         &tx_builder.config.fee_algo,
         &tx_builder.config.ex_unit_prices,
+        &tx_builder.config.minfee_refscript_cost_per_byte,
+        &ref_script_outputs,
     )
 }
 
@@ -299,17 +322,18 @@ struct TxBuilderWithdrawal {
 #[derive(Clone, Debug)]
 pub struct TransactionBuilderConfig {
     fee_algo: fees::LinearFee,
-    pool_deposit: BigNum,               // protocol parameter
-    key_deposit: BigNum,                // protocol parameter
-    max_value_size: u32,                // protocol parameter
-    max_tx_size: u32,                   // protocol parameter
-    coins_per_utxo_byte: Coin,          // protocol parameter
-    ex_unit_prices: ExUnitPrices,       // protocol parameter
-    max_tx_ex_units: ExUnits,           // protocol parameter
-    costmdls: Costmdls,                 // protocol parameter
-    collateral_percentage: u32,         // protocol parameter
-    max_collateral_inputs: u32,         // protocol parameter
-    slot_config: (BigNum, BigNum, u32), // (zero_time, zero_slot, slot_length)
+    pool_deposit: BigNum,                     // protocol parameter
+    key_deposit: BigNum,                      // protocol parameter
+    max_value_size: u32,                      // protocol parameter
+    max_tx_size: u32,                         // protocol parameter
+    coins_per_utxo_byte: Coin,                // protocol parameter
+    ex_unit_prices: ExUnitPrices,             // protocol parameter
+    max_tx_ex_units: ExUnits,                 // protocol parameter
+    costmdls: Costmdls,                       // protocol parameter
+    collateral_percentage: u32,               // protocol parameter
+    max_collateral_inputs: u32,               // protocol parameter
+    minfee_refscript_cost_per_byte: Rational, // protocol parameter
+    slot_config: (BigNum, BigNum, u32),       // (zero_time, zero_slot, slot_length)
     blockfrost: Blockfrost,
 }
 
@@ -317,16 +341,17 @@ pub struct TransactionBuilderConfig {
 #[derive(Clone, Debug)]
 pub struct TransactionBuilderConfigBuilder {
     fee_algo: Option<fees::LinearFee>,
-    pool_deposit: Option<BigNum>,               // protocol parameter
-    key_deposit: Option<BigNum>,                // protocol parameter
-    max_value_size: Option<u32>,                // protocol parameter
-    max_tx_size: Option<u32>,                   // protocol parameter
-    coins_per_utxo_byte: Option<Coin>,          // protocol parameter
-    ex_unit_prices: Option<ExUnitPrices>,       // protocol parameter
-    max_tx_ex_units: Option<ExUnits>,           // protocol parameter
-    costmdls: Option<Costmdls>,                 // protocol parameter
-    collateral_percentage: Option<u32>,         // protocol parameter
-    max_collateral_inputs: Option<u32>,         // protocol parameter
+    pool_deposit: Option<BigNum>,         // protocol parameter
+    key_deposit: Option<BigNum>,          // protocol parameter
+    max_value_size: Option<u32>,          // protocol parameter
+    max_tx_size: Option<u32>,             // protocol parameter
+    coins_per_utxo_byte: Option<Coin>,    // protocol parameter
+    ex_unit_prices: Option<ExUnitPrices>, // protocol parameter
+    max_tx_ex_units: Option<ExUnits>,     // protocol parameter
+    costmdls: Option<Costmdls>,           // protocol parameter
+    collateral_percentage: Option<u32>,   // protocol parameter
+    max_collateral_inputs: Option<u32>,   // protocol parameter
+    minfee_refscript_cost_per_byte: Option<Rational>, // protocol parameter
     slot_config: Option<(BigNum, BigNum, u32)>, // (zero_time, zero_slot, slot_length)
     blockfrost: Option<Blockfrost>,
 }
@@ -346,6 +371,7 @@ impl TransactionBuilderConfigBuilder {
             costmdls: None,
             collateral_percentage: None,
             max_collateral_inputs: None,
+            minfee_refscript_cost_per_byte: None,
             slot_config: None,
             blockfrost: None,
         }
@@ -417,6 +443,15 @@ impl TransactionBuilderConfigBuilder {
         cfg
     }
 
+    pub fn minfee_refscript_cost_per_byte(
+        &self,
+        minfee_refscript_cost_per_byte: &Rational,
+    ) -> Self {
+        let mut cfg = self.clone();
+        cfg.minfee_refscript_cost_per_byte = Some(minfee_refscript_cost_per_byte.clone());
+        cfg
+    }
+
     pub fn slot_config(&self, zero_time: &BigNum, zero_slot: &BigNum, slot_length: u32) -> Self {
         let mut cfg = self.clone();
         cfg.slot_config = Some((zero_time.clone(), zero_slot.clone(), slot_length));
@@ -469,6 +504,9 @@ impl TransactionBuilderConfigBuilder {
             max_collateral_inputs: cfg.max_collateral_inputs.ok_or(JsError::from_str(
                 "uninitialized field: max_collateral_inputs",
             ))?,
+            minfee_refscript_cost_per_byte: cfg.minfee_refscript_cost_per_byte.ok_or(
+                JsError::from_str("uninitialized field: minfee_refscript_cost_per_byte"),
+            )?,
             slot_config: if cfg.slot_config.is_some() {
                 cfg.slot_config.unwrap()
             } else {

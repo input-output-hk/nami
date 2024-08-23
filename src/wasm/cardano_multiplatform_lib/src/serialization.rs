@@ -3886,6 +3886,9 @@ impl cbor_event::se::Serialize for ProtocolParamUpdate {
             } + match &self.drep_inactivity_period {
                 Some(_) => 1,
                 None => 0,
+            } + match &self.minfee_refscript_cost_per_byte {
+                Some(_) => 1,
+                None => 0,
             },
         ))?;
         if let Some(field) = &self.minfee_a {
@@ -3985,37 +3988,42 @@ impl cbor_event::se::Serialize for ProtocolParamUpdate {
             field.serialize(serializer)?;
         }
         if let Some(field) = &self.pool_voting_thresholds {
-            serializer.write_unsigned_integer(24)?;
+            serializer.write_unsigned_integer(25)?;
             field.serialize(serializer)?;
         }
         if let Some(field) = &self.drep_voting_thresholds {
-            serializer.write_unsigned_integer(24)?;
+            serializer.write_unsigned_integer(26)?;
             field.serialize(serializer)?;
         }
         if let Some(field) = &self.min_committee_size {
-            serializer.write_unsigned_integer(24)?;
+            serializer.write_unsigned_integer(27)?;
             field.serialize(serializer)?;
         }
         if let Some(field) = &self.committee_term_limit {
-            serializer.write_unsigned_integer(24)?;
+            serializer.write_unsigned_integer(28)?;
             field.serialize(serializer)?;
         }
         if let Some(field) = &self.governance_action_expiration {
-            serializer.write_unsigned_integer(24)?;
+            serializer.write_unsigned_integer(29)?;
             field.serialize(serializer)?;
         }
         if let Some(field) = &self.governance_action_deposit {
-            serializer.write_unsigned_integer(24)?;
+            serializer.write_unsigned_integer(30)?;
             field.serialize(serializer)?;
         }
         if let Some(field) = &self.drep_deposit {
-            serializer.write_unsigned_integer(24)?;
+            serializer.write_unsigned_integer(31)?;
             field.serialize(serializer)?;
         }
         if let Some(field) = &self.drep_inactivity_period {
-            serializer.write_unsigned_integer(24)?;
+            serializer.write_unsigned_integer(32)?;
             field.serialize(serializer)?;
         }
+        if let Some(field) = &self.minfee_refscript_cost_per_byte {
+            serializer.write_unsigned_integer(33)?;
+            field.serialize(serializer)?;
+        }
+
         Ok(serializer)
     }
 }
@@ -4057,6 +4065,7 @@ impl Deserialize for ProtocolParamUpdate {
             let mut governance_action_deposit = None;
             let mut drep_deposit = None;
             let mut drep_inactivity_period = None;
+            let mut minfee_refscript_cost_per_byte = None;
 
             let mut read = 0;
             while match len {
@@ -4449,6 +4458,18 @@ impl Deserialize for ProtocolParamUpdate {
                                 .map_err(|e| e.annotate("drep_inactivity_period"))?,
                             );
                         }
+                        33 => {
+                            if minfee_refscript_cost_per_byte.is_some() {
+                                return Err(DeserializeFailure::DuplicateKey(Key::Uint(33)).into());
+                            }
+                            minfee_refscript_cost_per_byte = Some(
+                                (|| -> Result<_, DeserializeError> {
+                                    read_len.read_elems(1)?;
+                                    Ok(Rational::deserialize(raw)?)
+                                })()
+                                .map_err(|e| e.annotate("minfee_refscript_cost_per_byte"))?,
+                            );
+                        }
                         unknown_key => {
                             return Err(
                                 DeserializeFailure::UnknownKey(Key::Uint(unknown_key)).into()
@@ -4513,6 +4534,7 @@ impl Deserialize for ProtocolParamUpdate {
                 governance_action_deposit,
                 drep_deposit,
                 drep_inactivity_period,
+                minfee_refscript_cost_per_byte,
             })
         })()
         .map_err(|e| e.annotate("ProtocolParamUpdate"))

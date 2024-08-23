@@ -740,7 +740,8 @@ pub enum RedeemerTagKind {
     Mint,
     Cert,
     Reward,
-    Drep,
+    Voting,
+    Proposing,
 }
 
 #[wasm_bindgen]
@@ -778,8 +779,12 @@ impl RedeemerTag {
         Self(RedeemerTagKind::Reward)
     }
 
-    pub fn new_drep() -> Self {
-        Self(RedeemerTagKind::Drep)
+    pub fn new_voting() -> Self {
+        Self(RedeemerTagKind::Voting)
+    }
+
+    pub fn new_proposing() -> Self {
+        Self(RedeemerTagKind::Proposing)
     }
 
     pub fn kind(&self) -> RedeemerTagKind {
@@ -2044,6 +2049,8 @@ impl Deserialize for PlutusList {
     }
 }
 
+/// TODO: Redeemer serialization and deserialization should be updated soon,
+/// instead of array use a map according to specs. Array still valid tho in Conway
 impl cbor_event::se::Serialize for Redeemer {
     fn serialize<'se, W: Write>(
         &self,
@@ -2100,7 +2107,8 @@ impl cbor_event::se::Serialize for RedeemerTagKind {
             RedeemerTagKind::Mint => serializer.write_unsigned_integer(1u64),
             RedeemerTagKind::Cert => serializer.write_unsigned_integer(2u64),
             RedeemerTagKind::Reward => serializer.write_unsigned_integer(3u64),
-            RedeemerTagKind::Drep => serializer.write_unsigned_integer(4u64),
+            RedeemerTagKind::Voting => serializer.write_unsigned_integer(4u64),
+            RedeemerTagKind::Proposing => serializer.write_unsigned_integer(5u64),
         }
     }
 }
@@ -2113,7 +2121,8 @@ impl Deserialize for RedeemerTagKind {
                 Ok(1) => Ok(RedeemerTagKind::Mint),
                 Ok(2) => Ok(RedeemerTagKind::Cert),
                 Ok(3) => Ok(RedeemerTagKind::Reward),
-                Ok(4) => Ok(RedeemerTagKind::Drep),
+                Ok(4) => Ok(RedeemerTagKind::Voting),
+                Ok(5) => Ok(RedeemerTagKind::Proposing),
                 Ok(_) | Err(_) => Err(DeserializeFailure::NoVariantMatched.into()),
             }
         })()

@@ -2554,6 +2554,7 @@ pub struct ProtocolParamUpdate {
     governance_action_deposit: Option<Coin>,
     drep_deposit: Option<Coin>,
     drep_inactivity_period: Option<Epoch>,
+    minfee_refscript_cost_per_byte: Option<Rational>,
 }
 
 to_from_bytes!(ProtocolParamUpdate);
@@ -2803,12 +2804,20 @@ impl ProtocolParamUpdate {
     pub fn drep_deposit(&self) -> Option<Coin> {
         self.drep_deposit.clone()
     }
+
     pub fn set_drep_inactivity_period(&mut self, drep_inactivity_period: Epoch) {
         self.drep_inactivity_period = Some(drep_inactivity_period)
     }
-
     pub fn drep_inactivity_period(&self) -> Option<Epoch> {
         self.drep_inactivity_period.clone()
+    }
+
+    pub fn set_minfee_refscript_cost_per_byte(&mut self, minfee_refscript_cost_per_byte: Rational) {
+        self.minfee_refscript_cost_per_byte = Some(minfee_refscript_cost_per_byte)
+    }
+
+    pub fn minfee_refscript_cost_per_byte(&self) -> Option<Rational> {
+        self.minfee_refscript_cost_per_byte.clone()
     }
 
     pub fn new() -> Self {
@@ -2845,6 +2854,7 @@ impl ProtocolParamUpdate {
             governance_action_deposit: None,
             drep_deposit: None,
             drep_inactivity_period: None,
+            minfee_refscript_cost_per_byte: None,
         }
     }
 }
