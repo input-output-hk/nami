@@ -18,6 +18,7 @@
     "@chakra-ui/css-reset": "^2.3.0",
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
+    "@dcspark/cardano-multiplatform-lib-browser": "^6.0.0",
     "@dcspark/milkomeda-constants": "^0.4.0",
     "@dicebear/avatars": "^4.6.4",
     "@dicebear/avatars-bottts-sprites": "^4.6.4",
@@ -59,6 +60,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.23.8",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.11",
+    "@dcspark/cardano-multiplatform-lib-nodejs": "^6.0.0",
     "@swc/core": "^1.3.100",
     "@tsconfig/node20": "^20.1.2",
     "@types/react": "^18.2.42",

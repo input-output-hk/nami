@@ -12,50 +12,42 @@ beforeAll(() => {
 });
 
 test('expect correct assets to value conversion', async () => {
+  const assetId = '2a286ad895d091f2b3d168a6091ad2627d30a72761a5bc36eef0074074657374313233';
+  const policyId = assetId.slice(0, 56);
+  const assetName = assetId.slice(56);
   const assets = [
     { unit: 'lovelace', quantity: '1000000' },
     {
-      unit: '2a286ad895d091f2b3d168a6091ad2627d30a72761a5bc36eef0074074657374313233',
+      unit: assetId,
       quantity: '10',
     },
   ];
   const value = await assetsToValue(assets);
-  const testValue = Loader.Cardano.Value.new(
-    Loader.Cardano.BigNum.from_str('1000000')
-  );
-  const multiAsset = Loader.Cardano.MultiAsset.new();
-  const assetsSet = Loader.Cardano.Assets.new();
-  assetsSet.insert(
-    Loader.Cardano.AssetName.new(Buffer.from('74657374313233', 'hex')),
-    Loader.Cardano.BigNum.from_str('10')
-  );
-  multiAsset.insert(
-    Loader.Cardano.ScriptHash.from_bytes(
-      Buffer.from(
-        '2a286ad895d091f2b3d168a6091ad2627d30a72761a5bc36eef00740',
-        'hex'
-      )
-    ),
-    assetsSet
-  );
-  testValue.set_multiasset(multiAsset);
-  expect(Buffer.from(value.to_bytes()).toString('hex')).toEqual(
-    Buffer.from(testValue.to_bytes()).toString('hex')
-  );
+
+  expect(value.coin()).toBe(1000000n);
+  const multiAsset = value.multi_asset();
+  expect(multiAsset.keys().len()).toBe(1);
+  const scriptHash = multiAsset.keys().get(0);
+  expect(scriptHash.to_hex()).toBe(policyId);
+  const assetsMap = multiAsset.get_assets(scriptHash);
+  expect(assetsMap.len()).toBe(1);
+  const cmlAssetName = assetsMap.keys().get(0);
+  expect(cmlAssetName.to_hex()).toBe(assetName);
+  expect(assetsMap.get(cmlAssetName)).toBe(10n)
 });
 
 test('expect correct value to assets conversion', async () => {
-  const value = Loader.Cardano.Value.new(
-    Loader.Cardano.BigNum.from_str('1000000')
-  );
   const multiAsset = Loader.Cardano.MultiAsset.new();
-  const assetsSet = Loader.Cardano.Assets.new();
-  assetsSet.insert(
-    Loader.Cardano.AssetName.new(Buffer.from('74657374313233', 'hex')),
-    Loader.Cardano.BigNum.from_str('10')
+  const value = Loader.Cardano.Value.new(
+    BigInt('1000000'), multiAsset
   );
-  multiAsset.insert(
-    Loader.Cardano.ScriptHash.from_bytes(
+  const assetsSet = Loader.Cardano.MapAssetNameToCoin.new();
+  assetsSet.insert(
+    Loader.Cardano.AssetName.from_raw_bytes(Buffer.from('74657374313233', 'hex')),
+    BigInt('10')
+  );
+  multiAsset.insert_assets(
+    Loader.Cardano.ScriptHash.from_raw_bytes(
       Buffer.from(
         '2a286ad895d091f2b3d168a6091ad2627d30a72761a5bc36eef00740',
         'hex'
@@ -63,7 +55,6 @@ test('expect correct value to assets conversion', async () => {
     ),
     assetsSet
   );
-  value.set_multiasset(multiAsset);
   const assets = await valueToAssets(value);
   const testAssets = [
     { unit: 'lovelace', quantity: '1000000' },

@@ -22,7 +22,7 @@ const migration = {
 
     for (let i = 0; i < accounts.length; i++) {
       const currentAccount = storage[accounts[i]];
-      const paymentKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
+      const paymentKeyHash = Loader.Cardano.Ed25519KeyHash.from_raw_bytes(
         Buffer.from(currentAccount.paymentKeyHash, 'hex')
       );
       const paymentKeyHashBech32 = paymentKeyHash.to_bech32('addr_vkh');
@@ -57,11 +57,11 @@ const migration = {
             );
             currentAccountNetwork.minAda = Loader.Cardano.min_ada_required(
               checkOutput,
-              Loader.Cardano.BigNum.from_str(
+              BigInt(
                 // protocolParameters.coinsPerUtxoWord
                 (4310).toString() // We hardcode this, since we don't know if Blockfrost switches PP quickly during the epoch transition
               )
-            ).to_str();
+            ).toString();
           } else {
             currentAccountNetwork.minAda = 0;
           }

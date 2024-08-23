@@ -1,4 +1,4 @@
-import * as wasm from '../wasm/cardano_multiplatform_lib/cardano_multiplatform_lib.generated';
+import * as wasm from '@dcspark/cardano-multiplatform-lib-browser';
 import * as wasm2 from '../wasm/cardano_message_signing/cardano_message_signing.generated';
 
 /**
@@ -9,7 +9,6 @@ class Loader {
   async load() {
     if (this._wasm && this._wasm2) return;
     try {
-      await wasm.instantiate();
       await wasm2.instantiate();
     } catch (_e) {
       // Only happens when running with Jest (Node.js)

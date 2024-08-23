@@ -1162,7 +1162,7 @@ class COSEEncrypt {
   ciphertext() {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.coseencrypt0_ciphertext(retptr, this.ptr);
+      wasm.coseencrypt_ciphertext(retptr, this.ptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       let v0;
@@ -1768,7 +1768,7 @@ class COSESign {
   payload() {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.coseencrypt0_ciphertext(retptr, this.ptr);
+      wasm.coseencrypt_ciphertext(retptr, this.ptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       let v0;
@@ -1880,7 +1880,7 @@ class COSESign1 {
   payload() {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.coseencrypt0_ciphertext(retptr, this.ptr);
+      wasm.coseencrypt_ciphertext(retptr, this.ptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       let v0;
@@ -2181,7 +2181,7 @@ class COSESignature {
   signature() {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.cosesignature_signature(retptr, this.ptr);
+      wasm.cosesign1_signature(retptr, this.ptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       var v0 = getArrayU8FromWasm0(r0, r1).slice();
