@@ -19,7 +19,7 @@ import {
   PoolOwnerType,
   PoolRewardAccountType,
   RelayType,
-  StakeCredentialParamsType,
+  CredentialParamsType,
   TransactionSigningMode,
   TxAuxiliaryDataType,
   TxOutputDestinationType,
@@ -917,7 +917,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         if (credential.kind() === 0) {
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.KEY_PATH,
+              type: CredentialParamsType.KEY_PATH,
               keyPath: keys.stake.path,
             },
           };
@@ -927,7 +927,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           ).toString('hex');
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.SCRIPT_HASH,
+              type: CredentialParamsType.SCRIPT_HASH,
               scriptHash,
             },
           };
@@ -938,7 +938,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         if (credential.kind() === 0) {
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.KEY_PATH,
+              type: CredentialParamsType.KEY_PATH,
               keyPath: keys.stake.path,
             },
           };
@@ -948,7 +948,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           ).toString('hex');
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.SCRIPT_HASH,
+              type: CredentialParamsType.SCRIPT_HASH,
               scriptHash,
             },
           };
@@ -963,7 +963,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         if (credential.kind() === 0) {
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.KEY_PATH,
+              type: CredentialParamsType.KEY_PATH,
               keyPath: keys.stake.path,
             },
           };
@@ -973,7 +973,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           ).toString('hex');
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.SCRIPT_HASH,
+              type: CredentialParamsType.SCRIPT_HASH,
               scriptHash,
             },
           };
@@ -1106,11 +1106,11 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     for (let i = 0; i < withdrawals.keys().len(); i++) {
       const withdrawal = { stakeCredential: {} };
       const rewardAddress = withdrawals.keys().get(i);
-      if (rewardAddress.payment().kind() === 0) {
-        withdrawal.stakeCredential.type = StakeCredentialParamsType.KEY_PATH;
+      if (rewardAddress.payment_cred().kind() === 0) {
+        withdrawal.stakeCredential.type = CredentialParamsType.KEY_PATH;
         withdrawal.stakeCredential.keyPath = keys.stake.path;
       } else {
-        withdrawal.stakeCredential.type = StakeCredentialParamsType.SCRIPT_HASH;
+        withdrawal.stakeCredential.type = CredentialParamsType.SCRIPT_HASH;
         withdrawal.stakeCredential.scriptHash = Buffer.from(
           rewardAddress.payment().as_script().to_raw_bytes()
         ).toString('hex');
