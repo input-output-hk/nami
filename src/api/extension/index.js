@@ -1565,6 +1565,9 @@ export const getAdaHandle = async (assetName) => {
       case 'preprod':
         handleUrl = 'https://preprod.api.handle.me'
         break;
+      case 'preview':
+        handleUrl = 'https://preview.api.handle.me'
+        break;
       default:
         return null;
     }
