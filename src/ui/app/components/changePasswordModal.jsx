@@ -79,7 +79,7 @@ export const ChangePasswordModal = React.forwardRef((props, ref) => {
         encryptedRootKey
       );
 
-      const rootKey = Loader.Cardano.Bip32PrivateKey.from_bytes(
+      const rootKey = Loader.Cardano.Bip32PrivateKey.from_raw_bytes(
         Buffer.from(decryptedRootKey, 'hex')
       );
       const newlyEncryptedRootKey = await encryptWithPassword(

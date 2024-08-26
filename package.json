@@ -18,6 +18,7 @@
     "@chakra-ui/css-reset": "^2.3.0",
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
+    "@dcspark/cardano-multiplatform-lib-browser": "^6.0.0",
     "@dcspark/milkomeda-constants": "^0.4.0",
     "@dicebear/avatars": "^4.6.4",
     "@dicebear/avatars-bottts-sprites": "^4.6.4",

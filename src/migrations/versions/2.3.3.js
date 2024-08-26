@@ -16,18 +16,18 @@ const migration = {
           const currentAccount = storage[accounts[i]];
           const network = networks[j];
           const currentAccountNetwork = currentAccount[network];
-          const paymentKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
+          const paymentKeyHash = Loader.Cardano.Ed25519KeyHash.from_raw_bytes(
             Buffer.from(currentAccount.paymentKeyHash, 'hex')
           );
-          const stakeKeyHash = Loader.Cardano.Ed25519KeyHash.from_bytes(
+          const stakeKeyHash = Loader.Cardano.Ed25519KeyHash.from_raw_bytes(
             Buffer.from(currentAccount.stakeKeyHash, 'hex')
           );
           const paymentAddr = Loader.Cardano.BaseAddress.new(
             network === NETWORK_ID.mainnet
               ? Loader.Cardano.NetworkInfo.mainnet().network_id()
               : Loader.Cardano.NetworkInfo.testnet().network_id(),
-            Loader.Cardano.StakeCredential.from_keyhash(paymentKeyHash),
-            Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
+            Loader.Cardano.Credential.new_pub_key(paymentKeyHash),
+            Loader.Cardano.Credential.new_pub_key(stakeKeyHash)
           )
             .to_address()
             .to_bech32();
@@ -36,7 +36,7 @@ const migration = {
             network === NETWORK_ID.mainnet
               ? Loader.Cardano.NetworkInfo.mainnet().network_id()
               : Loader.Cardano.NetworkInfo.testnet().network_id(),
-            Loader.Cardano.StakeCredential.from_keyhash(stakeKeyHash)
+            Loader.Cardano.Credential.new_pub_key(stakeKeyHash)
           )
             .to_address()
             .to_bech32();
