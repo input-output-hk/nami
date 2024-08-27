@@ -110,7 +110,7 @@ export const signAndSubmit = async (
   );
   const transaction = Loader.Cardano.Transaction.new(
     tx.body(),
-    Loader.Cardano.TransactionWitnessSet.from_cbor_hex(witnessSet),
+    witnessSet,
     true,
     tx.auxiliary_data()
   );
