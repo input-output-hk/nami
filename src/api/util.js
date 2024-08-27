@@ -338,7 +338,7 @@ const outputsToTrezor = (outputs, address, index) => {
     const output = outputs.get(i);
     const multiAsset = output.amount().multi_asset();
     let tokenBundle = null;
-    if (multiAsset) {
+    if (multiAsset && multiAsset.policy_count() > 0) {
       tokenBundle = [];
       for (let j = 0; j < multiAsset.keys().len(); j++) {
         const policy = multiAsset.keys().get(j);
@@ -352,9 +352,9 @@ const outputsToTrezor = (outputs, address, index) => {
             amount,
           });
         }
-        // sort canonical
+        // sort asset names canonically
         tokens.sort((a, b) => {
-          if (a.assetNameBytes.length == b.assetNameBytes.length) {
+          if (a.assetNameBytes.length === b.assetNameBytes.length) {
             return a.assetNameBytes > b.assetNameBytes ? 1 : -1;
           } else if (a.assetNameBytes.length > b.assetNameBytes.length)
             return 1;
@@ -365,6 +365,15 @@ const outputsToTrezor = (outputs, address, index) => {
           tokenAmounts: tokens,
         });
       }
+
+      // sort policies canonically
+      tokenBundle.sort((a, b) => {
+        if (a.policyId.length === b.policyId.length) {
+          return a.policyId > b.policyId ? 1 : -1;
+        } else if (a.policyId.length > b.policyId.length)
+          return 1;
+        else return -1;
+      });
     }
     const outputAddress = Buffer.from(output.address().to_raw_bytes()).toString(
       'hex'
@@ -429,6 +438,7 @@ const outputsToTrezor = (outputs, address, index) => {
     if (!referenceScript) delete outputRes.referenceScript;
     trezorOutputs.push(outputRes);
   }
+
   return trezorOutputs;
 };
 
