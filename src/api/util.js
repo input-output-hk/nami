@@ -149,6 +149,18 @@ export const compileOutputs = (outputList) => {
   return compiledAmountList;
 };
 
+const sortCanonicallyInPlace = (items, selector) => {
+  return items.sort((a, b) => {
+    const itemA = selector(a);
+    const itemB = selector(b);
+    if (itemA.length === itemB.length) {
+      return itemA > itemB ? 1 : -1;
+    } else if (itemA.length > itemB.length)
+      return 1;
+    else return -1;
+  });
+}
+
 /**
  * Add up an AmountList values to an other AmountList
  * @param {AmountList} amountList - Set of amounts to be added.
@@ -352,28 +364,14 @@ const outputsToTrezor = (outputs, address, index) => {
             amount,
           });
         }
-        // sort asset names canonically
-        tokens.sort((a, b) => {
-          if (a.assetNameBytes.length === b.assetNameBytes.length) {
-            return a.assetNameBytes > b.assetNameBytes ? 1 : -1;
-          } else if (a.assetNameBytes.length > b.assetNameBytes.length)
-            return 1;
-          else return -1;
-        });
+        sortCanonicallyInPlace(tokens, item => item.assetNameBytes);
         tokenBundle.push({
           policyId: Buffer.from(policy.to_raw_bytes()).toString('hex'),
           tokenAmounts: tokens,
         });
       }
 
-      // sort policies canonically
-      tokenBundle.sort((a, b) => {
-        if (a.policyId.length === b.policyId.length) {
-          return a.policyId > b.policyId ? 1 : -1;
-        } else if (a.policyId.length > b.policyId.length)
-          return 1;
-        else return -1;
-      });
+      sortCanonicallyInPlace(tokenBundle, item => item.policyId);
     }
     const outputAddress = Buffer.from(output.address().to_raw_bytes()).toString(
       'hex'
@@ -647,18 +645,13 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
           mintAmount: amount.toString(),
         });
       }
-      // sort canonical
-      tokens.sort((a, b) => {
-        if (a.assetNameBytes.length == b.assetNameBytes.length) {
-          return a.assetNameBytes > b.assetNameBytes ? 1 : -1;
-        } else if (a.assetNameBytes.length > b.assetNameBytes.length) return 1;
-        else return -1;
-      });
+      sortCanonicallyInPlace(tokens, item => item.assetNameBytes);
       mintBundle.push({
         policyId: Buffer.from(policy.to_raw_bytes()).toString('hex'),
         tokenAmounts: tokens,
       });
     }
+    sortCanonicallyInPlace(mintBundle, item => item.policyId);
     additionalWitnessRequests = [];
     if (keys.payment.path) additionalWitnessRequests.push(keys.payment.path);
     if (keys.stake.path) additionalWitnessRequests.push(keys.stake.path);
@@ -795,18 +788,14 @@ const outputsToLedger = (outputs, address, index) => {
             amount,
           });
         }
-        // sort canonical
-        tokens.sort((a, b) => {
-          if (a.assetNameHex.length == b.assetNameHex.length) {
-            return a.assetNameHex > b.assetNameHex ? 1 : -1;
-          } else if (a.assetNameHex.length > b.assetNameHex.length) return 1;
-          else return -1;
-        });
+        sortCanonicallyInPlace(tokens, item => item.assetNameHex);
         tokenBundle.push({
           policyIdHex: Buffer.from(policy.to_raw_bytes()).toString('hex'),
           tokens,
         });
       }
+      
+      sortCanonicallyInPlace(tokenBundle, item => item.policyIdHex);
     }
 
     const outputAddress = Buffer.from(output.address().to_raw_bytes()).toString(
@@ -1155,18 +1144,13 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           amount: amount.toString(),
         });
       }
-      // sort canonical
-      tokens.sort((a, b) => {
-        if (a.assetNameHex.length == b.assetNameHex.length) {
-          return a.assetNameHex > b.assetNameHex ? 1 : -1;
-        } else if (a.assetNameHex.length > b.assetNameHex.length) return 1;
-        else return -1;
-      });
+      sortCanonicallyInPlace(tokens, item => item.assetNameHex);
       mintBundle.push({
         policyIdHex: Buffer.from(policy.to_raw_bytes()).toString('hex'),
         tokens,
       });
     }
+    sortCanonicallyInPlace(mintBundle, item => item.policyIdHex);
   }
   additionalWitnessPaths = [];
   if (keys.payment.path) additionalWitnessPaths.push(keys.payment.path);
