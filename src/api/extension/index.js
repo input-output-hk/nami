@@ -430,12 +430,14 @@ export const getCollateral = async () => {
         ),
         BigInt(collateral.txId.toString())
       ),
-      Loader.Cardano.TransactionOutput.new(
-        Loader.Cardano.Address.from_bech32(
-          currentAccount[network.id].paymentAddr
-        ),
-        Loader.Cardano.Value.new(
-          BigInt(collateral.lovelace), Loader.Cardano.MultiAsset.new()
+      Loader.Cardano.TransactionOutput.new_alonzo_format_tx_out(
+        Loader.Cardano.AlonzoFormatTxOut.new(
+          Loader.Cardano.Address.from_bech32(
+            currentAccount[network.id].paymentAddr
+          ),
+          Loader.Cardano.Value.new(
+            BigInt(collateral.lovelace), Loader.Cardano.MultiAsset.new()
+          )
         )
       )
     );
@@ -994,14 +996,8 @@ export const signTx = async (
     password,
     accountIndex
   );
-  const paymentKeyHash = Buffer.from(
-    paymentKey.to_public().hash().to_raw_bytes(),
-    'hex'
-  ).toString('hex');
-  const stakeKeyHash = Buffer.from(
-    stakeKey.to_public().hash().to_raw_bytes(),
-    'hex'
-  ).toString('hex');
+  const paymentKeyHash = paymentKey.to_public().hash().to_hex();
+  const stakeKeyHash = stakeKey.to_public().hash().to_hex();
 
   const rawTx = Loader.Cardano.Transaction.from_cbor_bytes(Buffer.from(tx, 'hex'));
 
@@ -1073,14 +1069,12 @@ export const signTxHW = async (
       if (
         witness.path[3] == 0 // payment key
       ) {
-        const vkey = Loader.Cardano.Vkey.new(
-          Loader.Cardano.Bip32PublicKey.from_raw_bytes(
-            Buffer.from(account.publicKey, 'hex')
-          )
-            .derive(0)
-            .derive(0)
-            .to_raw_key()
-        );
+        const vkey = Loader.Cardano.Bip32PublicKey.from_raw_bytes(
+          Buffer.from(account.publicKey, 'hex')
+        )
+          .derive(0)
+          .derive(0)
+          .to_raw_key();
         const signature = Loader.Cardano.Ed25519Signature.from_hex(
           witness.witnessSignatureHex
         );
@@ -1088,14 +1082,12 @@ export const signTxHW = async (
       } else if (
         witness.path[3] == 2 // stake key
       ) {
-        const vkey = Loader.Cardano.Vkey.new(
-          Loader.Cardano.Bip32PublicKey.from_raw_bytes(
-            Buffer.from(account.publicKey, 'hex')
-          )
-            .derive(2)
-            .derive(0)
-            .to_raw_key()
-        );
+        const vkey = Loader.Cardano.Bip32PublicKey.from_raw_bytes(
+          Buffer.from(account.publicKey, 'hex')
+        )
+          .derive(2)
+          .derive(0)
+          .to_raw_key();
         const signature = Loader.Cardano.Ed25519Signature.from_hex(
           witness.witnessSignatureHex
         );
@@ -1132,9 +1124,7 @@ export const signTxHW = async (
     const witnessSet = Loader.Cardano.TransactionWitnessSet.new();
     const vkeys = Loader.Cardano.VkeywitnessList.new();
     result.payload.witnesses.forEach((witness) => {
-      const vkey = Loader.Cardano.Vkey.new(
-        Loader.Cardano.PublicKey.from_raw_bytes(Buffer.from(witness.pubKey, 'hex'))
-      );
+      const vkey = Loader.Cardano.PublicKey.from_bytes(Buffer.from(witness.pubKey, 'hex'));
       const signature = Loader.Cardano.Ed25519Signature.from_hex(
         witness.signature
       );

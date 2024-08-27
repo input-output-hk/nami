@@ -215,9 +215,11 @@ export const utxoFromJson = async (output, address) => {
         output.output_index ?? output.txId
       )
     ),
-    Loader.Cardano.TransactionOutput.new(
-      Loader.Cardano.Address.from_raw_bytes(Buffer.from(address, 'hex')),
-      await assetsToValue(output.amount)
+    Loader.Cardano.TransactionOutput.new_alonzo_format_tx_out(
+      Loader.Cardano.AlonzoFormatTxOut.new(
+        Loader.Cardano.Address.from_raw_bytes(Buffer.from(address, 'hex')),
+        await assetsToValue(output.amount)
+      )
     )
   );
 };
@@ -421,7 +423,7 @@ const outputsToTrezor = (outputs, address, index) => {
       amount: output.amount().coin().toString(),
       tokenBundle,
       datumHash,
-      format: output.format(),
+      format: output.kind(),
       inlineDatum,
       referenceScript,
       ...destination,
@@ -490,7 +492,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         const delegation = cert.as_stake_delegation();
         const credential = delegation.stake_credential();
         const poolKeyHashHex = Buffer.from(
-          delegation.pool_keyhash().to_raw_bytes()
+          delegation.pool().to_raw_bytes()
         ).toString('hex');
         certificate.type = CardanoCertificateType.STAKE_DELEGATION;
         if (credential.kind() === 0) {
@@ -619,8 +621,8 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         ),
       }
     : null;
-  const validityIntervalStart = tx.body().validity_start_interval()
-    ? tx.body().validity_start_interval().toString()
+  const validityIntervalStart = tx.body().validity_interval_start()
+    ? tx.body().validity_interval_start().toString()
     : null;
 
   const mint = tx.body().mint();
@@ -724,8 +726,8 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
   }
 
-  const totalCollateral = tx.body().total_collateral_inputs()
-    ? tx.body().total_collateral_inputs().toString()
+  const totalCollateral = tx.body().total_collateral()
+    ? tx.body().total_collateral().toString()
     : null;
 
   let collateralReturn = (() => {
@@ -837,7 +839,7 @@ const outputsToLedger = (outputs, address, index) => {
           };
     const datum = output.datum();
     const refScript = output.script_ref();
-    const isBabbage = output.format();
+    const isBabbage = output.kind();
     const outputRes = isBabbage
       ? {
           format: TxOutputFormat.MAP_BABBAGE,
@@ -955,7 +957,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         const delegation = cert.as_stake_delegation();
         const credential = delegation.stake_credential();
         const poolKeyHashHex = Buffer.from(
-          delegation.pool_keyhash().to_raw_bytes()
+          delegation.pool().to_raw_bytes()
         ).toString('hex');
         certificate.type = CertificateType.STAKE_DELEGATION;
         if (credential.kind() === 0) {
@@ -1127,8 +1129,8 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         },
       }
     : null;
-  const validityIntervalStart = tx.body().validity_start_interval()
-    ? tx.body().validity_start_interval().toString()
+  const validityIntervalStart = tx.body().validity_interval_start()
+    ? tx.body().validity_interval_start().toString()
     : null;
 
   const mint = tx.body().mint();
@@ -1206,8 +1208,8 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     return null;
   })();
 
-  const totalCollateral = tx.body().total_collateral_inputs()
-    ? tx.body().total_collateral_inputs().toString()
+  const totalCollateral = tx.body().total_collateral()
+    ? tx.body().total_collateral().toString()
     : null;
 
   let referenceInputs = null;

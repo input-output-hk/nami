@@ -353,7 +353,7 @@ const SignTx = ({ request, controller }) => {
             requiredKeyHashes.push(keyHash);
           }
         } else if (cert.kind() === 4) {
-          const operator = cert.as_pool_retirement().pool_keyhash().to_hex();
+          const operator = cert.as_pool_retirement().pool().to_hex();
           requiredKeyHashes.push(operator);
         } else if (cert.kind() === 6) {
           const instant_reward = cert
@@ -505,9 +505,7 @@ const SignTx = ({ request, controller }) => {
     const currentAccount = await getCurrentAccount();
     setAccount(currentAccount);
     let utxos = await getUtxos();
-    const tx = Loader.Cardano.Transaction.from_cbor_bytes(
-      Buffer.from(request.data.tx, 'hex')
-    );
+    const tx = Loader.Cardano.Transaction.from_cbor_hex(request.data.tx);
     setTx(request.data.tx);
     getFee(tx);
     await getValue(tx, utxos, currentAccount);
