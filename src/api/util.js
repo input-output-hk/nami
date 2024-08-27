@@ -1106,7 +1106,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     for (let i = 0; i < withdrawals.keys().len(); i++) {
       const withdrawal = { stakeCredential: {} };
       const rewardAddress = withdrawals.keys().get(i);
-      if (rewardAddress.payment_cred().kind() === 0) {
+      if (rewardAddress.payment().kind() === 0) {
         withdrawal.stakeCredential.type = CredentialParamsType.KEY_PATH;
         withdrawal.stakeCredential.keyPath = keys.stake.path;
       } else {
