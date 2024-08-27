@@ -196,7 +196,7 @@ const SignTx = ({ request, controller }) => {
             datum.kind() === 0
               ? datum.as_hash().to_raw_bytes()
               : Loader.Cardano.hash_plutus_data(
-                  datum.as_datum().get()
+                  datum.as_datum()
                 ).to_raw_bytes()
           ).toString('hex');
       }

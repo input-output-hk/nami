@@ -105,7 +105,7 @@ export const multiAssetCount = async (multiAsset) => {
   if (!multiAsset) return 0;
   let count = 0;
   const policies = multiAsset.keys();
-  for (let j = 0; j < multiAsset.len(); j++) {
+  for (let j = 0; j < policies.len(); j++) {
     const policy = policies.get(j);
     const policyAssets = multiAsset.get_assets(policy);
     const assetNames = policyAssets.keys();
@@ -412,10 +412,10 @@ const outputsToTrezor = (outputs, address, index) => {
         : null;
     const inlineDatum =
       output.datum() && output.datum().kind() === 1
-        ? Buffer.from(output.datum().as_datum().get().to_cbor_bytes()).toString('hex')
+        ? Buffer.from(output.datum().as_datum().to_cbor_bytes()).toString('hex')
         : null;
     const referenceScript = output.script_ref()
-      ? Buffer.from(output.script_ref().get().to_cbor_bytes()).toString('hex')
+      ? Buffer.from(output.script_ref().to_cbor_bytes()).toString('hex')
       : null;
     const outputRes = {
       amount: output.amount().coin().toString(),
@@ -630,7 +630,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     mintBundle = [];
     for (let j = 0; j < mint.keys().len(); j++) {
       const policy = mint.keys().get(j);
-      const assets = mint.get(policy);
+      const assets = mint.get_assets(policy);
       const tokens = [];
       for (let k = 0; k < assets.keys().len(); k++) {
         const assetName = assets.keys().get(k);
@@ -855,12 +855,12 @@ const outputsToLedger = (outputs, address, index) => {
               : {
                   type: DatumType.INLINE,
                   datumHex: Buffer.from(
-                    datum.as_datum().get().to_cbor_bytes()
+                    datum.as_datum().to_cbor_bytes()
                   ).toString('hex'),
                 }
             : null,
           referenceScriptHex: refScript
-            ? Buffer.from(refScript.get().to_cbor_bytes()).toString('hex')
+            ? Buffer.from(refScript.to_cbor_bytes()).toString('hex')
             : null,
         }
       : {
@@ -1138,13 +1138,13 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     mintBundle = [];
     for (let j = 0; j < mint.keys().len(); j++) {
       const policy = mint.keys().get(j);
-      const assets = mint.get(policy);
+      const assets = mint.get_assets(policy);
       const tokens = [];
       for (let k = 0; k < assets.keys().len(); k++) {
         const assetName = assets.keys().get(k);
         const amount = assets.get(assetName);
         tokens.push({
-          assetNameHex: Buffer.from(assetName.name()).toString('hex'),
+          assetNameHex: Buffer.from(assetName.to_str()).toString('hex'),
           amount: amount.toString(),
         });
       }
