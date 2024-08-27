@@ -110,7 +110,7 @@ export const signAndSubmit = async (
   );
   const transaction = Loader.Cardano.Transaction.new(
     tx.body(),
-    witnessSet,
+    Loader.Cardano.TransactionWitnessSet.from_cbor_hex(witnessSet),
     true,
     tx.auxiliary_data()
   );
@@ -223,7 +223,7 @@ export const delegationTx = async (
   utxos.forEach((utxo) => {
     txBuilder.add_input(
       Loader.Cardano.SingleInputBuilder.from_transaction_unspent_output(utxo).payment_key()
-    ) 
+    )
   });
 
   return txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked();
@@ -274,7 +274,7 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
   utxos.forEach((utxo) => {
     txBuilder.add_input(
       Loader.Cardano.SingleInputBuilder.from_transaction_unspent_output(utxo).payment_key()
-    ) 
+    )
   });
 
   return txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked();
@@ -339,7 +339,7 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
   utxos.forEach((utxo) => {
     txBuilder.add_input(
       Loader.Cardano.SingleInputBuilder.from_transaction_unspent_output(utxo).payment_key()
-    ) 
+    )
   });
 
   return txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked();

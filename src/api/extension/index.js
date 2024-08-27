@@ -41,6 +41,22 @@ import AssetFingerprint from '@emurgo/cip14-js';
 import { isAddress } from 'web3-validator';
 import { milkomedaNetworks } from '@dcspark/milkomeda-constants';
 
+const compareValues = (value1, value2) => {
+  try {
+    const result = value1.checked_sub(value2);
+
+    // If subtraction does not throw and result is not zero, value1 is greater
+    if (!result.is_zero()) {
+      return 1;
+    }
+
+    return 0;
+  } catch (error) {
+    // If we catch an underflow error, value1 is less than value2
+    return -1;
+  }
+}
+
 export const getStorage = (key) =>
   new Promise((res, rej) =>
     chrome.storage.local.get(key, (result) => {
@@ -339,8 +355,8 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
 
     converted = converted.filter(
       (unspent) =>
-        !unspent.output().amount().compare(filterValue) ||
-        unspent.output().amount().compare(filterValue) !== -1
+        !compareValues(unspent.output().amount(), filterValue) ||
+        compareValues(unspent.output().amount(), filterValue) !== -1
     );
   }
   if ((amount || paginate) && converted.length <= 0) {
@@ -431,8 +447,7 @@ export const getCollateral = async () => {
       utxo
         .output()
         .amount()
-        .coin()
-        .compare(BigInt('50000000')) <= 0 &&
+        .coin() <= BigInt('50000000') &&
       !utxo.output().amount().multi_asset()
   );
 };
@@ -816,7 +831,7 @@ export const verifyTx = async (tx) => {
       Buffer.from(tx, 'hex')
     );
     let networkId = parseTx.body().network_id()
-      ? parseTx.body().network_id().kind()
+      ? parseTx.body().network_id().network()
       : null;
     if (!networkId && networkId != 0) {
       networkId = parseTx.body().outputs().get(0).address().network_id();
@@ -854,7 +869,7 @@ export const signData = async (address, payload, password, accountIndex) => {
   protectedHeaders.set_algorithm_id(
     Loader.Message.Label.from_algorithm_id(Loader.Message.AlgorithmId.EdDSA)
   );
-  protectedHeaders.set_key_id(publicKey.as_bytes());
+  protectedHeaders.set_key_id(publicKey.to_raw_bytes());
   protectedHeaders.set_header(
     Loader.Message.Label.new_text('address'),
     Loader.Message.CBORValue.new_bytes(Buffer.from(address, 'hex'))
@@ -906,7 +921,7 @@ export const signDataCIP30 = async (
   protectedHeaders.set_algorithm_id(
     Loader.Message.Label.from_algorithm_id(Loader.Message.AlgorithmId.EdDSA)
   );
-  // protectedHeaders.set_key_id(publicKey.as_bytes()); // Removed to adhere to CIP-30
+  // protectedHeaders.set_key_id(publicKey.to_raw_bytes()); // Removed to adhere to CIP-30
   protectedHeaders.set_header(
     Loader.Message.Label.new_text('address'),
     Loader.Message.CBORValue.new_bytes(Buffer.from(address, 'hex'))
@@ -951,7 +966,7 @@ export const signDataCIP30 = async (
     Loader.Message.Label.new_int(
       Loader.Message.Int.new_negative(Loader.Message.BigNum.from_str('2'))
     ),
-    Loader.Message.CBORValue.new_bytes(publicKey.as_bytes())
+    Loader.Message.CBORValue.new_bytes(publicKey.to_raw_bytes())
   ); // x (-2) set to public key
 
   return {
@@ -1277,7 +1292,7 @@ export const createAccount = async (name, password, accountIndex = null) => {
     index
   );
 
-  const publicKey = Buffer.from(accountKey.to_public().as_bytes()).toString(
+  const publicKey = Buffer.from(accountKey.to_public().to_raw_bytes()).toString(
     'hex'
   ); // BIP32 Public key
   const paymentKeyPub = paymentKey.to_public();
@@ -1440,7 +1455,7 @@ export const createHWAccounts = async (accounts) => {
 
     existingAccounts[index] = {
       index,
-      publicKey: Buffer.from(publicKey.as_bytes()).toString('hex'),
+      publicKey: Buffer.from(publicKey.to_raw_bytes()).toString('hex'),
       paymentKeyHash,
       paymentKeyHashBech32,
       stakeKeyHash,
@@ -1650,7 +1665,7 @@ export const createWallet = async (name, seedPhrase, password) => {
 
   const encryptedRootKey = await encryptWithPassword(
     password,
-    rootKey.as_bytes()
+    rootKey.to_raw_bytes()
   );
   rootKey.free();
   rootKey = null;
