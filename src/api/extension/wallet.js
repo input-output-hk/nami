@@ -2,6 +2,7 @@ import { getUtxos, signTx, signTxHW, submitTx } from '.';
 import { ERROR, TX } from '../../config/config';
 import Loader from '../loader';
 import { blockfrostRequest } from '../util';
+import { decodeTx, encodeTx, transformTx } from 'cardano-hw-interop-lib';
 
 const WEIGHTS = Uint32Array.from([
   200, // weight ideal > 100 inputs
@@ -36,6 +37,18 @@ export const initTx = async () => {
     maxCollateralInputs: parseInt(p.max_collateral_inputs),
   };
 };
+
+/**
+ * Makes sure the transaction is CIP-0021 compliant.
+ *
+ * @param tx The transaction to transform to canonical form (if needed).
+ *
+ * @return {Transaction} the new canonical transaction
+ */
+const toCanonicalTx = (tx) => {
+  const canonicalCbor = encodeTx(transformTx(decodeTx(tx.to_cbor_bytes())));
+  return Loader.Cardano.Transaction.from_cbor_bytes(canonicalCbor);
+}
 
 export const buildTx = async (
   account,
@@ -93,7 +106,9 @@ export const buildTx = async (
     )
   });
 
-  return txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked();
+  return toCanonicalTx(
+    txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked()
+  );
 };
 
 export const signAndSubmit = async (
@@ -226,7 +241,9 @@ export const delegationTx = async (
     )
   });
 
-  return txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked();
+  return toCanonicalTx(
+    txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked()
+  );
 };
 
 export const withdrawalTx = async (account, delegation, protocolParameters) => {
@@ -279,7 +296,9 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
     )
   });
 
-  return txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked();
+  return toCanonicalTx(
+    txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked()
+  );
 };
 
 export const undelegateTx = async (account, delegation, protocolParameters) => {
@@ -346,5 +365,7 @@ export const undelegateTx = async (account, delegation, protocolParameters) => {
     )
   });
 
-  return txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked();
+  return toCanonicalTx(
+    txBuilder.build(Loader.Cardano.ChangeSelectionAlgo.Default, Loader.Cardano.Address.from_bech32(account.paymentAddr)).build_unchecked()
+  );
 };
