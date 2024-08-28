@@ -261,7 +261,7 @@ export const updateTxInfo = async (txHash) => {
 
   let detail = await currentAccount[network.id].history.details[txHash];
 
-  if (typeof detail !== 'object' || Object.keys(detail).length < 4) {
+  if (typeof detail !== 'object' || !detail.info || !detail.block || !detail.utxos || !detail.metadata) {
     detail = {};
     const info = getTxInfo(txHash);
     const uTxOs = getTxUTxOs(txHash);
