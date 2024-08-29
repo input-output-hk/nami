@@ -36,7 +36,7 @@ const App = () => {
     const tx = params.get('tx');
     const hw = indexToHw(account.index);
 
-    const txDes = Loader.Cardano.Transaction.from_bytes(Buffer.from(tx, 'hex'));
+    const txDes = Loader.Cardano.Transaction.from_cbor_bytes(Buffer.from(tx, 'hex'));
     await initHW({ device: hw.device, id: hw.id });
     try {
       await signAndSubmitHW(txDes, {

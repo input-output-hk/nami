@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Nami",
-  "version": "3.7.4",
-  "description": "A wallet to experience Cardano to the fullest",
+  "version": "3.8.0",
+  "description": "Maintained by IOG",
   "background": { "service_worker": "background.bundle.js" },
   "action": {
     "default_popup": "mainPopup.html",

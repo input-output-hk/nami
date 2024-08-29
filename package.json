@@ -1,7 +1,7 @@
 {
   "name": "nami-wallet",
-  "version": "3.7.4",
-  "description": "A wallet to experience Cardano to the fullest",
+  "version": "3.8.0",
+  "description": "Maintained by IOG",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -14,10 +14,11 @@
     "test": "NODE_ENV=test jest"
   },
   "dependencies": {
-    "@cardano-foundation/ledgerjs-hw-app-cardano": "^6.0.0",
+    "@cardano-foundation/ledgerjs-hw-app-cardano": "^7.1.3",
     "@chakra-ui/css-reset": "^2.3.0",
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
+    "@dcspark/cardano-multiplatform-lib-browser": "^6.0.0",
     "@dcspark/milkomeda-constants": "^0.4.0",
     "@dicebear/avatars": "^4.6.4",
     "@dicebear/avatars-bottts-sprites": "^4.6.4",
@@ -26,8 +27,9 @@
     "@emurgo/cip14-js": "^3.0.1",
     "@fontsource/ubuntu": "^5.0.8",
     "@ledgerhq/hw-transport-webusb": "^6.28.0",
-    "@trezor/connect-web": "^9.0.11",
+    "@trezor/connect-web": "^9.3.0",
     "bip39": "^3.0.4",
+    "cardano-hw-interop-lib": "^3.0.2",
     "crc": "^4.1.1",
     "crypto-random-string": "^5.0.0",
     "debounce": "^2.0.0",
@@ -58,6 +60,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.8",
+    "@dcspark/cardano-multiplatform-lib-nodejs": "^6.0.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.11",
     "@swc/core": "^1.3.100",
     "@tsconfig/node20": "^20.1.2",

@@ -30,14 +30,15 @@ const AssetsViewer = ({ assets }) => {
     }
     setAssetsArray(null);
     await new Promise((res, rej) => setTimeout(() => res(), 10));
-    const assetsArray = [];
-    let i = 0;
-    const filter = (asset) =>
-      search
-        ? asset.name.toLowerCase().includes(search.toLowerCase()) ||
-          asset.policy.includes(search) ||
-          asset.fingerprint.includes(search)
+    const filter = (asset) => {
+      const source = [asset.name, asset.policy, asset.fingerprint]
+        .filter((a) => a !== undefined)
+        .map((a) => a.toLowerCase());
+
+      return search
+        ? source.find((a) => a.includes(search.toLowerCase()))
         : true;
+    };
     const filteredAssets = assets.filter(filter);
     setTotal(filteredAssets.length);
     setAssetsArray(filteredAssets);

@@ -146,7 +146,8 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
         data.delegation,
         data.protocolParameters,
         metadata.hex
-      ).catch(() => {
+      ).catch((error) => {
+        console.error(error);
         throw new Error(
           'Transaction not possible (maybe insufficient balance)'
         );
@@ -154,7 +155,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
 
       setData((d) => ({
         ...d,
-        fee: tx.body().fee().to_str(),
+        fee: tx.body().fee().toString(),
         tx,
         pool: {
           ticker: metadata.ticker,
@@ -225,10 +226,11 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           tx,
           account,
           rewards: delegation.rewards,
-          fee: tx.body().fee().to_str(),
+          fee: tx.body().fee().toString(),
           ready: true,
         });
       } catch (e) {
+        console.warn(e);
         setData((d) => ({
           ...d,
           error: 'Transaction not possible (maybe reward amount too small)',
@@ -252,7 +254,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           pool: { ...poolDefaultValue },
           tx,
           account,
-          fee: tx.body().fee().to_str(),
+          fee: tx.body().fee().toString(),
           ready: true,
         });
       } catch (e) {
@@ -279,12 +281,12 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       const protocolParameters = await initTx();
       const utxos = await getUtxos();
       await Loader.load();
-      const outputs = Loader.Cardano.TransactionOutputs.new();
+      const outputs = Loader.Cardano.TransactionOutputList.new();
       outputs.add(
         Loader.Cardano.TransactionOutput.new(
           Loader.Cardano.Address.from_bech32(account.paymentAddr),
           Loader.Cardano.Value.new(
-            Loader.Cardano.BigNum.from_str(toUnit(COLLATERAL))
+            BigInt(toUnit(COLLATERAL)), Loader.Cardano.MultiAsset.new()
           )
         )
       );
@@ -294,7 +296,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
           pool: { ...poolDefaultValue },
           tx,
           account,
-          fee: tx.body().fee().to_str(),
+          fee: tx.body().fee().toString(),
           ready: true,
         });
       } catch (e) {
@@ -318,7 +320,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             if (hw.device === HW.trezor) {
               return createTab(
                 TAB.trezorTx,
-                `?tx=${Buffer.from(data.tx.to_bytes()).toString('hex')}`
+                `?tx=${Buffer.from(data.tx.to_cbor_bytes()).toString('hex')}`
               );
             }
             return await signAndSubmitHW(data.tx, {
@@ -357,12 +359,14 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
               status: 'error',
               duration: 3000,
             });
-          } else
+          } else {
+            console.warn(signedTx);
             toast({
               title: 'Transaction failed',
               status: 'error',
               duration: 3000,
             });
+          }
           delegationRef.current.closeModal();
         }}
         info={
@@ -503,7 +507,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             if (hw.device === HW.trezor) {
               return createTab(
                 TAB.trezorTx,
-                `?tx=${Buffer.from(data.tx.to_bytes()).toString('hex')}`
+                `?tx=${Buffer.from(data.tx.to_cbor_bytes()).toString('hex')}`
               );
             }
             return await signAndSubmitHW(data.tx, {
@@ -606,7 +610,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             if (hw.device === HW.trezor) {
               return createTab(
                 TAB.trezorTx,
-                `?tx=${Buffer.from(data.tx.to_bytes()).toString('hex')}`
+                `?tx=${Buffer.from(data.tx.to_cbor_bytes()).toString('hex')}`
               );
             }
             return await signAndSubmitHW(data.tx, {
@@ -721,7 +725,7 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
             if (hw.device === HW.trezor) {
               return createTab(
                 TAB.trezorTx,
-                `?tx=${Buffer.from(data.tx.to_bytes()).toString('hex')}`
+                `?tx=${Buffer.from(data.tx.to_cbor_bytes()).toString('hex')}`
               );
             }
             return await signAndSubmitHW(data.tx, {
