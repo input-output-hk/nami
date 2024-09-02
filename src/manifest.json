@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Nami",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "description": "Maintained by IOG",
   "background": { "service_worker": "background.bundle.js" },
   "action": {
