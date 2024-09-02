@@ -478,7 +478,9 @@ const SignTx = ({ request, controller }) => {
           ) {
             return;
           }
-
+          const collateralReturn = tx.body().collateral_return();
+          // presence of collateral return means "account" collateral can be ignored
+          if (collateralReturn) return;
           if (!account.collateral) {
             setIsLoading((l) => ({ ...l, error: 'Collateral not set' }));
             return;
