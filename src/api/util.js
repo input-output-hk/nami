@@ -794,7 +794,7 @@ const outputsToLedger = (outputs, address, index) => {
           tokens,
         });
       }
-      
+
       sortCanonicallyInPlace(tokenBundle, item => item.policyIdHex);
     }
 
@@ -1140,7 +1140,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         const assetName = assets.keys().get(k);
         const amount = assets.get(assetName);
         tokens.push({
-          assetNameHex: Buffer.from(assetName.to_str()).toString('hex'),
+          assetNameHex: assetName.to_hex(),
           amount: amount.toString(),
         });
       }

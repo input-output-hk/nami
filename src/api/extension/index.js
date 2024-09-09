@@ -40,6 +40,12 @@ import TrezorConnect from '@trezor/connect-web';
 import AssetFingerprint from '@emurgo/cip14-js';
 import { isAddress } from 'web3-validator';
 import { milkomedaNetworks } from '@dcspark/milkomeda-constants';
+import { Serialization } from '@cardano-sdk/core';
+
+const hasTaggedSets = (cbor) => {
+  const tx = Serialization.Transaction.fromCbor(cbor);
+  return tx.body().hasTaggedSets();
+}
 
 const compareValues = (value1, value2) => {
   try {
@@ -1061,7 +1067,12 @@ export const signTxHW = async (
       Buffer.from(address.to_raw_bytes()).toString('hex'),
       hw.account
     );
-    const result = await appAda.signTransaction(ledgerTx);
+    const result = await appAda.signTransaction({
+      ...ledgerTx,
+      options: {
+        tagCborSets: hasTaggedSets(tx)
+      }
+    });
     // getting public keys
     const witnessSet = Loader.Cardano.TransactionWitnessSet.new();
     const vkeys = Loader.Cardano.VkeywitnessList.new();
@@ -1118,7 +1129,7 @@ export const signTxHW = async (
       Buffer.from(address.to_raw_bytes()).toString('hex'),
       hw.account
     );
-    const result = await TrezorConnect.cardanoSignTransaction(trezorTx);
+    const result = await TrezorConnect.cardanoSignTransaction({ ...trezorTx, tagCborSets: hasTaggedSets(tx) });
     if (!result.success) throw new Error('Trezor could not sign tx');
     // getting public keys
     const witnessSet = Loader.Cardano.TransactionWitnessSet.new();
