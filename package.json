@@ -14,6 +14,7 @@
     "test": "NODE_ENV=test jest"
   },
   "dependencies": {
+    "@blaze-cardano/sdk": "^0.1.32",
     "@cardano-foundation/ledgerjs-hw-app-cardano": "^7.1.3",
     "@cardano-sdk/core": "^0.39.2",
     "@chakra-ui/css-reset": "^2.3.0",
