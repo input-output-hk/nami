@@ -39,7 +39,7 @@ import TrezorConnect from '@trezor/connect-web';
 import AssetFingerprint from '@emurgo/cip14-js';
 import { isAddress } from 'web3-validator';
 import { milkomedaNetworks } from '@dcspark/milkomeda-constants';
-import { Serialization } from '@cardano-sdk/core';
+import { Cardano, Serialization } from '@cardano-sdk/core';
 import { Blaze, Blockfrost } from '@blaze-cardano/sdk';
 import provider from '../../config/provider';
 import { WebWallet } from '@blaze-cardano/wallet';
@@ -676,32 +676,16 @@ export const bytesAddressToBinary = (bytes) =>
   bytes.reduce((str, byte) => str + byte.toString(2).padStart(8, '0'), '');
 
 export const isValidAddress = async (address) => {
-  await Loader.load();
   const network = await getNetwork();
-  try {
-    const addr = Loader.Cardano.Address.from_bech32(address);
-    if (
-      (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
-      (addr.network_id() === 0 &&
-        (network.id === NETWORK_ID.testnet ||
-          network.id === NETWORK_ID.preview ||
-          network.id === NETWORK_ID.preprod))
-    )
-      return addr.to_raw_bytes();
-    return false;
-  } catch (e) {}
-  try {
-    const addr = Loader.Cardano.ByronAddress.from_base58(address);
-    if (
-      (addr.network_id() === 1 && network.id === NETWORK_ID.mainnet) ||
-      (addr.network_id() === 0 &&
-        (network.id === NETWORK_ID.testnet ||
-          network.id === NETWORK_ID.preview ||
-          network.id === NETWORK_ID.preprod))
-    )
-      return addr.to_address().to_raw_bytes();
-    return false;
-  } catch (e) {}
+  const addr = Cardano.Address.fromString(address)
+  if (
+      (addr.getNetworkId() === 1 && network.id === NETWORK_ID.mainnet) ||
+      (addr.getNetworkId() === 0 &&
+          (network.id === NETWORK_ID.testnet ||
+              network.id === NETWORK_ID.preview ||
+              network.id === NETWORK_ID.preprod))
+  )
+    return Buffer.from(addr.toBytes(), 'hex');
   return false;
 };
 
