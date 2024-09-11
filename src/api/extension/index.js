@@ -1,12 +1,11 @@
 import {
-  ADA_HANDLE,
   APIError,
   DataSignError,
   ERROR,
   EVENT,
   HW,
   LOCAL_STORAGE,
-  NETWORK_ID,
+  NETWORK_ID, NETWORKD_ID_NUMBER,
   NODE,
   SENDER,
   STORAGE,
@@ -41,6 +40,9 @@ import AssetFingerprint from '@emurgo/cip14-js';
 import { isAddress } from 'web3-validator';
 import { milkomedaNetworks } from '@dcspark/milkomeda-constants';
 import { Serialization } from '@cardano-sdk/core';
+import { Blaze, Blockfrost } from '@blaze-cardano/sdk';
+import provider from '../../config/provider';
+import { WebWallet } from '@blaze-cardano/wallet';
 
 const hasTaggedSets = (cbor) => {
   const tx = Serialization.Transaction.fromCbor(cbor);
@@ -2029,3 +2031,19 @@ export const toUnit = (amount, decimals = 6) => {
   else if (result == 'NaN') return '0';
   return result;
 };
+
+export const getBlazeProvider = async () => {
+  const network = await getNetwork();
+  const blockfrost = new Blockfrost({
+    network: `cardano-${network.name || network.id}`,
+    projectId: provider.api.key(network.name || network.id).project_id,
+  });
+
+  const wallet = new WebWallet({
+    getUtxos: async (amount, paginate) => (await getUtxos(amount, paginate)).map((utxo) => Buffer.from(utxo.to_cbor_bytes()).toString('hex')),
+    getChangeAddress: () => getAddress(),
+    getNetworkId: async () => NETWORKD_ID_NUMBER[network.name || network.id]
+  });
+
+  return Blaze.from(blockfrost, wallet);
+}
