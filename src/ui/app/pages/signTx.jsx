@@ -66,6 +66,7 @@ const SignTx = ({ request, controller }) => {
   const [isLoading, setIsLoading] = React.useState({
     loading: true,
     error: null,
+    warning: null
   });
 
   const assetsModalRef = React.useRef();
@@ -480,7 +481,17 @@ const SignTx = ({ request, controller }) => {
           }
           const collateralReturn = tx.body().collateral_return();
           // presence of collateral return means "account" collateral can be ignored
-          if (collateralReturn) return;
+          if (collateralReturn) {
+            // collateral return usually is paid to account's payment address, however, the DApp
+            // could be providing collateral so blocking the tx is not appropriate.
+            if (collateralReturn.address().to_bech32() !== account.paymentAddr) {
+              setIsLoading((l) => ({
+                ...l,
+                warning: 'Collateral return is being directed to another owner. Ensure you are not providing the collateral input'
+              }));
+            }
+            return;
+          }
           if (!account.collateral) {
             setIsLoading((l) => ({ ...l, error: 'Collateral not set' }));
             return;
@@ -740,6 +751,16 @@ const SignTx = ({ request, controller }) => {
             justifyContent="center"
             flexDirection={'column'}
           >
+            {isLoading.warning && (
+                <>
+                  <Box py={2} px={4} rounded={'full'} background={background}>
+                    <Text fontSize="xs" color={'orange.500'}>
+                      Warning! {isLoading.warning}
+                    </Text>
+                  </Box>
+                  <Box h={6} />
+                </>
+            )}
             {isLoading.error && (
               <>
                 <Box py={2} px={4} rounded={'full'} background={background}>
