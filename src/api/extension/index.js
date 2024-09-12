@@ -678,6 +678,7 @@ export const bytesAddressToBinary = (bytes) =>
 export const isValidAddress = async (address) => {
   const network = await getNetwork();
   const addr = Cardano.Address.fromString(address)
+  if (!addr) return false;
   if (
       (addr.getNetworkId() === 1 && network.id === NETWORK_ID.mainnet) ||
       (addr.getNetworkId() === 0 &&
