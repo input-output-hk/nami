@@ -3,7 +3,15 @@ import { ERROR, TX } from '../../config/config';
 import Loader from '../loader';
 import { blockfrostRequest } from '../util';
 import { decodeTx, encodeTx, transformTx } from 'cardano-hw-interop-lib';
-import { TransactionOutput, AuxiliaryData, Address, Credential, PoolId, RewardAccount } from '@blaze-cardano/core';
+import {
+  TransactionOutput,
+  AuxiliaryData,
+  Address,
+  Credential,
+  PoolId,
+  RewardAccount,
+  TransactionUnspentOutput,
+} from '@blaze-cardano/core';
 
 const RETRIES = 5;
 
@@ -173,7 +181,7 @@ export const delegationTx = async (
   }
 };
 
-export const withdrawalTx = async (account, delegation, protocolParameters) => {
+export const withdrawalTx = async (account, delegation, protocolParameters, utxos) => {
   try {
     await Loader.load();
 
@@ -188,7 +196,16 @@ export const withdrawalTx = async (account, delegation, protocolParameters) => {
       (protocolParameters.slot + TX.invalid_hereafter).toString()
     ));
 
-    tx.setChangeAddress(Address.fromBech32(account.paymentAddr));
+    const changeAddress = Address.fromBech32(account.paymentAddr);
+
+    if (!utxos || utxos.length === 0) {
+      throw new Error('No inputs found on wallet. Withdrawal transaction needs to have at least one input.');
+    }
+
+    // Transactions need to have at least one input to be valid. If the rewards amount is enough to cover the fees
+    // blaze tx builder won't select any inputs.
+    tx.addInput(TransactionUnspentOutput.fromCbor(utxos[0].to_cbor_hex()));
+    tx.setChangeAddress(changeAddress);
 
     const result = await tx.complete();
 
