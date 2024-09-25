@@ -220,7 +220,8 @@ const TransactionBuilder = React.forwardRef(({ onConfirm }, ref) => {
       withdrawRef.current.openModal(account.index);
       const protocolParameters = await initTx();
       try {
-        const tx = await withdrawalTx(account, delegation, protocolParameters);
+        const utxos = await getUtxos();
+        const tx = await withdrawalTx(account, delegation, protocolParameters, utxos);
         setData({
           pool: { ...poolDefaultValue },
           tx,
