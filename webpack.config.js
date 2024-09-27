@@ -8,6 +8,7 @@ var webpack = require('webpack'),
   TerserPlugin = require('terser-webpack-plugin'),
   NodePolyfillPlugin = require('node-polyfill-webpack-plugin'),
   ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -36,33 +37,59 @@ if (fileSystem.existsSync(secretsPath)) {
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 var options = {
+  devtool: 'source-map',
   experiments: {
     asyncWebAssembly: true,
   },
   mode: process.env.NODE_ENV || 'development',
   entry: {
-    mainPopup: path.join(__dirname, 'src', 'ui', 'indexMain.jsx'),
-    internalPopup: path.join(__dirname, 'src', 'ui', 'indexInternal.jsx'),
-    hwTab: path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'hw.jsx'),
-    createWalletTab: path.join(
-      __dirname,
-      'src',
-      'ui',
-      'app',
-      'tabs',
-      'createWallet.jsx'
-    ),
-    trezorTx: path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'trezorTx.jsx'),
-    background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
-    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
-    injected: path.join(__dirname, 'src', 'pages', 'Content', 'injected.js'),
-    trezorContentScript: path.join(
-      __dirname,
-      'src',
-      'pages',
-      'Content',
-      'trezorContentScript.js'
-    ),
+    mainPopup: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(__dirname, 'src', 'ui', 'indexMain.jsx')
+    ],
+    internalPopup: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(__dirname, 'src', 'ui', 'indexInternal.jsx')
+    ],
+    hwTab: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'hw.jsx')
+    ],
+    createWalletTab: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(
+          __dirname,
+          'src',
+          'ui',
+          'app',
+          'tabs',
+          'createWallet.jsx'
+      )],
+    trezorTx: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'trezorTx.jsx')
+    ],
+    background: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(__dirname, 'src', 'pages', 'Background', 'index.js')
+    ],
+    contentScript: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(__dirname, 'src', 'pages', 'Content', 'index.js')
+    ],
+    injected: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(__dirname, 'src', 'pages', 'Content', 'injected.js')
+    ],
+    trezorContentScript: [
+      path.join(__dirname, 'src', 'features', 'sentry.js'),
+      path.join(
+          __dirname,
+          'src',
+          'pages',
+          'Content',
+          'trezorContentScript.js'
+      )]
   },
   chromeExtensionBoilerplate: {
     notHotReload: ['contentScript', 'devtools', 'injected'],
@@ -148,6 +175,13 @@ var options = {
   },
   plugins: [
     ...(isDevelopment ? [new ReactRefreshWebpackPlugin()] : []),
+    sentryWebpackPlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      telemetry: false,
+      url: 'https://sentry.io/'
+    }),
     new webpack.BannerPlugin({
       banner: () => {
         return 'globalThis.document={getElementsByTagName:()=>[],createElement:()=>({ setAttribute:()=>{}}),head:{appendChild:()=>{}}};';
@@ -249,9 +283,7 @@ var options = {
   },
 };
 
-if (env.NODE_ENV === 'development') {
-  options.devtool = 'cheap-module-source-map';
-} else {
+if (!isDevelopment) {
   options.optimization = {
     minimize: true,
     minimizer: [

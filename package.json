@@ -29,6 +29,8 @@
     "@emurgo/cip14-js": "^3.0.1",
     "@fontsource/ubuntu": "^5.0.8",
     "@ledgerhq/hw-transport-webusb": "^6.28.0",
+    "@sentry/react": "^8.32.0",
+    "@sentry/webpack-plugin": "^2.22.4",
     "@trezor/connect-web": "^9.3.0",
     "bip39": "^3.0.4",
     "cardano-hw-interop-lib": "^3.0.2",

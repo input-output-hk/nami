@@ -23,3 +23,6 @@ secrets.development.js
 
 # IDEs
 .idea
+
+# Sentry Config File
+.env.sentry-build-plugin
