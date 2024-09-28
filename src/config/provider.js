@@ -7,6 +7,8 @@ const networkToProjectId = {
   testnet: secrets.PROJECT_ID_TESTNET,
   preprod: secrets.PROJECT_ID_PREPROD,
   preview: secrets.PROJECT_ID_PREVIEW,
+  btcmainnet: secrets.PROJECT_ID_BTCMAINNET,
+  btctestnet: secrets.PROJECT_ID_BTCTESTNET,
 };
 
 export default {
@@ -17,6 +19,12 @@ export default {
     key: (network = 'mainnet') => ({
       project_id: networkToProjectId[network],
     }),
+    priceBTC: (currency = 'usd') =>
+      fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currency}`
+      )
+        .then((res) => res.json())
+        .then((res) => res.bitcoin[currency]),
     price: (currency = 'usd') =>
       fetch(
         `https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=${currency}`

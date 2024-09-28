@@ -47,6 +47,7 @@ import { ChangePasswordModal } from '../components/changePasswordModal';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
 import { LegalSettings } from '../../../features/settings/legal/LegalSettings';
+import { getNetworkSymbol } from '../../store';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -484,19 +485,24 @@ const Network = () => {
 
             const id = e.target.value;
 
-            setSettings({
+            const s = {
               ...settings,
               network: {
                 ...settings.network,
                 id: NETWORK_ID[id],
                 node: NODE[id],
+                adaSymbol: getNetworkSymbol(settings.network.id),
               },
-            });
+            };
+
+            setSettings(s);
           }}
         >
-          <option value={NETWORK_ID.mainnet}>Mainnet</option>
-          <option value={NETWORK_ID.preprod}>Preprod</option>
-          <option value={NETWORK_ID.preview}>Preview</option>
+          <option value={NETWORK_ID.mainnet}>Cardano Mainnet</option>
+          <option value={NETWORK_ID.preprod}>Cardano Preprod</option>
+          <option value={NETWORK_ID.preview}>Cardano Preview</option>
+          <option value={NETWORK_ID.bitcoinmainnet}>Bitcoin Mainnet</option>
+          <option value={NETWORK_ID.bitcointestnet}>Bitcoin Testnet</option>
         </Select>
       </Box>
       <Box height="8" />

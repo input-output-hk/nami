@@ -22,6 +22,7 @@ const AssetsViewer = ({ assets }) => {
   const [assetsArray, setAssetsArray] = React.useState(null);
   const [search, setSearch] = React.useState('');
   const [total, setTotal] = React.useState(0);
+
   const createArray = async () => {
     if (!assets) {
       setAssetsArray(null);

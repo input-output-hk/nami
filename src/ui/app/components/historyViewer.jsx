@@ -23,6 +23,61 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
   const [page, setPage] = React.useState(1);
   const [final, setFinal] = React.useState(false);
   const [loadNext, setLoadNext] = React.useState(false);
+
+  const getBitcoinTx = (txHash, chain, amount, blockTime = 1727431131) => {
+    return {
+      block: {
+        confirmations: 0,
+        hash: txHash,
+        height: 2522850,
+        time: blockTime,
+      },
+      info: {
+        chain: chain,
+        block:
+          '016ea9f25fbd19e1fc777eb1211d00d756cf51d40f3b0aa3dbae9309f1bfad51',
+        block_height: 2522850,
+        block_time: blockTime,
+        deposit: '0',
+        fees: '200000',
+        hash: txHash,
+        output_amount: [
+          {
+            quantity: '2000000000',
+            unit: 'lovelace',
+          },
+        ],
+      },
+      metadata: [],
+      utxos: {
+        hash: txHash,
+        inputs: [
+          {
+            address:
+              'addr_test1vqeux7xwusdju9dvsj8h7mca9aup2k439kfmwy773xxc2hcu7zy99',
+            amount: [
+              {
+                quantity: '13000200000',
+                unit: 'lovelace',
+              },
+            ],
+          },
+        ],
+        outputs: [
+          {
+            address: currentAddr,
+            amount: [
+              {
+                quantity: amount,
+                unit: 'lovelace',
+              },
+            ],
+          },
+        ],
+      },
+    };
+  };
+
   const getTxs = async () => {
     if (!history) {
       slice = [];
@@ -37,7 +92,22 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
     );
 
     if (slice.length < page * BATCH) {
-      const txs = await getTransactions(page, BATCH);
+      let txs = await getTransactions(page, BATCH);
+
+      txs = txs.concat([
+        {
+          txHash:
+            '9b151508940dbdb104d6811d79ca1407e8eb3004c651b63b2b9f3250a79aaa10',
+          txIndex: 0,
+          blockHeight: 2522850,
+        },
+        {
+          txHash:
+            '52014d1f6f16f60306c25526ff79d375ec2cdfcfb406a876065229f0014d68b0',
+          txIndex: 0,
+          blockHeight: 2522850,
+        },
+      ]);
 
       if (txs.length <= 0) {
         setFinal(true);
@@ -102,7 +172,30 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
             }}
           >
             {historySlice.map((txHash, index) => {
+              // console.log('history.details[txHash]', history.details[txHash]);
               if (!history.details[txHash]) history.details[txHash] = {};
+
+              console.log('history.details[txHash] ', history.details[txHash]);
+              switch (txHash) {
+                case '9b151508940dbdb104d6811d79ca1407e8eb3004c651b63b2b9f3250a79aaa10':
+                  history.details[txHash] = getBitcoinTx(
+                    txHash,
+                    'bitcoin',
+                    14300000,
+                    1727231131
+                  );
+                  break;
+                case '52014d1f6f16f60306c25526ff79d375ec2cdfcfb406a876065229f0014d68b0':
+                  history.details[txHash] = getBitcoinTx(
+                    txHash,
+                    'dogecoin',
+                    500000000,
+                    1726431131
+                  );
+                  break;
+                default:
+                  break;
+              }
 
               return (
                 <Transaction
@@ -115,6 +208,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
                   currentAddr={currentAddr}
                   addresses={addresses}
                   network={network}
+                  chain={history.details[txHash]?.info?.chain}
                 />
               );
             })}

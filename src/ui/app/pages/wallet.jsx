@@ -197,14 +197,18 @@ const Wallet = () => {
         currentAccount.nft.push(asset);
       else currentAccount.ft.push(asset);
     });
+    const network = await getNetwork();
     let price = fiatPrice.current;
     try {
       if (!fiatPrice.current) {
-        price = await provider.api.price(settings.currency);
+        price =
+          network.id === NETWORK_ID.bitcoinmainnet ||
+          network.id === NETWORK_ID.bitcointestnet
+            ? await provider.api.priceBTC(settings.currency)
+            : await provider.api.price(settings.currency);
         fiatPrice.current = price;
       }
     } catch (e) {}
-    const network = await getNetwork();
     const delegation = await getDelegation();
     if (!isMounted.current) return;
     setState((s) => ({
@@ -230,6 +234,23 @@ const Wallet = () => {
       accountChangeHandler && accountChangeHandler.remove();
     };
   }, []);
+
+  const isBitcoin = state.network.id.startsWith('bitcoin');
+
+  console.log('TU state.account', state.account);
+  const btcAssets = [
+    {
+      unit: 'bitcoin',
+      quantity: state.account?.bitcoinmainnet.lovelace ?? '0',
+    },
+    { unit: 'doge', quantity: state.account?.dogecoinmainnet.lovelace ?? '0' },
+  ];
+
+  console.log('btcAssets', btcAssets);
+  console.log(
+    'state.account.bitcoinmainnet.lovelace',
+    state.account?.bitcoinmainnet.lovelace
+  );
 
   return (
     <>
@@ -330,6 +351,7 @@ const Wallet = () => {
                   >
                     {Object.keys(info.accounts).map((accountIndex) => {
                       const accountInfo = info.accounts[accountIndex];
+
                       const account =
                         state.accounts && state.accounts[accountIndex];
                       return (
@@ -404,7 +426,7 @@ const Wallet = () => {
                                           )
                                         ).toString()
                                       }
-                                      decimals={6}
+                                      decimals={isBitcoin ? 8 : 6}
                                       symbol={settings.adaSymbol}
                                     />
                                   ) : (
@@ -540,7 +562,7 @@ const Wallet = () => {
                   )
                 ).toString()
               }
-              decimals={6}
+              decimals={isBitcoin ? 8 : 6}
               symbol={settings.adaSymbol}
             />
             {state.account &&
@@ -593,11 +615,51 @@ const Wallet = () => {
               ''
             )}
           </Box>
+          {/* Bitcoin */}
+          <Box
+            style={{ bottom: 60 }}
+            position="absolute"
+            width="full"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <UnitDisplay
+              color="white"
+              fontSize="2xl"
+              fontWeight="bold"
+              quantity={BigInt(
+                state.account?.bitcoinmainnet.lovelace ?? 0
+              ).toString()}
+              decimals={8}
+              symbol={'₿'}
+            />
+          </Box>
+          {/* Doge */}
+          <Box
+            style={{ bottom: 30 }}
+            position="absolute"
+            width="full"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <UnitDisplay
+              color="white"
+              fontSize="2xl"
+              fontWeight="bold"
+              quantity={BigInt(
+                state.account?.dogecoinmainnet.lovelace ?? 0
+              ).toString()}
+              decimals={8}
+              symbol={'Ð'}
+            />
+          </Box>
           <Box
             style={{ bottom: 66 }}
             position="absolute"
             width="full"
-            display="flex"
+            display="none"
             alignItems="center"
             justifyContent="center"
           >
@@ -617,7 +679,8 @@ const Wallet = () => {
                           ? state.account.collateral.lovelace
                           : 0
                       )
-                    ).toString()
+                    ).toString(),
+                    isBitcoin ? 8 : 6
                   ) *
                     state.fiatPrice *
                     10 ** 2
@@ -744,7 +807,11 @@ const Wallet = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <AssetsViewer assets={state.account && state.account.ft} />
+              <AssetsViewer
+                assets={
+                  state.account ? state.account.ft.concat(btcAssets) : undefined
+                }
+              />
             </TabPanel>
             <TabPanel>
               <CollectiblesViewer

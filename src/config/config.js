@@ -71,6 +71,12 @@ export const NODE = {
   testnet: 'https://cardano-testnet.blockfrost.io/api/v0',
   preview: 'https://cardano-preview.blockfrost.io/api/v0',
   preprod: 'https://cardano-preprod.blockfrost.io/api/v0',
+  bitcoinmainnet: 'https://btc1.trezor.io/api/v2',
+  dogecoinmainnet: 'https://doge1.trezor.io/api/v2',
+  litecoinmainnet: 'https://ltc1.trezor.io/api/v2',
+  bitcointestnet: 'https://tbtc1.trezor.io/api/v2',
+  // bitcoinmainnet:
+  //   'https://bitcoin1.mainnet.core.blockfrost.io/blockbook/api/v2',
 };
 
 export const NETWORK_ID = {
@@ -78,6 +84,10 @@ export const NETWORK_ID = {
   testnet: 'testnet',
   preview: 'preview',
   preprod: 'preprod',
+  bitcoinmainnet: 'bitcoinmainnet',
+  dogecoinmainnet: 'dogecoinmainnet',
+  litecoinmainnet: 'litecoinmainnet',
+  bitcointestnet: 'bitcointestnet',
 };
 
 export const NETWORKD_ID_NUMBER = {
@@ -85,6 +95,10 @@ export const NETWORKD_ID_NUMBER = {
   testnet: 0,
   preview: 0,
   preprod: 0,
+  bitcoinmainnet: 2,
+  bitcointestnet: 3,
+  litecoinmainnet: 4,
+  dogecoinmainnet: 5,
 };
 
 export const POPUP = {

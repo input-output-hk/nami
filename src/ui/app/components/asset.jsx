@@ -13,7 +13,7 @@ import Copy from './copy';
 import UnitDisplay from './unitDisplay';
 import { useNavigate } from 'react-router-dom';
 import { BsArrowUpRight } from 'react-icons/bs';
-import { getAsset } from '../../../api/extension';
+import { getAsset, getNetwork } from '../../../api/extension';
 
 const useIsMounted = () => {
   const isMounted = React.useRef(false);
@@ -23,6 +23,19 @@ const useIsMounted = () => {
   }, []);
   return isMounted;
 };
+
+export const getDisplayName = (assetUnit: string) => {
+  if (assetUnit === 'bitcoin') {
+    return 'BTC';
+  };
+  if (assetUnit === 'doge') {
+    return 'DOGE';
+  };
+  if (assetUnit === 'litecoin') {
+    return 'LTC';
+  };
+  return 'NA';
+}
 
 const Asset = ({ asset, enableSend, ...props }) => {
   const isMounted = useIsMounted();
@@ -36,29 +49,43 @@ const Asset = ({ asset, enableSend, ...props }) => {
   const navigate = useNavigate();
   const settings = useStoreState((state) => state.settings.settings);
 
+
   const fetchMetadata = async () => {
+    const isBitcoin = asset.unit === 'bitcoin' || asset.unit === 'doge';
     let detailedConstructedAsset;
 
-    if (asset.unit !== 'lovelace') {
-      detailedConstructedAsset = await getAsset(asset.unit);
-    }
+    if (isBitcoin) {
+      if (!isMounted.current) return;
 
-    const detailedAsset =
-      asset.unit === 'lovelace'
-        ? {
-            ...asset,
-            displayName: 'Ada',
-            decimals: 6,
-          }
-        : {
-            ...detailedConstructedAsset,
-            quantity: asset.quantity,
-            input: asset.input,
-            fingerprint:
-              asset.fingerprint ?? detailedConstructedAsset.fingerprint,
-          };
-    if (!isMounted.current) return;
-    setToken(detailedAsset);
+      const detailedAsset = {
+        ...asset,
+        displayName: getDisplayName(asset.unit),
+        decimals: 8,
+      };
+
+      setToken(detailedAsset);
+    } else {
+      if (asset.unit !== 'lovelace') {
+        detailedConstructedAsset = await getAsset(asset.unit);
+      }
+
+      const detailedAsset =
+        asset.unit === 'lovelace'
+          ? {
+              ...asset,
+              displayName: 'Ada',
+              decimals: 6,
+            }
+          : {
+              ...detailedConstructedAsset,
+              quantity: asset.quantity,
+              input: asset.input,
+              fingerprint:
+                asset.fingerprint ?? detailedConstructedAsset.fingerprint,
+            };
+      if (!isMounted.current) return;
+      setToken(detailedAsset);
+    }
   };
 
   React.useEffect(() => {
@@ -91,27 +118,77 @@ const Asset = ({ asset, enableSend, ...props }) => {
               width="full"
               src={token.image}
               fallback={
-                !token.image ? (
-                  token.unit === 'lovelace' ? (
-                    <Box
-                      width={'full'}
-                      height={'full'}
-                      background={'blue.500'}
-                      color={'white'}
-                      display={'flex'}
-                      alignItems={'center'}
-                      justifyContent={'center'}
-                      fontSize={'xl'}
-                      fontWeight={'medium'}
-                    >
-                      {settings.adaSymbol}
-                    </Box>
-                  ) : (
-                    <Avatar width="full" height="full" name={token.name} />
-                  )
-                ) : (
-                  <Fallback name={token.name} />
-                )
+                <>
+                {token.image && (
+                  <Avatar width="full" height="full" name={token.name} />
+                )}
+
+                {token.unit === 'lovelace' && (
+                  <Box
+                    width={'full'}
+                    height={'full'}
+                    background={'blue.500'}
+                    color={'white'}
+                    display={'flex'}
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                    fontSize={'xl'}
+                    fontWeight={'medium'}
+                  >
+                    {settings.adaSymbol}
+                  </Box>
+                )}
+
+                {token.unit === 'bitcoin' && (
+                  <Box
+                    width={'full'}
+                    height={'full'}
+                    background={'orange.500'}
+                    color={'white'}
+                    display={'flex'}
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                    fontSize={'xl'}
+                    fontWeight={'medium'}
+                  >
+                    ₿
+                  </Box>
+                )}
+
+                {token.unit === 'doge' && (
+                  <Box
+                    width={'full'}
+                    height={'full'}
+                    background={'yellow.500'}
+                    color={'white'}
+                    display={'flex'}
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                    fontSize={'xl'}
+                    fontWeight={'medium'}
+                  >
+                    Ð
+                  </Box>
+                )}
+
+                {token.unit === 'litecoin' && (
+                  <Box
+                    width={'full'}
+                    height={'full'}
+                    background={'orange.500'}
+                    color={'white'}
+                    display={'flex'}
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                    fontSize={'xl'}
+                    fontWeight={'medium'}
+                  >
+                    Ł
+                  </Box>
+                )}
+
+                {token.unit !== 'lovelace' && token.unit !== 'doge' && token.unit !== 'bitcoin' && token.unit !== 'litecoin' && <Fallback name={token.name} />}
+                </>
               }
             />
           </Box>

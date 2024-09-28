@@ -29,6 +29,19 @@ import ConfirmModal from './app/components/confirmModal';
 import { UpgradeModal } from './app/components/UpgradeModal';
 import { sendStore } from './app/pages/send';
 
+export const getNetworkSymbol = (networkId) => {
+  if (
+    networkId === NETWORK_ID.bitcoinmainnet ||
+    networkId === NETWORK_ID.bitcointestnet
+  ) {
+    return '₿';
+  } else if (networkId === NETWORK_ID.mainnet) {
+    return '₳';
+  } else {
+    return 't₳';
+  }
+};
+
 const settings = {
   settings: null,
   setSettings: action((state, settings) => {
@@ -36,7 +49,7 @@ const settings = {
     setNetwork(settings.network);
     state.settings = {
       ...settings,
-      adaSymbol: settings.network.id === NETWORK_ID.mainnet ? '₳' : 't₳',
+      adaSymbol: getNetworkSymbol(settings.network.id),
     };
   }),
 };
@@ -62,7 +75,7 @@ const initSettings = async (setSettings) => {
   setSettings({
     currency: currency || 'usd',
     network: network || { id: NETWORK_ID.mainnet, node: NODE.mainnet },
-    adaSymbol: network ? (network.id === NETWORK_ID.mainnet ? '₳' : 't₳') : '₳',
+    adaSymbol: getNetworkSymbol(network?.id),
   });
 };
 

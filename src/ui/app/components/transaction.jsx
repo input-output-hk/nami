@@ -90,6 +90,7 @@ const Transaction = ({
   currentAddr,
   addresses,
   network,
+  chain,
   onLoad,
 }) => {
   const settings = useStoreState((state) => state.settings.settings);
@@ -98,12 +99,60 @@ const Transaction = ({
     genDisplayInfo(txHash, detail, currentAddr, addresses)
   );
 
-  const colorMode = {
-    iconBg: useColorModeValue('white', 'gray.800'),
-    txBg: useColorModeValue('teal.50', 'gray.700'),
-    txBgHover: useColorModeValue('teal.100', 'gray.600'),
-    assetsBtnHover: useColorModeValue('teal.200', 'gray.700'),
+  const getColorMode = (chain) => {
+    if (chain === 'bitcoin') {
+      return {
+        iconBg: useColorModeValue('white', 'gray.800'),
+        txBg: useColorModeValue('orange.100', 'gray.700'),
+        txBgHover: useColorModeValue('orange.200', 'gray.600'),
+        assetsBtnHover: useColorModeValue('orange.200', 'gray.700'),
+      };
+    }
+
+    if (chain === 'litecoin') {
+      return {
+        iconBg: useColorModeValue('white', 'gray.800'),
+        txBg: useColorModeValue('blue.50', 'gray.700'),
+        txBgHover: useColorModeValue('blue.100', 'gray.600'),
+        assetsBtnHover: useColorModeValue('blue.200', 'gray.700'),
+      };
+    }
+
+    if (chain === 'dogecoin') {
+      return {
+        iconBg: useColorModeValue('white', 'gray.800'),
+        txBg: useColorModeValue('yellow.100', 'gray.700'),
+        txBgHover: useColorModeValue('yellow.200', 'gray.600'),
+        assetsBtnHover: useColorModeValue('yellow.200', 'gray.700'),
+      };
+    }
+
+    return {
+      iconBg: useColorModeValue('white', 'gray.800'),
+      txBg: useColorModeValue('teal.50', 'gray.700'),
+      txBgHover: useColorModeValue('teal.100', 'gray.600'),
+      assetsBtnHover: useColorModeValue('teal.200', 'gray.700'),
+    };
   };
+
+  const getSymbol = (chain) => {
+    switch (chain) {
+      case 'bitcoin':
+        return '₿';
+      case 'litecoin':
+        return 'Ł';
+
+      case 'dogecoin':
+        return 'Ð';
+
+      case 'litecoin':
+        return 'Ł';
+      default:
+        return settings.adaSymbol;
+    }
+  };
+
+  const colorMode = getColorMode(chain);
 
   const getTxDetail = async () => {
     if (!displayInfo) {
@@ -172,8 +221,8 @@ const Transaction = ({
                       : txTypeColor.externalOut
                   }
                   quantity={displayInfo.lovelace}
-                  decimals={6}
-                  symbol={settings.adaSymbol}
+                  decimals={chain ? 8 : 6}
+                  symbol={getSymbol(chain)}
                 />
               ) : displayInfo.extra.length ? (
                 <Text fontSize={12} fontWeight="semibold" color="teal.500">
@@ -237,7 +286,11 @@ const Transaction = ({
         )}
         <AccordionPanel wordBreak="break-word" pb={4}>
           {displayInfo && (
-            <TxDetail displayInfo={displayInfo} network={network} />
+            <TxDetail
+              displayInfo={displayInfo}
+              network={network}
+              chain={chain}
+            />
           )}
         </AccordionPanel>
         <Box display="flex" flexDirection="column" alignItems="center">
@@ -306,7 +359,7 @@ const TxIcon = ({ txType, extra }) => {
   );
 };
 
-const TxDetail = ({ displayInfo, network }) => {
+const TxDetail = ({ displayInfo, network, chain }) => {
   const capture = useCaptureEvent();
   const colorMode = {
     extraDetail: useColorModeValue('black', 'white'),
@@ -330,6 +383,17 @@ const TxDetail = ({ displayInfo, network }) => {
               color="teal"
               href={
                 (() => {
+                  switch (chain) {
+                    case 'bitcoin':
+                      return 'https://blockchair.com/bitcoin/transaction/';
+                    case 'litecoin':
+                      return 'https://blockchair.com/litecoin/transaction/';
+                    case 'dogecoin':
+                      return 'https://blockchair.com/dogecoin/transaction/';
+                    default:
+                      break;
+                  }
+
                   switch (network.id) {
                     case NETWORK_ID.mainnet:
                       return 'https://cardanoscan.io/transaction/';

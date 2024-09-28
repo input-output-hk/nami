@@ -163,9 +163,54 @@ export const getPoolMetadata = async (poolId) => {
   };
 };
 
+export const getBtcBalance = async (addr, node = NODE.bitcoinmainnet) => {
+  const result = await blockfrostRequest(
+    `/address/${addr}`,
+    undefined,
+    undefined,
+    undefined,
+    node
+  );
+  if (result.error) {
+    if (result.status_code === 400) throw APIError.InvalidRequest;
+    else if (result.status_code === 500) throw APIError.InternalError;
+    else return '0';
+  }
+
+  console.log('result.balance', result.balance);
+  return result.balance;
+};
+
 export const getBalance = async () => {
   await Loader.load();
   const currentAccount = await getCurrentAccount();
+
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet ||
+    network.id === NETWORK_ID.dogecoinmainnet ||
+    network.id === NETWORK_ID.litecoinmainnet
+  ) {
+    const addr = await selectBitcoinAccountAddress();
+
+    const result = await blockfrostRequest(`/address/${addr}`);
+    if (result.error) {
+      if (result.status_code === 400) throw APIError.InvalidRequest;
+      else if (result.status_code === 500) throw APIError.InternalError;
+      else return Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
+    }
+
+    const value = await assetsToValue([
+      {
+        unit: 'lovelace',
+        quantity: result.balance,
+      },
+    ]);
+    return value;
+  }
+
   const result = await blockfrostRequest(
     `/addresses/${currentAccount.paymentKeyHashBech32}`
   );
@@ -180,9 +225,36 @@ export const getBalance = async () => {
 
 export const getBalanceExtended = async () => {
   const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet ||
+    network.id === NETWORK_ID.dogecoinmainnet ||
+    network.id === NETWORK_ID.litecoinmainnet
+  ) {
+    const addr = await selectBitcoinAccountAddress();
+
+    const result = await blockfrostRequest(`/address/${addr}`);
+    if (result.error) {
+      if (result.status_code === 400) throw APIError.InvalidRequest;
+      else if (result.status_code === 500) throw APIError.InternalError;
+      else return [];
+    }
+    return [
+      {
+        unit: 'lovelace',
+        quantity: result.balance,
+        decimals: 8,
+        has_nft_onchain_metadata: false,
+      },
+    ];
+  }
+
   const result = await blockfrostRequest(
     `/addresses/${currentAccount.paymentKeyHashBech32}/extended`
   );
+
   if (result.error) {
     if (result.status_code === 400) throw APIError.InvalidRequest;
     else if (result.status_code === 500) throw APIError.InternalError;
@@ -202,8 +274,52 @@ export const getFullBalance = async () => {
   ).toString();
 };
 
+export const selectBitcoinAccountAddress = async () => {
+  const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
+
+  if (network.id === NETWORK_ID.bitcoinmainnet) {
+    return currentAccount.bitcoinmainnet.paymentAddr;
+  } else if (network.id === NETWORK_ID.bitcointestnet) {
+    return currentAccount.bitcointestnet.paymentAddr;
+  } else if (network.id === NETWORK_ID.dogecoinmainnet) {
+    return currentAccount.dogecoinmainnet.paymentAddr;
+  } else if (network.id === NETWORK_ID.litecoinmainnet) {
+    return currentAccount.litecoinmainnet.paymentAddr;
+  }
+};
+
 export const getTransactions = async (paginate = 1, count = 10) => {
   const currentAccount = await getCurrentAccount();
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet
+  ) {
+    const addr = await selectBitcoinAccountAddress();
+
+    const result = await blockfrostRequest(
+      `/address/${addr}?details=txslight&page=${paginate}`
+    );
+
+    return [
+      {
+        txHash:
+          '9b151508940dbdb104d6811d79ca1407e8eb3004c651b63b2b9f3250a79aaa10',
+        txIndex: 0,
+        blockHeight: 3005927,
+      },
+    ];
+
+    if (!result || result.error) return [];
+    return result.transactions.map((tx) => ({
+      txHash: tx.txid,
+      txIndex: 0,
+      blockHeight: tx.blockHeight,
+    }));
+  }
+
   const result = await blockfrostRequest(
     `/addresses/${currentAccount.paymentKeyHashBech32}/transactions?page=${paginate}&order=desc&count=${count}`
   );
@@ -216,24 +332,143 @@ export const getTransactions = async (paginate = 1, count = 10) => {
 };
 
 export const getTxInfo = async (txHash) => {
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet
+  ) {
+    return {
+      hash: '9b151508940dbdb104d6811d79ca1407e8eb3004c651b63b2b9f3250a79aaa10',
+      block: '0000000068fedf9bf1eb29f28e38ccbe7e0b0107b72443489ec32e3b3fad63c1',
+      block_height: 123456,
+      block_time: 1635505891,
+      slot: 42000000,
+      index: 1,
+      output_amount: [
+        {
+          unit: 'lovelace',
+          quantity: '42000000',
+        },
+        {
+          unit: 'b0d07d45fe9514f80213f4020e5a61241458be626841cde717cb38a76e7574636f696e',
+          quantity: '12',
+        },
+      ],
+      fees: '182485',
+      deposit: '0',
+      size: 433,
+      invalid_before: null,
+      invalid_hereafter: '13885913',
+      utxo_count: 4,
+      withdrawal_count: 0,
+      mir_cert_count: 0,
+      delegation_count: 0,
+      stake_cert_count: 0,
+      pool_update_count: 0,
+      pool_retire_count: 0,
+      asset_mint_or_burn_count: 0,
+      redeemer_count: 0,
+      valid_contract: true,
+    };
+
+    const result = await blockfrostRequest(`/tx-specific/${txHash}`);
+    if (!result || result.error) return null;
+    return result;
+  }
+
   const result = await blockfrostRequest(`/txs/${txHash}`);
   if (!result || result.error) return null;
   return result;
 };
 
 export const getBlock = async (blockHashOrNumb) => {
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet
+  ) {
+    const result = await blockfrostRequest(`/block/${blockHashOrNumb}`);
+    if (!result || result.error) return null;
+    return result;
+  }
+
   const result = await blockfrostRequest(`/blocks/${blockHashOrNumb}`);
   if (!result || result.error) return null;
   return result;
 };
 
 export const getTxUTxOs = async (txHash) => {
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet
+  ) {
+    const result = await blockfrostRequest(`/tx-specific/${txHash}`);
+    // if (!result || result.error) return [];
+    return [
+      {
+        address: 'n3EmnmHcFAsWutzthg54v26mEaxGsDM6WX',
+        tx_hash:
+          '9b151508940dbdb104d6811d79ca1407e8eb3004c651b63b2b9f3250a79aaa10',
+        output_index: 0,
+        amount: [
+          {
+            unit: 'lovelace',
+            quantity: '12345678',
+          },
+        ],
+        block:
+          '7eb8e27d18686c7db9a18f8bbcfe34e3fed6e047afaa2d969904d15e934847e6',
+        data_hash: null,
+        inline_datum: null,
+        reference_script_hash: null,
+        inputs: [
+          {
+            address: 'n3EmnmHcFAsWutzthg54v26mEaxGsDM6WX',
+            amount: [
+              {
+                unit: 'lovelace',
+                quantity: '14656250',
+              },
+            ],
+            tx_hash:
+              'e852cdcff2c866a49e44a0edf310563c0844c286917cd9407b7fae6332ccb11f',
+          },
+        ],
+        outputs: [
+          {
+            address: 'n3EmnmHcFAsWutzthg54v26mEaxGsDM6WX',
+            amount: [
+              {
+                unit: 'lovelace',
+                quantity: '14570750',
+              },
+            ],
+            output_index: 0,
+          },
+        ],
+      },
+    ];
+  }
+
   const result = await blockfrostRequest(`/txs/${txHash}/utxos`);
   if (!result || result.error) return null;
   return result;
 };
 
 export const getTxMetadata = async (txHash) => {
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet
+  ) {
+    return null;
+  }
+
   const result = await blockfrostRequest(`/txs/${txHash}/metadata`);
   if (!result || result.error) return null;
   return result;
@@ -278,6 +513,15 @@ export const setTxDetail = async (txObject) => {
 };
 
 export const getSpecificUtxo = async (txHash, txId) => {
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet
+  ) {
+    return null;
+  }
+
   const result = await blockfrostRequest(`/txs/${txHash}/utxos`);
   if (!result || result.error) return null;
   return result.outputs[txId];
@@ -293,6 +537,16 @@ export const getSpecificUtxo = async (txHash, txId) => {
  */
 export const getUtxos = async (amount = undefined, paginate = undefined) => {
   const currentAccount = await getCurrentAccount();
+
+  const network = await getNetwork();
+
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet
+  ) {
+    return [];
+  }
+
   let result = [];
   let page = paginate && paginate.page ? paginate.page + 1 : 1;
   const limit = paginate && paginate.limit ? `&count=${paginate.limit}` : '';
@@ -350,6 +604,13 @@ export const getUtxos = async (amount = undefined, paginate = undefined) => {
 };
 
 const checkCollateral = async (currentAccount, network, checkTx) => {
+  if (
+    network.id === NETWORK_ID.bitcoinmainnet ||
+    network.id === NETWORK_ID.bitcointestnet
+  ) {
+    return;
+  }
+
   if (checkTx) {
     const transactions = await getTransactions();
     if (
@@ -474,6 +735,12 @@ export const setNetwork = async (network) => {
   } else if (network.id === NETWORK_ID.preview) {
     id = NETWORK_ID.preview;
     node = NODE.preview;
+  } else if (network.id === NETWORK_ID.bitcoinmainnet) {
+    id = NETWORK_ID.bitcoinmainnet;
+    node = NODE.bitcoinmainnet;
+  } else if (network.id === NETWORK_ID.bitcoitestnet) {
+    id = NETWORK_ID.bitcoitestnet;
+    node = NODE.bitcoitestnet;
   } else {
     id = NETWORK_ID.preprod;
     node = NODE.preprod;
@@ -493,6 +760,18 @@ export const setNetwork = async (network) => {
 };
 
 const accountToNetworkSpecific = (account, network) => {
+  // if (!account[network.id]) {
+  //   account[network.id] = {
+  //     lovelace: null,
+  //     minAda: 0,
+  //     assets: [],
+  //     history: { confirmed: [], details: {} },
+  //     paymentAddr: 'bc1q36fsqr0pl9sky30ex9y3tta3sg4ag9wd3f0gdq',
+  //     paymentAddr: 'bc1q36fsqr0pl9sky30ex9y3tta3sg4ag9wd3f0gdq',
+  //     rewardAddr: null,
+  //   };
+  // }
+
   const assets = account[network.id].assets;
   const lovelace = account[network.id].lovelace;
   const history = account[network.id].history;
@@ -1338,6 +1617,13 @@ export const createAccount = async (name, password, accountIndex = null) => {
     history: { confirmed: [], details: {} },
   };
 
+  const btcBalance = await getBtcBalance(
+    'bc1p7l2cywf6qr9gwca3vsv6mwdlkfl3f7agw9kdm98re7jmn087q86suc2lpk',
+    NODE.bitcoinmainnet
+  );
+
+  // console.log('btcBalance', btcBalance);
+
   const newAccount = {
     [index]: {
       index,
@@ -1365,6 +1651,22 @@ export const createAccount = async (name, password, accountIndex = null) => {
         ...networkDefault,
         paymentAddr: paymentAddrTestnet,
         rewardAddr: rewardAddrTestnet,
+      },
+      [NETWORK_ID.bitcoinmainnet]: {
+        ...networkDefault,
+        paymentAddr:
+          'bc1p7l2cywf6qr9gwca3vsv6mwdlkfl3f7agw9kdm98re7jmn087q86suc2lpk',
+        rewardAddr: rewardAddrTestnet,
+        lovelace: btcBalance,
+      },
+      [NETWORK_ID.dogecoinmainnet]: {
+        ...networkDefault,
+        paymentAddr: 'DGZVagHvLrGv3bCjk6Yb1bLriFLKuhfEJg',
+        rewardAddr: rewardAddrTestnet,
+        lovelace: await getBtcBalance(
+          'DGZVagHvLrGv3bCjk6Yb1bLriFLKuhfEJg',
+          NODE.dogecoinmainnet
+        ),
       },
       avatar: Math.random().toString(),
     },
@@ -1558,12 +1860,12 @@ export const getAdaHandle = async (assetName) => {
     const network = await getNetwork();
     if (!network) return null;
     let handleUrl;
-    switch (network.id){
+    switch (network.id) {
       case 'mainnet':
-        handleUrl = 'https://api.handle.me'
+        handleUrl = 'https://api.handle.me';
         break;
       case 'preprod':
-        handleUrl = 'https://preprod.api.handle.me'
+        handleUrl = 'https://preprod.api.handle.me';
         break;
       default:
         return null;
@@ -1769,7 +2071,9 @@ export const getAsset = async (unit) => {
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = metadata.image ? linkToSrc(convertMetadataPropToString(metadata.image)) : '';
+        asset.image = metadata.image
+          ? linkToSrc(convertMetadataPropToString(metadata.image))
+          : '';
         asset.decimals = 0;
       } catch (_e) {
         asset.displayName = asset.name;
@@ -1796,7 +2100,8 @@ export const getAsset = async (unit) => {
         const metadata = metadataDatum && Data.toJson(metadataDatum.fields[0]);
 
         asset.displayName = metadata.name;
-        asset.image = linkToSrc(convertMetadataPropToString(metadata.logo)) || '';
+        asset.image =
+          linkToSrc(convertMetadataPropToString(metadata.logo)) || '';
         asset.decimals = metadata.decimals || 0;
       } catch (_e) {
         asset.displayName = asset.name;
@@ -1960,6 +2265,22 @@ export const updateAccount = async (forceUpdate = false) => {
     delete currentAccount[network.id].forceUpdate;
 
   await updateBalance(currentAccount, network);
+
+  console.log('before update balance', currentAccount);
+  console.log(
+    'updating btc balance',
+    currentAccount['bitcoinmainnet'].paymentAddr
+  );
+  currentAccount['bitcoinmainnet'].lovelace = await getBtcBalance(
+    currentAccount['bitcoinmainnet'].paymentAddr,
+    NODE.bitcoinmainnet
+  );
+  currentAccount['dogecoinmainnet'].lovelace = await getBtcBalance(
+    currentAccount['dogecoinmainnet'].paymentAddr,
+    NODE.dogecoinmainnet
+  );
+
+  console.log('after update balance', currentAccount);
 
   currentAccount[network.id].lastUpdate =
     currentAccount[network.id].history.confirmed[0];

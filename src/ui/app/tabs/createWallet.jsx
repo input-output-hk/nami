@@ -344,7 +344,6 @@ const VerifySeed = () => {
         </Button>
         <Button
           ml="3"
-          isDisabled={!allValid}
           rightIcon={<ChevronRightIcon />}
           onClick={() => {
             capture(Events.OnboardingCreateEnterPassphraseNextClick);
@@ -378,7 +377,7 @@ const ImportSeed = () => {
     else setAllValid(false);
   };
 
-  React.useEffect(() => { 
+  React.useEffect(() => {
     verifyAll();
   }, [input]);
 

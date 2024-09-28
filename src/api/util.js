@@ -43,7 +43,7 @@ export async function delay(delayInMs) {
   });
 }
 
-export async function blockfrostRequest(endpoint, headers, body, signal) {
+export async function blockfrostRequest(endpoint, headers, body, signal, node) {
   const network = await getNetwork();
   let result;
 
@@ -51,17 +51,21 @@ export async function blockfrostRequest(endpoint, headers, body, signal) {
     if (result) {
       await delay(100);
     }
-    const rawResult = await fetch(provider.api.base(network.node) + endpoint, {
-      headers: {
-        ...provider.api.key(network.name || network.id),
-        ...provider.api.header,
-        ...headers,
-        'Cache-Control': 'no-cache',
-      },
-      method: body ? 'POST' : 'GET',
-      body,
-      signal,
-    });
+    console.log('url', provider.api.base(node ?? network.node) + endpoint);
+    const rawResult = await fetch(
+      provider.api.base(node ?? network.node) + endpoint,
+      {
+        headers: {
+          ...provider.api.key(network.name || network.id),
+          ...provider.api.header,
+          ...headers,
+          'Cache-Control': 'no-cache',
+        },
+        method: body ? 'POST' : 'GET',
+        body,
+        signal,
+      }
+    );
     result = await rawResult.json();
   }
 
@@ -91,6 +95,8 @@ export const networkNameToId = (name) => {
     [NETWORK_ID.testnet]: 0,
     [NETWORK_ID.preview]: 0,
     [NETWORK_ID.preprod]: 0,
+    [NETWORK_ID.bitcoinmainnet]: 2,
+    [NETWORK_ID.bitcointestnet]: 3,
   };
   return names[name];
 };
