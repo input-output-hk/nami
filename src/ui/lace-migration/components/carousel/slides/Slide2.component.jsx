@@ -5,12 +5,12 @@ import { ReactComponent as SeamlessDark } from '../../../assets/grouped-dark-mod
 import { ReactComponent as SeamlessWhite } from '../../../assets/grouped-white-mode.svg';
 import { useColorMode, Box } from '@chakra-ui/react';
 
-export const Slide2 = ({ onAction }) => {
+export const Slide2 = ({ onAction, isDismissable, dismissibleSeconds }) => {
   const { colorMode } = useColorMode();
   return (
     <Slide
       showTerms
-      title="Same experience, better infrastructure"
+      title="It's time to upgrade your wallet!"
       image={
         <Box mb={'40px'}>
           {colorMode === 'light' ? (
@@ -20,14 +20,13 @@ export const Slide2 = ({ onAction }) => {
           )}
         </Box>
       }
-      description={[
-        'On the surface, Nami is the same.',
-        "But now, with Lace's advanced",
-        'technology supporting it',
-      ]}
-      buttonText="Migrate your wallet"
+      description="Your Nami wallet is now part of the Lace family"
+      buttonText="Upgrade"
       buttonIcon={Arrow}
       onButtonClick={onAction}
+      isDismissable={isDismissable}
+      dismissibleSeconds={dismissibleSeconds}
+      buttonOrientation="row"
     />
   );
 };

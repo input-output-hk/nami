@@ -104,6 +104,7 @@ export enum Events {
   MigrationUpgradeYourWalletClicked = 'nami tool | nami | upgrade your wallet | click',
   MigrationDownloadLaceClicked = 'nami tool | nami | download lace | click',
   MigrationOpenLaceClicked = 'nami tool | nami | open lace | click',
+  NamiMigrationDismissed = 'nami tool | nami | migration dismissed | click',
 }
 
 export type Property =

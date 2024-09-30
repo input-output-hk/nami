@@ -4,23 +4,23 @@ import { ReactComponent as Arrow } from '../../../assets/arrow.svg';
 import { Box } from '@chakra-ui/react';
 import { ReactComponent as FeaturesImg } from '../../../assets/features.svg';
 
-export const Slide3 = ({ onAction }) => {
+export const Slide3 = ({ onAction, isDismissable, dismissibleSeconds }) => {
   return (
     <Slide
       showTerms
-      title="Seamless switch"
-      description={[
-        "Send all your wallets to Lace's new",
-        'Nami Mode with one single click!',
-      ]}
+      title="It's time to upgrade your wallet!"
+      description="Your Nami wallet is now part of the Lace family"
       image={
         <Box>
           <FeaturesImg width="296px" height="172px" />
         </Box>
       }
-      buttonText="Migrate your wallet"
+      buttonText="Upgrade"
       buttonIcon={Arrow}
       onButtonClick={onAction}
+      isDismissable={isDismissable}
+      dismissibleSeconds={dismissibleSeconds}
+      buttonOrientation="row"
     />
   );
 };

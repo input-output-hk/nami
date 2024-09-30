@@ -234,7 +234,7 @@ npm start
 ```
 # Update secrets file with your own keys
 cp secrets.testing.js secrets.production.js
-npm run build
+yarn build
 ```
 
 ##### Run tests

@@ -19,11 +19,9 @@ export const AllDone = ({ isLaceInstalled, onAction }) => {
           )}
         </Box>
       }
-      description={[
-        'All good. Just use the Lace',
-        'extension to access your migrated',
-        'Nami Wallet from now on',
-      ]}
+      description={
+        'All good. Just use the Lace extension to access your migrated Nami Wallet from now on'
+      }
       buttonText={isLaceInstalled ? 'Open Lace' : 'Download Lace'}
       buttonIcon={Arrow}
       onButtonClick={onAction}

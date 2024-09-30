@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Button, useColorModeValue } from '@chakra-ui/react';
+import { Box, Button, useColorModeValue, Flex } from '@chakra-ui/react';
 import { ReactComponent as Left } from '../../assets/chevron-left.svg';
 import { ReactComponent as Right } from '../../assets/chevron-right.svg';
-
 const CarouselButton = ({ children, ...rest }) => (
   <Button
     {...rest}
@@ -14,6 +13,7 @@ const CarouselButton = ({ children, ...rest }) => (
     _focus={{
       boxShadow: 'none',
     }}
+    justifyContent="center"
   >
     {children}
   </Button>
@@ -40,18 +40,18 @@ export const Carousel = ({ children, onSlideSwitched }) => {
 
   return (
     <Box display="flex">
-      <Box mt="170px">
+      <Flex h="375px" width="48px" justifyContent="center">
         <CarouselButton onClick={prevSlide}>
           <Left />
         </CarouselButton>
-      </Box>
+      </Flex>
 
       <Box>{children[currentIndex]}</Box>
-      <Box mt="170px">
+      <Flex h="375px" width="48px" justifyContent="center">
         <CarouselButton onClick={nextSlide}>
           <Right />
         </CarouselButton>
-      </Box>
+      </Flex>
     </Box>
   );
 };

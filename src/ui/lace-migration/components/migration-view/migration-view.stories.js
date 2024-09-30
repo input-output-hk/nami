@@ -1,5 +1,5 @@
 import { MigrationView } from './migration-view.component';
-import { MigrationState } from '@xsy/nami-migration-tool/dist/migrator/migration-state.data';
+import { MigrationState } from 'nami-migration-tool/migrator/migration-state.data';
 
 export default {
   title: 'Nami Migration/State Flow',

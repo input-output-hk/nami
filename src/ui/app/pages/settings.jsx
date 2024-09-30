@@ -14,6 +14,9 @@ import {
   InputRightElement,
   Icon,
   Select,
+  useToast,
+  Badge,
+  Flex,
 } from '@chakra-ui/react';
 import {
   ChevronLeftIcon,
@@ -23,7 +26,7 @@ import {
   RepeatIcon,
   CheckIcon,
 } from '@chakra-ui/icons';
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   getCurrentAccount,
   getCurrentAccountIndex,
@@ -47,6 +50,9 @@ import { ChangePasswordModal } from '../components/changePasswordModal';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
 import { LegalSettings } from '../../../features/settings/legal/LegalSettings';
+import { usePostHog } from 'posthog-js/react';
+import { useFeatureFlagsContext } from '../../../features/feature-flags/provider';
+import { enableMigration } from 'nami-migration-tool/cross-extension-messaging/nami-migration-client.extension';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -79,6 +85,7 @@ const Settings = () => {
           <Route path="whitelisted" element={<Whitelisted />} />
           <Route path="network" element={<Network />} />
           <Route path="legal" element={<LegalSettings />} />
+          <Route path="beta-partner" element={<BetaPartner />} />
         </Routes>
       </Box>
     </>
@@ -89,6 +96,7 @@ const Overview = () => {
   const capture = useCaptureEvent();
   const navigate = useNavigate();
   const { colorMode, toggleColorMode } = useColorMode();
+  const { earlyAccessFeatures, featureFlags } = useFeatureFlagsContext();
   return (
     <>
       <Box height="10" />
@@ -96,6 +104,49 @@ const Overview = () => {
         Settings
       </Text>
       <Box height="10" />
+      {earlyAccessFeatures?.find((f) => f.name === 'beta-partner') && (
+        <Button
+          justifyContent="space-between"
+          variant="ghost"
+          width="65%"
+          rightIcon={<ChevronRightIcon />}
+          onClick={() => {
+            navigate('beta-partner');
+          }}
+        >
+          Become a beta partner
+        </Button>
+      )}
+      {featureFlags?.['is-migration-active']?.dismissable && (
+        <Button
+          justifyContent="space-between"
+          variant="ghost"
+          width="65%"
+          rightIcon={<ChevronRightIcon />}
+          onClick={async () => {
+            await enableMigration();
+          }}
+        >
+          <Flex
+            flex={1}
+            justifyContent={'space-between'}
+            alignContent={'center'}
+            flexDirection={'row'}
+          >
+            <Text>Upgrade your wallet</Text>
+            <Badge
+              borderRadius={16}
+              fontWeight={400}
+              fontSize={12}
+              alignContent={'center'}
+              colorScheme="teal"
+              variant={'subtle'}
+            >
+              Beta
+            </Badge>
+          </Flex>
+        </Button>
+      )}
       <Button
         justifyContent="space-between"
         width="65%"
@@ -546,6 +597,72 @@ const Network = () => {
           </Button>
         </InputRightElement>
       </InputGroup>
+    </>
+  );
+};
+
+const BetaPartner = () => {
+  const posthog = usePostHog();
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  const betaProgramMigrationEnrollment = useCallback(
+    (choice) => {
+      const action = choice ? 'joined' : 'left';
+      posthog.updateEarlyAccessFeatureEnrollment('is-migration-active', choice);
+      toast({
+        status: 'success',
+        title: `${action} the beta program`,
+      });
+      navigate('/settings');
+    },
+    [posthog, toast, navigate]
+  );
+
+  return (
+    <>
+      <Box height="10" />
+      <Text fontSize="lg" fontWeight="bold">
+        Become a beta partner
+      </Text>
+      <Box height="6" />
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        w={'260px'}
+        flex={1}
+        paddingBottom="20px"
+      >
+        <Text fontSize="medium">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          <br />
+          <br />
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat. sed do eiusmod tempor incididunt ut
+          labore et dolore magna aliqua.
+        </Text>
+      </Box>
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap="14px"
+        paddingBottom="40px"
+      >
+        <Button
+          colorScheme="teal"
+          onClick={() => betaProgramMigrationEnrollment(true)}
+        >
+          I understand and wish to continue
+        </Button>
+        <Button
+          colorScheme="orange"
+          onClick={() => betaProgramMigrationEnrollment(false)}
+        >
+          Maybe later
+        </Button>
+      </Box>
     </>
   );
 };

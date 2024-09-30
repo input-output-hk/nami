@@ -4,25 +4,23 @@ import { Slide } from '../../slide.component';
 import { ReactComponent as Arrow } from '../../../assets/arrow.svg';
 import { ReactComponent as BackpackImg } from '../../../assets/backpack.svg';
 
-export const Slide1 = ({ onAction }) => {
+export const Slide1 = ({ onAction, isDismissable, dismissibleSeconds }) => {
   return (
     <Slide
       showTerms
-      title="It's time to migrate your wallet!"
+      title="It's time to upgrade your wallet!"
       image={
         <Box mb={'20px'}>
           <BackpackImg width="91px" height="126px" />
         </Box>
       }
-      description={[
-        'The Nami Wallet is now part of the',
-        'IOG family and integrated into Lace.',
-        'Click ‘Migrate your wallet‘',
-        'to begin the process',
-      ]}
-      buttonText="Migrate your wallet"
+      description="Your Nami wallet is now part of the Lace family"
+      buttonText="Upgrade"
       buttonIcon={Arrow}
       onButtonClick={onAction}
+      isDismissable={isDismissable}
+      dismissibleSeconds={dismissibleSeconds}
+      buttonOrientation="row"
     />
   );
 };

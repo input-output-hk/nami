@@ -29,7 +29,6 @@
     "@fontsource/ubuntu": "^5.0.8",
     "@ledgerhq/hw-transport-webusb": "^6.28.0",
     "@trezor/connect-web": "^9.0.11",
-    "@xsy/nami-migration-tool": "file:xsy-nami-migration-tool-0.0.39.tgz",
     "bip39": "^3.0.4",
     "crc": "^4.1.1",
     "crypto-random-string": "^5.0.0",
@@ -39,7 +38,9 @@
     "framer-motion": "^4.1.16",
     "javascript-time-ago": "^2.3.7",
     "jest-chrome": "^0.8.0",
+    "lodash": "^4.17.21",
     "match-sorter": "^6.1.0",
+    "nami-migration-tool": "file:nami-migration-tool-0.0.41.tgz",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "posthog-js": "^1.93.6",
     "promise-latest": "^1.0.4",
@@ -57,7 +58,8 @@
     "react-window": "^1.8.10",
     "styled-components": "^6.1.1",
     "use-constant": "^1.1.0",
-    "web3-validator": "^2.0.3"
+    "web3-validator": "^2.0.3",
+    "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.8",
@@ -126,5 +128,6 @@
     "extends": [
       "plugin:storybook/recommended"
     ]
-  }
+  },
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }

@@ -1,4 +1,9 @@
 import { Messaging } from '../../api/messaging';
+import { storage } from 'webextension-polyfill';
+import {
+  MIGRATION_KEY,
+  MigrationState,
+} from 'nami-migration-tool/migrator/migration-state.data';
 
 const injectScript = () => {
   const script = document.createElement('script');
@@ -10,7 +15,12 @@ const injectScript = () => {
   (document.head || document.documentElement).appendChild(script);
 };
 
-function shouldInject() {
+async function shouldInject() {
+  const { laceMigration } = (await storage.local.get(MIGRATION_KEY)) || {
+    laceMigration: undefined,
+  };
+  // Prevent injection into window.cardano namespace if migration has been completed
+  if (laceMigration === MigrationState.Completed) return false;
   const documentElement = document.documentElement.nodeName;
   const docElemCheck = documentElement
     ? documentElement.toLowerCase() === 'html'
@@ -20,7 +30,7 @@ function shouldInject() {
   return docElemCheck && docTypeCheck;
 }
 
-if (shouldInject) {
+if (await shouldInject()) {
   injectScript();
   Messaging.createProxyController();
 }

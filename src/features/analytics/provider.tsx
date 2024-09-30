@@ -16,6 +16,7 @@ import {
   getUserId,
   setAnalyticsConsent,
 } from './services';
+import { FeatureFlagProvider } from '../feature-flags/provider';
 
 /**
  * Represents the user's consent to tracking analytics events
@@ -117,17 +118,25 @@ export const AnalyticsProvider = ({
   if (analyticsState.consent === false) {
     // render the children without being hooked to the actual posthog provider
     return (
-      <AnalyticsContext.Provider value={[analyticsState, setAnalyticsConsent]}>
-        {children}
-      </AnalyticsContext.Provider>
+      <FeatureFlagProvider>
+        <AnalyticsContext.Provider
+          value={[analyticsState, setAnalyticsConsent]}
+        >
+          {children}
+        </AnalyticsContext.Provider>
+      </FeatureFlagProvider>
     );
   }
 
   return (
     <PostHogProvider apiKey={POSTHOG_API_KEY} options={options}>
-      <AnalyticsContext.Provider value={[analyticsState, setAnalyticsConsent]}>
-        {children}
-      </AnalyticsContext.Provider>
+      <FeatureFlagProvider>
+        <AnalyticsContext.Provider
+          value={[analyticsState, setAnalyticsConsent]}
+        >
+          {children}
+        </AnalyticsContext.Provider>
+      </FeatureFlagProvider>
     </PostHogProvider>
   );
 };

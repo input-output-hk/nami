@@ -8,6 +8,7 @@ const meta = {
   },
   args: {
     onAction: () => {},
+    isDismissable: true,
   },
 };
 
