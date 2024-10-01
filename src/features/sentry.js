@@ -1,9 +1,8 @@
 import * as Sentry from '@sentry/react';
-import secrets from 'secrets';
 
 Sentry.init({
     environment: process.env.NODE_ENV,
-    dsn: secrets.SENTRY_DSN,
+    dsn:  process.env.SENTRY_DSN,
     integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.browserProfilingIntegration(),

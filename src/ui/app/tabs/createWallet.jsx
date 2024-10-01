@@ -1,5 +1,5 @@
 /**
- * hw.jsx is the entry point for the hardware wallet extension tab
+ * hw.jsx is the entry point for the harware wallet extension tab
  */
 
 import React from 'react';
