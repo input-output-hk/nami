@@ -27,6 +27,11 @@ jobs:
           echo "export default { PROJECT_ID_MAINNET: '${{ secrets.PROJECT_ID_MAINNET  }}', PROJECT_ID_PREVIEW: '${{ secrets.PROJECT_ID_PREVIEW  }}', PROJECT_ID_PREPROD: '${{ secrets.PROJECT_ID_PREPROD  }}'};" > secrets.production.js
       - name: Build
         run: npm run build
+        with:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
