@@ -52,7 +52,7 @@ import { Events } from '../../../features/analytics/events';
 import { LegalSettings } from '../../../features/settings/legal/LegalSettings';
 import { usePostHog } from 'posthog-js/react';
 import { useFeatureFlagsContext } from '../../../features/feature-flags/provider';
-import { enableMigration } from 'nami-migration-tool/cross-extension-messaging/nami-migration-client.extension';
+import { enableMigration } from '../../../api/migration-tool/cross-extension-messaging/nami-migration-client.extension';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -97,6 +97,7 @@ const Overview = () => {
   const navigate = useNavigate();
   const { colorMode, toggleColorMode } = useColorMode();
   const { earlyAccessFeatures, featureFlags } = useFeatureFlagsContext();
+  console.log(earlyAccessFeatures)
   return (
     <>
       <Box height="10" />

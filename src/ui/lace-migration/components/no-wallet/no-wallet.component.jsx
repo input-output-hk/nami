@@ -20,6 +20,7 @@ export const NoWallet = ({ onAction, isDismissable, dismissibleSeconds }) => (
     buttonIcon={LaceIcon}
     onButtonClick={onAction}
     isDismissable={isDismissable}
+    buttonOrientation={isDismissable ? 'column' : 'row'}
     dismissibleSeconds={dismissibleSeconds}
   />
 );

@@ -1,3 +1,6 @@
+const path = require('path');
+const { NormalModuleReplacementPlugin } = require('webpack');
+
 const config = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
@@ -31,6 +34,15 @@ const config = {
       ],
     });
     webPackconfig.resolve.extensions.push('.svg');
+    if (webPackconfig.plugins) {
+      webPackconfig.plugins.push(
+        new NormalModuleReplacementPlugin(
+          /^webextension-polyfill$/,
+          path.join(__dirname, './mocks/webextension-polyfill.mock.ts'),
+        ),
+      );
+    }
+
     return webPackconfig;
   },
 };

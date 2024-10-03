@@ -112,7 +112,6 @@ export const Slide = ({
     >
       <Box
         w="100%"
-        maxWidth="300px"
         h="375px"
         mb="30px"
         borderWidth="1px"

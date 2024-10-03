@@ -9,13 +9,15 @@ var webpack = require('webpack'),
   NodePolyfillPlugin = require('node-polyfill-webpack-plugin'),
   ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
+require('dotenv').config();
+
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
 var alias = {};
 
 // load the secrets
 var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
-
+console.log(env.NODE_ENV, secretsPath);
 var fileExtensions = [
   'jpg',
   'jpeg',
@@ -188,7 +190,7 @@ var options = {
       cleanStaleWebpackAssets: true,
     }),
     // expose and write the allowed env vars on the compiled bundle
-    new webpack.EnvironmentPlugin(['NODE_ENV']),
+    new webpack.EnvironmentPlugin(['NODE_ENV', 'LACE_EXTENSION_ID', 'NAMI_EXTENSION_ID']),
     new CopyWebpackPlugin({
       patterns: [
         {

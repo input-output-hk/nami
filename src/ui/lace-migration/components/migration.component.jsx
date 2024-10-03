@@ -4,13 +4,13 @@ import {
   MIGRATION_KEY,
   MigrationState,
   DISMISS_MIGRATION_UNTIL,
-} from 'nami-migration-tool/migrator/migration-state.data';
+} from '../../../api/migration-tool/migrator/migration-state.data';
 import { MigrationView } from './migration-view/migration-view.component';
 import {
   checkLaceInstallation,
   enableMigration,
   openLace,
-} from 'nami-migration-tool/cross-extension-messaging/nami-migration-client.extension';
+} from '../../../api/migration-tool/cross-extension-messaging/nami-migration-client.extension';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
 import { STORAGE } from '../../../config/config';
@@ -85,7 +85,7 @@ export const AppWithMigration = () => {
     let showApp = true;
     if (featureFlags?.['is-migration-active'] !== undefined) {
       if (!!featureFlags['is-migration-active'].dismissable) {
-        showApp = !!state.dismissedUntil && state.dismissedUntil > Date.now();
+        showApp = !!state.dismissedUntil && state.dismissedUntil > Date.now() && state.migrationState !== MigrationState.InProgress;
       } else {
         showApp = false;
       }

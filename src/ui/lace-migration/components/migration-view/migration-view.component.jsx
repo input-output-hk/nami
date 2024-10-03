@@ -1,5 +1,5 @@
 import React from 'react';
-import { MigrationState } from 'nami-migration-tool/migrator/migration-state.data';
+import { MigrationState } from '../../../../api/migration-tool/migrator/migration-state.data';
 import { Carousel } from '../carousel/carousel.component';
 import { Slide1 } from '../carousel/slides/Slide1.component';
 import { Slide2 } from '../carousel/slides/Slide2.component';
@@ -23,6 +23,7 @@ export const MigrationView = ({
   onNoWalletActionClick,
   hasWallet,
 }) => {
+  const panelBg = useColorModeValue('#349EA3', 'gray.800');
   const bgColor = useColorModeValue('#FFF', '#1A202C');
   const { featureFlags } = useFeatureFlagsContext();
   const isDismissable =
@@ -34,16 +35,26 @@ export const MigrationView = ({
   if (!hasWallet) {
     return (
       <Flex
-        style={{ padding: '30px 40px', backgroundColor: bgColor }}
-        flexDirection={'column'}
-        h={'100%'}
+        h="100%"
+        backgroundColor={panelBg}
       >
-        <NoWallet
-          isLaceInstalled={isLaceInstalled}
-          onAction={onNoWalletActionClick}
-          isDismissable={isDismissable}
-          dismissibleSeconds={dismissibleSeconds}
-        />
+        <Flex
+          pt="40px"
+          pb="30px"
+          px="40px"
+          borderTopRadius='20px'
+          backgroundColor={bgColor}
+          mt='17px'
+          flexDirection='column'
+          h='calc(100% - 17px)'
+        >
+          <NoWallet
+            isLaceInstalled={isLaceInstalled}
+            onAction={onNoWalletActionClick}
+            isDismissable={isDismissable}
+            dismissibleSeconds={dismissibleSeconds}
+          />
+        </Flex>
       </Flex>
     );
   }
@@ -53,30 +64,40 @@ export const MigrationView = ({
     case MigrationState.None:
       return (
         <Flex
-          style={{ padding: '30px 0px', backgroundColor: bgColor }}
-          flexDirection={'column'}
-          h={'100%'}
+          h="100%"
+          backgroundColor={panelBg}
         >
-          <Carousel onSlideSwitched={onSlideSwitched}>
-            <Slide1
-              key="1"
-              onAction={onUpgradeWalletClicked}
-              isDismissable={isDismissable}
-              dismissibleSeconds={dismissibleSeconds}
-            />
-            <Slide2
-              key="2"
-              onAction={onUpgradeWalletClicked}
-              isDismissable={isDismissable}
-              dismissibleSeconds={dismissibleSeconds}
-            />
-            <Slide3
-              key="3"
-              onAction={onUpgradeWalletClicked}
-              isDismissable={isDismissable}
-              dismissibleSeconds={dismissibleSeconds}
-            />
-          </Carousel>
+          <Flex
+            flexDirection={'column'}
+            pt="40px"
+            pb="30px"
+            px="0px"
+            borderTopRadius='20px'
+            backgroundColor={bgColor}
+            mt='17px'
+            h='calc(100% - 17px)'
+          >
+            <Carousel onSlideSwitched={onSlideSwitched}>
+              <Slide1
+                key="1"
+                onAction={onUpgradeWalletClicked}
+                isDismissable={isDismissable}
+                dismissibleSeconds={dismissibleSeconds}
+              />
+              <Slide2
+                key="2"
+                onAction={onUpgradeWalletClicked}
+                isDismissable={isDismissable}
+                dismissibleSeconds={dismissibleSeconds}
+              />
+              <Slide3
+                key="3"
+                onAction={onUpgradeWalletClicked}
+                isDismissable={isDismissable}
+                dismissibleSeconds={dismissibleSeconds}
+              />
+            </Carousel>
+          </Flex>
         </Flex>
       );
 
@@ -85,32 +106,52 @@ export const MigrationView = ({
         onWaitingForLaceScreenViewed?.();
         return (
           <Flex
-            style={{ padding: '30px 40px', backgroundColor: bgColor }}
-            flexDirection={'column'}
-            h={'100%'}
+            h="100%"
+            backgroundColor={panelBg}
           >
-            <AlmostThere
-              isLaceInstalled={false}
-              onAction={onDownloadLaceClicked}
-              isDismissable={isDismissable}
-              dismissibleSeconds={dismissibleSeconds}
-            />
+            <Flex
+              pt="40px"
+              pb="30px"
+              px="40px"
+              borderTopRadius='20px'
+              backgroundColor={bgColor}
+              mt='17px'
+              flexDirection='column'
+              h='calc(100% - 17px)'
+            >
+              <AlmostThere
+                isLaceInstalled={false}
+                onAction={onDownloadLaceClicked}
+                isDismissable={isDismissable}
+                dismissibleSeconds={dismissibleSeconds}
+              />
+            </Flex>
           </Flex>
         );
       } else {
         onOpenLaceScreenViewed?.();
         return (
           <Flex
-            style={{ padding: '30px 40px', backgroundColor: bgColor }}
-            flexDirection={'column'}
-            h={'100%'}
+            h="100%"
+            backgroundColor={panelBg}
           >
-            <AlmostThere
-              isLaceInstalled
-              onAction={onOpenLaceClicked}
-              isDismissable={isDismissable}
-              dismissibleSeconds={dismissibleSeconds}
-            />
+            <Flex
+              pt="40px"
+              pb="30px"
+              px="40px"
+              borderTopRadius='20px'
+              backgroundColor={bgColor}
+              mt='17px'
+              flexDirection='column'
+              h='calc(100% - 17px)'
+            >
+              <AlmostThere
+                isLaceInstalled
+                onAction={onOpenLaceClicked}
+                isDismissable={isDismissable}
+                dismissibleSeconds={dismissibleSeconds}
+              />
+            </Flex>
           </Flex>
         );
       }
@@ -119,16 +160,26 @@ export const MigrationView = ({
       onAllDoneScreenViewed?.();
       return (
         <Flex
-          style={{ padding: '30px 40px', backgroundColor: bgColor }}
-          flexDirection={'column'}
-          h={'100%'}
+          h="100%"
+          backgroundColor={panelBg}
         >
-          <AllDone
-            isLaceInstalled={isLaceInstalled}
-            onAction={
-              isLaceInstalled ? onOpenLaceClicked : onDownloadLaceClicked
-            }
-          />
+          <Flex
+            pt="40px"
+            pb="30px"
+            px="40px"
+            borderTopRadius='20px'
+            backgroundColor={bgColor}
+            mt='17px'
+            flexDirection='column'
+            h='calc(100% - 17px)'
+          >
+            <AllDone
+              isLaceInstalled={isLaceInstalled}
+              onAction={
+                isLaceInstalled ? onOpenLaceClicked : onDownloadLaceClicked
+              }
+            />
+          </Flex>
         </Flex>
       );
   }

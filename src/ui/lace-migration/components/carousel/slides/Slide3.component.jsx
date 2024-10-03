@@ -12,7 +12,7 @@ export const Slide3 = ({ onAction, isDismissable, dismissibleSeconds }) => {
       description="Your Nami wallet is now part of the Lace family"
       image={
         <Box>
-          <FeaturesImg width="296px" height="172px" />
+          <FeaturesImg width="263px" height="auto" />
         </Box>
       }
       buttonText="Upgrade"

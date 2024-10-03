@@ -1,5 +1,4 @@
 import { MigrationView } from './migration-view.component';
-import { MigrationState } from 'nami-migration-tool/migrator/migration-state.data';
 
 export default {
   title: 'Nami Migration/State Flow',
@@ -12,14 +11,14 @@ export default {
 
 export const None = {
   args: {
-    migrationState: MigrationState.None,
+    migrationState: 'none',
     hasWallet: true,
   },
 };
 
 export const WaitingForLace = {
   args: {
-    migrationState: MigrationState.InProgress,
+    migrationState: 'in-progress',
     isLaceInstalled: false,
     hasWallet: true,
   },
@@ -27,7 +26,7 @@ export const WaitingForLace = {
 
 export const InProgress = {
   args: {
-    migrationState: MigrationState.InProgress,
+    migrationState: 'in-progress',
     isLaceInstalled: true,
     hasWallet: true,
   },
@@ -35,7 +34,7 @@ export const InProgress = {
 
 export const Completed = {
   args: {
-    migrationState: MigrationState.Completed,
+    migrationState: 'completed',
     isLaceInstalled: true,
     hasWallet: true,
   },
@@ -43,7 +42,7 @@ export const Completed = {
 
 export const NoWallet = {
   args: {
-    migrationState: MigrationState.None,
+    migrationState: 'none',
     hasWallet: false,
   },
 };

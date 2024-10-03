@@ -3,7 +3,7 @@ import { storage } from 'webextension-polyfill';
 import {
   MIGRATION_KEY,
   MigrationState,
-} from 'nami-migration-tool/migrator/migration-state.data';
+} from '../../api/migration-tool/migrator/migration-state.data';
 
 const injectScript = () => {
   const script = document.createElement('script');

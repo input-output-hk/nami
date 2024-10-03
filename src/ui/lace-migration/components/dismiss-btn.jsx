@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Flex } from '@chakra-ui/react';
 import { Text } from './text.component';
-import { dismissMigration } from 'nami-migration-tool/cross-extension-messaging/nami-migration-client.extension';
+import { dismissMigration } from '../../../api/migration-tool/cross-extension-messaging/nami-migration-client.extension';
 import { ReactComponent as PendingDark } from '../assets/clock.svg';
 
 export const DismissBtn = ({ dismissableIntervalSeconds, hasIcon }) => {

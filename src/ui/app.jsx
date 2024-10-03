@@ -11,15 +11,12 @@ import Send from './app/pages/send';
 import { useStoreActions, useStoreState } from 'easy-peasy';
 import { useAnalyticsContext } from '../features/analytics/provider';
 import { TermsAndPrivacyProvider } from '../features/terms-and-privacy';
-import { useFeatureFlagsContext } from '../features/feature-flags/provider';
-import { storage } from 'webextension-polyfill';
 
 export const App = () => {
   const route = useStoreState((state) => state.globalModel.routeStore.route);
   const setRoute = useStoreActions(
     (actions) => actions.globalModel.routeStore.setRoute
   );
-  const featureFlags = useFeatureFlagsContext();
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = React.useState(true);
@@ -54,19 +51,6 @@ export const App = () => {
       setRoute(location.pathname);
     }
   }, [location, isLoading, setRoute]);
-
-  //console.log(sd);
-  storage.local.get().then((store) => {
-    console.log('store', { store });
-  });
-
-  /*if (
-      !!featureFlags?.['is-migration-active'] &&
-      !featureFlags['is-migration-active'].dismissable
-    ) {
-      console.log('we active');
-      return <Migration />;
-    }*/
 
   return isLoading ? (
     <Box
