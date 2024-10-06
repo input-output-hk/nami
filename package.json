@@ -1,7 +1,7 @@
 {
   "name": "nami-wallet",
   "version": "3.8.5",
-  "description": "Maintained by IOG",
+  "description": "Transaction-Chaining Fork by Mueliswap",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

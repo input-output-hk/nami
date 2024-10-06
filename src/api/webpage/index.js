@@ -6,6 +6,11 @@ export const getBalance = async () => {
   return result.data;
 };
 
+export const getMempoolTxs = async () => {
+  const result = await Messaging.sendToContent({ method: METHOD.getMempoolTxs });
+  return result.data;
+};
+
 export const enable = async () => {
   const result = await Messaging.sendToContent({ method: METHOD.enable });
   return result.data;

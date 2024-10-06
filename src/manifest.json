@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Nami",
+  "name": "Nami TxChaining",
   "version": "3.8.5",
-  "description": "Maintained by IOG",
+  "description": "Transaction-Chaining Fork by Mueliswap",
   "background": { "service_worker": "background.bundle.js" },
   "action": {
     "default_popup": "mainPopup.html",

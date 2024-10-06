@@ -21,6 +21,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
   const capture = useCaptureEvent();
   const [historySlice, setHistorySlice] = React.useState(null);
   const [page, setPage] = React.useState(1);
+  const [memLoaded, setMemLoaded] = React.useState(false);
   const [final, setFinal] = React.useState(false);
   const [loadNext, setLoadNext] = React.useState(false);
   const getTxs = async () => {
@@ -32,18 +33,23 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
       return;
     }
     await new Promise((res, rej) => setTimeout(() => res(), 10));
-    slice = slice.concat(
-      history.confirmed.slice((page - 1) * BATCH, page * BATCH)
-    );
 
+    slice = slice.concat(
+      (history.pending ?? []).concat(history.confirmed ?? [])
+      .slice((page - 1) * BATCH, page * BATCH)
+    );
     if (slice.length < page * BATCH) {
-      const txs = await getTransactions(page, BATCH);
+      const txs = await getTransactions(page, BATCH, !memLoaded);
 
       if (txs.length <= 0) {
-        setFinal(true);
+        if (memLoaded) {
+          setFinal(true);
+        } else {
+          setMemLoaded(true)
+        }
       } else {
         slice = Array.from(new Set(slice.concat(txs.map((tx) => tx.txHash))));
-        await setTransactions(slice);
+        await setTransactions(slice, memLoaded);
       }
     }
     if (slice.length < page * BATCH) setFinal(true);
@@ -107,6 +113,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
               return (
                 <Transaction
                   onLoad={(txHash, txDetail) => {
+                    history.details[txHash] = txDetail;
                     txObject[txHash] = txDetail;
                   }}
                   key={index}
@@ -115,6 +122,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
                   currentAddr={currentAddr}
                   addresses={addresses}
                   network={network}
+                  pending={history.pending.includes(txHash)}
                 />
               );
             })}

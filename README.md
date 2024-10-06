@@ -86,6 +86,13 @@ cardano.getBalance() : Value
 
 `Value` is a hex encoded cbor string.
 
+##### cardano.getMempoolTxs(paginate)
+
+```
+cardano.getMempoolTxs() : [TxHash]
+```
+
+
 ##### cardano.getUtxos(amount, paginate)
 
 ```

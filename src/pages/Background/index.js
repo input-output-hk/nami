@@ -6,6 +6,7 @@ import {
   getCollateral,
   getNetwork,
   getRewardAddress,
+  getTransactions,
   getUtxos,
   isWhitelisted,
   submitTx,
@@ -152,6 +153,26 @@ app.add(METHOD.getRewardAddress, async (request, sendResponse) => {
       sender: SENDER.extension,
     });
   }
+});
+
+app.add(METHOD.getMempoolTxs, (request, sendResponse) => {
+  getTransactions(0, 100, true)
+    .then((txs) => {
+      sendResponse({
+        id: request.id,
+        data: txs.map((t) => t.txHash),
+        target: TARGET,
+        sender: SENDER.extension,
+      });
+    })
+    .catch((e) => {
+      sendResponse({
+        id: request.id,
+        error: e,
+        target: TARGET,
+        sender: SENDER.extension,
+      });
+    });
 });
 
 app.add(METHOD.getUtxos, (request, sendResponse) => {
