@@ -13,9 +13,9 @@ export const AllDone = ({ isLaceInstalled, onAction }) => {
       image={
         <Box mb={'50px'}>
           {colorMode === 'light' ? (
-            <DoneWhite width="98px" height="98px" />
+            <DoneWhite width="103px" height="135px" />
           ) : (
-            <DoneDark width="98px" height="98px" />
+            <DoneDark width="103px" height="135px" />
           )}
         </Box>
       }

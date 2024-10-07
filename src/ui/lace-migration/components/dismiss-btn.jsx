@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Flex } from '@chakra-ui/react';
+import { Button, Flex, useColorModeValue } from '@chakra-ui/react';
 import { Text } from './text.component';
 import { dismissMigration } from '../../../api/migration-tool/cross-extension-messaging/nami-migration-client.extension';
 import { ReactComponent as PendingDark } from '../assets/clock.svg';
@@ -9,7 +9,8 @@ export const DismissBtn = ({ dismissableIntervalSeconds, hasIcon }) => {
   const futureTime = futureDate.setTime(
     futureDate.getTime() + dismissableIntervalSeconds * 1000
   );
-  const Icon = !!hasIcon && <PendingDark style={{ height: 24, width: 24 }} />;
+  const textColor = useColorModeValue('#6F7786', '#FFFFFF');
+  const Icon = !!hasIcon && <PendingDark color={textColor} style={{ height: 24, width: 24 }} />;
 
   return (
     <Button
@@ -26,7 +27,7 @@ export const DismissBtn = ({ dismissableIntervalSeconds, hasIcon }) => {
     >
       <Flex alignItems="center">
         {Icon}
-        <Text color="black" ml="6px" fontWeight="700" lineHeight="normal">
+        <Text color={textColor} ml="6px" fontWeight="700" lineHeight="normal">
           Remind me later
         </Text>
       </Flex>

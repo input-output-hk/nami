@@ -120,7 +120,7 @@ export const AppWithMigration = () => {
       }}
       onDownloadLaceClicked={() => {
         captureEvent(Events.MigrationDownloadLaceClicked);
-        window.open('https://www.lace.io/');
+        window.open(`https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`);
       }}
       onOpenLaceClicked={() => {
         captureEvent(Events.MigrationOpenLaceClicked);
@@ -135,7 +135,7 @@ export const AppWithMigration = () => {
           openLace();
         } else {
           captureEvent(Events.MigrationDownloadLaceClicked);
-          window.open('https://www.lace.io/');
+          window.open(`https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`);
         }
       }}
     />
