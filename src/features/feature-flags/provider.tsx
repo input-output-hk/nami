@@ -24,6 +24,7 @@ type FeatureFlags = {
 export const FeatureFlagContext = createContext<{
   featureFlags?: FeatureFlags;
   earlyAccessFeatures?: EarlyAccessFeature[];
+  isFFLoaded?: boolean;
 }>({});
 
 /**
@@ -44,6 +45,7 @@ export const useFeatureFlagsContext = () => {
  */
 export const FeatureFlagProvider = ({ children }: { children: ReactNode }) => {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>();
+  const [isFFLoaded, setIsFFLoaded] = useState<boolean>(false);
   const [earlyAccessFeatures, setEarlyAccessFeatures] =
     useState<EarlyAccessFeature[]>();
   const posthog = usePostHog();
@@ -54,6 +56,10 @@ export const FeatureFlagProvider = ({ children }: { children: ReactNode }) => {
       setEarlyAccessFeatures(features);
     });
   }, []);
+
+  useEffect(() => {
+    posthog.onFeatureFlags(() => setIsFFLoaded(true));
+  })
 
   useEffect(() => {
     let enabledFlags: FeatureFlags = {};
@@ -69,10 +75,10 @@ export const FeatureFlagProvider = ({ children }: { children: ReactNode }) => {
       }
     });
     setFeatureFlags(enabledFlags);
-  }, [activeFeatureFlags]);
+  }, [activeFeatureFlags, posthog]);
 
   return (
-    <FeatureFlagContext.Provider value={{ featureFlags, earlyAccessFeatures }}>
+    <FeatureFlagContext.Provider value={{ featureFlags, earlyAccessFeatures, isFFLoaded }}>
       {children}
     </FeatureFlagContext.Provider>
   );

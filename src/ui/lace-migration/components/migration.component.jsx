@@ -28,7 +28,7 @@ export const AppWithMigration = () => {
     dismissedUntil: undefined,
   });
   const themeColor = localStorage['chakra-ui-color-mode'];
-  const { featureFlags } = useFeatureFlagsContext();
+  const { featureFlags, isFFLoaded } = useFeatureFlagsContext();
 
   useEffect(() => {
     storage.local.get().then((store) => {
@@ -93,11 +93,11 @@ export const AppWithMigration = () => {
     return showApp;
   }, [state, featureFlags]);
 
-  if (shouldShowApp) {
+  if (shouldShowApp && isFFLoaded) {
     return <App />;
   }
 
-  return state.ui === 'loading' ? null : (
+  return (state.ui === 'loading' || !isFFLoaded) ? null : (
     <MigrationView
       migrationState={state.migrationState}
       isLaceInstalled={state.isLaceInstalled}
