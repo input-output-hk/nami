@@ -91,11 +91,11 @@ export const Slide = ({
           By clicking &quot;Upgrade&quot;, you agree with our
         </Text>
         <Text color="current">
-          <Link color="#3489F7" textDecoration="underline">
+          <Link target='_blank' href="https://www.lace.io/iohktermsandconditions.pdf" color="#3489F7" textDecoration="underline">
             Terms and Conditions
           </Link>{' '}
           and{' '}
-          <Link color="#3489F7" textDecoration="underline">
+          <Link target='_blank' href="https://www.lace.io/iog-privacy-policy.pdf" color="#3489F7" textDecoration="underline">
             Privacy Policy
           </Link>
           .
