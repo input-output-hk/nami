@@ -234,7 +234,7 @@ npm start
 ```
 # Update secrets file with your own keys
 cp secrets.testing.js secrets.production.js
-nom run build
+npm run build
 ```
 
 ##### Run tests
