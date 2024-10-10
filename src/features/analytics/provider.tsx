@@ -115,19 +115,6 @@ export const AnalyticsProvider = ({
     return null;
   }
 
-  if (analyticsState.consent === false) {
-    // render the children without being hooked to the actual posthog provider
-    return (
-      <FeatureFlagProvider>
-        <AnalyticsContext.Provider
-          value={[analyticsState, setAnalyticsConsent]}
-        >
-          {children}
-        </AnalyticsContext.Provider>
-      </FeatureFlagProvider>
-    );
-  }
-
   return (
     <PostHogProvider apiKey={POSTHOG_API_KEY} options={options}>
       <FeatureFlagProvider>
