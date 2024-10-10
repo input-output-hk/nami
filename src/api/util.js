@@ -8,7 +8,7 @@ import {
   Value,
   MultiAsset,
   Transaction,
-} from '../wasm/cardano_multiplatform_lib/cardano_multiplatform_lib.generated';
+} from '@dcspark/cardano-multiplatform-lib-browser';
 import AssetFingerprint from '@emurgo/cip14-js';
 import {
   AddressType,
@@ -19,7 +19,7 @@ import {
   PoolOwnerType,
   PoolRewardAccountType,
   RelayType,
-  StakeCredentialParamsType,
+  CredentialParamsType,
   TransactionSigningMode,
   TxAuxiliaryDataType,
   TxOutputDestinationType,
@@ -105,9 +105,9 @@ export const multiAssetCount = async (multiAsset) => {
   if (!multiAsset) return 0;
   let count = 0;
   const policies = multiAsset.keys();
-  for (let j = 0; j < multiAsset.len(); j++) {
+  for (let j = 0; j < policies.len(); j++) {
     const policy = policies.get(j);
-    const policyAssets = multiAsset.get(policy);
+    const policyAssets = multiAsset.get_assets(policy);
     const assetNames = policyAssets.keys();
     for (let k = 0; k < assetNames.len(); k++) {
       count++;
@@ -148,6 +148,18 @@ export const compileOutputs = (outputList) => {
 
   return compiledAmountList;
 };
+
+const sortCanonicallyInPlace = (items, selector) => {
+  return items.sort((a, b) => {
+    const itemA = selector(a);
+    const itemB = selector(b);
+    if (itemA.length === itemB.length) {
+      return itemA > itemB ? 1 : -1;
+    } else if (itemA.length > itemB.length)
+      return 1;
+    else return -1;
+  });
+}
 
 /**
  * Add up an AmountList values to an other AmountList
@@ -208,16 +220,18 @@ export const utxoFromJson = async (output, address) => {
   await Loader.load();
   return Loader.Cardano.TransactionUnspentOutput.new(
     Loader.Cardano.TransactionInput.new(
-      Loader.Cardano.TransactionHash.from_bytes(
+      Loader.Cardano.TransactionHash.from_raw_bytes(
         Buffer.from(output.tx_hash || output.txHash, 'hex')
       ),
-      Loader.Cardano.BigNum.from_str(
-        (output.output_index ?? output.txId).toString()
+      BigInt(
+        output.output_index ?? output.txId
       )
     ),
-    Loader.Cardano.TransactionOutput.new(
-      Loader.Cardano.Address.from_bytes(Buffer.from(address, 'hex')),
-      await assetsToValue(output.amount)
+    Loader.Cardano.TransactionOutput.new_alonzo_format_tx_out(
+      Loader.Cardano.AlonzoFormatTxOut.new(
+        Loader.Cardano.Address.from_raw_bytes(Buffer.from(address, 'hex')),
+        await assetsToValue(output.amount)
+      )
     )
   );
 };
@@ -229,7 +243,7 @@ export const utxoFromJson = async (output, address) => {
  */
 export const sumUtxos = async (utxos) => {
   await Loader.load();
-  let value = Loader.Cardano.Value.new(Loader.Cardano.BigNum.from_str('0'));
+  let value = Loader.Cardano.Value.new(BigInt(0), Loader.Cardano.MultiAsset.new());
   utxos.forEach((utxo) => (value = value.checked_add(utxo.output().amount())));
   return value;
 };
@@ -246,7 +260,7 @@ export const utxoToJson = async (utxo) => {
   const assets = await valueToAssets(utxo.output().amount());
   return {
     txHash: Buffer.from(
-      utxo.input().transaction_id().to_bytes(),
+      utxo.input().transaction_id().to_raw_bytes(),
       'hex'
     ).toString('hex'),
     txId: utxo.input().index(),
@@ -269,23 +283,20 @@ export const assetsToValue = async (assets) => {
     const policyAssets = assets.filter(
       (asset) => asset.unit.slice(0, 56) === policy
     );
-    const assetsValue = Loader.Cardano.Assets.new();
+    const assetsValue = Loader.Cardano.MapAssetNameToCoin.new();
     policyAssets.forEach((asset) => {
       assetsValue.insert(
-        Loader.Cardano.AssetName.new(Buffer.from(asset.unit.slice(56), 'hex')),
-        Loader.Cardano.BigNum.from_str(asset.quantity)
+        Loader.Cardano.AssetName.from_raw_bytes(Buffer.from(asset.unit.slice(56), 'hex')),
+        BigInt(asset.quantity)
       );
     });
-    multiAsset.insert(
-      Loader.Cardano.ScriptHash.from_bytes(Buffer.from(policy, 'hex')),
+    multiAsset.insert_assets(
+      Loader.Cardano.ScriptHash.from_raw_bytes(Buffer.from(policy, 'hex')),
       assetsValue
     );
   });
-  const value = Loader.Cardano.Value.new(
-    Loader.Cardano.BigNum.from_str(lovelace ? lovelace.quantity : '0')
-  );
-  if (assets.length > 1 || !lovelace) value.set_multiasset(multiAsset);
-  return value;
+  const coin = BigInt(lovelace ? lovelace.quantity : '0');
+  return Loader.Cardano.Value.new(coin, multiAsset);
 };
 
 /**
@@ -295,19 +306,19 @@ export const assetsToValue = async (assets) => {
 export const valueToAssets = async (value) => {
   await Loader.load();
   const assets = [];
-  assets.push({ unit: 'lovelace', quantity: value.coin().to_str() });
-  if (value.multiasset()) {
-    const multiAssets = value.multiasset().keys();
+  assets.push({ unit: 'lovelace', quantity: value.coin().toString() });
+  if (value.multi_asset()) {
+    const multiAssets = value.multi_asset().keys();
     for (let j = 0; j < multiAssets.len(); j++) {
       const policy = multiAssets.get(j);
-      const policyAssets = value.multiasset().get(policy);
+      const policyAssets = value.multi_asset().get_assets(policy);
       const assetNames = policyAssets.keys();
       for (let k = 0; k < assetNames.len(); k++) {
         const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset);
         const asset =
-          Buffer.from(policy.to_bytes(), 'hex').toString('hex') +
-          Buffer.from(policyAsset.name(), 'hex').toString('hex');
+          Buffer.from(policy.to_raw_bytes(), 'hex').toString('hex') +
+          policyAsset.to_hex();
         const _policy = asset.slice(0, 56);
         const _name = asset.slice(56);
         const fingerprint = AssetFingerprint.fromParts(
@@ -316,7 +327,7 @@ export const valueToAssets = async (value) => {
         ).fingerprint();
         assets.push({
           unit: asset,
-          quantity: quantity.to_str(),
+          quantity: quantity.toString(),
           policy: _policy,
           name: hexToAscii(_name),
           fingerprint,
@@ -324,50 +335,45 @@ export const valueToAssets = async (value) => {
       }
     }
   }
-  // if (value.coin().to_str() == '0') return [];
+  // if (value.coin().toString() == '0') return [];
   return assets;
 };
 
 export const minAdaRequired = async (output, coinsPerUtxoWord) => {
   await Loader.load();
-  return Loader.Cardano.min_ada_required(output, coinsPerUtxoWord).to_str();
+  return Loader.Cardano.min_ada_required(output, coinsPerUtxoWord).toString();
 };
 
 const outputsToTrezor = (outputs, address, index) => {
   const trezorOutputs = [];
   for (let i = 0; i < outputs.len(); i++) {
     const output = outputs.get(i);
-    const multiAsset = output.amount().multiasset();
+    const multiAsset = output.amount().multi_asset();
     let tokenBundle = null;
-    if (multiAsset) {
+    if (multiAsset && multiAsset.policy_count() > 0) {
       tokenBundle = [];
       for (let j = 0; j < multiAsset.keys().len(); j++) {
         const policy = multiAsset.keys().get(j);
-        const assets = multiAsset.get(policy);
+        const assets = multiAsset.get_assets(policy);
         const tokens = [];
         for (let k = 0; k < assets.keys().len(); k++) {
           const assetName = assets.keys().get(k);
-          const amount = assets.get(assetName).to_str();
+          const amount = assets.get(assetName).toString();
           tokens.push({
-            assetNameBytes: Buffer.from(assetName.name()).toString('hex'),
+            assetNameBytes: assetName.to_hex(),
             amount,
           });
         }
-        // sort canonical
-        tokens.sort((a, b) => {
-          if (a.assetNameBytes.length == b.assetNameBytes.length) {
-            return a.assetNameBytes > b.assetNameBytes ? 1 : -1;
-          } else if (a.assetNameBytes.length > b.assetNameBytes.length)
-            return 1;
-          else return -1;
-        });
+        sortCanonicallyInPlace(tokens, item => item.assetNameBytes);
         tokenBundle.push({
-          policyId: Buffer.from(policy.to_bytes()).toString('hex'),
+          policyId: Buffer.from(policy.to_raw_bytes()).toString('hex'),
           tokenAmounts: tokens,
         });
       }
+
+      sortCanonicallyInPlace(tokenBundle, item => item.policyId);
     }
-    const outputAddress = Buffer.from(output.address().to_bytes()).toString(
+    const outputAddress = Buffer.from(output.address().to_raw_bytes()).toString(
       'hex'
     );
 
@@ -406,20 +412,20 @@ const outputsToTrezor = (outputs, address, index) => {
           };
     const datumHash =
       output.datum() && output.datum().kind() === 0
-        ? Buffer.from(output.datum().as_data_hash().to_bytes()).toString('hex')
+        ? Buffer.from(output.datum().as_hash().to_raw_bytes()).toString('hex')
         : null;
     const inlineDatum =
       output.datum() && output.datum().kind() === 1
-        ? Buffer.from(output.datum().as_data().get().to_bytes()).toString('hex')
+        ? Buffer.from(output.datum().as_datum().to_cbor_bytes()).toString('hex')
         : null;
     const referenceScript = output.script_ref()
-      ? Buffer.from(output.script_ref().get().to_bytes()).toString('hex')
+      ? Buffer.from(output.script_ref().to_cbor_bytes()).toString('hex')
       : null;
     const outputRes = {
-      amount: output.amount().coin().to_str(),
+      amount: output.amount().coin().toString(),
       tokenBundle,
       datumHash,
-      format: output.format(),
+      format: output.kind(),
       inlineDatum,
       referenceScript,
       ...destination,
@@ -430,6 +436,7 @@ const outputsToTrezor = (outputs, address, index) => {
     if (!referenceScript) delete outputRes.referenceScript;
     trezorOutputs.push(outputRes);
   }
+
   return trezorOutputs;
 };
 
@@ -446,8 +453,8 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
   for (let i = 0; i < inputs.len(); i++) {
     const input = inputs.get(i);
     trezorInputs.push({
-      prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString('hex'),
-      prev_index: parseInt(input.index().to_str()),
+      prev_hash: Buffer.from(input.transaction_id().to_raw_bytes()).toString('hex'),
+      prev_index: parseInt(input.index().toString()),
       path: keys.payment.path, // needed to include payment key witness if available
     });
   }
@@ -469,7 +476,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
           certificate.path = keys.stake.path;
         } else {
           const scriptHash = Buffer.from(
-            credential.to_scripthash().to_bytes()
+            credential.as_script().to_raw_bytes()
           ).toString('hex');
           certificate.scriptHash = scriptHash;
         }
@@ -480,7 +487,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
           certificate.path = keys.stake.path;
         } else {
           const scriptHash = Buffer.from(
-            credential.to_scripthash().to_bytes()
+            credential.as_script().to_raw_bytes()
           ).toString('hex');
           certificate.scriptHash = scriptHash;
         }
@@ -488,14 +495,14 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         const delegation = cert.as_stake_delegation();
         const credential = delegation.stake_credential();
         const poolKeyHashHex = Buffer.from(
-          delegation.pool_keyhash().to_bytes()
+          delegation.pool().to_raw_bytes()
         ).toString('hex');
         certificate.type = CardanoCertificateType.STAKE_DELEGATION;
         if (credential.kind() === 0) {
           certificate.path = keys.stake.path;
         } else {
           const scriptHash = Buffer.from(
-            credential.to_scripthash().to_bytes()
+            credential.as_script().to_raw_bytes()
           ).toString('hex');
           certificate.scriptHash = scriptHash;
         }
@@ -506,7 +513,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
         const owners = params.pool_owners();
         const poolOwners = [];
         for (let i = 0; i < owners.len(); i++) {
-          const keyHash = Buffer.from(owners.get(i).to_bytes()).toString('hex');
+          const keyHash = Buffer.from(owners.get(i).to_raw_bytes()).toString('hex');
           if (keyHash == keys.stake.hash) {
             signingMode = CardanoTxSigningMode.POOL_REGISTRATION_AS_OWNER;
             poolOwners.push({
@@ -553,23 +560,23 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
             });
           }
         }
-        const cost = params.cost().to_str();
+        const cost = params.cost().toString();
         const margin = params.margin();
-        const pledge = params.pledge().to_str();
-        const poolId = Buffer.from(params.operator().to_bytes()).toString(
+        const pledge = params.pledge().toString();
+        const poolId = Buffer.from(params.operator().to_raw_bytes()).toString(
           'hex'
         );
         const metadata = params.pool_metadata()
           ? {
               url: params.pool_metadata().url().url(),
               hash: Buffer.from(
-                params.pool_metadata().pool_metadata_hash().to_bytes()
+                params.pool_metadata().pool_metadata_hash().to_raw_bytes()
               ).toString('hex'),
             }
           : null;
         const rewardAccount = params.reward_account().to_address().to_bech32();
         const vrfKeyHash = Buffer.from(
-          params.vrf_keyhash().to_bytes()
+          params.vrf_keyhash().to_raw_bytes()
         ).toString('hex');
 
         certificate.poolParameters = {
@@ -578,8 +585,8 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
           pledge,
           cost,
           margin: {
-            numerator: margin.numerator().to_str(),
-            denominator: margin.denominator().to_str(),
+            numerator: margin.start().toString(),
+            denominator: margin.end().toString(),
           },
           rewardAccount,
           owners: poolOwners,
@@ -590,7 +597,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
       trezorCertificates.push(certificate);
     }
   }
-  const fee = tx.body().fee().to_str();
+  const fee = tx.body().fee().toString();
   const ttl = tx.body().ttl();
   const withdrawals = tx.body().withdrawals();
   let trezorWithdrawals = null;
@@ -599,26 +606,26 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     for (let i = 0; i < withdrawals.keys().len(); i++) {
       const withdrawal = {};
       const rewardAddress = withdrawals.keys().get(i);
-      if (rewardAddress.payment_cred().kind() === 0) {
+      if (rewardAddress.payment().kind() === 0) {
         withdrawal.path = keys.stake.path;
       } else {
         withdrawal.scriptHash = Buffer.from(
-          rewardAddress.payment_cred().to_scripthash().to_bytes()
+          rewardAddress.payment().as_script().to_raw_bytes()
         ).toString('hex');
       }
-      withdrawal.amount = withdrawals.get(rewardAddress).to_str();
+      withdrawal.amount = withdrawals.get(rewardAddress).toString();
       trezorWithdrawals.push(withdrawal);
     }
   }
   const auxiliaryData = tx.body().auxiliary_data_hash()
     ? {
-        hash: Buffer.from(tx.body().auxiliary_data_hash().to_bytes()).toString(
+        hash: Buffer.from(tx.body().auxiliary_data_hash().to_raw_bytes()).toString(
           'hex'
         ),
       }
     : null;
-  const validityIntervalStart = tx.body().validity_start_interval()
-    ? tx.body().validity_start_interval().to_str()
+  const validityIntervalStart = tx.body().validity_interval_start()
+    ? tx.body().validity_interval_start().toString()
     : null;
 
   const mint = tx.body().mint();
@@ -628,30 +635,23 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     mintBundle = [];
     for (let j = 0; j < mint.keys().len(); j++) {
       const policy = mint.keys().get(j);
-      const assets = mint.get(policy);
+      const assets = mint.get_assets(policy);
       const tokens = [];
       for (let k = 0; k < assets.keys().len(); k++) {
         const assetName = assets.keys().get(k);
         const amount = assets.get(assetName);
         tokens.push({
-          assetNameBytes: Buffer.from(assetName.name()).toString('hex'),
-          mintAmount: amount.is_positive()
-            ? amount.as_positive().to_str()
-            : '-' + amount.as_negative().to_str(),
+          assetNameBytes: assetName.to_hex(),
+          mintAmount: amount.toString(),
         });
       }
-      // sort canonical
-      tokens.sort((a, b) => {
-        if (a.assetNameBytes.length == b.assetNameBytes.length) {
-          return a.assetNameBytes > b.assetNameBytes ? 1 : -1;
-        } else if (a.assetNameBytes.length > b.assetNameBytes.length) return 1;
-        else return -1;
-      });
+      sortCanonicallyInPlace(tokens, item => item.assetNameBytes);
       mintBundle.push({
-        policyId: Buffer.from(policy.to_bytes()).toString('hex'),
+        policyId: Buffer.from(policy.to_raw_bytes()).toString('hex'),
         tokenAmounts: tokens,
       });
     }
+    sortCanonicallyInPlace(mintBundle, item => item.policyId);
     additionalWitnessRequests = [];
     if (keys.payment.path) additionalWitnessRequests.push(keys.payment.path);
     if (keys.stake.path) additionalWitnessRequests.push(keys.stake.path);
@@ -659,29 +659,29 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
 
   // Plutus
   const scriptDataHash = tx.body().script_data_hash()
-    ? Buffer.from(tx.body().script_data_hash().to_bytes()).toString('hex')
+    ? Buffer.from(tx.body().script_data_hash().to_raw_bytes()).toString('hex')
     : null;
 
   let collateralInputs = null;
-  if (tx.body().collateral()) {
+  if (tx.body().collateral_inputs()) {
     collateralInputs = [];
-    const coll = tx.body().collateral();
+    const coll = tx.body().collateral_inputs();
     for (let i = 0; i < coll.len(); i++) {
       const input = coll.get(i);
       if (keys.payment.path) {
         collateralInputs.push({
-          prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString(
+          prev_hash: Buffer.from(input.transaction_id().to_raw_bytes()).toString(
             'hex'
           ),
-          prev_index: parseInt(input.index().to_str()),
+          prev_index: parseInt(input.index().toString()),
           path: keys.payment.path, // needed to include payment key witness if available
         });
       } else {
         collateralInputs.push({
-          prev_hash: Buffer.from(input.transaction_id().to_bytes()).toString(
+          prev_hash: Buffer.from(input.transaction_id().to_raw_bytes()).toString(
             'hex'
           ),
-          prev_index: parseInt(input.index().to_str()),
+          prev_index: parseInt(input.index().toString()),
         });
       }
       signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
@@ -693,7 +693,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     requiredSigners = [];
     const r = tx.body().required_signers();
     for (let i = 0; i < r.len(); i++) {
-      const signer = Buffer.from(r.get(i).to_bytes()).toString('hex');
+      const signer = Buffer.from(r.get(i).to_raw_bytes()).toString('hex');
       if (signer === keys.payment.hash) {
         requiredSigners.push({
           keyPath: keys.payment.path,
@@ -718,19 +718,19 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     for (let i = 0; i < ri.len(); i++) {
       referenceInputs.push({
         prev_hash: ri.get(i).transaction_id().to_hex(),
-        prev_index: parseInt(ri.get(i).index().to_str()),
+        prev_index: parseInt(ri.get(i).index().toString()),
       });
     }
     signingMode = CardanoTxSigningMode.PLUTUS_TRANSACTION;
   }
 
   const totalCollateral = tx.body().total_collateral()
-    ? tx.body().total_collateral().to_str()
+    ? tx.body().total_collateral().toString()
     : null;
 
   let collateralReturn = (() => {
     if (tx.body().collateral_return()) {
-      const outputs = Loader.Cardano.TransactionOutputs.new();
+      const outputs = Loader.Cardano.TransactionOutputList.new();
       outputs.add(tx.body().collateral_return());
       const [out] = outputsToTrezor(outputs, address, index);
       return out;
@@ -745,7 +745,7 @@ export const txToTrezor = async (tx, network, keys, address, index) => {
     inputs: trezorInputs,
     outputs: trezorOutputs,
     fee,
-    ttl: ttl ? ttl.to_str() : null,
+    ttl: ttl ? ttl.toString() : null,
     validityIntervalStart,
     certificates: trezorCertificates,
     withdrawals: trezorWithdrawals,
@@ -772,37 +772,33 @@ const outputsToLedger = (outputs, address, index) => {
   const ledgerOutputs = [];
   for (let i = 0; i < outputs.len(); i++) {
     const output = outputs.get(i);
-    const multiAsset = output.amount().multiasset();
+    const multiAsset = output.amount().multi_asset();
     let tokenBundle = null;
     if (multiAsset) {
       tokenBundle = [];
       for (let j = 0; j < multiAsset.keys().len(); j++) {
         const policy = multiAsset.keys().get(j);
-        const assets = multiAsset.get(policy);
+        const assets = multiAsset.get_assets(policy);
         const tokens = [];
         for (let k = 0; k < assets.keys().len(); k++) {
           const assetName = assets.keys().get(k);
-          const amount = assets.get(assetName).to_str();
+          const amount = assets.get(assetName).toString();
           tokens.push({
-            assetNameHex: Buffer.from(assetName.name()).toString('hex'),
+            assetNameHex: assetName.to_hex(),
             amount,
           });
         }
-        // sort canonical
-        tokens.sort((a, b) => {
-          if (a.assetNameHex.length == b.assetNameHex.length) {
-            return a.assetNameHex > b.assetNameHex ? 1 : -1;
-          } else if (a.assetNameHex.length > b.assetNameHex.length) return 1;
-          else return -1;
-        });
+        sortCanonicallyInPlace(tokens, item => item.assetNameHex);
         tokenBundle.push({
-          policyIdHex: Buffer.from(policy.to_bytes()).toString('hex'),
+          policyIdHex: Buffer.from(policy.to_raw_bytes()).toString('hex'),
           tokens,
         });
       }
+
+      sortCanonicallyInPlace(tokenBundle, item => item.policyIdHex);
     }
 
-    const outputAddress = Buffer.from(output.address().to_bytes()).toString(
+    const outputAddress = Buffer.from(output.address().to_raw_bytes()).toString(
       'hex'
     );
     const destination =
@@ -837,11 +833,11 @@ const outputsToLedger = (outputs, address, index) => {
           };
     const datum = output.datum();
     const refScript = output.script_ref();
-    const isBabbage = output.format();
+    const isBabbage = output.kind();
     const outputRes = isBabbage
       ? {
           format: TxOutputFormat.MAP_BABBAGE,
-          amount: output.amount().coin().to_str(),
+          amount: output.amount().coin().toString(),
           tokenBundle,
           destination,
           datum: datum
@@ -849,28 +845,28 @@ const outputsToLedger = (outputs, address, index) => {
               ? {
                   type: DatumType.HASH,
                   datumHashHex: Buffer.from(
-                    datum.as_data_hash().to_bytes()
+                    datum.as_hash().to_raw_bytes()
                   ).toString('hex'),
                 }
               : {
                   type: DatumType.INLINE,
                   datumHex: Buffer.from(
-                    datum.as_data().get().to_bytes()
+                    datum.as_datum().to_cbor_bytes()
                   ).toString('hex'),
                 }
             : null,
           referenceScriptHex: refScript
-            ? Buffer.from(refScript.get().to_bytes()).toString('hex')
+            ? Buffer.from(refScript.to_cbor_bytes()).toString('hex')
             : null,
         }
       : {
           format: TxOutputFormat.ARRAY_LEGACY,
-          amount: output.amount().coin().to_str(),
+          amount: output.amount().coin().toString(),
           tokenBundle,
           destination,
           datumHashHex:
             datum && datum.kind() === 0
-              ? Buffer.from(datum.as_data_hash().to_bytes()).toString('hex')
+              ? Buffer.from(datum.as_hash().to_raw_bytes()).toString('hex')
               : null,
         };
     Object.keys(outputRes).forEach((key) => {
@@ -894,8 +890,8 @@ export const txToLedger = async (tx, network, keys, address, index) => {
   for (let i = 0; i < inputs.len(); i++) {
     const input = inputs.get(i);
     ledgerInputs.push({
-      txHashHex: Buffer.from(input.transaction_id().to_bytes()).toString('hex'),
-      outputIndex: parseInt(input.index().to_str()),
+      txHashHex: Buffer.from(input.transaction_id().to_raw_bytes()).toString('hex'),
+      outputIndex: parseInt(input.index().toString()),
       path: keys.payment.path, // needed to include payment key witness if available
     });
   }
@@ -915,17 +911,17 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         if (credential.kind() === 0) {
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.KEY_PATH,
+              type: CredentialParamsType.KEY_PATH,
               keyPath: keys.stake.path,
             },
           };
         } else {
           const scriptHash = Buffer.from(
-            credential.to_scripthash().to_bytes()
+            credential.as_script().to_raw_bytes()
           ).toString('hex');
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.SCRIPT_HASH,
+              type: CredentialParamsType.SCRIPT_HASH,
               scriptHash,
             },
           };
@@ -936,17 +932,17 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         if (credential.kind() === 0) {
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.KEY_PATH,
+              type: CredentialParamsType.KEY_PATH,
               keyPath: keys.stake.path,
             },
           };
         } else {
           const scriptHash = Buffer.from(
-            credential.to_scripthash().to_bytes()
+            credential.as_script().to_raw_bytes()
           ).toString('hex');
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.SCRIPT_HASH,
+              type: CredentialParamsType.SCRIPT_HASH,
               scriptHash,
             },
           };
@@ -955,23 +951,23 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         const delegation = cert.as_stake_delegation();
         const credential = delegation.stake_credential();
         const poolKeyHashHex = Buffer.from(
-          delegation.pool_keyhash().to_bytes()
+          delegation.pool().to_raw_bytes()
         ).toString('hex');
         certificate.type = CertificateType.STAKE_DELEGATION;
         if (credential.kind() === 0) {
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.KEY_PATH,
+              type: CredentialParamsType.KEY_PATH,
               keyPath: keys.stake.path,
             },
           };
         } else {
           const scriptHash = Buffer.from(
-            credential.to_scripthash().to_bytes()
+            credential.as_script().to_raw_bytes()
           ).toString('hex');
           certificate.params = {
             stakeCredential: {
-              type: StakeCredentialParamsType.SCRIPT_HASH,
+              type: CredentialParamsType.SCRIPT_HASH,
               scriptHash,
             },
           };
@@ -983,7 +979,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         const owners = params.pool_owners();
         const poolOwners = [];
         for (let i = 0; i < owners.len(); i++) {
-          const keyHash = Buffer.from(owners.get(i).to_bytes()).toString('hex');
+          const keyHash = Buffer.from(owners.get(i).to_raw_bytes()).toString('hex');
           if (keyHash == keys.stake.hash) {
             signingMode = TransactionSigningMode.POOL_REGISTRATION_AS_OWNER;
             poolOwners.push({
@@ -1031,10 +1027,10 @@ export const txToLedger = async (tx, network, keys, address, index) => {
             });
           }
         }
-        const cost = params.cost().to_str();
+        const cost = params.cost().toString();
         const margin = params.margin();
-        const pledge = params.pledge().to_str();
-        const operator = Buffer.from(params.operator().to_bytes()).toString(
+        const pledge = params.pledge().toString();
+        const operator = Buffer.from(params.operator().to_raw_bytes()).toString(
           'hex'
         );
         let poolKey;
@@ -1054,12 +1050,12 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           ? {
               metadataUrl: params.pool_metadata().url().url(),
               metadataHashHex: Buffer.from(
-                params.pool_metadata().pool_metadata_hash().to_bytes()
+                params.pool_metadata().pool_metadata_hash().to_raw_bytes()
               ).toString('hex'),
             }
           : null;
         const rewardAccountHex = Buffer.from(
-          params.reward_account().to_address().to_bytes()
+          params.reward_account().to_address().to_raw_bytes()
         ).toString('hex');
         let rewardAccount;
         if (rewardAccountHex == address) {
@@ -1074,7 +1070,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           };
         }
         const vrfKeyHashHex = Buffer.from(
-          params.vrf_keyhash().to_bytes()
+          params.vrf_keyhash().to_raw_bytes()
         ).toString('hex');
 
         certificate.params = {
@@ -1083,8 +1079,8 @@ export const txToLedger = async (tx, network, keys, address, index) => {
           pledge,
           cost,
           margin: {
-            numerator: margin.numerator().to_str(),
-            denominator: margin.denominator().to_str(),
+            numerator: margin.start().toString(),
+            denominator: margin.end().toString(),
           },
           rewardAccount,
           poolOwners,
@@ -1095,8 +1091,8 @@ export const txToLedger = async (tx, network, keys, address, index) => {
       ledgerCertificates.push(certificate);
     }
   }
-  const fee = tx.body().fee().to_str();
-  const ttl = tx.body().ttl() ? tx.body().ttl().to_str() : null;
+  const fee = tx.body().fee().toString();
+  const ttl = tx.body().ttl() ? tx.body().ttl().toString() : null;
   const withdrawals = tx.body().withdrawals();
   let ledgerWithdrawals = null;
   if (withdrawals) {
@@ -1104,16 +1100,16 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     for (let i = 0; i < withdrawals.keys().len(); i++) {
       const withdrawal = { stakeCredential: {} };
       const rewardAddress = withdrawals.keys().get(i);
-      if (rewardAddress.payment_cred().kind() === 0) {
-        withdrawal.stakeCredential.type = StakeCredentialParamsType.KEY_PATH;
+      if (rewardAddress.payment().kind() === 0) {
+        withdrawal.stakeCredential.type = CredentialParamsType.KEY_PATH;
         withdrawal.stakeCredential.keyPath = keys.stake.path;
       } else {
-        withdrawal.stakeCredential.type = StakeCredentialParamsType.SCRIPT_HASH;
+        withdrawal.stakeCredential.type = CredentialParamsType.SCRIPT_HASH;
         withdrawal.stakeCredential.scriptHash = Buffer.from(
-          rewardAddress.payment_cred().to_scripthash().to_bytes()
+          rewardAddress.payment().as_script().to_raw_bytes()
         ).toString('hex');
       }
-      withdrawal.amount = withdrawals.get(rewardAddress).to_str();
+      withdrawal.amount = withdrawals.get(rewardAddress).toString();
       ledgerWithdrawals.push(withdrawal);
     }
   }
@@ -1122,13 +1118,13 @@ export const txToLedger = async (tx, network, keys, address, index) => {
         type: TxAuxiliaryDataType.ARBITRARY_HASH,
         params: {
           hashHex: Buffer.from(
-            tx.body().auxiliary_data_hash().to_bytes()
+            tx.body().auxiliary_data_hash().to_raw_bytes()
           ).toString('hex'),
         },
       }
     : null;
-  const validityIntervalStart = tx.body().validity_start_interval()
-    ? tx.body().validity_start_interval().to_str()
+  const validityIntervalStart = tx.body().validity_interval_start()
+    ? tx.body().validity_interval_start().toString()
     : null;
 
   const mint = tx.body().mint();
@@ -1138,30 +1134,23 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     mintBundle = [];
     for (let j = 0; j < mint.keys().len(); j++) {
       const policy = mint.keys().get(j);
-      const assets = mint.get(policy);
+      const assets = mint.get_assets(policy);
       const tokens = [];
       for (let k = 0; k < assets.keys().len(); k++) {
         const assetName = assets.keys().get(k);
         const amount = assets.get(assetName);
         tokens.push({
-          assetNameHex: Buffer.from(assetName.name()).toString('hex'),
-          amount: amount.is_positive()
-            ? amount.as_positive().to_str()
-            : '-' + amount.as_negative().to_str(),
+          assetNameHex: assetName.to_hex(),
+          amount: amount.toString(),
         });
       }
-      // sort canonical
-      tokens.sort((a, b) => {
-        if (a.assetNameHex.length == b.assetNameHex.length) {
-          return a.assetNameHex > b.assetNameHex ? 1 : -1;
-        } else if (a.assetNameHex.length > b.assetNameHex.length) return 1;
-        else return -1;
-      });
+      sortCanonicallyInPlace(tokens, item => item.assetNameHex);
       mintBundle.push({
-        policyIdHex: Buffer.from(policy.to_bytes()).toString('hex'),
+        policyIdHex: Buffer.from(policy.to_raw_bytes()).toString('hex'),
         tokens,
       });
     }
+    sortCanonicallyInPlace(mintBundle, item => item.policyIdHex);
   }
   additionalWitnessPaths = [];
   if (keys.payment.path) additionalWitnessPaths.push(keys.payment.path);
@@ -1169,29 +1158,29 @@ export const txToLedger = async (tx, network, keys, address, index) => {
 
   // Plutus
   const scriptDataHashHex = tx.body().script_data_hash()
-    ? Buffer.from(tx.body().script_data_hash().to_bytes()).toString('hex')
+    ? Buffer.from(tx.body().script_data_hash().to_raw_bytes()).toString('hex')
     : null;
 
   let collateralInputs = null;
-  if (tx.body().collateral()) {
+  if (tx.body().collateral_inputs()) {
     collateralInputs = [];
-    const coll = tx.body().collateral();
+    const coll = tx.body().collateral_inputs();
     for (let i = 0; i < coll.len(); i++) {
       const input = coll.get(i);
       if (keys.payment.path) {
         collateralInputs.push({
-          txHashHex: Buffer.from(input.transaction_id().to_bytes()).toString(
+          txHashHex: Buffer.from(input.transaction_id().to_raw_bytes()).toString(
             'hex'
           ),
-          outputIndex: parseInt(input.index().to_str()),
+          outputIndex: parseInt(input.index().toString()),
           path: keys.payment.path, // needed to include payment key witness if available
         });
       } else {
         collateralInputs.push({
-          txHashHex: Buffer.from(input.transaction_id().to_bytes()).toString(
+          txHashHex: Buffer.from(input.transaction_id().to_raw_bytes()).toString(
             'hex'
           ),
-          outputIndex: parseInt(input.index().to_str()),
+          outputIndex: parseInt(input.index().toString()),
         });
       }
       signingMode = TransactionSigningMode.PLUTUS_TRANSACTION;
@@ -1200,7 +1189,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
 
   let collateralOutput = (() => {
     if (tx.body().collateral_return()) {
-      const outputs = Loader.Cardano.TransactionOutputs.new();
+      const outputs = Loader.Cardano.TransactionOutputList.new();
       outputs.add(tx.body().collateral_return());
       const [out] = outputsToLedger(outputs, address, index);
       return out;
@@ -1209,7 +1198,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
   })();
 
   const totalCollateral = tx.body().total_collateral()
-    ? tx.body().total_collateral().to_str()
+    ? tx.body().total_collateral().toString()
     : null;
 
   let referenceInputs = null;
@@ -1220,7 +1209,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
       const input = refInputs.get(i);
       referenceInputs.push({
         txHashHex: input.transaction_id().to_hex(),
-        outputIndex: parseInt(input.index().to_str()),
+        outputIndex: parseInt(input.index().toString()),
         path: null,
       });
     }
@@ -1231,7 +1220,7 @@ export const txToLedger = async (tx, network, keys, address, index) => {
     requiredSigners = [];
     const r = tx.body().required_signers();
     for (let i = 0; i < r.len(); i++) {
-      const signer = Buffer.from(r.get(i).to_bytes()).toString('hex');
+      const signer = Buffer.from(r.get(i).to_raw_bytes()).toString('hex');
       if (signer === keys.payment.hash) {
         requiredSigners.push({
           type: TxRequiredSignerType.PATH,
@@ -1391,7 +1380,7 @@ export class Data {
 
           return Loader.Cardano.PlutusData.new_constr_plutus_data(
             Loader.Cardano.ConstrPlutusData.new(
-              Loader.Cardano.BigNum.from_str(index.toString()),
+              BigInt(index.toString()),
               plutusList
             )
           );
@@ -1415,24 +1404,24 @@ export class Data {
         throw new Error('Could not serialize the data: ' + error);
       }
     }
-    return toHex(serialize(plutusData).to_bytes());
+    return toHex(serialize(plutusData).to_cbor_bytes());
   }
 
   /** Convert Cbor encoded data to PlutusData */
   static async from(data) {
     await Loader.load();
-    const plutusData = Loader.Cardano.PlutusData.from_bytes(
+    const plutusData = Loader.Cardano.PlutusData.from_cbor_bytes(
       Buffer.from(data, 'hex')
     );
     function deserialize(data) {
       if (data.kind() === 0) {
         const constr = data.as_constr_plutus_data();
-        const l = constr.data();
+        const l = constr.fields();
         const desL = [];
         for (let i = 0; i < l.len(); i++) {
           desL.push(deserialize(l.get(i)));
         }
-        return new Constr(parseInt(constr.alternative().to_str()), desL);
+        return new Constr(parseInt(constr.alternative().toString()), desL);
       } else if (data.kind() === 1) {
         const m = data.as_map();
         const desM = new Map();

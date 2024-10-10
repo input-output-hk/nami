@@ -1,4 +1,4 @@
-import * as wasm from '../wasm/cardano_multiplatform_lib/cardano_multiplatform_lib.generated';
+import * as wasm from '@dcspark/cardano-multiplatform-lib-browser';
 import * as wasm2 from '../wasm/cardano_message_signing/cardano_message_signing.generated';
 
 /**
@@ -6,18 +6,20 @@ import * as wasm2 from '../wasm/cardano_message_signing/cardano_message_signing.
  */
 
 class Loader {
+  _wasm = wasm;
+
+  /**
+   * Instantiate message signing library.
+   * Loader.Cardano is loaded synchronously and does not require async instantiation.
+   */
   async load() {
-    if (this._wasm && this._wasm2) return;
+    if (this._wasm2) return;
     try {
-      await wasm.instantiate();
       await wasm2.instantiate();
     } catch (_e) {
       // Only happens when running with Jest (Node.js)
     }
-    /**
-     * @private
-     */
-    this._wasm = wasm;
+
     /**
      * @private
      */

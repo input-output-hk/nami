@@ -62,11 +62,11 @@ const verifyAddress = (address, addressCose, publicKeyCose) => {
     const baseAddress = S.BaseAddress.from_address(addressCose);
     //reconstruct address
     const paymentKeyHash = publicKeyCose.hash();
-    const stakeKeyHash = baseAddress.stake_cred().to_keyhash();
+    const stakeKeyHash = baseAddress.stake().as_pub_key();
     const reconstructedAddress = S.BaseAddress.new(
       checkAddress.network_id(),
-      S.StakeCredential.from_keyhash(paymentKeyHash),
-      S.StakeCredential.from_keyhash(stakeKeyHash)
+      S.Credential.new_pub_key(paymentKeyHash),
+      S.Credential.new_pub_key(stakeKeyHash)
     );
     if (
       checkAddress.to_bech32() !== reconstructedAddress.to_address().to_bech32()
@@ -81,7 +81,7 @@ const verifyAddress = (address, addressCose, publicKeyCose) => {
     const stakeKeyHash = publicKeyCose.hash();
     const reconstructedAddress = S.RewardAddress.new(
       checkAddress.network_id(),
-      S.StakeCredential.from_keyhash(stakeKeyHash)
+      S.Credential.new_pub_key(stakeKeyHash)
     );
     if (
       checkAddress.to_bech32() !== reconstructedAddress.to_address().to_bech32()

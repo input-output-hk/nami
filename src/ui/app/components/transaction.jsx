@@ -43,6 +43,7 @@ import {
 } from 'react-icons/all';
 import { useCaptureEvent } from '../../../features/analytics/hooks';
 import { Events } from '../../../features/analytics/events';
+import Loader from '../../../api/loader';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -419,9 +420,8 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
     detail.info.valid_contract
   );
   const assets = amounts.filter((amount) => amount.unit !== 'lovelace');
-  const lovelace = BigInt(
-    amounts.find((amount) => amount.unit === 'lovelace').quantity
-  );
+  const lovelaceAmount = amounts.find((amount) => amount.unit === 'lovelace');
+  const lovelace = lovelaceAmount ? BigInt(lovelaceAmount.quantity) : 0n;
 
   return {
     txHash: txHash,
@@ -494,17 +494,29 @@ const getTimestamp = (date) => {
   )}`;
 };
 
+const getAddressCredentials = (address) => {
+  const cmlAddress = Loader.Cardano.Address.from_bech32(address);
+  return [cmlAddress.payment_cred()?.to_cbor_hex(), cmlAddress.staking_cred()?.to_cbor_hex()];
+}
+
+const matchesAnyCredential = (address, [ownPaymentCred, ownStakingCred]) => {
+  const [otherPaymentCred, otherStakingCred] = getAddressCredentials(address);
+  return otherPaymentCred === ownPaymentCred || otherStakingCred === ownStakingCred;
+}
+
 const calculateAmount = (currentAddr, uTxOList, validContract = true) => {
+  const ownCredentials = getAddressCredentials(currentAddr);
+
   let inputs = compileOutputs(
     uTxOList.inputs.filter(
       (input) =>
-        input.address === currentAddr && !(input.collateral && validContract)
+        matchesAnyCredential(input.address, ownCredentials) && !(input.collateral && validContract)
     )
   );
   let outputs = compileOutputs(
     uTxOList.outputs.filter(
       (output) =>
-        output.address === currentAddr && !(output.collateral && validContract)
+        matchesAnyCredential(output.address, ownCredentials) && !(output.collateral && validContract)
     )
   );
   let amounts = [];

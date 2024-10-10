@@ -252,7 +252,7 @@ const Send = () => {
       const checkOutput = Loader.Cardano.TransactionOutput.new(
         _address.isM1
           ? Loader.Cardano.Address.from_bech32(_address.result)
-          : Loader.Cardano.Address.from_bytes(
+          : Loader.Cardano.Address.from_raw_bytes(
               await isValidAddress(_address.result)
             ),
         await assetsToValue(output.amount)
@@ -260,7 +260,7 @@ const Send = () => {
 
       const minAda = await minAdaRequired(
         checkOutput,
-        Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
+        BigInt(protocolParameters.coinsPerUtxoWord)
       );
 
       if (BigInt(minAda) <= BigInt(toUnit(_value.personalAda || '0'))) {
@@ -285,12 +285,12 @@ const Send = () => {
         return;
       }
 
-      const outputs = Loader.Cardano.TransactionOutputs.new();
+      const outputs = Loader.Cardano.TransactionOutputList.new();
       outputs.add(
         Loader.Cardano.TransactionOutput.new(
           _address.isM1
             ? Loader.Cardano.Address.from_bech32(_address.result)
-            : Loader.Cardano.Address.from_bytes(
+            : Loader.Cardano.Address.from_raw_bytes(
                 await isValidAddress(_address.result)
               ),
           await assetsToValue(output.amount)
@@ -298,22 +298,22 @@ const Send = () => {
       );
 
       const auxiliaryData = Loader.Cardano.AuxiliaryData.new();
-      const generalMetadata = Loader.Cardano.GeneralTransactionMetadata.new();
+      const generalMetadata = Loader.Cardano.Metadata.new();
 
       // setting metadata for MilkomedaM1
       if (_address.isM1) {
         const ethAddress = _address.display;
         if (!isValidEthAddress(ethAddress))
           throw new Error('Not a valid ETH address');
-        generalMetadata.insert(
-          Loader.Cardano.BigNum.from_str('87'),
+        generalMetadata.set(
+          BigInt('87'),
           Loader.Cardano.encode_json_str_to_metadatum(
             JSON.stringify(_address.protocolMagic),
             0
           )
         );
-        generalMetadata.insert(
-          Loader.Cardano.BigNum.from_str('88'),
+        generalMetadata.set(
+          BigInt('88'),
           Loader.Cardano.encode_json_str_to_metadatum(
             JSON.stringify(ethAddress),
             0
@@ -334,14 +334,14 @@ const Send = () => {
           return chunks;
         }
         const msg = { msg: chunkSubstr(_message, 64) };
-        generalMetadata.insert(
-          Loader.Cardano.BigNum.from_str('674'),
+        generalMetadata.set(
+          BigInt('674'),
           Loader.Cardano.encode_json_str_to_metadatum(JSON.stringify(msg), 1)
         );
       }
 
       if (generalMetadata.len() > 0) {
-        auxiliaryData.set_metadata(generalMetadata);
+        auxiliaryData.add_metadata(generalMetadata);
       }
 
       const tx = await buildTx(
@@ -351,9 +351,10 @@ const Send = () => {
         protocolParameters,
         auxiliaryData.metadata() ? auxiliaryData : null
       );
-      setFee({ fee: tx.body().fee().to_str() });
-      setTx(Buffer.from(tx.to_bytes()).toString('hex'));
+      setFee({ fee: tx.body().fee().toString() });
+      setTx(Buffer.from(tx.to_cbor_bytes()).toString('hex'));
     } catch (e) {
+      console.warn(e);
       setFee({ error: 'Transaction not possible' });
     }
   };
@@ -372,7 +373,7 @@ const Send = () => {
     account.current = currentAccount;
     if (txInfo.protocolParameters) {
       const _utxos = txInfo.utxos.map((utxo) =>
-        Loader.Cardano.TransactionUnspentOutput.from_bytes(
+        Loader.Cardano.TransactionUnspentOutput.from_cbor_bytes(
           Buffer.from(utxo, 'hex')
         )
       );
@@ -389,7 +390,7 @@ const Send = () => {
     );
     const minUtxo = await minAdaRequired(
       checkOutput,
-      Loader.Cardano.BigNum.from_str(protocolParameters.coinsPerUtxoWord)
+      BigInt(protocolParameters.coinsPerUtxoWord)
     );
     protocolParameters.minUtxo = minUtxo;
 
@@ -400,8 +401,14 @@ const Send = () => {
       assets: balance.filter((v) => v.unit !== 'lovelace'),
     };
     utxos.current = _utxos;
-    _utxos = _utxos.map((utxo) => Buffer.from(utxo.to_bytes()).toString('hex'));
-    const { current_address: milkomedaAddress } = await getMilkomedaData('');
+    _utxos = _utxos.map((utxo) => Buffer.from(utxo.to_cbor_bytes()).toString('hex'));
+    let milkomedaAddress = '';
+    try {
+      const { current_address: milkomedaAddressFromReq } = await getMilkomedaData('');
+      milkomedaAddress = milkomedaAddressFromReq
+    } catch (e) {
+      console.log("ERROR: Couldn't get Milkomeda address.")
+    }
     if (!isMounted.current) return;
     setIsLoading(false);
     setTxInfo({ protocolParameters, utxos: _utxos, balance, milkomedaAddress });
@@ -796,7 +803,7 @@ const Send = () => {
         sign={async (password, hw) => {
           capture(Events.SendTransactionConfirmationConfirmClick);
           await Loader.load();
-          const txDes = Loader.Cardano.Transaction.from_bytes(
+          const txDes = Loader.Cardano.Transaction.from_cbor_bytes(
             Buffer.from(tx, 'hex')
           );
           if (hw) {
@@ -950,6 +957,8 @@ const AddressPopup = ({
         };
       }
     } else if (isM1) {
+      // We allow failure here because we fail to get the user's Milkomeda
+      //   address when they are creating an M1 transaction.
       const { isAllowed, ada, current_address, protocolMagic, assets, ttl } =
         await getMilkomedaData(value);
 
