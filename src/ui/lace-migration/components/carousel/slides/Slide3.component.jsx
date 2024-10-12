@@ -8,19 +8,19 @@ export const Slide3 = ({ onAction, isDismissable, dismissibleSeconds }) => {
   return (
     <Slide
       showTerms
-      title="It's time to upgrade your wallet!"
-      description="Your Nami wallet is now part of the Lace family"
+      title="Seamless switch"
+      description="Migrate to Lace's new Nami mode with one single click!"
       image={
         <Box>
           <FeaturesImg width="262px" height="auto" />
         </Box>
       }
-      buttonText="Upgrade"
+      buttonText="Upgrade your wallet"
       buttonIcon={Arrow}
       onButtonClick={onAction}
       isDismissable={isDismissable}
       dismissibleSeconds={dismissibleSeconds}
-      buttonOrientation="row"
+      buttonOrientation={isDismissable ? 'column' : 'row'}
     />
   );
 };

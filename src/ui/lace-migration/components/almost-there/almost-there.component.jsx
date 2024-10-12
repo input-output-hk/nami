@@ -11,7 +11,7 @@ export const AlmostThere = ({ isLaceInstalled, onAction, isDismissable, dismissi
   return (
     <Slide
       showTerms={false}
-      title="It's time to upgrade your wallet!"
+      title={isLaceInstalled ? "It's time to upgrade your wallet!" : "Let’s begin..."}
       image={
         <Box mb={'60px'}>
           {colorMode === 'light' ? (
@@ -21,7 +21,7 @@ export const AlmostThere = ({ isLaceInstalled, onAction, isDismissable, dismissi
           )}
         </Box>
       }
-      description="Your Nami wallet is now part of the Lace family"
+      description={isLaceInstalled ? 'Your Nami wallet is now part of the Lace family' : 'Download the Lace extension to begin'}
       buttonText={isLaceInstalled ? 'Open Lace' : 'Download Lace'}
       buttonIcon={isLaceInstalled ? Arrow : Download}
       onButtonClick={onAction}

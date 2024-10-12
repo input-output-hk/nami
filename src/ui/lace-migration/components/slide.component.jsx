@@ -15,6 +15,7 @@ export const Slide = ({
   isDismissable,
   dismissibleSeconds,
   buttonOrientation,
+  showFindOutMore,
 }) => {
   const borderColor = useColorModeValue('#C0C0C0', '#383838');
   const slideBoxBgColor = useColorModeValue('#FFFFFF', '#2D3848');
@@ -88,7 +89,7 @@ export const Slide = ({
     return (
       <>
         <Text color="current">
-          By clicking &quot;Upgrade&quot;, you agree with our
+          By clicking &quot;Upgrade&quot;, you have read and agree to our
         </Text>
         <Text color="current">
           <Link target='_blank' href="https://www.lace.io/iohktermsandconditions.pdf" color="#3489F7" textDecoration="underline">
@@ -104,6 +105,21 @@ export const Slide = ({
     );
   };
 
+  const getFindOutMore = () => {
+    return (
+      <>
+        <Text color="current">
+          To keep using Nami, enable &quot;Nami mode&quot; on Lace settings.
+        </Text>
+        <Text color="current">
+          <Link target='_blank' href="https://www.lace.io/faq" color="#3489F7" textDecoration="underline">
+          Find out more
+          </Link>{' '}
+        </Text>
+      </>
+    );
+  };
+
   return (
     <Flex
       justifyContent={'space-between'}
@@ -111,8 +127,11 @@ export const Slide = ({
       height={'100%'}
     >
       <Box
+        display="flex"
+        flex="1"
         w="100%"
-        h="375px"
+        minH="325px"
+        maxH="375px"
         mb="30px"
         borderWidth="1px"
         borderRadius="17.37px"
@@ -146,6 +165,17 @@ export const Slide = ({
             textAlign="center"
           >
             {getTermsContent()}
+          </Box>
+        )}
+        {showFindOutMore && (
+          <Box
+            mb="20px"
+            fontWeight="300"
+            color={termsTextColor}
+            fontSize={12}
+            textAlign="center"
+          >
+            {getFindOutMore()}
           </Box>
         )}
         <Flex

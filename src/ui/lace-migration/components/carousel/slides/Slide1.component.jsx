@@ -14,13 +14,13 @@ export const Slide1 = ({ onAction, isDismissable, dismissibleSeconds }) => {
           <BackpackImg width="91px" height="126px" />
         </Box>
       }
-      description="Your Nami wallet is now part of the Lace family"
-      buttonText="Upgrade"
+      description="The Nami Wallet is now integrated into Lace. Click ‘Upgrade your wallet' to begin the process"
+      buttonText="Upgrade your wallet"
       buttonIcon={Arrow}
       onButtonClick={onAction}
       isDismissable={isDismissable}
       dismissibleSeconds={dismissibleSeconds}
-      buttonOrientation="row"
+      buttonOrientation={isDismissable ? 'column' : 'row'}
     />
   );
 };

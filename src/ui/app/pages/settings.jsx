@@ -115,7 +115,7 @@ const Overview = () => {
             navigate('beta-partner');
           }}
         >
-          Become a beta partner
+          Become a Beta partner
         </Button>
       )}
       {featureFlags?.['is-migration-active']?.dismissable && (
@@ -624,25 +624,23 @@ const BetaPartner = () => {
     <>
       <Box height="10" />
       <Text fontSize="lg" fontWeight="bold">
-        Become a beta partner
+        Become a Beta partner
       </Text>
       <Box height="6" />
       <Box
         display="flex"
         alignItems="center"
         justifyContent="space-between"
-        w={'260px'}
+        alignItems={"start"}
+        w="calc(100% - 120px)"
         flex={1}
         paddingBottom="20px"
       >
         <Text fontSize="medium">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          Be one of the first users to try out an upgrade to Nami mode within Lace.
           <br />
           <br />
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. sed do eiusmod tempor incididunt ut
-          labore et dolore magna aliqua.
+          Choose this option if you’re an early adopter or community advocate.
         </Text>
       </Box>
       <Box
@@ -650,12 +648,13 @@ const BetaPartner = () => {
         flexDirection="column"
         gap="14px"
         paddingBottom="40px"
+        w="calc(100% - 120px)"
       >
         <Button
           colorScheme="teal"
           onClick={() => betaProgramMigrationEnrollment(true)}
         >
-          I understand and wish to continue
+          Become a Beta partner
         </Button>
         <Button
           colorScheme="orange"

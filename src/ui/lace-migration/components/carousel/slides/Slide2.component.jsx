@@ -10,7 +10,7 @@ export const Slide2 = ({ onAction, isDismissable, dismissibleSeconds }) => {
   return (
     <Slide
       showTerms
-      title="It's time to upgrade your wallet!"
+      title="Same experience, better infrastructure"
       image={
         <Box mb={'40px'}>
           {colorMode === 'light' ? (
@@ -20,13 +20,13 @@ export const Slide2 = ({ onAction, isDismissable, dismissibleSeconds }) => {
           )}
         </Box>
       }
-      description="Your Nami wallet is now part of the Lace family"
-      buttonText="Upgrade"
+      description="On the surface, Nami is the same. But now, with Lace's advanced technology supporting it"
+      buttonText="Upgrade your wallet"
       buttonIcon={Arrow}
       onButtonClick={onAction}
       isDismissable={isDismissable}
       dismissibleSeconds={dismissibleSeconds}
-      buttonOrientation="row"
+      buttonOrientation={isDismissable ? 'column' : 'row'}
     />
   );
 };

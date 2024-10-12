@@ -9,7 +9,7 @@ export const AllDone = ({ isLaceInstalled, onAction }) => {
   const { colorMode } = useColorMode();
   return (
     <Slide
-      title="All done!"
+      title="It's time to upgrade your wallet!"
       image={
         <Box mb={'50px'}>
           {colorMode === 'light' ? (
@@ -19,9 +19,7 @@ export const AllDone = ({ isLaceInstalled, onAction }) => {
           )}
         </Box>
       }
-      description={
-        'All good. Just use the Lace extension to access your migrated Nami Wallet from now on'
-      }
+      description="Your Nami wallet is now part of the Lace family"
       buttonText={isLaceInstalled ? 'Open Lace' : 'Download Lace'}
       buttonIcon={Arrow}
       onButtonClick={onAction}
