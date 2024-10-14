@@ -47,6 +47,7 @@ export const MigrationView = ({
           mt='17px'
           flexDirection='column'
           h='calc(100% - 17px)'
+          w="100%"
         >
           <NoWallet
             isLaceInstalled={isLaceInstalled}
@@ -76,6 +77,7 @@ export const MigrationView = ({
             backgroundColor={bgColor}
             mt='17px'
             h='calc(100% - 17px)'
+            w="100%"
           >
             <Carousel onSlideSwitched={onSlideSwitched}>
               <Slide1
@@ -118,6 +120,7 @@ export const MigrationView = ({
               mt='17px'
               flexDirection='column'
               h='calc(100% - 17px)'
+              w="100%"
             >
               <AlmostThere
                 isLaceInstalled={false}
@@ -144,6 +147,7 @@ export const MigrationView = ({
               mt='17px'
               flexDirection='column'
               h='calc(100% - 17px)'
+              w="100%"
             >
               <AlmostThere
                 isLaceInstalled
@@ -172,6 +176,7 @@ export const MigrationView = ({
             mt='17px'
             flexDirection='column'
             h='calc(100% - 17px)'
+            w="100%"
           >
             <AllDone
               isLaceInstalled={isLaceInstalled}
