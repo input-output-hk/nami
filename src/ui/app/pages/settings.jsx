@@ -95,9 +95,7 @@ const Settings = () => {
 const Overview = () => {
   const capture = useCaptureEvent();
   const navigate = useNavigate();
-  const { colorMode, toggleColorMode } = useColorMode();
   const { earlyAccessFeatures, featureFlags } = useFeatureFlagsContext();
-  console.log(earlyAccessFeatures)
   return (
     <>
       <Box height="10" />
@@ -629,15 +627,15 @@ const BetaPartner = () => {
       <Box height="6" />
       <Box
         display="flex"
-        alignItems="center"
         justifyContent="space-between"
-        alignItems={"start"}
+        alignItems="start"
         w="calc(100% - 120px)"
         flex={1}
         paddingBottom="20px"
       >
         <Text fontSize="medium">
-          Be one of the first users to try out an upgrade to Nami mode within Lace.
+          Be one of the first users to try out an upgrade to Nami mode within
+          Lace.
           <br />
           <br />
           Choose this option if you’re an early adopter or community advocate.
