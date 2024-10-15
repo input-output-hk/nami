@@ -96,7 +96,9 @@ export const AppWithMigration = () => {
       isBetaProgramIsActive &&
       featureFlags?.['is-migration-active'] !== undefined;
 
-    if (isBetaProgramActiveAndUserEnrolled) {
+    if (state.migrationState === MigrationState.Completed) {
+      showApp = false;
+    } else if (isBetaProgramActiveAndUserEnrolled) {
       // Canary phase entry
       // Check if the migration state is dormant aka not yet chosen settings to upgrade wallet
       if (state.migrationState === MigrationState.Dormant) {
