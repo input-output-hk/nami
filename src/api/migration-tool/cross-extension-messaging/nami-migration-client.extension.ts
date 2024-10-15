@@ -14,7 +14,10 @@ import { awaitLacePongResponse } from './nami/await-lace-pong-response';
 export const checkLaceInstallation = () =>
   awaitLacePongResponse(LACE_EXTENSION_ID, runtime.sendMessage);
 
-export const enableMigration = () => setMigrationToInProgress(storage.local);
+export const enableMigration = () => {
+  storage.local.remove(DISMISS_MIGRATION_UNTIL);
+  return setMigrationToInProgress(storage.local);
+};
 
 export const dismissMigration = ({
   dismissMigrationUntil,
@@ -34,7 +37,7 @@ export const disableMigration = () =>
 
 export const handleLaceMigrationRequests = () =>
   runtime.onMessageExternal.addListener(
-    createNamiMigrationListener(LACE_EXTENSION_ID, storage.local),
+    createNamiMigrationListener(LACE_EXTENSION_ID, storage.local)
   );
 
 export const openLace = () => {
