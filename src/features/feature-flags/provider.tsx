@@ -59,7 +59,7 @@ export const FeatureFlagProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     posthog.onFeatureFlags(() => setIsFFLoaded(true));
-  })
+  });
 
   useEffect(() => {
     let enabledFlags: FeatureFlags = {};
@@ -78,7 +78,9 @@ export const FeatureFlagProvider = ({ children }: { children: ReactNode }) => {
   }, [activeFeatureFlags, posthog]);
 
   return (
-    <FeatureFlagContext.Provider value={{ featureFlags, earlyAccessFeatures, isFFLoaded }}>
+    <FeatureFlagContext.Provider
+      value={{ featureFlags, earlyAccessFeatures, isFFLoaded }}
+    >
       {children}
     </FeatureFlagContext.Provider>
   );

@@ -18,6 +18,9 @@ import { setStorage, getAccounts } from '../../../api/extension';
 import { useFeatureFlagsContext } from '../../../features/feature-flags/provider';
 import { App } from '../../app';
 
+const isDismissedTimeInPast = (dismissedUntil) =>
+  !!dismissedUntil && dismissedUntil > Date.now();
+
 export const AppWithMigration = () => {
   const captureEvent = useCaptureEvent();
   const [state, setState] = useState({
@@ -28,7 +31,8 @@ export const AppWithMigration = () => {
     dismissedUntil: undefined,
   });
   const themeColor = localStorage['chakra-ui-color-mode'];
-  const { featureFlags, isFFLoaded } = useFeatureFlagsContext();
+  const { featureFlags, isFFLoaded, earlyAccessFeatures } =
+    useFeatureFlagsContext();
 
   useEffect(() => {
     storage.local.get().then((store) => {
@@ -83,21 +87,45 @@ export const AppWithMigration = () => {
 
   const shouldShowApp = useMemo(() => {
     let showApp = true;
-    if (featureFlags?.['is-migration-active'] !== undefined) {
-      if (!!featureFlags['is-migration-active'].dismissable) {
-        showApp = !!state.dismissedUntil && state.dismissedUntil > Date.now() && state.migrationState !== MigrationState.InProgress;
+
+    const isBetaProgramIsActive =
+      !!earlyAccessFeatures &&
+      earlyAccessFeatures?.some((eaf) => eaf.name === 'beta-partner');
+
+    const isBetaProgramActiveAndUserEnrolled =
+      isBetaProgramIsActive &&
+      featureFlags?.['is-migration-active'] !== undefined;
+
+    if (isBetaProgramActiveAndUserEnrolled) {
+      // Canary phase entry
+      // Check if the migration state is dormant aka not yet chosen settings to upgrade wallet
+      if (state.migrationState === MigrationState.Dormant) {
+        showApp = true;
       } else {
+        showApp =
+          isDismissedTimeInPast(state.dismissedUntil) &&
+          state.migrationState !== MigrationState.InProgress;
+      }
+    } else if (featureFlags?.['is-migration-active'] !== undefined) {
+      if (!!featureFlags['is-migration-active'].dismissable) {
+        // Phase 2-3 entry dismissible with gradual rollout
+        showApp =
+          isDismissedTimeInPast(state.dismissedUntil) &&
+          state.migrationState !== MigrationState.InProgress;
+      } else {
+        // Phase 4 entry - non-dismissible
         showApp = false;
       }
     }
+
     return showApp;
-  }, [state, featureFlags]);
+  }, [state, featureFlags, earlyAccessFeatures]);
 
   if (shouldShowApp && isFFLoaded) {
     return <App />;
   }
 
-  return (state.ui === 'loading' || !isFFLoaded) ? null : (
+  return state.ui === 'loading' || !isFFLoaded ? null : (
     <MigrationView
       migrationState={state.migrationState}
       isLaceInstalled={state.isLaceInstalled}
@@ -120,7 +148,9 @@ export const AppWithMigration = () => {
       }}
       onDownloadLaceClicked={() => {
         captureEvent(Events.MigrationDownloadLaceClicked);
-        window.open(`https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`);
+        window.open(
+          `https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`
+        );
       }}
       onOpenLaceClicked={() => {
         captureEvent(Events.MigrationOpenLaceClicked);
@@ -135,7 +165,9 @@ export const AppWithMigration = () => {
           openLace();
         } else {
           captureEvent(Events.MigrationDownloadLaceClicked);
-          window.open(`https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`);
+          window.open(
+            `https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`
+          );
         }
       }}
     />
