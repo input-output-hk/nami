@@ -53,6 +53,11 @@ import { LegalSettings } from '../../../features/settings/legal/LegalSettings';
 import { usePostHog } from 'posthog-js/react';
 import { useFeatureFlagsContext } from '../../../features/feature-flags/provider';
 import { enableMigration } from '../../../api/migration-tool/cross-extension-messaging/nami-migration-client.extension';
+import {
+  MigrationState,
+  MIGRATION_KEY,
+} from '../../../api/migration-tool/migrator/migration-state.data';
+import { storage } from 'webextension-polyfill';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -103,49 +108,51 @@ const Overview = () => {
         Settings
       </Text>
       <Box height="10" />
-      {earlyAccessFeatures?.find((f) => f.name === 'beta-partner') && (
-        <Button
-          justifyContent="space-between"
-          variant="ghost"
-          width="65%"
-          rightIcon={<ChevronRightIcon />}
-          onClick={() => {
-            navigate('beta-partner');
-          }}
-        >
-          Become a Beta partner
-        </Button>
-      )}
-      {featureFlags?.['is-migration-active']?.dismissable && (
-        <Button
-          justifyContent="space-between"
-          variant="ghost"
-          width="65%"
-          rightIcon={<ChevronRightIcon />}
-          onClick={async () => {
-            await enableMigration();
-          }}
-        >
-          <Flex
-            flex={1}
-            justifyContent={'space-between'}
-            alignContent={'center'}
-            flexDirection={'row'}
+      {earlyAccessFeatures?.find((f) => f.name === 'beta-partner') &&
+        !featureFlags?.['is-migration-active'] && (
+          <Button
+            justifyContent="space-between"
+            variant="ghost"
+            width="65%"
+            rightIcon={<ChevronRightIcon />}
+            onClick={() => {
+              navigate('beta-partner');
+            }}
           >
-            <Text>Upgrade your wallet</Text>
-            <Badge
-              borderRadius={16}
-              fontWeight={400}
-              fontSize={12}
+            Become a Beta partner
+          </Button>
+        )}
+      {earlyAccessFeatures?.find((f) => f.name === 'beta-partner') &&
+        featureFlags?.['is-migration-active']?.dismissable && (
+          <Button
+            justifyContent="space-between"
+            variant="ghost"
+            width="65%"
+            rightIcon={<ChevronRightIcon />}
+            onClick={async () => {
+              await enableMigration();
+            }}
+          >
+            <Flex
+              flex={1}
+              justifyContent={'space-between'}
               alignContent={'center'}
-              colorScheme="teal"
-              variant={'subtle'}
+              flexDirection={'row'}
             >
-              Beta
-            </Badge>
-          </Flex>
-        </Button>
-      )}
+              <Text>Upgrade your wallet</Text>
+              <Badge
+                borderRadius={16}
+                fontWeight={400}
+                fontSize={12}
+                alignContent={'center'}
+                colorScheme="teal"
+                variant={'subtle'}
+              >
+                Beta
+              </Badge>
+            </Flex>
+          </Button>
+        )}
       <Button
         justifyContent="space-between"
         width="65%"
@@ -605,18 +612,15 @@ const BetaPartner = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const betaProgramMigrationEnrollment = useCallback(
-    (choice) => {
-      const action = choice ? 'joined' : 'left';
-      posthog.updateEarlyAccessFeatureEnrollment('is-migration-active', choice);
-      toast({
-        status: 'success',
-        title: `${action} the beta program`,
-      });
-      navigate('/settings');
-    },
-    [posthog, toast, navigate]
-  );
+  const enrollInBetaPartnerMigationProgram = useCallback(async () => {
+    await storage.local.set({ [MIGRATION_KEY]: MigrationState.Dormant });
+    posthog.updateEarlyAccessFeatureEnrollment('is-migration-active', true);
+    toast({
+      status: 'success',
+      title: 'joined the beta program',
+    });
+    navigate(-1);
+  }, [posthog, toast, navigate]);
 
   return (
     <>
@@ -638,7 +642,7 @@ const BetaPartner = () => {
           Lace.
           <br />
           <br />
-          Choose this option if you’re an early adopter or community advocate.
+          Choose this option if you're an early adopter or community advocate.
         </Text>
       </Box>
       <Box
@@ -648,16 +652,10 @@ const BetaPartner = () => {
         paddingBottom="40px"
         w="calc(100% - 120px)"
       >
-        <Button
-          colorScheme="teal"
-          onClick={() => betaProgramMigrationEnrollment(true)}
-        >
+        <Button colorScheme="teal" onClick={enrollInBetaPartnerMigationProgram}>
           Become a Beta partner
         </Button>
-        <Button
-          colorScheme="orange"
-          onClick={() => betaProgramMigrationEnrollment(false)}
-        >
+        <Button colorScheme="orange" onClick={() => navigate(-1)}>
           Maybe later
         </Button>
       </Box>
