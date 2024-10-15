@@ -3,6 +3,7 @@ export enum MigrationState {
   InProgress = 'in-progress',
   Completed = 'completed',
   Dismissed = 'dismissed',
+  Dormant = 'dormant', // only available to set during canary phase
 }
 
 export const MIGRATION_KEY = 'laceMigration' as const;
