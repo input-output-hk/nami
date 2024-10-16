@@ -14,7 +14,7 @@ export const Slide1 = ({ onAction, isDismissable, dismissibleSeconds }) => {
           <BackpackImg width="91px" height="126px" />
         </Box>
       }
-      description="The Nami Wallet is now integrated into Lace. Click ‘Upgrade your wallet' to begin the process"
+      description="The Nami Wallet is now integrated into Lace. Click 'Upgrade your wallet' to begin the process"
       buttonText="Upgrade your wallet"
       buttonIcon={Arrow}
       onButtonClick={onAction}

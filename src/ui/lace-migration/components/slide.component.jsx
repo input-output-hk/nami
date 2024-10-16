@@ -109,7 +109,7 @@ export const Slide = ({
     return (
       <>
         <Text color="current">
-          To keep using Nami, enable &quot;Nami mode&quot; on Lace settings.
+          To keep using Nami, enable 'Nami mode' on Lace settings.
         </Text>
         <Text color="current">
           <Link target='_blank' href="https://www.lace.io/faq" color="#3489F7" textDecoration="underline">
