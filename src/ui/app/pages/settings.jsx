@@ -122,37 +122,36 @@ const Overview = () => {
             Become a Beta partner
           </Button>
         )}
-      {earlyAccessFeatures?.find((f) => f.name === 'beta-partner') &&
-        featureFlags?.['is-migration-active']?.dismissable && (
-          <Button
-            justifyContent="space-between"
-            variant="ghost"
-            width="65%"
-            rightIcon={<ChevronRightIcon />}
-            onClick={async () => {
-              await enableMigration();
-            }}
+      {featureFlags?.['is-migration-active']?.dismissable && (
+        <Button
+          justifyContent="space-between"
+          variant="ghost"
+          width="65%"
+          rightIcon={<ChevronRightIcon />}
+          onClick={async () => {
+            await enableMigration();
+          }}
+        >
+          <Flex
+            flex={1}
+            justifyContent={'space-between'}
+            alignContent={'center'}
+            flexDirection={'row'}
           >
-            <Flex
-              flex={1}
-              justifyContent={'space-between'}
+            <Text>Upgrade your wallet</Text>
+            <Badge
+              borderRadius={16}
+              fontWeight={400}
+              fontSize={12}
               alignContent={'center'}
-              flexDirection={'row'}
+              colorScheme="teal"
+              variant={'subtle'}
             >
-              <Text>Upgrade your wallet</Text>
-              <Badge
-                borderRadius={16}
-                fontWeight={400}
-                fontSize={12}
-                alignContent={'center'}
-                colorScheme="teal"
-                variant={'subtle'}
-              >
-                Beta
-              </Badge>
-            </Flex>
-          </Button>
-        )}
+              Beta
+            </Badge>
+          </Flex>
+        </Button>
+      )}
       <Button
         justifyContent="space-between"
         width="65%"
