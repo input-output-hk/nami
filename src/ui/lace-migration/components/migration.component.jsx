@@ -101,9 +101,7 @@ export const AppWithMigration = () => {
     } else if (isBetaProgramActiveAndUserEnrolled) {
       // Canary phase entry
       // Check if the migration state is dormant aka not yet chosen settings to upgrade wallet
-      if (state.migrationState === MigrationState.Dormant) {
-        showApp = true;
-      } else {
+      if (state.migrationState !== MigrationState.Dormant) {
         showApp =
           isDismissedTimeInPast(state.dismissedUntil) &&
           state.migrationState !== MigrationState.InProgress;
@@ -163,10 +161,10 @@ export const AppWithMigration = () => {
       }}
       onNoWalletActionClick={() => {
         if (state.isLaceInstalled) {
-          captureEvent(Events.MigrationOpenLaceClicked);
+          captureEvent(Events.MigrationOpenLaceClicked, { noWallet: true });
           openLace();
         } else {
-          captureEvent(Events.MigrationDownloadLaceClicked);
+          captureEvent(Events.MigrationDownloadLaceClicked, { noWallet: true });
           window.open(
             `https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`
           );
