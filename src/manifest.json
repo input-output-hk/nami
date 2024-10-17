@@ -19,8 +19,9 @@
       "run_at": "document_start"
     },
     {
-      "matches": ["*://connect.trezor.io/*/popup.html"],
-      "js": ["trezorContentScript.bundle.js"]
+      "matches": ["*://connect.trezor.io/*/popup.html*"],
+      "js": ["trezorContentScript.bundle.js"],
+      "all_frames": true
     }
   ],
   "web_accessible_resources": [
