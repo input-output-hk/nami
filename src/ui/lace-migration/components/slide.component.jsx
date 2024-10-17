@@ -89,7 +89,7 @@ export const Slide = ({
     return (
       <>
         <Text color="current">
-          By clicking &quot;Upgrade&quot;, you have read and agree to our
+          By clicking 'Upgrade your wallet', you have read and agree to our
         </Text>
         <Text color="current">
           <Link target='_blank' href="https://www.lace.io/iohktermsandconditions.pdf" color="#3489F7" textDecoration="underline">
