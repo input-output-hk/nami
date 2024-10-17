@@ -89,9 +89,10 @@ export const Slide = ({
     return (
       <>
         <Text color="current">
-          By clicking 'Upgrade your wallet', you have read and agree to our
+          By clicking 'Upgrade your wallet', you have read and agree
         </Text>
         <Text color="current">
+          to our{' '}
           <Link target='_blank' href="https://www.lace.io/iohktermsandconditions.pdf" color="#3489F7" textDecoration="underline">
             Terms and Conditions
           </Link>{' '}
