@@ -51,6 +51,6 @@ export const getEventMetadata = async (
     sent_at_local: new Date().toISOString(),
     distinct_id: userId,
     posthog_project_id: POSTHOG_PROJECT_ID,
-    network: currentNetwork.id,
+    network: currentNetwork?.id,
   };
 };

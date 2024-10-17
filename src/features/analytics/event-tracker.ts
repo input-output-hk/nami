@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import debounce from 'debounce';
 import { useCaptureEvent } from './hooks';
 import { Events } from './events';

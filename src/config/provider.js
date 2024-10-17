@@ -24,4 +24,6 @@ export default {
         .then((res) => res.json())
         .then((res) => res.cardano[currency]),
   },
+  posthog_api_token: secrets.POSTHOG_API_KEY,
+  posthog_project_id: secrets.POSTHOG_PROJECT_ID,
 };
