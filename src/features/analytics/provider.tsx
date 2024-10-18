@@ -16,6 +16,7 @@ import {
   getUserId,
   setAnalyticsConsent,
 } from './services';
+import { FeatureFlagProvider } from '../feature-flags/provider';
 
 /**
  * Represents the user's consent to tracking analytics events
@@ -109,19 +110,20 @@ export const AnalyticsProvider = ({
     return getOptions(id);
   }, [analyticsState?.userId]);
 
-  if (analyticsState?.consent === false || options === undefined) {
-    return (
-      <AnalyticsContext.Provider value={[analyticsState, setAnalyticsConsent]}>
-        {children}
-      </AnalyticsContext.Provider>
-    );
+  if (options === undefined) {
+    // avoid rendering everything twice when waiting for Posthog options being fetched
+    return null;
   }
 
   return (
     <PostHogProvider apiKey={POSTHOG_API_KEY} options={options}>
-      <AnalyticsContext.Provider value={[analyticsState, setAnalyticsConsent]}>
-        {children}
-      </AnalyticsContext.Provider>
+      <FeatureFlagProvider>
+        <AnalyticsContext.Provider
+          value={[analyticsState, setAnalyticsConsent]}
+        >
+          {children}
+        </AnalyticsContext.Provider>
+      </FeatureFlagProvider>
     </PostHogProvider>
   );
 };
