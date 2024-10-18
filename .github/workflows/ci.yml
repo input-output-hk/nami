@@ -24,7 +24,7 @@ jobs:
         run: npm test
       - name: Generates Secrets File
         run: |
-          echo "export default { PROJECT_ID_MAINNET: '${{ secrets.PROJECT_ID_MAINNET  }}', PROJECT_ID_PREVIEW: '${{ secrets.PROJECT_ID_PREVIEW  }}', PROJECT_ID_PREPROD: '${{ secrets.PROJECT_ID_PREPROD  }}', POSTHOG_API_KEY:'${{ secrets.POSTHOG_API_KEY_PRODUCTION }}', POSTHOG_PROJECT_ID: '${{ secrets.POSTHOG_PROJECT_ID_PRODUCTION }}'};" > secrets.production.js
+          echo "export default { PROJECT_ID_MAINNET: '${{ secrets.PROJECT_ID_MAINNET  }}', PROJECT_ID_PREVIEW: '${{ secrets.PROJECT_ID_PREVIEW  }}', PROJECT_ID_PREPROD: '${{ secrets.PROJECT_ID_PREPROD  }}', POSTHOG_API_KEY:'${{ secrets.POSTHOG_API_KEY }}', POSTHOG_PROJECT_ID: '${{ secrets.POSTHOG_PROJECT_ID }}', LACE_EXTENSION_ID: '${{ secrets.LACE_EXTENSION_ID }}'};" > secrets.production.js
       - name: Build
         run: npm run build
         env:
