@@ -17,6 +17,7 @@ import { STORAGE } from '../../../config/config';
 import { setStorage, getAccounts } from '../../../api/extension';
 import { useFeatureFlagsContext } from '../../../features/feature-flags/provider';
 import { App } from '../../app';
+import secrets from '../../../config/provider';
 
 const isDismissedTimeInPast = (dismissedUntil) =>
   !!dismissedUntil && dismissedUntil > Date.now();
@@ -149,7 +150,7 @@ export const AppWithMigration = () => {
       onDownloadLaceClicked={() => {
         captureEvent(Events.MigrationDownloadLaceClicked);
         window.open(
-          `https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`
+          `https://chromewebstore.google.com/detail/lace/${secrets.LACE_EXTENSION_ID}`
         );
       }}
       onOpenLaceClicked={() => {
@@ -166,7 +167,7 @@ export const AppWithMigration = () => {
         } else {
           captureEvent(Events.MigrationDownloadLaceClicked, { noWallet: true });
           window.open(
-            `https://chromewebstore.google.com/detail/lace/${process.env.LACE_EXTENSION_ID}`
+            `https://chromewebstore.google.com/detail/lace/${secrets.LACE_EXTENSION_ID}`
           );
         }
       }}
