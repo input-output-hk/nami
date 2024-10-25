@@ -495,9 +495,25 @@ const getTimestamp = (date) => {
 };
 
 const getAddressCredentials = (address) => {
-  const cmlAddress = Loader.Cardano.Address.from_bech32(address);
-  return [cmlAddress.payment_cred()?.to_cbor_hex(), cmlAddress.staking_cred()?.to_cbor_hex()];
-}
+  try {
+    const cmlAddress = Loader.Cardano.Address.from_bech32(address);
+    return [
+      cmlAddress.payment_cred()?.to_cbor_hex() || null,
+      cmlAddress.staking_cred()?.to_cbor_hex() || null,
+    ];
+  } catch (error) {
+    try {
+      // try casting as byron address
+      const cmlAddress = Loader.Cardano.ByronAddress.from_base58(address);
+      return [
+        cmlAddress.to_address()?.payment_cred()?.to_cbor_hex() || null,
+        cmlAddress.to_address()?.staking_cred()?.to_cbor_hex() || null,
+      ];
+    } catch {}
+    console.error(error);
+    return [null, null];
+  }
+};
 
 const matchesAnyCredential = (address, [ownPaymentCred, ownStakingCred]) => {
   const [otherPaymentCred, otherStakingCred] = getAddressCredentials(address);
@@ -516,7 +532,8 @@ const calculateAmount = (currentAddr, uTxOList, validContract = true) => {
   let outputs = compileOutputs(
     uTxOList.outputs.filter(
       (output) =>
-        matchesAnyCredential(output.address, ownCredentials) && !(output.collateral && validContract)
+        matchesAnyCredential(output.address, ownCredentials) &&
+        !(output.collateral && validContract)
     )
   );
   let amounts = [];
