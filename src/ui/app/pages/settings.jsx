@@ -52,11 +52,11 @@ import { Events } from '../../../features/analytics/events';
 import { LegalSettings } from '../../../features/settings/legal/LegalSettings';
 import { usePostHog } from 'posthog-js/react';
 import { useFeatureFlagsContext } from '../../../features/feature-flags/provider';
-import { enableMigration } from '../../../api/migration-tool/cross-extension-messaging/nami-migration-client.extension';
 import {
   MigrationState,
   MIGRATION_KEY,
 } from '../../../api/migration-tool/migrator/migration-state.data';
+import { disableMigration } from '../../../api/migration-tool/cross-extension-messaging/nami-migration-client.extension';
 import { storage } from 'webextension-polyfill';
 
 const Settings = () => {
@@ -129,7 +129,7 @@ const Overview = () => {
           width="65%"
           rightIcon={<ChevronRightIcon />}
           onClick={async () => {
-            await enableMigration();
+            await disableMigration();
           }}
         >
           <Flex
