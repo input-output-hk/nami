@@ -153,6 +153,16 @@ export const Slide = ({
           <Box>{image}</Box>
           <Text fontSize="16px" fontWeight="400">
             {description}
+            <Link
+              target="_blank"
+              href="https://www.lace.io/faq?question=what-is-happening-with-nami"
+              title="FAQ"
+              color="#3489F7"
+              textDecoration="underline"
+              style={{ marginLeft: 4 }}
+            >
+              FAQ
+            </Link>
           </Text>
         </Flex>
       </Box>
