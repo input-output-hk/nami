@@ -59,7 +59,8 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
         pending_slice = Array.from(new Set(pending_slice.concat(txs.map((tx) => tx.txHash))));
         await setTransactions(pending_slice, true);
       }
-    } else if (memLoaded && slice.length < page * BATCH) {
+    } 
+    if (memLoaded && slice.length < page * BATCH) {
       const txs = await getTransactions(page, BATCH, !memLoaded);
       if (txs.length <= 0) {
           setFinal(true);
