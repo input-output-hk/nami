@@ -13,52 +13,68 @@ import { Events } from '../../../features/analytics/events';
 
 const BATCH = 5;
 
+let pending_slice = [];
 let slice = [];
 
 let txObject = {};
 
 const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
   const capture = useCaptureEvent();
+  const [pendingHistorySlice, setPendingHistorySlice] = React.useState(null);
   const [historySlice, setHistorySlice] = React.useState(null);
   const [page, setPage] = React.useState(1);
+  const [pendingPage, setPendingPage] = React.useState(1);
   const [memLoaded, setMemLoaded] = React.useState(false);
   const [final, setFinal] = React.useState(false);
   const [loadNext, setLoadNext] = React.useState(false);
   const getTxs = async () => {
     if (!history) {
+      pending_slice = [];
       slice = [];
+      setPendingHistorySlice(null);
       setHistorySlice(null);
       setPage(1);
+      setPendingPage(1);
       setFinal(false);
+      setMemLoaded(false);
       return;
     }
     await new Promise((res, rej) => setTimeout(() => res(), 10));
 
-    slice = slice.concat(
-      (history.pending ?? []).concat(history.confirmed ?? [])
-      .slice((page - 1) * BATCH, page * BATCH)
-    );
-    if (slice.length < page * BATCH) {
-      const txs = await getTransactions(page, BATCH, !memLoaded);
+    // if (!memLoaded) {
+    //   pending_slice = pending_slice.concat(
+    //     history.pending.slice((pendingPage - 1)*BATCH, pendingPage*BATCH)
+    //   );
+    // } else {
+    //   slice = slice.concat(
+    //     history.confirmed.slice((page - 1)*BATCH, page * BATCH)
+    //   );
+    // }
 
+    if (!memLoaded && pending_slice.length < pendingPage * BATCH) {
+      const txs = await getTransactions(pendingPage, BATCH, !memLoaded);
       if (txs.length <= 0) {
-        if (memLoaded) {
-          setFinal(true);
-        } else {
           setMemLoaded(true)
-        }
+      } else {
+        pending_slice = Array.from(new Set(pending_slice.concat(txs.map((tx) => tx.txHash))));
+        await setTransactions(pending_slice, true);
+      }
+    } else if (memLoaded && slice.length < page * BATCH) {
+      const txs = await getTransactions(page, BATCH, !memLoaded);
+      if (txs.length <= 0) {
+          setFinal(true);
       } else {
         slice = Array.from(new Set(slice.concat(txs.map((tx) => tx.txHash))));
-        await setTransactions(slice, memLoaded);
+        await setTransactions(slice, false);
       }
     }
-    if (slice.length < page * BATCH) setFinal(true);
+    setPendingHistorySlice(pending_slice);
     setHistorySlice(slice);
   };
 
   React.useEffect(() => {
     getTxs();
-  }, [history, page]);
+  }, [history, page, pendingPage, memLoaded]);
 
   React.useEffect(() => {
     const storeTx = setInterval(() => {
@@ -83,7 +99,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
     <Box position="relative">
       {!(history && historySlice) ? (
         <HistorySpinner />
-      ) : historySlice.length <= 0 ? (
+      ) : historySlice.length <= 0 && pendingHistorySlice.length <= 0 ? (
         <Box
           mt="16"
           display="flex"
@@ -107,6 +123,25 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
               capture(Events.ActivityActivityActivityRowClick);
             }}
           >
+            {pendingHistorySlice.map((txHash, index) => {
+              if (!history.details[txHash]) history.details[txHash] = {};
+
+              return (
+                <Transaction
+                  onLoad={(txHash, txDetail) => {
+                    history.details[txHash] = txDetail;
+                    txObject[txHash] = txDetail;
+                  }}
+                  key={index}
+                  txHash={txHash}
+                  detail={history.details[txHash]}
+                  currentAddr={currentAddr}
+                  addresses={addresses}
+                  network={network}
+                  pending={true}
+                />
+              );
+            })}
             {historySlice.map((txHash, index) => {
               if (!history.details[txHash]) history.details[txHash] = {};
 
@@ -122,7 +157,7 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
                   currentAddr={currentAddr}
                   addresses={addresses}
                   network={network}
-                  pending={history.pending.includes(txHash)}
+                  pending={false}
                 />
               );
             })}
@@ -143,7 +178,11 @@ const HistoryViewer = ({ history, network, currentAddr, addresses }) => {
                 variant="outline"
                 onClick={() => {
                   setLoadNext(true);
-                  setTimeout(() => setPage(page + 1));
+                  setTimeout(
+                    memLoaded ?
+                    () => setPage(page + 1) :
+                    () => setPendingPage(pendingPage + 1)
+                  );
                 }}
                 colorScheme="orange"
                 aria-label="More"
