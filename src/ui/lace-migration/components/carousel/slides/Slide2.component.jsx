@@ -20,7 +20,7 @@ export const Slide2 = ({ onAction, isDismissable, dismissibleSeconds }) => {
           )}
         </Box>
       }
-      description="On the surface, Nami is the same. But now, with Lace's advanced technology supporting it"
+      description="On the surface, Nami is the same. But now, with Lace's advanced technology supporting it."
       buttonText="Upgrade your wallet"
       buttonIcon={Arrow}
       onButtonClick={onAction}
