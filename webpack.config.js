@@ -80,15 +80,9 @@ var options = {
       path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'trezorTx.jsx')
     ),
     background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
-    contentScript: withMaybeSentry(
-      path.join(__dirname, 'src', 'pages', 'Content', 'index.js')
-    ),
-    injected: withMaybeSentry(
-      path.join(__dirname, 'src', 'pages', 'Content', 'injected.js')
-    ),
-    trezorContentScript: withMaybeSentry(
-      path.join(__dirname, 'src', 'pages', 'Content', 'trezorContentScript.js')
-    ),
+    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
+    injected: path.join(__dirname, 'src', 'pages', 'Content', 'injected.js'),
+    trezorContentScript: path.join(__dirname, 'src', 'pages', 'Content', 'trezorContentScript.js'),
   },
   chromeExtensionBoilerplate: {
     notHotReload: ['contentScript', 'devtools', 'injected'],
