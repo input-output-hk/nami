@@ -21,7 +21,7 @@ Sentry.init({
   // A tracesSampleRate of 0.05 and profilesSampleRate of 0.05 results in 2.5% of
   // transactions being profiled (0.05*0.05=0.0025)
 
-  // Capture Replay for 0.5% of all sessions,
+  // Capture Replay for 0.05% of all sessions,
   replaysSessionSampleRate: 0.005,
   // ...plus for 100% of sessions with an error
   replaysOnErrorSampleRate: 1.0,
