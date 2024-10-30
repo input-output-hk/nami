@@ -12,7 +12,7 @@ export const NoWallet = ({ onAction, isDismissable, dismissibleSeconds }) => (
         <BackpackImg width="91px" height="126px" />
       </Box>
     }
-    description="To create or import a wallet, proceed using the Lace extension"
+    description="To create or import a wallet, proceed using the Lace extension."
     buttonText="Get started with Lace"
     buttonIcon={LaceIcon}
     onButtonClick={onAction}

@@ -30,10 +30,14 @@ export const dismissMigration = ({
   });
 };
 
-export const disableMigration = () =>
-  storage.local.set({
+export const disableMigration = async () => {
+  const date = new Date();
+  const timeInPast = date.setTime(date.getTime() - 1000);
+  await storage.local.set({
+    [DISMISS_MIGRATION_UNTIL]: timeInPast,
     [MIGRATION_KEY]: MigrationState.None,
   });
+};
 
 export const handleLaceMigrationRequests = () =>
   runtime.onMessageExternal.addListener(

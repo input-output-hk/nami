@@ -19,7 +19,7 @@ export const AllDone = ({ isLaceInstalled, onAction }) => {
           )}
         </Box>
       }
-      description="Your Nami wallet is now part of the Lace family"
+      description="Your Nami wallet is now part of the Lace family."
       buttonText={isLaceInstalled ? 'Open Lace' : 'Download Lace'}
       buttonIcon={Arrow}
       onButtonClick={onAction}
