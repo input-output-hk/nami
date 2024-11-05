@@ -61,6 +61,7 @@ export const STORAGE = {
   analyticsConsent: 'analytics',
   userId: 'userId',
   acceptedLegalDocsVersion: 'acceptedLegalDocsVersion',
+  themeColor: 'themeColor',
 };
 
 export const LOCAL_STORAGE = {
