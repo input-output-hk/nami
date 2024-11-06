@@ -5,6 +5,8 @@ import { ReactComponent as Download } from '../../assets/download.svg';
 import { ReactComponent as Arrow } from '../../assets/arrow.svg';
 import { ReactComponent as PendingDark } from '../../assets/pending-dark-mode.svg';
 import { ReactComponent as PendingWhite } from '../../assets/pending-white-mode.svg';
+import { useCaptureEvent } from '../../../../features/analytics/hooks';
+import { Events } from '../../../../features/analytics/events';
 
 export const AlmostThere = ({
   isLaceInstalled,
@@ -13,6 +15,7 @@ export const AlmostThere = ({
   dismissibleSeconds,
 }) => {
   const { colorMode } = useColorMode();
+  const captureEvent = useCaptureEvent();
   return (
     <Slide
       showTerms={false}
@@ -35,10 +38,14 @@ export const AlmostThere = ({
       }
       buttonText={isLaceInstalled ? 'Open Lace' : 'Download Lace'}
       buttonIcon={isLaceInstalled ? Arrow : Download}
-      onButtonClick={onAction}
+      onButtonClick={async () => {
+        await captureEvent(Events.NamiMigrationOpenLaceOrOpenChromeStore);
+        onAction();
+      }}
       isDismissable={isDismissable}
       buttonOrientation="column"
       dismissibleSeconds={dismissibleSeconds}
+      onDismiss={() => captureEvent(Events.NamiMigrationDismissedInProgress)}
     />
   );
 };

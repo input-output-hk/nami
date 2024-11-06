@@ -4,9 +4,12 @@ import { ReactComponent as Arrow } from '../../../assets/arrow.svg';
 import { ReactComponent as SeamlessDark } from '../../../assets/grouped-dark-mode.svg';
 import { ReactComponent as SeamlessWhite } from '../../../assets/grouped-white-mode.svg';
 import { useColorMode, Box } from '@chakra-ui/react';
+import { useCaptureEvent } from '../../../../../features/analytics/hooks';
+import { Events } from '../../../../../features/analytics/events';
 
 export const Slide2 = ({ onAction, isDismissable, dismissibleSeconds }) => {
   const { colorMode } = useColorMode();
+  const captureEvent = useCaptureEvent();
   return (
     <Slide
       showTerms
@@ -27,6 +30,9 @@ export const Slide2 = ({ onAction, isDismissable, dismissibleSeconds }) => {
       isDismissable={isDismissable}
       dismissibleSeconds={dismissibleSeconds}
       buttonOrientation={isDismissable ? 'column' : 'row'}
+      onDismiss={async () =>
+        captureEvent(Events.NamiMigrationDismissedNotStarted)
+      }
     />
   );
 };

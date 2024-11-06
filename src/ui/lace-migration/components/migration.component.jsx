@@ -137,35 +137,35 @@ export const AppWithMigration = () => {
           slideIndex: nextSlideIndex,
         });
       }}
-      onUpgradeWalletClicked={() => {
+      onUpgradeWalletClicked={async() => {
         enableMigration();
-        captureEvent(Events.MigrationUpgradeYourWalletClicked);
+        await captureEvent(Events.MigrationUpgradeYourWalletClicked);
       }}
-      onWaitingForLaceScreenViewed={() => {
-        captureEvent(Events.MigrationDownloadLaceScreenViewed);
+      onWaitingForLaceScreenViewed={async() => {
+       await  captureEvent(Events.MigrationDownloadLaceScreenViewed);
       }}
-      onOpenLaceScreenViewed={() => {
-        captureEvent(Events.MigrationOpenLaceScreenViewed);
+      onOpenLaceScreenViewed={async() => {
+        await captureEvent(Events.MigrationOpenLaceScreenViewed);
       }}
-      onDownloadLaceClicked={() => {
-        captureEvent(Events.MigrationDownloadLaceClicked);
+      onDownloadLaceClicked={async() => {
+        await captureEvent(Events.MigrationDownloadLaceClicked);
         window.open(
           `https://chromewebstore.google.com/detail/lace/${secrets.LACE_EXTENSION_ID}`
         );
       }}
-      onOpenLaceClicked={() => {
-        captureEvent(Events.MigrationOpenLaceClicked);
+      onOpenLaceClicked={async() => {
+       await captureEvent(Events.MigrationOpenLaceClicked);
         openLace();
       }}
-      onAllDoneScreenViewed={() => {
-        captureEvent(Events.MigrationAllDoneScreenViewed);
+      onAllDoneScreenViewed={async() => {
+        await captureEvent(Events.MigrationAllDoneScreenViewed);
       }}
-      onNoWalletActionClick={() => {
+      onNoWalletActionClick={async() => {
         if (state.isLaceInstalled) {
-          captureEvent(Events.MigrationOpenLaceClicked, { noWallet: true });
+          await captureEvent(Events.MigrationOpenLaceClicked);
           openLace();
         } else {
-          captureEvent(Events.MigrationDownloadLaceClicked, { noWallet: true });
+          await captureEvent(Events.MigrationDownloadLaceClicked);
           window.open(
             `https://chromewebstore.google.com/detail/lace/${secrets.LACE_EXTENSION_ID}`
           );

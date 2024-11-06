@@ -4,7 +4,11 @@ import { Text } from './text.component';
 import { dismissMigration } from '../../../api/migration-tool/cross-extension-messaging/nami-migration-client.extension';
 import { ReactComponent as PendingDark } from '../assets/clock.svg';
 
-export const DismissBtn = ({ dismissableIntervalSeconds, hasIcon }) => {
+export const DismissBtn = ({
+  dismissableIntervalSeconds,
+  hasIcon,
+  onDismiss,
+}) => {
   const futureDate = new Date();
   const futureTime = futureDate.setTime(
     futureDate.getTime() + dismissableIntervalSeconds * 1000
@@ -22,6 +26,7 @@ export const DismissBtn = ({ dismissableIntervalSeconds, hasIcon }) => {
       border="2px solid transparent"
       backgroundColor="none"
       onClick={async () => {
+        onDismiss();
         await dismissMigration({ dismissMigrationUntil: futureTime });
       }}
     >
