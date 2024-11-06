@@ -16,6 +16,7 @@ export const Slide = ({
   dismissibleSeconds,
   buttonOrientation,
   showFindOutMore,
+  onDismiss,
 }) => {
   const borderColor = useColorModeValue('#C0C0C0', '#383838');
   const slideBoxBgColor = useColorModeValue('#FFFFFF', '#2D3848');
@@ -199,6 +200,7 @@ export const Slide = ({
             <DismissBtn
               hasIcon={buttonOrientation === 'column'}
               dismissableIntervalSeconds={dismissibleSeconds}
+              onDismiss={onDismiss}
             />
           )}
         </Flex>

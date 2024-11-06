@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MigrationState } from '../../../../api/migration-tool/migrator/migration-state.data';
 import { Carousel } from '../carousel/carousel.component';
 import { Slide1 } from '../carousel/slides/Slide1.component';
@@ -9,6 +9,10 @@ import { AllDone } from '../all-done/all-done.component';
 import { NoWallet } from '../no-wallet/no-wallet.component';
 import { useColorModeValue, Flex } from '@chakra-ui/react';
 import { useFeatureFlagsContext } from '../../../../features/feature-flags/provider';
+import { Events } from '../../../../features/analytics/events';
+import { useCaptureEvent } from '../../../../features/analytics/hooks';
+import { AnalyticsConsentModal } from '../../../../features/analytics/ui/AnalyticsConsentModal';
+import { useAnalyticsContext } from '../../../../features/analytics/provider';
 
 export const MigrationView = ({
   migrationState,
@@ -26,6 +30,12 @@ export const MigrationView = ({
   const panelBg = useColorModeValue('#349EA3', 'gray.800');
   const bgColor = useColorModeValue('#FFF', '#1A202C');
   const { featureFlags } = useFeatureFlagsContext();
+  const [analytics, setAnalyticsConsent] = useAnalyticsContext();
+  const captureEvent = useCaptureEvent();
+  useEffect(() => {
+    captureEvent(Events.MigrationViewed);
+  }, []);
+
   const isDismissable =
     featureFlags?.['is-migration-active']?.dismissable || false;
 
@@ -33,8 +43,9 @@ export const MigrationView = ({
     featureFlags?.['is-migration-active']?.dismissInterval;
 
   if (!hasWallet) {
+    captureEvent(Events.MigrationViewNoWalletViewed);
     return (
-      <Flex
+      <><Flex
         h="100%"
         backgroundColor={panelBg}
       >
@@ -57,12 +68,18 @@ export const MigrationView = ({
           />
         </Flex>
       </Flex>
+      <AnalyticsConsentModal 
+        askForConsent={analytics.consent === undefined}
+        setConsent={setAnalyticsConsent}
+      />
+      </>
     );
   }
 
   switch (migrationState) {
     case MigrationState.Dismissed:
     case MigrationState.None:
+      captureEvent(Events.MigrationNoStartedViewed);
       return (
         <Flex
           h="100%"

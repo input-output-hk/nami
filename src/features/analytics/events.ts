@@ -105,6 +105,16 @@ export enum Events {
   MigrationDownloadLaceClicked = 'nami tool | nami | download lace | click',
   MigrationOpenLaceClicked = 'nami tool | nami | open lace | click',
   NamiMigrationDismissed = 'nami tool | nami | migration dismissed | click',
+
+  // Enhanced migration events
+  MigrationViewed = 'nami tool | nami | migration tool viewed',
+  MigrationViewNoWalletViewed = 'nami tool | nami | migration tool | no wallet viewed',
+  MigrationNoStartedViewed = 'nami tool | nami | migration tool | not started viewed',
+  MigrationInProgressViewed = 'nami tool | nami | migration tool | in progress viewed',
+  NamiMigrationDismissedNoWallet = 'nami tool | nami | migration dismissed | no wallet | click',
+  NamiMigrationDismissedNotStarted = 'nami tool | nami | migration dismissed | not started | click',
+  NamiMigrationDismissedInProgress = 'nami tool | nami | migration dismissed | in progress | click',
+  NamiMigrationOpenLaceOrOpenChromeStore = 'nami tool | nami | open lace or open chrome store link | click',
 }
 
 export type Property =
