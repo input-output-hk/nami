@@ -108,7 +108,7 @@ const Transaction = ({
   };
 
   const getTxDetail = async () => {
-    if (true || !displayInfo || detail.block === "mempool") {
+    if (!displayInfo || detail.block === "mempool") {
       let txDetail = await updateTxInfo(txHash, pending);
       detail.block = txDetail.block;
       onLoad(txHash, txDetail);

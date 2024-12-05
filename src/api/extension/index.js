@@ -274,53 +274,73 @@ export const updateTxInfo = async (txHash, pending) => {
   const network = await getNetwork();
   let detail = await currentAccount[network.id].history.details[txHash];
 
-  if (typeof detail !== 'object' || !detail.info || !detail.block || !detail.utxos || !detail.metadata) {
-    detail = {};
-    let info = await getTxInfo(txHash, pending);
+  if (isValidDetail(detail)) return detail;
 
-    if (!info && pending) {
-      // This transaction is no longer part of the mempool
-      info = await getTxInfo(txHash, false);
-      if (info) {
-        const accounts = await getStorage(STORAGE.accounts);
-        const currentAccountIndex = await getCurrentAccountIndex()
-        accounts[currentAccountIndex][network.id].history.pending = accounts[currentAccountIndex][network.id].history.pending.filter((t) => t !== txHash)
-        pending = false
-        await setStorage({ [STORAGE.accounts]: { ...accounts }, });
-      }
-    }
+  detail = {};
+  let info = await getTxInfo(txHash, pending);
 
-    if (!pending) {
-      const uTxOs = getTxUTxOs(txHash);
-      const metadata = getTxMetadata(txHash);
+  if (!info && pending) {
+    info = await handleMissingInfoWhenPending(txHash, network);
+    if (info) pending = false;
+  }
 
-      detail.info = info;
-      if (info) detail.block = await getBlock(detail.info.block_height);
-      detail.utxos = await uTxOs;
-      detail.metadata = await metadata;
-    } else {
-      // In this case it might simply no longer be in the mempool
-      const uTxOs = {
-        hash: txHash,
-        inputs: info ? info.inputs : [],
-        outputs: info ? info.outputs : [],
-      };
-      // Need to manually resolve outputs here
-      // TODO automatically check if respective UTxO has to be fetched from mempool
-      for (const input of uTxOs.inputs) {
-        const uTxOs = await getTxUTxOs(input.tx_hash);
-        input.amount = uTxOs.outputs[input.output_index].amount;
-      }
-      detail.info = info && info.tx;
-      detail.utxos = uTxOs;
-      detail.block = "mempool";
-      // This is not provided by blockfrost yet
-      detail.metadata = [];
-    }
+  if (!pending) {
+    detail = await buildFinalizedDetail(detail, info);
+  } else {
+    detail = await buildPendingDetail(detail, txHash, info);
   }
 
   return detail;
 };
+
+function isValidDetail(detail) {
+  return (
+    typeof detail === 'object' &&
+    detail.info &&
+    detail.block &&
+    detail.utxos &&
+    detail.metadata
+  );
+}
+
+async function handleMissingInfoWhenPending(txHash, network) {
+  const info = await getTxInfo(txHash, false);
+  if (info) {
+    const accounts = await getStorage(STORAGE.accounts);
+    const currentAccountIndex = await getCurrentAccountIndex();
+    accounts[currentAccountIndex][network.id].history.pending = accounts[currentAccountIndex][network.id].history.pending.filter((t) => t !== txHash);
+    await setStorage({ [STORAGE.accounts]: { ...accounts } });
+  }
+  return info;
+}
+
+async function buildFinalizedDetail(detail, info) {
+  const txHash = info ? info.tx_hash : null;
+  const uTxOs = txHash ? getTxUTxOs(txHash) : [];
+  const metadata = txHash ? getTxMetadata(txHash) : [];
+  detail.info = info;
+  if (info) detail.block = await getBlock(info.block_height);
+  detail.utxos = await uTxOs;
+  detail.metadata = await metadata;
+  return detail;
+}
+
+async function buildPendingDetail(detail, txHash, info) {
+  const uTxOs = {
+    hash: txHash,
+    inputs: info ? info.inputs : [],
+    outputs: info ? info.outputs : [],
+  };
+  for (const input of uTxOs.inputs) {
+    const inputUTxOs = await getTxUTxOs(input.tx_hash);
+    input.amount = inputUTxOs.outputs[input.output_index].amount;
+  }
+  detail.info = info?.tx;
+  detail.utxos = uTxOs;
+  detail.block = "mempool";
+  detail.metadata = [];
+  return detail;
+}
 
 export const setTxDetail = async (txObject) => {
   const currentIndex = await getCurrentAccountIndex();
