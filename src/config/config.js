@@ -9,6 +9,7 @@ export const METHOD = {
   getBalance: 'getBalance',
   getDelegation: 'getDelegation',
   getUtxos: 'getUtxos',
+  getMempoolTxs: 'getMempoolTxs',
   getCollateral: 'getCollateral',
   getRewardAddress: 'getRewardAddress',
   getAddress: 'getAddress',

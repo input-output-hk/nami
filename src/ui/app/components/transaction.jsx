@@ -92,6 +92,7 @@ const Transaction = ({
   addresses,
   network,
   onLoad,
+  pending=false,
 }) => {
   const settings = useStoreState((state) => state.settings.settings);
   const isMounted = useIsMounted();
@@ -101,14 +102,15 @@ const Transaction = ({
 
   const colorMode = {
     iconBg: useColorModeValue('white', 'gray.800'),
-    txBg: useColorModeValue('teal.50', 'gray.700'),
-    txBgHover: useColorModeValue('teal.100', 'gray.600'),
+    txBg: useColorModeValue(pending ? 'gray.100' : 'teal.50', pending ? 'gray.500' : 'gray.700'),
+    txBgHover: useColorModeValue(pending ? 'gray.200' : 'teal.100', pending ? 'gray.400' : 'gray.600'),
     assetsBtnHover: useColorModeValue('teal.200', 'gray.700'),
   };
 
   const getTxDetail = async () => {
-    if (!displayInfo) {
-      let txDetail = await updateTxInfo(txHash);
+    if (!displayInfo || detail.block === "mempool") {
+      let txDetail = await updateTxInfo(txHash, pending);
+      detail.block = txDetail.block;
       onLoad(txHash, txDetail);
       if (!isMounted.current) return;
       setDisplayInfo(genDisplayInfo(txHash, txDetail, currentAddr, addresses));
@@ -124,12 +126,16 @@ const Transaction = ({
       <VStack spacing={2}>
         {displayInfo ? (
           <Box align="center" fontSize={14} fontWeight={500} color="gray.500">
-            <ReactTimeAgo
-              date={displayInfo.date}
-              title={displayInfo.formatDate}
-              locale="en-US"
-              timeStyle="round-minute"
-            />
+            {pending ? (
+              <Text>Pending...</Text>
+            ): (
+              <ReactTimeAgo
+                date={displayInfo.date}
+                title={displayInfo.formatDate}
+                locale="en-US"
+                timeStyle="round-minute"
+              />
+            )}
           </Box>
         ) : (
           <Skeleton width="34%" height="22px" rounded="md" />
@@ -350,7 +356,7 @@ const TxDetail = ({ displayInfo, network }) => {
             >
               {displayInfo.txHash} <ExternalLinkIcon mx="2px" />
             </Link>
-            {displayInfo.detail.metadata.length > 0 ? (
+            {displayInfo.detail.metadata?.length > 0 ? (
               <Button
                 display="inline-block"
                 colorScheme="orange"
@@ -413,7 +419,7 @@ const genDisplayInfo = (txHash, detail, currentAddr, addresses) => {
   }
 
   const type = getTxType(currentAddr, addresses, detail.utxos);
-  const date = dateFromUnix(detail.block.time);
+  const date = detail.block !== "mempool" ? dateFromUnix(detail.block.time) : new Date();
   const amounts = calculateAmount(
     currentAddr,
     detail.utxos,
@@ -526,7 +532,7 @@ const calculateAmount = (currentAddr, uTxOList, validContract = true) => {
   let inputs = compileOutputs(
     uTxOList.inputs.filter(
       (input) =>
-        matchesAnyCredential(input.address, ownCredentials) && !(input.collateral && validContract)
+        matchesAnyCredential(input.address, ownCredentials) && !(input.collateral && validContract) && input.amount
     )
   );
   let outputs = compileOutputs(
