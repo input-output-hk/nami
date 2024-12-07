@@ -8,7 +8,9 @@ var webpack = require('webpack'),
   TerserPlugin = require('terser-webpack-plugin'),
   NodePolyfillPlugin = require('node-polyfill-webpack-plugin'),
   ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
+const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
+
+require('dotenv').config();
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -19,7 +21,7 @@ var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
 
 require('dotenv-defaults').config({
   path: './.env',
-  encoding: 'utf8'
+  encoding: 'utf8',
 });
 
 var fileExtensions = [
@@ -42,12 +44,15 @@ if (fileSystem.existsSync(secretsPath)) {
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const hasSentryConfig =
-    !!process.env.SENTRY_AUTH_TOKEN &&
-    !!process.env.SENTRY_ORG &&
-    !!process.env.SENTRY_PROJECT &&
-    !!process.env.SENTRY_DSN
+  !!process.env.SENTRY_AUTH_TOKEN &&
+  !!process.env.SENTRY_ORG &&
+  !!process.env.SENTRY_PROJECT &&
+  !!process.env.SENTRY_DSN;
 
-const withMaybeSentry = (p) => hasSentryConfig ? [ path.join(__dirname, 'src', 'features', 'sentry.js'), p ] : p;
+const withMaybeSentry = (p) =>
+  hasSentryConfig
+    ? [path.join(__dirname, 'src', 'features', 'sentry.js'), p]
+    : p;
 
 const envsToExpose = ['NODE_ENV'];
 if (hasSentryConfig) envsToExpose.push('SENTRY_DSN');
@@ -59,28 +64,25 @@ var options = {
   },
   mode: process.env.NODE_ENV || 'development',
   entry: {
-    mainPopup: withMaybeSentry(path.join(__dirname, 'src', 'ui', 'indexMain.jsx')),
-    internalPopup: withMaybeSentry(path.join(__dirname, 'src', 'ui', 'indexInternal.jsx')),
-    hwTab: withMaybeSentry(path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'hw.jsx')),
-    createWalletTab: withMaybeSentry(path.join(
-      __dirname,
-      'src',
-      'ui',
-      'app',
-      'tabs',
-      'createWallet.jsx'
-    )),
-    trezorTx: withMaybeSentry(path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'trezorTx.jsx')),
-    background: withMaybeSentry(path.join(__dirname, 'src', 'pages', 'Background', 'index.js')),
-    contentScript: withMaybeSentry(path.join(__dirname, 'src', 'pages', 'Content', 'index.js')),
-    injected: withMaybeSentry(path.join(__dirname, 'src', 'pages', 'Content', 'injected.js')),
-    trezorContentScript: withMaybeSentry(path.join(
-      __dirname,
-      'src',
-      'pages',
-      'Content',
-      'trezorContentScript.js'
-    ))
+    mainPopup: withMaybeSentry(
+      path.join(__dirname, 'src', 'ui', 'indexMain.jsx')
+    ),
+    internalPopup: withMaybeSentry(
+      path.join(__dirname, 'src', 'ui', 'indexInternal.jsx')
+    ),
+    hwTab: withMaybeSentry(
+      path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'hw.jsx')
+    ),
+    createWalletTab: withMaybeSentry(
+      path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'createWallet.jsx')
+    ),
+    trezorTx: withMaybeSentry(
+      path.join(__dirname, 'src', 'ui', 'app', 'tabs', 'trezorTx.jsx')
+    ),
+    background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
+    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
+    injected: path.join(__dirname, 'src', 'pages', 'Content', 'injected.js'),
+    trezorContentScript: path.join(__dirname, 'src', 'pages', 'Content', 'trezorContentScript.js'),
   },
   chromeExtensionBoilerplate: {
     notHotReload: ['contentScript', 'devtools', 'injected'],
@@ -149,12 +151,37 @@ var options = {
         options: {
           name: '[name].[ext]',
         },
-        exclude: /node_modules/,
+        exclude: [
+          /node_modules/,
+          path.resolve(__dirname, 'src', 'ui', 'lace-migration'),
+        ],
       },
       {
         test: /\.html$/,
         loader: 'html-loader',
         exclude: /node_modules/,
+      },
+      {
+        test: /\.svg$/i,
+        issuer: /\.jsx?$/,
+        include: path.resolve(__dirname, 'src', 'ui', 'lace-migration'),
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              icon: true,
+              exportType: 'named',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.png$/i,
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]',
+        },
+        include: path.resolve(__dirname, 'src', 'ui', 'lace-migration'),
       },
     ],
   },
@@ -166,13 +193,19 @@ var options = {
   },
   plugins: [
     ...(isDevelopment ? [new ReactRefreshWebpackPlugin()] : []),
-    ...(hasSentryConfig ? [sentryWebpackPlugin({
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      org: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
-      telemetry: false,
-      url: 'https://sentry.io/'
-    })] : []),
+    ...(hasSentryConfig
+      ? [
+          sentryWebpackPlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: process.env.SENTRY_ORG,
+            project: process.env.SENTRY_PROJECT,
+            telemetry: false,
+            include: './build',
+            url: 'https://sentry.io/',
+            ignore: ['node_modules', 'webpack.config.js'],
+          }),
+        ]
+      : []),
     new webpack.BannerPlugin({
       banner: () => {
         return 'globalThis.document={getElementsByTagName:()=>[],createElement:()=>({ setAttribute:()=>{}}),head:{appendChild:()=>{}}};';

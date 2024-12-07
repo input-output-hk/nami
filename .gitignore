@@ -24,3 +24,5 @@ secrets.development.js
 
 # IDEs
 .idea
+
+*storybook.log
