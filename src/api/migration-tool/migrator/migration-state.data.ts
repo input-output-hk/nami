@@ -8,3 +8,4 @@ export enum MigrationState {
 
 export const MIGRATION_KEY = 'laceMigration' as const;
 export const DISMISS_MIGRATION_UNTIL = 'dismissMigrationUntil' as const;
+export const IS_HAVING_ISSUES = 'isHavingIssues' as const;

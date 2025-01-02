@@ -4,6 +4,7 @@ import {
   MIGRATION_KEY,
   MigrationState,
   DISMISS_MIGRATION_UNTIL,
+  IS_HAVING_ISSUES,
 } from '../../../api/migration-tool/migrator/migration-state.data';
 import { MigrationView } from './migration-view/migration-view.component';
 import {
@@ -30,6 +31,7 @@ export const AppWithMigration = () => {
     ui: 'loading',
     hasWallet: false,
     dismissedUntil: undefined,
+    isHavingIssues: false,
   });
   const themeColor = localStorage['chakra-ui-color-mode'];
   const { featureFlags, isFFLoaded, earlyAccessFeatures } =
@@ -37,6 +39,7 @@ export const AppWithMigration = () => {
 
   useEffect(() => {
     storage.local.get().then((store) => {
+      console.log(store[IS_HAVING_ISSUES]);
       // Wait for Lace installation check before declaring UI to be ready
       checkLaceInstallation().then((laceInstalled) => {
         // Check if the wallet exists
@@ -48,6 +51,7 @@ export const AppWithMigration = () => {
             migrationState: store[MIGRATION_KEY] ?? MigrationState.None,
             hasWallet: typeof accounts !== 'undefined',
             dismissedUntil: store[DISMISS_MIGRATION_UNTIL] ?? undefined,
+            isHavingIssues: store[IS_HAVING_ISSUES] ?? false,
           }));
           // Capture events for initial migration state when Nami is opened
           switch (store[MIGRATION_KEY]) {
@@ -75,6 +79,7 @@ export const AppWithMigration = () => {
         migrationState: changes[MIGRATION_KEY]?.newValue ?? s.migrationState,
         dismissedUntil:
           changes[DISMISS_MIGRATION_UNTIL]?.newValue ?? s.dismissedUntil,
+        isHavingIssues: changes[IS_HAVING_ISSUES] ?? false,
       }));
     };
 
@@ -97,7 +102,16 @@ export const AppWithMigration = () => {
       isBetaProgramIsActive &&
       featureFlags?.['is-migration-active'] !== undefined;
 
-    if (state.migrationState === MigrationState.Completed) {
+    const hasShowIssuesButton =
+      featureFlags?.['show-having-issues-button'] || false;
+
+    if (
+      state.migrationState === MigrationState.Completed &&
+      hasShowIssuesButton &&
+      state.isHavingIssues
+    ) {
+      showApp = true;
+    } else if (state.migrationState === MigrationState.Completed) {
       showApp = false;
     } else if (isBetaProgramActiveAndUserEnrolled) {
       // Canary phase entry
@@ -137,30 +151,30 @@ export const AppWithMigration = () => {
           slideIndex: nextSlideIndex,
         });
       }}
-      onUpgradeWalletClicked={async() => {
+      onUpgradeWalletClicked={async () => {
         enableMigration();
         await captureEvent(Events.MigrationUpgradeYourWalletClicked);
       }}
-      onWaitingForLaceScreenViewed={async() => {
-       await  captureEvent(Events.MigrationDownloadLaceScreenViewed);
+      onWaitingForLaceScreenViewed={async () => {
+        await captureEvent(Events.MigrationDownloadLaceScreenViewed);
       }}
-      onOpenLaceScreenViewed={async() => {
+      onOpenLaceScreenViewed={async () => {
         await captureEvent(Events.MigrationOpenLaceScreenViewed);
       }}
-      onDownloadLaceClicked={async() => {
+      onDownloadLaceClicked={async () => {
         await captureEvent(Events.MigrationDownloadLaceClicked);
         window.open(
           `https://chromewebstore.google.com/detail/lace/${secrets.LACE_EXTENSION_ID}`
         );
       }}
-      onOpenLaceClicked={async() => {
-       await captureEvent(Events.MigrationOpenLaceClicked);
+      onOpenLaceClicked={async () => {
+        await captureEvent(Events.MigrationOpenLaceClicked);
         openLace();
       }}
-      onAllDoneScreenViewed={async() => {
+      onAllDoneScreenViewed={async () => {
         await captureEvent(Events.MigrationAllDoneScreenViewed);
       }}
-      onNoWalletActionClick={async() => {
+      onNoWalletActionClick={async () => {
         if (state.isLaceInstalled) {
           await captureEvent(Events.MigrationOpenLaceClicked);
           openLace();

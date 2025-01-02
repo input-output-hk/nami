@@ -115,6 +115,7 @@ export enum Events {
   NamiMigrationDismissedNotStarted = 'nami tool | nami | migration dismissed | not started | click',
   NamiMigrationDismissedInProgress = 'nami tool | nami | migration dismissed | in progress | click',
   NamiMigrationOpenLaceOrOpenChromeStore = 'nami tool | nami | open lace or open chrome store link | click',
+  NamiMigrationHavingIssuesClick = 'nami tool | nami | having migration issues | click',
 }
 
 export type Property =
