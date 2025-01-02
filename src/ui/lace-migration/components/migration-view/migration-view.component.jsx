@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import {
   MigrationState,
-  IS_HAVING_ISSUES,
+  MIGRATION_KEY,
 } from '../../../../api/migration-tool/migrator/migration-state.data';
 import { Carousel } from '../carousel/carousel.component';
 import { Slide1 } from '../carousel/slides/Slide1.component';
@@ -50,7 +50,9 @@ export const MigrationView = ({
     featureFlags?.['show-having-issues-button'] || false;
 
   const handleHavingIssuesClick = () => {
-    storage.local.set({ [IS_HAVING_ISSUES]: true });
+    storage.local.set({
+      [MIGRATION_KEY]: MigrationState.None,
+    });
     captureEvent(Events.NamiMigrationHavingIssuesClick);
   };
 

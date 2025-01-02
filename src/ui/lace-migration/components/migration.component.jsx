@@ -4,7 +4,6 @@ import {
   MIGRATION_KEY,
   MigrationState,
   DISMISS_MIGRATION_UNTIL,
-  IS_HAVING_ISSUES,
 } from '../../../api/migration-tool/migrator/migration-state.data';
 import { MigrationView } from './migration-view/migration-view.component';
 import {
@@ -31,7 +30,6 @@ export const AppWithMigration = () => {
     ui: 'loading',
     hasWallet: false,
     dismissedUntil: undefined,
-    isHavingIssues: false,
   });
   const themeColor = localStorage['chakra-ui-color-mode'];
   const { featureFlags, isFFLoaded, earlyAccessFeatures } =
@@ -39,7 +37,6 @@ export const AppWithMigration = () => {
 
   useEffect(() => {
     storage.local.get().then((store) => {
-      console.log(store[IS_HAVING_ISSUES]);
       // Wait for Lace installation check before declaring UI to be ready
       checkLaceInstallation().then((laceInstalled) => {
         // Check if the wallet exists
@@ -51,7 +48,6 @@ export const AppWithMigration = () => {
             migrationState: store[MIGRATION_KEY] ?? MigrationState.None,
             hasWallet: typeof accounts !== 'undefined',
             dismissedUntil: store[DISMISS_MIGRATION_UNTIL] ?? undefined,
-            isHavingIssues: store[IS_HAVING_ISSUES] ?? false,
           }));
           // Capture events for initial migration state when Nami is opened
           switch (store[MIGRATION_KEY]) {
@@ -79,7 +75,6 @@ export const AppWithMigration = () => {
         migrationState: changes[MIGRATION_KEY]?.newValue ?? s.migrationState,
         dismissedUntil:
           changes[DISMISS_MIGRATION_UNTIL]?.newValue ?? s.dismissedUntil,
-        isHavingIssues: changes[IS_HAVING_ISSUES] ?? false,
       }));
     };
 
@@ -102,16 +97,7 @@ export const AppWithMigration = () => {
       isBetaProgramIsActive &&
       featureFlags?.['is-migration-active'] !== undefined;
 
-    const hasShowIssuesButton =
-      featureFlags?.['show-having-issues-button'] || false;
-
-    if (
-      state.migrationState === MigrationState.Completed &&
-      hasShowIssuesButton &&
-      state.isHavingIssues
-    ) {
-      showApp = true;
-    } else if (state.migrationState === MigrationState.Completed) {
+    if (state.migrationState === MigrationState.Completed) {
       showApp = false;
     } else if (isBetaProgramActiveAndUserEnrolled) {
       // Canary phase entry
