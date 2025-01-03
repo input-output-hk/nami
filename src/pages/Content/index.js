@@ -16,10 +16,12 @@ const injectScript = () => {
 };
 
 async function shouldInject() {
-  const { laceMigration } = (await storage.local.get(MIGRATION_KEY)) || {
+  const { laceMigration } = (await storage.local.get([MIGRATION_KEY])) || {
     laceMigration: undefined,
   };
+
   // Prevent injection into window.cardano namespace if migration has been completed
+  // or if the user has dismissed because they are having issues migrating (setting migration state back to 'none')
   if (laceMigration === MigrationState.Completed) return false;
   const documentElement = document.documentElement.nodeName;
   const docElemCheck = documentElement

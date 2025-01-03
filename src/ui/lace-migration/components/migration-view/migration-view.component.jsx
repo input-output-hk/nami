@@ -1,5 +1,8 @@
 import React, { useEffect } from 'react';
-import { MigrationState } from '../../../../api/migration-tool/migrator/migration-state.data';
+import {
+  MigrationState,
+  MIGRATION_KEY,
+} from '../../../../api/migration-tool/migrator/migration-state.data';
 import { Carousel } from '../carousel/carousel.component';
 import { Slide1 } from '../carousel/slides/Slide1.component';
 import { Slide2 } from '../carousel/slides/Slide2.component';
@@ -7,12 +10,13 @@ import { Slide3 } from '../carousel/slides/Slide3.component';
 import { AlmostThere } from '../almost-there/almost-there.component';
 import { AllDone } from '../all-done/all-done.component';
 import { NoWallet } from '../no-wallet/no-wallet.component';
-import { useColorModeValue, Flex } from '@chakra-ui/react';
+import { useColorModeValue, Flex, Link } from '@chakra-ui/react';
 import { useFeatureFlagsContext } from '../../../../features/feature-flags/provider';
 import { Events } from '../../../../features/analytics/events';
 import { useCaptureEvent } from '../../../../features/analytics/hooks';
 import { AnalyticsConsentModal } from '../../../../features/analytics/ui/AnalyticsConsentModal';
 import { useAnalyticsContext } from '../../../../features/analytics/provider';
+import { storage } from 'webextension-polyfill';
 
 export const MigrationView = ({
   migrationState,
@@ -42,36 +46,44 @@ export const MigrationView = ({
   const dismissibleSeconds =
     featureFlags?.['is-migration-active']?.dismissInterval;
 
+  const hasShowIssuesButton =
+    featureFlags?.['show-having-issues-button'] || false;
+
+  const handleHavingIssuesClick = () => {
+    storage.local.set({
+      [MIGRATION_KEY]: MigrationState.None,
+    });
+    captureEvent(Events.NamiMigrationHavingIssuesClick);
+  };
+
   if (!hasWallet) {
     captureEvent(Events.MigrationViewNoWalletViewed);
     return (
-      <><Flex
-        h="100%"
-        backgroundColor={panelBg}
-      >
-        <Flex
-          pt="40px"
-          pb="30px"
-          px="40px"
-          borderTopRadius='20px'
-          backgroundColor={bgColor}
-          mt='17px'
-          flexDirection='column'
-          h='calc(100% - 17px)'
-          w="100%"
-        >
-          <NoWallet
-            isLaceInstalled={isLaceInstalled}
-            onAction={onNoWalletActionClick}
-            isDismissable={isDismissable}
-            dismissibleSeconds={dismissibleSeconds}
-          />
+      <>
+        <Flex h="100%" backgroundColor={panelBg}>
+          <Flex
+            pt="40px"
+            pb="30px"
+            px="40px"
+            borderTopRadius="20px"
+            backgroundColor={bgColor}
+            mt="17px"
+            flexDirection="column"
+            h="calc(100% - 17px)"
+            w="100%"
+          >
+            <NoWallet
+              isLaceInstalled={isLaceInstalled}
+              onAction={onNoWalletActionClick}
+              isDismissable={isDismissable}
+              dismissibleSeconds={dismissibleSeconds}
+            />
+          </Flex>
         </Flex>
-      </Flex>
-      <AnalyticsConsentModal 
-        askForConsent={analytics.consent === undefined}
-        setConsent={setAnalyticsConsent}
-      />
+        <AnalyticsConsentModal
+          askForConsent={analytics.consent === undefined}
+          setConsent={setAnalyticsConsent}
+        />
       </>
     );
   }
@@ -81,19 +93,16 @@ export const MigrationView = ({
     case MigrationState.None:
       captureEvent(Events.MigrationNoStartedViewed);
       return (
-        <Flex
-          h="100%"
-          backgroundColor={panelBg}
-        >
+        <Flex h="100%" backgroundColor={panelBg}>
           <Flex
             flexDirection={'column'}
             pt="40px"
             pb="30px"
             px="0px"
-            borderTopRadius='20px'
+            borderTopRadius="20px"
             backgroundColor={bgColor}
-            mt='17px'
-            h='calc(100% - 17px)'
+            mt="17px"
+            h="calc(100% - 17px)"
             w="100%"
           >
             <Carousel onSlideSwitched={onSlideSwitched}>
@@ -124,19 +133,16 @@ export const MigrationView = ({
       if (!isLaceInstalled) {
         onWaitingForLaceScreenViewed?.();
         return (
-          <Flex
-            h="100%"
-            backgroundColor={panelBg}
-          >
+          <Flex h="100%" backgroundColor={panelBg}>
             <Flex
               pt="40px"
               pb="30px"
               px="40px"
-              borderTopRadius='20px'
+              borderTopRadius="20px"
               backgroundColor={bgColor}
-              mt='17px'
-              flexDirection='column'
-              h='calc(100% - 17px)'
+              mt="17px"
+              flexDirection="column"
+              h="calc(100% - 17px)"
               w="100%"
             >
               <AlmostThere
@@ -151,19 +157,16 @@ export const MigrationView = ({
       } else {
         onOpenLaceScreenViewed?.();
         return (
-          <Flex
-            h="100%"
-            backgroundColor={panelBg}
-          >
+          <Flex h="100%" backgroundColor={panelBg}>
             <Flex
               pt="40px"
               pb="30px"
               px="40px"
-              borderTopRadius='20px'
+              borderTopRadius="20px"
               backgroundColor={bgColor}
-              mt='17px'
-              flexDirection='column'
-              h='calc(100% - 17px)'
+              mt="17px"
+              flexDirection="column"
+              h="calc(100% - 17px)"
               w="100%"
             >
               <AlmostThere
@@ -180,19 +183,16 @@ export const MigrationView = ({
     case MigrationState.Completed:
       onAllDoneScreenViewed?.();
       return (
-        <Flex
-          h="100%"
-          backgroundColor={panelBg}
-        >
+        <Flex h="100%" backgroundColor={panelBg}>
           <Flex
             pt="40px"
             pb="30px"
             px="40px"
-            borderTopRadius='20px'
+            borderTopRadius="20px"
             backgroundColor={bgColor}
-            mt='17px'
-            flexDirection='column'
-            h='calc(100% - 17px)'
+            mt="17px"
+            flexDirection="column"
+            h="calc(100% - 17px)"
             w="100%"
           >
             <AllDone
@@ -201,6 +201,15 @@ export const MigrationView = ({
                 isLaceInstalled ? onOpenLaceClicked : onDownloadLaceClicked
               }
             />
+            {hasShowIssuesButton && (
+              <Link
+                textAlign="center"
+                marginTop={4}
+                onClick={handleHavingIssuesClick}
+              >
+                Having issues? Click here to continue using Nami
+              </Link>
+            )}
           </Flex>
         </Flex>
       );

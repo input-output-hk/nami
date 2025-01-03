@@ -137,30 +137,30 @@ export const AppWithMigration = () => {
           slideIndex: nextSlideIndex,
         });
       }}
-      onUpgradeWalletClicked={async() => {
+      onUpgradeWalletClicked={async () => {
         enableMigration();
         await captureEvent(Events.MigrationUpgradeYourWalletClicked);
       }}
-      onWaitingForLaceScreenViewed={async() => {
-       await  captureEvent(Events.MigrationDownloadLaceScreenViewed);
+      onWaitingForLaceScreenViewed={async () => {
+        await captureEvent(Events.MigrationDownloadLaceScreenViewed);
       }}
-      onOpenLaceScreenViewed={async() => {
+      onOpenLaceScreenViewed={async () => {
         await captureEvent(Events.MigrationOpenLaceScreenViewed);
       }}
-      onDownloadLaceClicked={async() => {
+      onDownloadLaceClicked={async () => {
         await captureEvent(Events.MigrationDownloadLaceClicked);
         window.open(
           `https://chromewebstore.google.com/detail/lace/${secrets.LACE_EXTENSION_ID}`
         );
       }}
-      onOpenLaceClicked={async() => {
-       await captureEvent(Events.MigrationOpenLaceClicked);
+      onOpenLaceClicked={async () => {
+        await captureEvent(Events.MigrationOpenLaceClicked);
         openLace();
       }}
-      onAllDoneScreenViewed={async() => {
+      onAllDoneScreenViewed={async () => {
         await captureEvent(Events.MigrationAllDoneScreenViewed);
       }}
-      onNoWalletActionClick={async() => {
+      onNoWalletActionClick={async () => {
         if (state.isLaceInstalled) {
           await captureEvent(Events.MigrationOpenLaceClicked);
           openLace();
