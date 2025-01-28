@@ -208,7 +208,7 @@ cardano.onNetworkChange((network : number) => void)
 
 The `project_id` for API requests can be created under [blockfrost.io](https://blockfrost.io/).
 
-**Recommended:** Follow this [approach](https://github.com/lxieyang/chrome-extension-boilerplate-react#secrets) in order to keep the keys seperate from the repository.
+**Recommended:** Follow this [approach](https://github.com/lxieyang/chrome-extension-boilerplate-react#secrets) in order to keep the keys separate from the repository.
 
 ```
 # Update secrets file with your own keys
