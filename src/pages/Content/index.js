@@ -1,9 +1,4 @@
 import { Messaging } from '../../api/messaging';
-import { storage } from 'webextension-polyfill';
-import {
-  MIGRATION_KEY,
-  MigrationState,
-} from '../../api/migration-tool/migrator/migration-state.data';
 
 const injectScript = () => {
   const script = document.createElement('script');
@@ -16,20 +11,8 @@ const injectScript = () => {
 };
 
 async function shouldInject() {
-  const { laceMigration } = (await storage.local.get([MIGRATION_KEY])) || {
-    laceMigration: undefined,
-  };
-
-  // Prevent injection into window.cardano namespace if migration has been completed
-  // or if the user has dismissed because they are having issues migrating (setting migration state back to 'none')
-  if (laceMigration === MigrationState.Completed) return false;
-  const documentElement = document.documentElement.nodeName;
-  const docElemCheck = documentElement
-    ? documentElement.toLowerCase() === 'html'
-    : true;
-  const { docType } = window.document;
-  const docTypeCheck = docType ? docType.name === 'html' : true;
-  return docElemCheck && docTypeCheck;
+  // do not inject since the migration is not dismissible anymore
+  return false
 }
 
 if (await shouldInject()) {
