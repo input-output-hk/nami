@@ -224,7 +224,7 @@ pub struct HeaderMap {
     partial_init_vector: Option<Vec<u8>>,
     // INT(7) key type
     counter_signature: Option<Box<CounterSignature>>,
-    // all other headers not listed above. Does NOT contian the above, but the accessor functions do
+    // all other headers not listed above. Does NOT contain the above, but the accessor functions do
     other_headers: LinkedHashMap<Label, CBORValue>,
 }
 
@@ -870,7 +870,7 @@ pub struct COSEKey {
     key_id: Option<Vec<u8>>,
     // INT(3) algorithm identifier. See AlgorithmIds enum (EdDSA, ChaChaPoly, etc)
     algorithm_id: Option<Label>,
-    // INT(4) opertions that this key is valid for if this field exists
+    // INT(4) operations that this key is valid for if this field exists
     key_ops: Option<Labels>,
     // INT(5)
     base_init_vector: Option<Vec<u8>>,
